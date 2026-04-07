@@ -886,7 +886,8 @@
   <div class="so-body">
 
     <div class="alert alert-info" style="font-size:12px; margin-bottom:20px;" id="sp-so-notice">
-      &#8505; 출금 정책을 설정하면 해당 지갑의 출금 신청이 활성화됩니다. 지갑별로 독립적으로 설정됩니다.
+      &#8505; 계정 목록의 역할(Master / 일반)과 <strong>별개로</strong>, 각 지갑마다 독립적으로 출금 요청자 / 서명자를 지정합니다.<br>
+      저장 후 요청자는 출금 신청이 활성화되고, 서명자는 Workflows에서 서명할 수 있습니다.
     </div>
 
     <!-- ── STEP 1: Initiator ── -->
@@ -972,7 +973,8 @@
   </div>
   <div class="so-body">
     <div class="alert alert-info" style="margin-bottom:16px; font-size:12px;">
-      &#8505; 초대 이메일이 발송되며, 수신자는 링크 클릭 후 PW 설정 → OTP 등록 후 활성화됩니다.<br>
+      &#8505; 초대되는 모든 계정은 <strong>일반</strong> 역할로 생성됩니다.<br>
+      출금 요청자 / 서명자 지정은 <strong>Strategy Engine</strong>에서 지갑별로 설정합니다.<br>
       쉼표(,)로 구분하여 최대 10개 동시 초대 가능.
     </div>
     <div class="form-group">
@@ -1036,11 +1038,9 @@
       <label class="form-label">역할 Role</label>
       <select id="edit-acct-role" class="form-control">
         <option value="master">Master</option>
-        <option value="requester">출금 요청자</option>
-        <option value="signer">출금 서명자</option>
         <option value="general">일반</option>
       </select>
-      <div class="form-hint">Master 역할은 1명만 지정할 수 있습니다.</div>
+      <div class="form-hint">Master 1명 제한. 출금 요청자/서명자 지정은 Strategy Engine에서 지갑별로 설정합니다.</div>
     </div>
     <div class="form-group">
       <label class="form-label">계정 상태</label>
@@ -1072,8 +1072,8 @@
   </div>
   <div class="modal-body">
     <div id="delete-acct-signer-warn" class="alert alert-warning" style="margin-bottom:14px; font-size:12.5px; display:none;">
-      &#9888; <strong>출금 서명자 계정입니다.</strong><br>
-      이 계정이 출금 정책에 지정되어 있습니다. 삭제 전, 관련 출금 정책을 반드시 수정해 주세요.
+      &#9888; <strong id="delete-acct-strategy-msg">이 계정은 출금 정책에 포함되어 있습니다.</strong><br>
+      삭제 전 Strategy Engine에서 관련 정책을 재설정하세요.
     </div>
     <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">다음 계정을 삭제합니다. 이 작업은 취소할 수 없습니다.</p>
     <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:8px;">
@@ -2495,11 +2495,9 @@
               <span class="iicon">&#128269;</span>
               <input type="text" class="form-control" id="acct-search" placeholder="이름 / 이메일 검색" oninput="renderAccountTable()" />
             </div>
-            <select class="form-control" id="acct-filter-role" style="width:140px;" onchange="renderAccountTable()">
+            <select class="form-control" id="acct-filter-role" style="width:130px;" onchange="renderAccountTable()">
               <option value="">전체 역할</option>
               <option value="master">Master</option>
-              <option value="requester">출금 요청자</option>
-              <option value="signer">출금 서명자</option>
               <option value="general">일반</option>
             </select>
             <select class="form-control" id="acct-filter-status" style="width:130px;" onchange="renderAccountTable()">
@@ -2855,12 +2853,13 @@
   let _strategyWallet = 'BTC';
   const _walletPolicyState = { BTC: true, ETH: false };
 
-  // Demo account pool
+  // Demo account pool — roles are Master / 일반 only.
+  // Requester/Signer is assigned per wallet via Strategy Engine, not in account management.
   const _SP_ACCOUNTS = [
     { value: '김철수', label: '김철수', role: 'Master' },
-    { value: '이영희', label: '이영희', role: '출금요청자' },
-    { value: '박민준', label: '박민준', role: '출금서명자' },
-    { value: '최진호', label: '최진호', role: '출금서명자' },
+    { value: '이영희', label: '이영희', role: '일반' },
+    { value: '박민준', label: '박민준', role: '일반' },
+    { value: '최진호', label: '최진호', role: '일반' },
     { value: '안소연', label: '안소연', role: '일반' },
   ];
 
@@ -2904,7 +2903,8 @@
       if (!usedList.includes(a.value)) {
         const o = document.createElement('option');
         o.value = a.value;
-        o.textContent = a.label + (a.role === 'Master' ? ' (Master)' : '') + ' — ' + a.role;
+        // Show (Master) or (일반) — not requester/signer (those are wallet-level roles)
+        o.textContent = a.label + ' (' + a.role + ')';
         sel.appendChild(o);
       }
     });
@@ -3064,9 +3064,11 @@
         document.getElementById('strategy-policy-meta').textContent   = '적용일: 2026-04-07 | 신규 생성';
       }
 
+      const initiatorNames = _spInitiators.join(', ');
+      const signerNames    = _spSigners.join(', ');
       const msg = _spMode === 'create'
-        ? '출금 정책이 설정되었습니다. 서명자에게 지정 알림이 발송됩니다.'
-        : '정책이 저장되었습니다.';
+        ? `출금 정책이 설정되었습니다. 요청자(${initiatorNames})는 출금 신청이 활성화되고, 서명자(${signerNames})는 Workflows에서 서명할 수 있습니다.`
+        : `정책이 수정되었습니다. 변경된 요청자/서명자에게 알림이 발송됩니다.`;
       showToast(msg);
     });
   }
@@ -3493,16 +3495,16 @@
      SECTION 3: ACCOUNT MANAGEMENT
   ════════════════════════════════════ */
   const _ACCOUNTS = [
-    { idx: 0, name: '김철수',  email: 'kim@infiniteblock.io',  dept: '자산운용팀', title: '팀장',   phone: '010-1234-5678', role: 'master',    roleLabel: 'Master',    status: 'active',   lastLogin: '2025-11-20 14:30', isSelf: true  },
-    { idx: 1, name: '이영희',  email: 'lee@infiniteblock.io',  dept: '자산운용팀', title: '매니저', phone: '010-2345-6789', role: 'signer',    roleLabel: '출금 서명자', status: 'active',   lastLogin: '2025-11-20 11:15', isSelf: false },
-    { idx: 2, name: '박민준',  email: 'park@infiniteblock.io', dept: '자산운용팀', title: '대리',   phone: '010-3456-7890', role: 'signer',    roleLabel: '출금 서명자', status: 'active',   lastLogin: '2025-11-19 09:12', isSelf: false },
-    { idx: 3, name: '안소연',  email: 'an@infiniteblock.io',   dept: '준법감시팀', title: '과장',   phone: '010-4567-8901', role: 'requester', roleLabel: '출금 요청자', status: 'inactive', lastLogin: '2025-10-30 16:44', isSelf: false },
+    { idx: 0, name: '김철수',  email: 'kim@infiniteblock.io',  dept: '자산운용팀', title: '팀장',   phone: '010-1234-5678', role: 'master',  roleLabel: 'Master', status: 'active',   lastLogin: '2025-11-20 14:30', isSelf: true,  strategyCount: 0 },
+    { idx: 1, name: '이영희',  email: 'lee@infiniteblock.io',  dept: '자산운용팀', title: '매니저', phone: '010-2345-6789', role: 'general', roleLabel: '일반',   status: 'active',   lastLogin: '2025-11-20 11:15', isSelf: false, strategyCount: 2 },
+    { idx: 2, name: '박민준',  email: 'park@infiniteblock.io', dept: '자산운용팀', title: '대리',   phone: '010-3456-7890', role: 'general', roleLabel: '일반',   status: 'active',   lastLogin: '2025-11-19 09:12', isSelf: false, strategyCount: 1 },
+    { idx: 3, name: '안소연',  email: 'an@infiniteblock.io',   dept: '준법감시팀', title: '과장',   phone: '010-4567-8901', role: 'general', roleLabel: '일반',   status: 'inactive', lastLogin: '2025-10-30 16:44', isSelf: false, strategyCount: 0 },
   ];
 
   let _deleteAcctIdx = null;
 
   function roleBadge(role, label) {
-    const cls = { master: 'badge-purple', signer: 'badge-info', requester: 'badge-sky', general: 'badge-gray' };
+    const cls = { master: 'badge-purple', general: 'badge-gray' };
     return `<span class="badge ${cls[role] || 'badge-gray'}">${label}</span>`;
   }
 
@@ -3601,8 +3603,12 @@
     document.getElementById('delete-acct-name-display').textContent  = a.name;
     document.getElementById('delete-acct-email-display').textContent = a.email;
     document.getElementById('delete-acct-role-display').innerHTML    = roleBadge(a.role, a.roleLabel);
-    const isSigner = a.role === 'signer';
-    document.getElementById('delete-acct-signer-warn').style.display = isSigner ? '' : 'none';
+    const inStrategy = a.strategyCount > 0;
+    document.getElementById('delete-acct-signer-warn').style.display = inStrategy ? '' : 'none';
+    if (inStrategy) {
+      document.getElementById('delete-acct-strategy-msg').textContent =
+        `이 계정은 ${a.strategyCount}개 지갑의 출금 정책에 포함되어 있습니다.`;
+    }
     openModal('modal-delete-account');
   }
 
