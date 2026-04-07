@@ -453,6 +453,14 @@
     .vpc-badge.unregistered { background: #FEF3C7; color: #92400E; }
     /* Address input area (appears after VASP selection) */
     .vasp-addr-input-area { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+    /* Beneficiary type toggle */
+    .btn-bene-type {
+      flex: 1; padding: 7px 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+      border: 1.5px solid var(--border); background: #F8FAFC; color: var(--text-secondary);
+      transition: all .15s; font-family: inherit;
+    }
+    .btn-bene-type:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-bene-type.selected { border-color: var(--primary); background: #EFF6FF; color: var(--primary); }
 
     @media (max-width: 767px) { .wd-so { width: 100%; } }
   </style>
@@ -1067,22 +1075,39 @@
             </div>
           </div>
           <div class="beneficiary-form">
-            <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">수신자 정보 (Beneficiary Info)</div>
-            <div class="form-group">
-              <label class="form-label">성명 / Name <span class="req">*</span></label>
-              <input type="text" class="form-control" id="wd-beneficiary-name" placeholder="수신 거래소에 등록된 실명" />
+            <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">수신자 유형 선택</div>
+            <!-- 개인 / 법인 toggle -->
+            <div style="display:flex; gap:8px; margin-bottom:14px;">
+              <button class="btn-bene-type selected" id="bene-type-personal" onclick="selectBeneType('personal')">&#128100; 개인</button>
+              <button class="btn-bene-type" id="bene-type-corporate" onclick="selectBeneType('corporate')">&#127970; 법인</button>
             </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label">생년월일 / Date of Birth <span class="req">*</span></label>
-              <div style="display:flex; gap:6px;">
-                <input type="text" class="form-control" placeholder="YYYY" maxlength="4" style="width:80px;" id="wd-dob-y" />
-                <input type="text" class="form-control" placeholder="MM" maxlength="2" style="width:60px;" id="wd-dob-m" />
-                <input type="text" class="form-control" placeholder="DD" maxlength="2" style="width:60px;" id="wd-dob-d" />
+            <!-- 개인 폼 -->
+            <div id="bene-personal-form">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">받는 분 성함 <span class="req">*</span></label>
+                <input type="text" class="form-control" id="wd-bene-personal-name"
+                  placeholder="홍길동 / Hong Gil-dong" />
+                <div class="form-hint">한글 또는 영문 입력 가능 · 수신 거래소에 등록된 실명</div>
+              </div>
+            </div>
+            <!-- 법인 폼 -->
+            <div id="bene-corporate-form" style="display:none;">
+              <div class="form-group">
+                <label class="form-label">회사명 <span class="req">*</span></label>
+                <input type="text" class="form-control" id="wd-bene-corp-name"
+                  placeholder="(주)인피닛블록 / Infiniteblock Inc." />
+                <div class="form-hint">한글 또는 영문 입력 가능</div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">대표자 성명 <span class="req">*</span></label>
+                <input type="text" class="form-control" id="wd-bene-corp-rep"
+                  placeholder="홍길동 / Hong Gil-dong" />
+                <div class="form-hint">한글 또는 영문 입력 가능</div>
               </div>
             </div>
           </div>
           <div style="margin-top:12px; font-size:11px; color:#065F46; background:rgba(16,185,129,0.08); border-radius:6px; padding:8px 10px;">
-            &#8505; 입력하신 정보는 CODE Protocol을 통해 <strong id="vasp-name-hint">빗썸</strong>으로 암호화 전송됩니다.
+            &#8505; 주소와 성명 정보는 CODE Protocol을 통해 <strong id="vasp-name-hint">빗썸</strong>에서 조회·검증됩니다.
           </div>
         </div>
       </div>
@@ -2346,6 +2371,13 @@
         showVASPCase('B');
       }
     }, 900);
+  }
+
+  function selectBeneType(type) {
+    document.getElementById('bene-type-personal').classList.toggle('selected', type === 'personal');
+    document.getElementById('bene-type-corporate').classList.toggle('selected', type === 'corporate');
+    document.getElementById('bene-personal-form').style.display  = type === 'personal'  ? 'block' : 'none';
+    document.getElementById('bene-corporate-form').style.display = type === 'corporate' ? 'block' : 'none';
   }
 
   function showVASPCase(caseId) {
