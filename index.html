@@ -463,6 +463,45 @@
     .btn-bene-type.selected { border-color: var(--primary); background: #EFF6FF; color: var(--primary); }
 
     @media (max-width: 767px) { .wd-so { width: 100%; } }
+
+    /* ── Strategy Engine ── */
+    .sp-step { margin-bottom: 20px; }
+    .sp-step-header {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);
+    }
+    .sp-step-header .step-num { background: var(--primary); }
+    .acct-grid { display: flex; flex-direction: column; gap: 6px; }
+    .acct-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      cursor: pointer; transition: border-color .15s, background .15s; user-select: none;
+    }
+    .acct-item:has(input:checked) { border-color: var(--primary); background: #EFF6FF; }
+    .acct-item input[type=checkbox] { accent-color: var(--primary); width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; }
+    .acct-name { font-size: 13px; font-weight: 600; flex: 1; }
+    .acct-role-tag { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; background: #DBEAFE; color: var(--primary); }
+    .sp-n-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+    .sp-n-display { font-size: 22px; font-weight: 800; min-width: 36px; text-align: center; }
+    .sp-n-desc { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+    .sp-n-err { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+    /* Condition card */
+    .adv-cond-card {
+      border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+      background: #FAFAFA;
+    }
+    .adv-cond-card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .adv-cond-title { font-size: 13px; font-weight: 700; }
+    .adv-cond-amount { color: var(--primary); }
+    .adv-cond-detail { font-size: 12px; color: var(--text-secondary); }
+    /* Empty state */
+    .strategy-empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 48px 24px; text-align: center; gap: 12px;
+    }
+    .strategy-empty-icon { font-size: 36px; }
+    .strategy-empty-title { font-size: 15px; font-weight: 700; }
+    .strategy-empty-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-width: 300px; }
   </style>
 </head>
 <body>
@@ -747,62 +786,91 @@
 ══════════════════════════════════════ -->
 <div class="slideover" id="so-edit-strategy" style="width:520px;">
   <div class="so-header">
-    <span class="so-title">&#9998; 기본 정책 수정</span>
+    <div>
+      <div class="so-title" id="sp-so-title">&#9998; 기본 정책 수정</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="sp-so-wallet">지갑: BTC 보관 지갑 #1</div>
+    </div>
     <button class="modal-close" onclick="closeSO('so-edit-strategy')">&#10005;</button>
   </div>
   <div class="so-body">
-    <div style="background:#F8FAFC; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:13px;">
-      지갑: <strong>BTC 보관 지갑 #1</strong>
+    <div class="alert alert-info" style="font-size:12px; margin-bottom:18px;" id="sp-so-notice">
+      &#8505; 변경 사항은 다음 출금 건부터 적용됩니다. 진행 중인 건은 영향 없음.
     </div>
-    <div class="form-group">
-      <label class="form-label">출금 요청자 / Initiator</label>
-      <div style="border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:6px;">
-        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
-          <span class="signer-chip"><span class="signer-check">✓</span> 김철수 (Master)</span>
-          <span class="signer-chip"><span class="signer-check">✓</span> 이영희</span>
-        </div>
-        <button class="btn btn-outline btn-sm">+ 계정 추가</button>
+
+    <!-- STEP 1: Initiator -->
+    <div class="sp-step">
+      <div class="sp-step-header">
+        <div class="step-num">1</div>
+        <span>출금 요청자 / Initiator <span class="req">*</span></span>
       </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">출금 서명자 / Signers</label>
-      <div style="border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:6px;">
-        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
-          <span class="signer-chip"><span class="signer-check">✓</span> 김철수</span>
-          <span class="signer-chip"><span class="signer-check">✓</span> 이영희</span>
-          <span class="signer-chip"><span class="signer-check">✓</span> 박민준</span>
-        </div>
-        <div style="font-size:12px; color:var(--text-secondary);">총 3명 선택됨</div>
+      <div class="acct-grid">
+        <label class="acct-item">
+          <input type="checkbox" class="sp-initiator" value="김철수" id="sp-i0" checked>
+          <span class="acct-name">&#128100; 김철수</span>
+          <span class="acct-role-tag">Master</span>
+        </label>
+        <label class="acct-item">
+          <input type="checkbox" class="sp-initiator" value="이영희" id="sp-i1" checked>
+          <span class="acct-name">&#128100; 이영희</span>
+          <span style="font-size:11px; color:var(--text-secondary);">출금요청자</span>
+        </label>
+        <label class="acct-item">
+          <input type="checkbox" class="sp-initiator" value="박민준" id="sp-i2">
+          <span class="acct-name">&#128100; 박민준</span>
+          <span style="font-size:11px; color:var(--text-secondary);">출금서명자</span>
+        </label>
       </div>
+      <div class="form-hint" style="margin-top:6px;">출금 신청서를 작성할 수 있는 계정. 1명 이상 필수.</div>
     </div>
-    <div class="form-group">
-      <label class="form-label">최소 서명 수 / Minimum Approvals (N)</label>
-      <div class="counter-row" style="margin-top:8px;">
-        <button class="counter-btn" onclick="changeN(-1)">&#8722;</button>
-        <span class="counter-val" id="nVal">2</span>
-        <button class="counter-btn" onclick="changeN(1)">+</button>
-        <span style="font-size:12px; color:var(--text-secondary);">/ 3명</span>
+
+    <!-- STEP 2: Signers -->
+    <div class="sp-step">
+      <div class="sp-step-header">
+        <div class="step-num">2</div>
+        <span>출금 서명자 / Signers <span class="req">*</span></span>
       </div>
-      <div style="font-size:12px; color:var(--text-secondary); margin-top:8px;">3명 서명자 중 최소 2명 서명 시 출금이 실행됩니다.</div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">적용 범위 / Scope</label>
-      <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
-        <label class="checkbox-row"><input type="checkbox" checked /> Transfer Transactions (출금)</label>
-        <label class="checkbox-row"><input type="checkbox" checked /> Edit Basic Strategy (정책 수정)</label>
-        <label class="checkbox-row"><input type="checkbox" checked /> Whitelist Management (WL 신청)</label>
-        <label class="checkbox-row"><input type="checkbox" checked /> Fund Return (자금 반환)</label>
+      <div class="acct-grid">
+        <label class="acct-item">
+          <input type="checkbox" class="sp-signer" value="김철수" id="sp-s0" checked onchange="onSignerChange()">
+          <span class="acct-name">&#128100; 김철수</span>
+          <span class="acct-role-tag">Master</span>
+        </label>
+        <label class="acct-item">
+          <input type="checkbox" class="sp-signer" value="이영희" id="sp-s1" checked onchange="onSignerChange()">
+          <span class="acct-name">&#128100; 이영희</span>
+          <span style="font-size:11px; color:var(--text-secondary);">출금서명자</span>
+        </label>
+        <label class="acct-item">
+          <input type="checkbox" class="sp-signer" value="박민준" id="sp-s2" checked onchange="onSignerChange()">
+          <span class="acct-name">&#128100; 박민준</span>
+          <span style="font-size:11px; color:var(--text-secondary);">출금서명자</span>
+        </label>
       </div>
+      <div class="form-hint" style="margin-top:6px;">출금에 서명(승인)할 계정. 1명 이상 필수.</div>
     </div>
-    <div class="alert alert-info" style="font-size:12px;">
-      &#8505; 정책 변경은 다음 출금 건부터 적용됩니다. 진행 중인 건은 영향 없음.
+
+    <!-- STEP 3: N of M -->
+    <div class="sp-step">
+      <div class="sp-step-header">
+        <div class="step-num">3</div>
+        <span>최소 서명 수 / Minimum Approvals</span>
+      </div>
+      <div class="sp-n-row">
+        <button class="counter-btn" onclick="changeNSP(-1)">&#8722;</button>
+        <span class="counter-val sp-n-display" id="sp-nVal">2</span>
+        <button class="counter-btn" onclick="changeNSP(1)">+</button>
+        <span style="font-size:13px; color:var(--text-secondary);">of <strong id="sp-mVal">3</strong>명</span>
+      </div>
+      <div class="sp-n-desc" id="sp-n-desc">서명자 3명 중 최소 2명 서명 시 출금이 실행됩니다.</div>
+      <div class="sp-n-err" id="sp-n-err">&#10005; 최소 서명 수는 서명자 수를 초과할 수 없습니다.</div>
     </div>
+
   </div>
   <div class="so-footer">
     <div style="display:flex; gap:8px;">
       <button class="btn btn-outline" style="flex:1;" onclick="closeSO('so-edit-strategy')">취소</button>
-      <button class="btn btn-primary" style="flex:1;"
-        onclick="openOTPModal('전략 정책 저장', function(){ closeSO(\'so-edit-strategy\'); showToast(\'정책이 저장되었습니다.\'); })">저장 →</button>
+      <button class="btn btn-primary" style="flex:1;" id="sp-save-btn"
+        onclick="saveStrategyPolicy()">정책 저장 &#8594; OTP</button>
     </div>
   </div>
 </div>
@@ -1182,6 +1250,68 @@
     <button class="btn btn-primary btn-submit-wd" id="wd-submit-btn" onclick="openWithdrawalConfirm()">
       출금 신청 Submit Withdrawal
     </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Strategy — Add / Edit Condition
+══════════════════════════════════════ -->
+<div class="modal" id="modal-add-condition" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title" id="cond-modal-title">&#43; 조건 추가 / Add Condition</span>
+    <button class="modal-close" onclick="closeModal('modal-add-condition')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="background:#F8FAFC; border-radius:8px; padding:9px 13px; font-size:13px; margin-bottom:16px;">
+      지갑: <strong id="cond-wallet-label">BTC 보관 지갑 #1</strong>
+    </div>
+    <div class="alert alert-info" style="font-size:12px; margin-bottom:16px;">
+      &#8505; 서명자 풀은 Basic Strategy와 동일하게 적용됩니다.<br>금액 조건이 충족될 때 아래 서명 수가 적용됩니다.
+    </div>
+    <div class="form-group">
+      <label class="form-label">출금 금액 조건 (≥ USD) <span class="req">*</span></label>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:14px; font-weight:700; color:var(--text-secondary);">≥ $</span>
+        <input type="number" class="form-control" id="cond-amount" placeholder="50000" min="1" style="font-size:15px; font-weight:700;" />
+        <span style="font-size:13px; color:var(--text-secondary); white-space:nowrap;">USD 이상</span>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">최소 서명 수 / Minimum Approvals</label>
+      <div class="sp-n-row">
+        <button class="counter-btn" onclick="changeNCondition(-1)">&#8722;</button>
+        <span class="counter-val sp-n-display" id="cond-nVal">3</span>
+        <button class="counter-btn" onclick="changeNCondition(1)">+</button>
+        <span style="font-size:13px; color:var(--text-secondary);">of <strong id="cond-mVal">3</strong>명 <span style="font-weight:400;">(Basic 서명자 기준)</span></span>
+      </div>
+      <div class="sp-n-desc" id="cond-n-desc" style="margin-top:6px;">서명자 3명 중 최소 3명 서명 필요</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-add-condition')">취소</button>
+    <button class="btn btn-primary" id="cond-save-btn" onclick="saveCondition()">저장 &#8594; OTP &#8599;</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Strategy — Delete Condition Confirm
+══════════════════════════════════════ -->
+<div class="modal" id="modal-delete-condition" style="max-width:400px;">
+  <div class="modal-header">
+    <span class="modal-title">&#128465; 조건 삭제</span>
+    <button class="modal-close" onclick="closeModal('modal-delete-condition')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="alert alert-warning" style="font-size:13px; margin-bottom:14px;">
+      &#9888; 삭제하면 해당 조건이 즉시 제거됩니다. 이 조건이 적용 중이던 진행 건은 영향 없습니다.
+    </div>
+    <div style="font-size:13px; font-weight:600; text-align:center; padding:12px; background:#FEF2F2; border-radius:8px;" id="cond-delete-label">
+      조건 1: 출금 금액 ≥ $50,000 → 3 of 3
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-delete-condition')">취소</button>
+    <button class="btn btn-danger" onclick="deleteConditionOTP()">&#128465; 삭제 &#8594; OTP</button>
   </div>
 </div>
 
@@ -1826,9 +1956,9 @@
         <!-- Wallet selector -->
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
           <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">지갑 선택:</span>
-          <select class="form-control" style="width:260px;">
-            <option>BTC 보관 지갑 #1</option>
-            <option>ETH 보관 지갑</option>
+          <select class="form-control" style="width:260px;" id="strategy-wallet-sel" onchange="selectStrategyWallet(this.value)">
+            <option value="BTC">BTC 보관 지갑 #1</option>
+            <option value="ETH">ETH 보관 지갑</option>
           </select>
         </div>
         <div class="card" style="padding:0;">
@@ -1841,61 +1971,80 @@
           </div>
           <!-- Basic -->
           <div id="strategy-basic" style="padding:20px;">
-            <div class="alert alert-warning" style="margin-bottom:20px; font-size:12px;">
-              &#9888; 별도 조건 미설정 시 모든 출금에 이 기본 정책이 적용됩니다.
-            </div>
-            <div style="border:1px solid var(--border); border-radius:10px; padding:18px;">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
-                <div>
-                  <div style="font-size:15px; font-weight:700;">Wallet Basic Strategy</div>
-                  <div style="font-size:12px; color:var(--text-secondary); margin-top:3px;">적용일: 2024-01-01 00:00 &nbsp;|&nbsp; ID: WBS-20240101-001</div>
-                </div>
-                <div style="display:flex; gap:8px;">
-                  <button class="btn btn-outline btn-sm" onclick="switchStrategyTab(document.querySelector('#page-strategy .tab:nth-child(3)'),'records')">승인 기록</button>
-                  <button class="btn btn-primary btn-sm" onclick="openSO('so-edit-strategy')">&#9998; 정책 수정</button>
-                </div>
+            <!-- Empty state (shown when no policy) -->
+            <div id="strategy-empty-state" style="display:none;">
+              <div class="strategy-empty-state">
+                <div class="strategy-empty-icon">&#9888;&#65039;</div>
+                <div class="strategy-empty-title">출금 정책이 설정되지 않았습니다</div>
+                <div class="strategy-empty-desc">정책을 설정해야 이 지갑에서 출금 신청이 가능합니다. 지갑별로 독립적으로 설정됩니다.</div>
+                <button class="btn btn-primary" style="margin-top:8px;" onclick="openStrategyPolicy('create')">&#43; 출금 정책 설정하기</button>
               </div>
-              <div class="info-row"><span class="info-label">요청자 (Initiator)</span><div style="display:flex; gap:6px; flex-wrap:wrap;"><span class="signer-chip">&#128100; 김철수 (Master)</span><span class="signer-chip">&#128100; 이영희</span></div></div>
-              <div class="info-row">
-                <span class="info-label">서명 정책</span>
-                <div>
-                  <div style="font-size:15px; font-weight:700; margin-bottom:6px;">2 <span style="font-size:12px; font-weight:400; color:var(--text-secondary);">of</span> 3</div>
-                  <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <span class="signer-chip"><span class="signer-check">✓</span> 김철수</span>
-                    <span class="signer-chip"><span class="signer-check">✓</span> 이영희</span>
-                    <span class="signer-chip"><span class="signer-check">✓</span> 박민준</span>
+            </div>
+            <!-- Policy set state -->
+            <div id="strategy-set-state">
+              <div class="alert alert-warning" style="margin-bottom:20px; font-size:12px;">
+                &#9888; 별도 조건 미설정 시 모든 출금에 이 기본 정책이 적용됩니다.
+              </div>
+              <div style="border:1px solid var(--border); border-radius:10px; padding:18px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+                  <div>
+                    <div style="font-size:15px; font-weight:700;">Wallet Basic Strategy</div>
+                    <div style="font-size:12px; color:var(--text-secondary); margin-top:3px;" id="strategy-policy-meta">적용일: 2024-01-01 &nbsp;|&nbsp; ID: WBS-20240101-001</div>
+                  </div>
+                  <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline btn-sm" onclick="switchStrategyTab(document.querySelector('#page-strategy .tab:nth-child(3)'),'records')">승인 기록</button>
+                    <button class="btn btn-primary btn-sm" onclick="openStrategyPolicy('edit')">&#9998; 정책 수정</button>
                   </div>
                 </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">적용 범위</span>
-                <div class="strategy-pills">
-                  <span class="strategy-pill">Transfer</span>
-                  <span class="strategy-pill">Edit Strategy</span>
-                  <span class="strategy-pill">Whitelist</span>
-                  <span class="strategy-pill">Fund Return</span>
+                <div class="info-row">
+                  <span class="info-label">요청자 (Initiator)</span>
+                  <div style="display:flex; gap:6px; flex-wrap:wrap;" id="strategy-initiators-display">
+                    <span class="signer-chip">&#128100; 김철수 (Master)</span>
+                    <span class="signer-chip">&#128100; 이영희</span>
+                  </div>
                 </div>
+                <div class="info-row">
+                  <span class="info-label">서명 정책</span>
+                  <div>
+                    <div style="font-size:15px; font-weight:700; margin-bottom:6px;" id="strategy-nom-display">2 <span style="font-size:12px; font-weight:400; color:var(--text-secondary);">of</span> 3</div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;" id="strategy-signers-display">
+                      <span class="signer-chip"><span class="signer-check">✓</span> 김철수</span>
+                      <span class="signer-chip"><span class="signer-check">✓</span> 이영희</span>
+                      <span class="signer-chip"><span class="signer-check">✓</span> 박민준</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="info-row" style="border-bottom:none;"><span class="info-label">승인 액션</span><span style="color:var(--success); font-weight:600;">&#10003; Approval &amp; Sign</span></div>
               </div>
-              <div class="info-row" style="border-bottom:none;"><span class="info-label">승인 액션</span><span style="color:var(--success); font-weight:600;">&#10003; Approval &amp; Sign</span></div>
             </div>
           </div>
           <!-- Advanced -->
           <div id="strategy-advanced" style="display:none; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
               <div style="font-size:13px; color:var(--text-secondary);">기본 정책에 금액 조건을 추가합니다.</div>
-              <button class="btn btn-primary btn-sm" onclick="showToast('조건 추가 기능은 준비 중입니다.')">+ 조건 추가</button>
+              <button class="btn btn-primary btn-sm" onclick="openAddCondition()">&#43; 조건 추가</button>
             </div>
-            <div class="advanced-condition">
-              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-                <div style="font-size:13px; font-weight:600;">조건 1: 출금 금액 ≥ <span style="color:var(--primary);">$50,000</span> 이상</div>
-                <div style="display:flex; gap:6px;">
-                  <button class="btn btn-outline btn-xs">수정</button>
-                  <button class="btn btn-danger btn-xs" style="background:transparent; color:var(--danger); border:1px solid rgba(239,68,68,0.3);">삭제</button>
+            <!-- Conditions list -->
+            <div id="adv-conditions-list">
+              <div class="adv-cond-card" id="adv-cond-0">
+                <div class="adv-cond-card-header">
+                  <div class="adv-cond-title">조건 1: 출금 금액 ≥ <span class="adv-cond-amount">$50,000</span> 이상</div>
+                  <div style="display:flex; gap:6px;">
+                    <button class="btn btn-outline btn-xs" onclick="openEditCondition(0)">수정</button>
+                    <button class="btn btn-xs" style="color:var(--danger); border:1px solid rgba(239,68,68,0.3); background:transparent;" onclick="openDeleteCondition(0)">삭제</button>
+                  </div>
                 </div>
+                <div class="adv-cond-detail">서명 요건: <strong style="color:var(--text-primary);">3 of 3</strong>&nbsp; (모든 서명자 동의 필요)</div>
               </div>
-              <div style="font-size:12px; color:var(--text-secondary);">서명 요건: <strong style="color:var(--text-primary);">3 of 3</strong> (모든 서명자 동의 필요)</div>
             </div>
-            <div class="alert alert-info" style="font-size:12px; margin-top:12px;">
+            <!-- No conditions empty -->
+            <div id="adv-conditions-empty" style="display:none;">
+              <div class="strategy-empty-state" style="padding:28px 16px;">
+                <div class="strategy-empty-icon" style="font-size:24px;">&#128196;</div>
+                <div class="strategy-empty-desc">조건이 없습니다. [&#43; 조건 추가]로 금액별 서명 정책을 설정하세요.</div>
+              </div>
+            </div>
+            <div class="alert alert-info" style="font-size:12px; margin-top:12px;" id="adv-basic-fallback">
               &#8505; 조건 미해당 시 Basic 정책이 적용됩니다.
             </div>
           </div>
@@ -2196,12 +2345,228 @@
   }
 
   /* ════════════════════════════════════
-     STRATEGY COUNTER
+     STRATEGY COUNTER (legacy — kept for any remaining refs)
   ════════════════════════════════════ */
   let nVal = 2;
   function changeN(delta) {
     nVal = Math.max(1, Math.min(3, nVal + delta));
-    document.getElementById('nVal').textContent = nVal;
+    if (document.getElementById('nVal')) document.getElementById('nVal').textContent = nVal;
+  }
+
+  /* ════════════════════════════════════
+     STRATEGY ENGINE — POLICY
+  ════════════════════════════════════ */
+  let _spMode = 'edit'; // 'create' | 'edit'
+  let _spNVal = 2;
+  let _strategyWallet = 'BTC'; // tracks which wallet is selected
+  // Demo: BTC has policy set, ETH has no policy
+  const _walletPolicyState = { BTC: true, ETH: false };
+
+  function selectStrategyWallet(val) {
+    _strategyWallet = val;
+    const hasPolicy = _walletPolicyState[val] !== false;
+    document.getElementById('strategy-empty-state').style.display = hasPolicy ? 'none' : 'block';
+    document.getElementById('strategy-set-state').style.display  = hasPolicy ? 'block' : 'none';
+  }
+
+  function openStrategyPolicy(mode) {
+    _spMode = mode;
+    const walletName = _strategyWallet === 'BTC' ? 'BTC 보관 지갑 #1' : 'ETH 보관 지갑';
+    document.getElementById('sp-so-title').textContent =
+      mode === 'create' ? '+ 출금 정책 설정 / Set Policy' : '✎ 기본 정책 수정 / Edit Basic Strategy';
+    document.getElementById('sp-so-notice').innerHTML = mode === 'create'
+      ? '&#8505; 출금 정책을 설정하면 이 지갑의 출금 신청이 활성화됩니다. 지갑별로 독립 적용됩니다.'
+      : '&#8505; 변경 사항은 다음 출금 건부터 적용됩니다. 진행 중인 건은 영향 없음.';
+    document.getElementById('sp-so-wallet').textContent = '지갑: ' + walletName;
+
+    if (mode === 'create') {
+      // reset all checkboxes
+      document.querySelectorAll('.sp-initiator').forEach(cb => cb.checked = false);
+      document.querySelectorAll('.sp-signer').forEach(cb => cb.checked = false);
+      _spNVal = 1;
+    } else {
+      // pre-fill with current demo policy (2 of 3, all checked)
+      document.getElementById('sp-i0').checked = true;
+      document.getElementById('sp-i1').checked = true;
+      document.getElementById('sp-i2').checked = false;
+      document.getElementById('sp-s0').checked = true;
+      document.getElementById('sp-s1').checked = true;
+      document.getElementById('sp-s2').checked = true;
+      _spNVal = 2;
+    }
+    updateNValSP();
+    openSO('so-edit-strategy');
+  }
+
+  function onSignerChange() { updateNValSP(); }
+
+  function getSignerCount() {
+    return Array.from(document.querySelectorAll('.sp-signer')).filter(cb => cb.checked).length;
+  }
+
+  function updateNValSP() {
+    const m = getSignerCount();
+    _spNVal = Math.max(1, Math.min(_spNVal, Math.max(1, m)));
+    document.getElementById('sp-nVal').textContent = _spNVal;
+    document.getElementById('sp-mVal').textContent = m || 1;
+    const errEl = document.getElementById('sp-n-err');
+    const descEl = document.getElementById('sp-n-desc');
+    if (_spNVal > m && m > 0) {
+      errEl.style.display = 'block';
+      descEl.style.display = 'none';
+    } else {
+      errEl.style.display = 'none';
+      descEl.style.display = 'block';
+      descEl.textContent = '서명자 ' + (m || 1) + '명 중 최소 ' + _spNVal + '명 서명 시 출금이 실행됩니다.';
+    }
+  }
+
+  function changeNSP(delta) {
+    const m = Math.max(1, getSignerCount());
+    _spNVal = Math.max(1, Math.min(m, _spNVal + delta));
+    updateNValSP();
+  }
+
+  function saveStrategyPolicy() {
+    // Validation
+    const initiators = Array.from(document.querySelectorAll('.sp-initiator')).filter(cb => cb.checked);
+    const signers    = Array.from(document.querySelectorAll('.sp-signer')).filter(cb => cb.checked);
+    if (initiators.length === 0) { showToast('출금 요청자를 1명 이상 지정해주세요.'); return; }
+    if (signers.length === 0)    { showToast('출금 서명자를 1명 이상 지정해주세요.'); return; }
+    if (_spNVal > signers.length) { showToast('최소 서명 수는 서명자 수를 초과할 수 없습니다.'); return; }
+    const label = _spMode === 'create' ? '정책 저장 OTP' : '정책 수정 OTP';
+    openOTPModal(label, function() {
+      closeSO('so-edit-strategy');
+      // Update display
+      const iDisplay = document.getElementById('strategy-initiators-display');
+      if (iDisplay) {
+        iDisplay.innerHTML = initiators.map(cb => '<span class="signer-chip">&#128100; ' + cb.value + '</span>').join('');
+      }
+      const sDisplay = document.getElementById('strategy-signers-display');
+      if (sDisplay) {
+        sDisplay.innerHTML = signers.map(cb => '<span class="signer-chip"><span class="signer-check">✓</span> ' + cb.value + '</span>').join('');
+      }
+      const nomDisplay = document.getElementById('strategy-nom-display');
+      if (nomDisplay) {
+        nomDisplay.innerHTML = _spNVal + ' <span style="font-size:12px; font-weight:400; color:var(--text-secondary);">of</span> ' + signers.length;
+      }
+      // If create mode, switch to set state
+      if (_spMode === 'create') {
+        _walletPolicyState[_strategyWallet] = true;
+        document.getElementById('strategy-empty-state').style.display = 'none';
+        document.getElementById('strategy-set-state').style.display = 'block';
+        document.getElementById('strategy-policy-meta').textContent = '적용일: 2026-04-07 | 신규 생성';
+      }
+      const msg = _spMode === 'create' ? '출금 정책이 설정되었습니다. 출금 신청이 활성화됩니다.' : '정책이 저장되었습니다.';
+      showToast(msg);
+    });
+  }
+
+  /* ── Advanced Strategy Conditions ── */
+  let _condMode = 'add'; // 'add' | 'edit'
+  let _condIdx  = -1;
+  let _condNVal = 3;
+  let _condCount = 1; // demo: 1 condition exists
+
+  function openAddCondition() {
+    _condMode = 'add';
+    _condIdx  = -1;
+    _condNVal = 3;
+    document.getElementById('cond-modal-title').textContent = '+ 조건 추가 / Add Condition';
+    document.getElementById('cond-save-btn').textContent = '추가 → OTP ↗';
+    document.getElementById('cond-amount').value = '';
+    const m = Math.max(1, getSignerCount());
+    document.getElementById('cond-mVal').textContent = m;
+    _condNVal = m;
+    document.getElementById('cond-nVal').textContent = m;
+    document.getElementById('cond-n-desc').textContent = '서명자 ' + m + '명 중 최소 ' + m + '명 서명 필요';
+    document.getElementById('cond-wallet-label').textContent =
+      _strategyWallet === 'BTC' ? 'BTC 보관 지갑 #1' : 'ETH 보관 지갑';
+    openModal('modal-add-condition');
+  }
+
+  function openEditCondition(idx) {
+    _condMode = 'edit';
+    _condIdx  = idx;
+    document.getElementById('cond-modal-title').textContent = '✎ 조건 수정 / Edit Condition';
+    document.getElementById('cond-save-btn').textContent = '저장 → OTP ↗';
+    // pre-fill demo values
+    document.getElementById('cond-amount').value = '50000';
+    const m = Math.max(1, getSignerCount());
+    _condNVal = Math.min(3, m);
+    document.getElementById('cond-mVal').textContent = m;
+    document.getElementById('cond-nVal').textContent = _condNVal;
+    document.getElementById('cond-n-desc').textContent = '서명자 ' + m + '명 중 최소 ' + _condNVal + '명 서명 필요';
+    document.getElementById('cond-wallet-label').textContent =
+      _strategyWallet === 'BTC' ? 'BTC 보관 지갑 #1' : 'ETH 보관 지갑';
+    openModal('modal-add-condition');
+  }
+
+  function changeNCondition(delta) {
+    const m = parseInt(document.getElementById('cond-mVal').textContent) || 1;
+    _condNVal = Math.max(1, Math.min(m, _condNVal + delta));
+    document.getElementById('cond-nVal').textContent = _condNVal;
+    document.getElementById('cond-n-desc').textContent = '서명자 ' + m + '명 중 최소 ' + _condNVal + '명 서명 필요';
+  }
+
+  function saveCondition() {
+    const amountVal = document.getElementById('cond-amount').value;
+    if (!amountVal || parseFloat(amountVal) <= 0) {
+      showToast('출금 금액 조건을 입력해주세요.'); return;
+    }
+    const amount = parseFloat(amountVal).toLocaleString('en-US');
+    const label = _condMode === 'add' ? '조건 추가 OTP' : '조건 수정 OTP';
+    openOTPModal(label, function() {
+      closeModal('modal-add-condition');
+      if (_condMode === 'add') {
+        _condCount++;
+        const list = document.getElementById('adv-conditions-list');
+        const newCard = document.createElement('div');
+        newCard.className = 'adv-cond-card';
+        newCard.id = 'adv-cond-' + (_condCount - 1);
+        const idx = _condCount - 1;
+        newCard.innerHTML = '<div class="adv-cond-card-header">' +
+          '<div class="adv-cond-title">조건 ' + _condCount + ': 출금 금액 ≥ <span class="adv-cond-amount">$' + amount + '</span> 이상</div>' +
+          '<div style="display:flex;gap:6px;">' +
+          '<button class="btn btn-outline btn-xs" onclick="openEditCondition(' + idx + ')">수정</button>' +
+          '<button class="btn btn-xs" style="color:var(--danger);border:1px solid rgba(239,68,68,0.3);background:transparent;" onclick="openDeleteCondition(' + idx + ')">삭제</button>' +
+          '</div></div>' +
+          '<div class="adv-cond-detail">서명 요건: <strong style="color:var(--text-primary);">' + _condNVal + ' of ' + document.getElementById('cond-mVal').textContent + '</strong></div>';
+        list.appendChild(newCard);
+        showToast('조건이 추가되었습니다.');
+      } else {
+        // Edit: update the card
+        const card = document.getElementById('adv-cond-' + _condIdx);
+        if (card) {
+          card.querySelector('.adv-cond-title').innerHTML = '조건 ' + (_condIdx + 1) + ': 출금 금액 ≥ <span class="adv-cond-amount">$' + amount + '</span> 이상';
+          card.querySelector('.adv-cond-detail').innerHTML = '서명 요건: <strong style="color:var(--text-primary);">' + _condNVal + ' of ' + document.getElementById('cond-mVal').textContent + '</strong>';
+        }
+        showToast('조건이 수정되었습니다.');
+      }
+    });
+  }
+
+  function openDeleteCondition(idx) {
+    _condIdx = idx;
+    const card = document.getElementById('adv-cond-' + idx);
+    const titleEl = card ? card.querySelector('.adv-cond-title') : null;
+    document.getElementById('cond-delete-label').textContent =
+      titleEl ? titleEl.textContent.trim() : '해당 조건';
+    openModal('modal-delete-condition');
+  }
+
+  function deleteConditionOTP() {
+    closeModal('modal-delete-condition');
+    openOTPModal('조건 삭제 OTP', function() {
+      const card = document.getElementById('adv-cond-' + _condIdx);
+      if (card) card.remove();
+      _condCount = Math.max(0, _condCount - 1);
+      const remaining = document.querySelectorAll('#adv-conditions-list .adv-cond-card').length;
+      document.getElementById('adv-conditions-empty').style.display  = remaining === 0 ? 'block' : 'none';
+      document.getElementById('adv-conditions-list').style.display   = remaining === 0 ? 'none' : 'block';
+      document.getElementById('adv-basic-fallback').style.display    = remaining === 0 ? 'none' : 'block';
+      showToast('조건이 삭제되었습니다.');
+    });
   }
 
   /* ════════════════════════════════════
