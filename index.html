@@ -839,37 +839,42 @@
 ══════════════════════════════════════ -->
 <div class="slideover" id="so-add-coin">
   <div class="so-header">
-    <span class="so-title">+ 코인 추가 / Add Coin</span>
+    <span class="so-title">+ 코인 추가 요청</span>
     <button class="modal-close" onclick="closeSO('so-add-coin')">&#10005;</button>
   </div>
   <div class="so-body">
     <div style="background:#F8FAFC; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:13px;">
-      지갑: <strong>BTC 보관 지갑 #1</strong>
+      지갑: <strong id="ac-wallet-label">BTC 보관 지갑 #1</strong>
     </div>
     <div class="alert alert-info" style="margin-bottom:16px; font-size:12px;">
       &#8505; 동일 코인이라도 네트워크가 다르면 별도 주소가 생성됩니다.<br>
-      예: USDT ERC20 ≠ USDT TRC20 주소
+      요청 후 Admin 승인 시 입금 주소가 발급됩니다.
     </div>
     <div class="form-group">
       <label class="form-label">코인 <span class="req">*</span></label>
-      <select class="form-control">
+      <select id="ac-coin" class="form-control" onchange="updateACNetworks()">
         <option value="">Select coin ▾</option>
-        <option>USDT</option><option>ETH</option><option>BTC</option>
-        <option>BNB</option><option>TRX</option><option>FIL</option>
+        <option value="USDT">USDT — Tether</option>
+        <option value="ETH">ETH — Ethereum</option>
+        <option value="BTC">BTC — Bitcoin</option>
+        <option value="BNB">BNB — BNB Chain</option>
+        <option value="TRX">TRX — TRON</option>
+        <option value="FIL">FIL — Filecoin</option>
+        <option value="XRP">XRP — Ripple</option>
       </select>
     </div>
     <div class="form-group">
       <label class="form-label">네트워크 <span class="req">*</span></label>
-      <select class="form-control">
+      <select id="ac-network" class="form-control">
         <option value="">코인 선택 후 자동 필터 ▾</option>
-        <option>Ethereum (ERC-20)</option><option>TRON (TRC-20)</option>
-        <option>BNB Smart Chain</option><option>Bitcoin Mainnet</option>
       </select>
     </div>
   </div>
   <div class="so-footer">
-    <button class="btn btn-primary btn-full btn-pill" style="height:44px;"
-      onclick="openCoinAddOTP()">추가 요청 →</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeSO('so-add-coin')">취소</button>
+      <button class="btn btn-primary" style="flex:2; height:44px;" onclick="openCoinAddOTP()">추가 요청 →</button>
+    </div>
   </div>
 </div>
 
@@ -1002,7 +1007,7 @@
   </div>
   <div class="so-footer">
     <button class="btn btn-primary btn-full" style="height:44px;"
-      onclick="openOTPModal('계정 초대', function(){ closeSO(\'so-add-account\'); showToast(\'초대 이메일이 발송되었습니다.\'); })">&#9993; 초대 보내기 →</button>
+      onclick="openInviteOTP()">&#9993; 초대 보내기 →</button>
   </div>
 </div>
 
@@ -1132,6 +1137,37 @@
   </div>
   <div class="modal-footer" id="otp-reset-footer">
     <!-- dynamically updated by JS -->
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Coin Request Detail
+══════════════════════════════════════ -->
+<div class="modal" id="modal-coin-detail" style="max-width:420px;">
+  <div class="modal-header">
+    <span class="modal-title">&#128194; 코인 요청 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-coin-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="display:flex; align-items:center; gap:14px; padding:4px 0 16px;">
+      <div id="cd-circle" style="width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:700; flex-shrink:0;">U</div>
+      <div>
+        <div style="font-size:16px; font-weight:700;" id="cd-coin">—</div>
+        <div style="font-size:12px; color:var(--text-secondary);" id="cd-network">—</div>
+      </div>
+      <div style="margin-left:auto;" id="cd-status-badge"></div>
+    </div>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px;">
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">지갑명</span><span id="cd-wallet">—</span></div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">요청일시</span><span style="font-size:12px;" id="cd-requested">—</span></div>
+      <div class="info-row" style="padding:6px 0; border-bottom:none;" id="cd-addr-row">
+        <span class="info-label">입금 주소</span>
+        <span style="font-family:monospace; font-size:12px;" id="cd-addr">—</span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer" id="cd-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-coin-detail')">닫기</button>
   </div>
 </div>
 
@@ -1977,34 +2013,21 @@
               <!-- Coins Tab -->
               <div id="detail-coins">
                 <div style="padding:12px 20px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border);">
-                  <button class="btn btn-primary btn-sm" onclick="openSO('so-add-coin')">+ 코인 추가</button>
+                  <button class="btn btn-primary btn-sm" onclick="openAddCoin()">+ 코인 추가</button>
                 </div>
-                <div class="table-wrap">
+                <!-- Active coins table -->
+                <div class="table-wrap" id="coins-active-wrap">
                   <table>
                     <thead><tr><th>코인</th><th>네트워크</th><th>입금 주소</th><th style="text-align:right;">잔액</th><th>Operation</th></tr></thead>
-                    <tbody>
-                      <tr>
-                        <td><div class="coin-name-row"><div class="coin-circle" style="background:#F97316; width:28px; height:28px; font-size:11px;">B</div><div><div class="coin-name-text">BTC</div><div class="coin-network-text">Bitcoin</div></div></div></td>
-                        <td style="font-size:12px;">Bitcoin Mainnet</td>
-                        <td style="font-family:monospace; font-size:12px; color:var(--primary); cursor:pointer;" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">bc1q...3f8e &#128203;</td>
-                        <td style="text-align:right;"><div style="font-weight:600;">0.00000000 BTC</div><div style="font-size:11px; color:var(--text-secondary);">≈ ₩0</div></td>
-                        <td><div class="op-icons">
-                          <button class="op-btn" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')" title="입금">&#8600;</button>
-                          <button class="op-btn" onclick="openWithdrawal('BTC 보관 지갑 #1')" title="출금">&#8599;</button>
-                        </div></td>
-                      </tr>
-                      <tr>
-                        <td><div class="coin-name-row"><div class="coin-circle" style="background:#10B981; width:28px; height:28px; font-size:11px;">U</div><div><div class="coin-name-text">USDT</div><div class="coin-network-text">ERC-20</div></div></div></td>
-                        <td style="font-size:12px;">Ethereum (ERC-20)</td>
-                        <td style="font-family:monospace; font-size:12px; color:var(--primary); cursor:pointer;" onclick="openDepositQR('USDT','Ethereum (ERC-20)','0x4d4bC4a1...C3E69F21')">0x4d4b...C3E6 &#128203;</td>
-                        <td style="text-align:right;"><div style="font-weight:600;">0.00 USDT</div><div style="font-size:11px; color:var(--text-secondary);">≈ ₩0</div></td>
-                        <td><div class="op-icons">
-                          <button class="op-btn" onclick="openDepositQR('USDT','Ethereum (ERC-20)','0x4d4bC4a1...C3E69F21')" title="입금">&#8600;</button>
-                          <button class="op-btn" onclick="openWithdrawal('BTC 보관 지갑 #1')" title="출금">&#8599;</button>
-                        </div></td>
-                      </tr>
-                    </tbody>
+                    <tbody id="coins-active-tbody"></tbody>
                   </table>
+                </div>
+                <!-- Pending coins section -->
+                <div id="coins-pending-section" style="display:none; border-top:1px solid var(--border); padding:14px 20px;">
+                  <div style="font-size:12px; font-weight:700; color:var(--warning); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                    &#9203; 요청 중인 코인 <span id="coins-pending-count" style="background:#FEF3C7; color:#92400E; border-radius:10px; padding:1px 8px; font-size:11px;"></span>
+                  </div>
+                  <div id="coins-pending-list"></div>
                 </div>
               </div>
               <!-- History Tab -->
@@ -2672,8 +2695,12 @@
   function openWalletDetail(walletId) {
     const names = { wallet1: 'BTC 보관 지갑 #1', wallet2: 'ETH 보관 지갑' };
     const coins = { wallet1: 'BTC / Bitcoin', wallet2: 'ETH / Ethereum' };
-    document.getElementById('detailWalletName').textContent = names[walletId] || '지갑';
+    const wName = names[walletId] || '지갑';
+    document.getElementById('detailWalletName').textContent = wName;
     document.getElementById('detailCoin').textContent = coins[walletId] || '—';
+    _currentWalletLabel = wName;
+    document.getElementById('ac-wallet-label') && (document.getElementById('ac-wallet-label').textContent = wName);
+    renderCoinsTab();
     showPage('wallet-detail', document.getElementById('nav-wallet'));
   }
 
@@ -2775,6 +2802,145 @@
      OTP MODAL (reusable)
   ════════════════════════════════════ */
   let otpCallback = null;
+  /* ════════════════════════════════════
+     SECTION 4-5: COIN MANAGEMENT
+  ════════════════════════════════════ */
+  const _AC_NETWORKS = {
+    USDT: ['Ethereum (ERC-20)', 'TRON (TRC-20)', 'BNB Smart Chain (BEP-20)'],
+    ETH:  ['Ethereum Mainnet'],
+    BTC:  ['Bitcoin Mainnet'],
+    BNB:  ['BNB Smart Chain (BEP-20)'],
+    TRX:  ['TRON Mainnet'],
+    FIL:  ['Filecoin Mainnet'],
+    XRP:  ['XRP Ledger'],
+  };
+  const _COIN_COLORS  = { BTC:'#F97316', ETH:'#627EEA', USDT:'#10B981', BNB:'#F0B90B', TRX:'#EF4444', FIL:'#0090FF', XRP:'#346AA9' };
+  const _COIN_SYMBOLS = { BTC:'B', ETH:'E', USDT:'U', BNB:'B', TRX:'T', FIL:'F', XRP:'X' };
+
+  let _COIN_DATA = [
+    { idx:0, coin:'BTC',  network:'Bitcoin Mainnet',   addr:'bc1q4d2jK...3f8e',       balance:'0.00000000', status:'active',  requestedAt:'2025-11-01 09:00' },
+    { idx:1, coin:'USDT', network:'Ethereum (ERC-20)', addr:'0x4d4bC4a1...C3E69F21',  balance:'0.00',       status:'active',  requestedAt:'2025-11-01 09:00' },
+  ];
+  let _currentWalletLabel = 'BTC 보관 지갑 #1';
+  let _cdDetailIdx = null;
+
+  function updateACNetworks() {
+    const coin = document.getElementById('ac-coin')?.value || '';
+    const sel  = document.getElementById('ac-network');
+    if (!sel) return;
+    const nets = _AC_NETWORKS[coin] || [];
+    sel.innerHTML = `<option value="">네트워크 선택 ▾</option>` +
+      nets.map(n => `<option value="${n}">${n}</option>`).join('');
+    if (nets.length === 1) sel.value = nets[0];
+  }
+
+  function openAddCoin() {
+    document.getElementById('ac-coin').value = '';
+    updateACNetworks();
+    document.getElementById('ac-wallet-label').textContent = _currentWalletLabel;
+    openSO('so-add-coin');
+  }
+
+  function renderCoinsTab() {
+    const active  = _COIN_DATA.filter(c => c.status === 'active');
+    const pending = _COIN_DATA.filter(c => c.status === 'pending');
+    const walletName = _currentWalletLabel;
+
+    // Active table
+    const tbody = document.getElementById('coins-active-tbody');
+    if (tbody) {
+      if (active.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-secondary); padding:30px;">활성화된 코인이 없습니다.</td></tr>`;
+      } else {
+        tbody.innerHTML = active.map(c => {
+          const color = _COIN_COLORS[c.coin] || '#94A3B8';
+          const sym   = _COIN_SYMBOLS[c.coin] || c.coin[0];
+          const netShort = c.network.replace(' Mainnet','').replace(' (ERC-20)','').replace(' (TRC-20)','');
+          return `
+            <tr onclick="openCoinDetail(${c.idx})" style="cursor:pointer;">
+              <td><div class="coin-name-row">
+                <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${sym}</div>
+                <div><div class="coin-name-text">${c.coin}</div><div class="coin-network-text">${netShort}</div></div>
+              </div></td>
+              <td style="font-size:12px;">${c.network}</td>
+              <td style="font-family:monospace; font-size:12px; color:var(--primary); cursor:pointer;"
+                onclick="event.stopPropagation(); openDepositQR('${c.coin}','${c.network}','${c.addr}')">${c.addr} &#128203;</td>
+              <td style="text-align:right;"><div style="font-weight:600;">${c.balance} ${c.coin}</div><div style="font-size:11px; color:var(--text-secondary);">≈ ₩0</div></td>
+              <td onclick="event.stopPropagation()"><div class="op-icons">
+                <button class="op-btn" onclick="openDepositQR('${c.coin}','${c.network}','${c.addr}')" title="입금">&#8600;</button>
+                <button class="op-btn" onclick="openWithdrawal('${walletName}')" title="출금">&#8599;</button>
+              </div></td>
+            </tr>`;
+        }).join('');
+      }
+    }
+
+    // Pending section
+    const pendingSection = document.getElementById('coins-pending-section');
+    const pendingList    = document.getElementById('coins-pending-list');
+    const pendingCount   = document.getElementById('coins-pending-count');
+    if (pendingSection) pendingSection.style.display = pending.length ? '' : 'none';
+    if (pendingCount)   pendingCount.textContent = pending.length + '건';
+    if (pendingList && pending.length) {
+      pendingList.innerHTML = pending.map(c => {
+        const color = _COIN_COLORS[c.coin] || '#94A3B8';
+        const sym   = _COIN_SYMBOLS[c.coin] || c.coin[0];
+        return `
+          <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; margin-bottom:8px; cursor:pointer;"
+            onclick="openCoinDetail(${c.idx})">
+            <div class="coin-circle" style="background:${color}; width:32px; height:32px; font-size:12px; flex-shrink:0;">${sym}</div>
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:13px;">${c.coin}</div>
+              <div style="font-size:11px; color:var(--text-secondary);">${c.network}</div>
+            </div>
+            <span class="badge badge-warning">&#9203; 처리 중</span>
+            <button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:rgba(239,68,68,0.3); flex-shrink:0;"
+              onclick="event.stopPropagation(); cancelCoinRequest(${c.idx})">취소</button>
+          </div>`;
+      }).join('');
+    }
+  }
+
+  function openCoinDetail(idx) {
+    const c = _COIN_DATA.find(d => d.idx === idx);
+    if (!c) return;
+    _cdDetailIdx = idx;
+    const color = _COIN_COLORS[c.coin] || '#94A3B8';
+    const sym   = _COIN_SYMBOLS[c.coin] || c.coin[0];
+    document.getElementById('cd-circle').style.background = color;
+    document.getElementById('cd-circle').textContent = sym;
+    document.getElementById('cd-coin').textContent      = c.coin;
+    document.getElementById('cd-network').textContent   = c.network;
+    document.getElementById('cd-wallet').textContent    = _currentWalletLabel;
+    document.getElementById('cd-requested').textContent = c.requestedAt;
+    const isPending = c.status === 'pending';
+    document.getElementById('cd-status-badge').innerHTML =
+      isPending ? '<span class="badge badge-warning">&#9203; 처리 중</span>' : '<span class="badge badge-success">&#9679; 활성</span>';
+    const addrRow = document.getElementById('cd-addr-row');
+    if (addrRow) addrRow.style.display = isPending ? 'none' : '';
+    if (!isPending) document.getElementById('cd-addr').textContent = c.addr;
+
+    const footer = document.getElementById('cd-footer');
+    footer.innerHTML = isPending
+      ? `<button class="btn btn-outline" onclick="closeModal('modal-coin-detail')">닫기</button>
+         <button class="btn btn-danger" onclick="cancelCoinRequest(${idx}, true)">&#128274; 취소하기 &#8594; OTP</button>`
+      : `<button class="btn btn-outline" onclick="closeModal('modal-coin-detail')">닫기</button>`;
+    openModal('modal-coin-detail');
+  }
+
+  function cancelCoinRequest(idx, fromModal) {
+    if (fromModal) closeModal('modal-coin-detail');
+    _afterClose(() => openOTPModal('코인 요청 취소', () => {
+      const c = _COIN_DATA.find(d => d.idx === idx);
+      if (c) c.status = 'cancelled'; // remove from pending display
+      _COIN_DATA = _COIN_DATA.filter(d => d.status !== 'cancelled');
+      // re-index
+      _COIN_DATA.forEach((d, i) => d.idx = i);
+      renderCoinsTab();
+      showToast('코인 추가 요청이 취소되었습니다. Admin에게 알림이 발송됩니다.');
+    }));
+  }
+
   /* ── OTP wrappers: close current panel first, then OTP after animation ── */
   function _afterClose(fn) { setTimeout(fn, 260); } // wait for 0.25s slide/fade
 
@@ -2783,8 +2949,24 @@
     _afterClose(() => openOTPModal('지갑 삭제 확인', () => showToast('삭제 요청이 전송되었습니다.')));
   }
   function openCoinAddOTP() {
+    const coin    = document.getElementById('ac-coin')?.value;
+    const network = document.getElementById('ac-network')?.value;
+    if (!coin)    { showToast('코인을 선택해주세요.'); return; }
+    if (!network) { showToast('네트워크를 선택해주세요.'); return; }
+    // Duplicate check
+    const dup = _COIN_DATA.find(c => c.coin === coin && c.network === network);
+    if (dup) { showToast('이미 등록되었거나 요청 중인 코인/네트워크입니다.'); return; }
     closeSO('so-add-coin');
-    _afterClose(() => openOTPModal('코인 추가 요청', () => showToast('코인 추가 요청이 제출되었습니다.')));
+    _afterClose(() => openOTPModal('코인 추가 요청', () => {
+      const now = new Date().toISOString().replace('T',' ').slice(0,16);
+      _COIN_DATA.push({ idx: _COIN_DATA.length, coin, network, addr:'—', balance:'0', status:'pending', requestedAt: now });
+      renderCoinsTab();
+      showToast('코인 추가 요청이 제출되었습니다. Admin 승인 후 입금 주소가 발급됩니다.');
+    }));
+  }
+  function openInviteOTP() {
+    closeSO('so-add-account');
+    _afterClose(() => openOTPModal('계정 초대', () => showToast('초대 이메일이 발송되었습니다.')));
   }
   function openWorkflowSignOTP() {
     closeSO('so-workflow-sign');
@@ -3736,6 +3918,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     renderAccountTable();
     renderWLTable();
+    renderCoinsTab();
   });
 
   /* ════════════════════════════════════
