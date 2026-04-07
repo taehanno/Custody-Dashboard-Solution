@@ -7,111 +7,72 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <style>
-    /* ── Reset & Base ── */
+    /* ── Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --sidebar-bg: #1A2B4A;
-      --sidebar-active: #2563EB;
-      --primary: #3B82F6;
-      --main-bg: #F4F6FA;
-      --card-bg: #FFFFFF;
-      --text-primary: #1E293B;
-      --text-secondary: #64748B;
-      --success: #10B981;
-      --warning: #F59E0B;
-      --danger: #EF4444;
-      --deposit-btn: #22C55E;
-      --withdraw-btn: #F97316;
+      --sidebar-bg: #1A2B4A; --sidebar-active: #2563EB;
+      --primary: #3B82F6; --main-bg: #F4F6FA; --card-bg: #FFFFFF;
+      --text-primary: #1E293B; --text-secondary: #64748B;
+      --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+      --deposit-btn: #22C55E; --withdraw-btn: #F97316;
       --border: #E2E8F0;
     }
-    html, body { height: 100%; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; color: var(--text-primary); background: var(--main-bg); }
+    html, body { height: 100%; font-family: 'Pretendard', -apple-system, sans-serif; font-size: 14px; color: var(--text-primary); background: var(--main-bg); }
 
-    /* ── Layout ── */
+    /* ── App Layout ── */
     .app { display: flex; height: 100vh; overflow: hidden; }
 
     /* ── Sidebar ── */
     .sidebar {
       width: 240px; min-width: 240px; background: var(--sidebar-bg);
       display: flex; flex-direction: column; height: 100vh;
-      overflow-y: auto; overflow-x: hidden; z-index: 100;
-      transition: transform 0.25s ease;
+      overflow-y: auto; overflow-x: hidden; z-index: 100; transition: transform 0.25s;
     }
     .sidebar::-webkit-scrollbar { width: 4px; }
-    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
 
-    /* Logo */
-    .sidebar-logo {
-      display: flex; align-items: center; gap: 10px;
-      padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .logo-icon {
-      width: 32px; height: 32px; background: var(--primary); border-radius: 8px;
-      display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700;
-    }
-    .logo-text { color: #fff; font-size: 15px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.2; }
-    .logo-text span { display: block; font-size: 10px; font-weight: 400; color: rgba(255,255,255,0.5); letter-spacing: 0.5px; }
+    .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .logo-icon { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700; }
+    .logo-text { color: #fff; font-size: 14px; font-weight: 700; }
+    .logo-text span { display: block; font-size: 10px; font-weight: 400; color: rgba(255,255,255,0.45); letter-spacing: 0.4px; margin-top: 1px; }
 
-    /* Account area */
-    .sidebar-account {
-      padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
+    .sidebar-account { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
     .account-row { display: flex; align-items: center; gap: 10px; }
-    .account-avatar {
-      width: 36px; height: 36px; background: var(--primary); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0;
-    }
-    .account-info { flex: 1; min-width: 0; }
-    .account-name { color: #fff; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .account-balance { color: rgba(255,255,255,0.45); font-size: 11px; margin-top: 2px; }
+    .account-avatar { width: 36px; height: 36px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+    .account-name { color: #fff; font-size: 13px; font-weight: 600; }
+    .account-sub { color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 2px; }
 
-    /* Nav */
     .sidebar-nav { flex: 1; padding: 8px 0; }
-    .nav-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 16px; color: rgba(255,255,255,0.65); font-size: 13px;
-      cursor: pointer; border-radius: 8px; margin: 2px 8px;
-      transition: background 0.15s, color 0.15s;
-      user-select: none; position: relative;
-    }
-    .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 16px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; border-radius: 8px; margin: 2px 8px; transition: background 0.15s, color 0.15s; user-select: none; }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
     .nav-item.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
-    .nav-item .nav-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
-    .nav-item .nav-label { flex: 1; }
-    .nav-item .nav-arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+    .nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+    .nav-label { flex: 1; }
+    .nav-arrow { font-size: 10px; color: rgba(255,255,255,0.35); transition: transform 0.2s; }
     .nav-item.expanded .nav-arrow { transform: rotate(90deg); }
+    .nav-badge { background: var(--danger); color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 10px; font-weight: 700; }
     .nav-sub { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
-    .nav-sub.open { max-height: 200px; }
-    .nav-sub-item {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 16px 8px 46px; color: rgba(255,255,255,0.55); font-size: 12.5px;
-      cursor: pointer; border-radius: 8px; margin: 1px 8px;
-      transition: background 0.15s, color 0.15s;
-    }
+    .nav-sub.open { max-height: 300px; }
+    .nav-sub-item { display: flex; align-items: center; gap: 8px; padding: 8px 16px 8px 48px; color: rgba(255,255,255,0.52); font-size: 12.5px; cursor: pointer; border-radius: 8px; margin: 1px 8px; transition: background 0.15s, color 0.15s; }
     .nav-sub-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
     .nav-sub-item.active { color: #fff; font-weight: 600; }
     .nav-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 6px 16px; }
 
-    /* Admin button */
-    .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08); }
-    .btn-admin {
-      width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
-      color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 500;
-      cursor: pointer; text-align: center; transition: background 0.15s, color 0.15s;
-      font-family: inherit;
-    }
-    .btn-admin:hover { background: rgba(255,255,255,0.14); color: #fff; }
+    .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px; }
+    .btn-admin { width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: rgba(255,255,255,0.55); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center; }
+    .btn-admin:hover { background: rgba(255,255,255,0.13); color: #fff; }
+    .btn-logout { width: 100%; padding: 8px 12px; background: transparent; border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: rgba(239,68,68,0.7); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center; }
+    .btn-logout:hover { background: rgba(239,68,68,0.1); color: #EF4444; border-color: #EF4444; }
 
     /* ── Main ── */
     .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .main-header {
-      height: 56px; background: var(--card-bg); border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; padding: 0 24px; gap: 12px; flex-shrink: 0;
-    }
-    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
-    .hamburger span { display: block; width: 20px; height: 2px; background: var(--text-primary); margin: 4px 0; border-radius: 1px; transition: 0.2s; }
-    .main-header-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .main-header { height: 56px; background: var(--card-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 12px; flex-shrink: 0; }
+    .hamburger { display: none; flex-direction: column; background: none; border: none; cursor: pointer; padding: 4px; gap: 4px; }
+    .hamburger span { display: block; width: 20px; height: 2px; background: var(--text-primary); border-radius: 1px; }
+    .main-header-title { font-size: 16px; font-weight: 600; }
+    .breadcrumb { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+    .breadcrumb .bc-link { cursor: pointer; color: var(--primary); }
+    .breadcrumb .bc-link:hover { text-decoration: underline; }
     .main-content { flex: 1; overflow-y: auto; padding: 24px; }
 
     /* ── Page visibility ── */
@@ -119,514 +80,1207 @@
     .page.active { display: block; }
 
     /* ── Cards ── */
-    .card {
-      background: var(--card-bg); border-radius: 12px;
-      border: 1px solid var(--border); padding: 20px;
-    }
+    .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
 
     /* ── Buttons ── */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
-      cursor: pointer; border: none; transition: opacity 0.15s, background 0.15s;
-      font-family: inherit; white-space: nowrap;
-    }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: opacity 0.15s; font-family: inherit; white-space: nowrap; }
     .btn:hover { opacity: 0.85; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-success { background: var(--deposit-btn); color: #fff; }
     .btn-warning { background: var(--withdraw-btn); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
     .btn-pill { border-radius: 24px; }
     .btn-sm { padding: 5px 12px; font-size: 12px; }
+    .btn-xs { padding: 3px 10px; font-size: 11px; border-radius: 6px; }
     .btn-full { width: 100%; }
 
-    /* ── Badge ── */
-    .badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      border-radius: 4px; padding: 2px 10px; font-size: 12px; font-weight: 500;
-    }
+    /* ── Badges ── */
+    .badge { display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; padding: 2px 9px; font-size: 12px; font-weight: 500; }
     .badge-success { background: #ECFDF5; color: #10B981; }
     .badge-warning { background: #FFFBEB; color: #F59E0B; }
     .badge-danger { background: #FEF2F2; color: #EF4444; }
     .badge-info { background: #EFF6FF; color: #3B82F6; }
     .badge-purple { background: #F5F3FF; color: #8B5CF6; }
     .badge-orange { background: #FFF7ED; color: #F97316; }
+    .badge-gray { background: #F1F5F9; color: var(--text-secondary); }
 
     /* ── Status dot ── */
-    .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
-    .dot-success { background: var(--success); }
-    .dot-info { background: var(--primary); }
-    .dot-warning { background: var(--warning); }
+    .dot-status { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+    .dot-green { background: var(--success); }
+    .dot-blue { background: var(--primary); }
+    .dot-yellow { background: var(--warning); }
+    .dot-red { background: var(--danger); }
+    .dot-gray { background: #94A3B8; }
+    .dot-purple { background: #8B5CF6; }
 
     /* ── Tabs ── */
-    .tabs { display: flex; border-bottom: 2px solid var(--border); gap: 0; }
-    .tab {
-      padding: 10px 18px; font-size: 13px; font-weight: 500; color: var(--text-secondary);
-      cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px;
-      transition: color 0.15s, border-color 0.15s;
-    }
+    .tabs { display: flex; border-bottom: 2px solid var(--border); }
+    .tab { padding: 10px 18px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.15s, border-color 0.15s; white-space: nowrap; }
     .tab:hover { color: var(--text-primary); }
     .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
 
     /* ── Table ── */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
-    thead th {
-      padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600;
-      color: var(--text-secondary); border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    tbody td {
-      padding: 14px 12px; font-size: 13px; color: var(--text-primary);
-      border-bottom: 1px solid #F1F5F9; vertical-align: middle;
-    }
+    thead th { padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; background: #FAFBFC; }
+    tbody td { padding: 14px 12px; font-size: 13px; border-bottom: 1px solid #F1F5F9; vertical-align: middle; }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover td { background: #F8FAFC; }
 
     /* ── Forms ── */
     .form-group { margin-bottom: 16px; }
     .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
-    .form-label .req { color: var(--danger); margin-left: 2px; }
-    .form-control {
-      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
-      border-radius: 8px; font-size: 13px; color: var(--text-primary);
-      font-family: inherit; outline: none; transition: border-color 0.15s;
-      background: #fff;
-    }
+    .req { color: var(--danger); margin-left: 2px; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text-primary); font-family: inherit; outline: none; transition: border-color 0.15s; background: #fff; }
     .form-control:focus { border-color: var(--primary); }
     .form-control::placeholder { color: var(--text-secondary); }
-    select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+    select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
     .form-hint { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
-    .char-count { font-size: 11px; color: var(--text-secondary); text-align: right; margin-top: 4px; }
+    .char-count { font-size: 11px; color: var(--text-secondary); text-align: right; margin-top: 3px; }
+    .input-with-icon { position: relative; }
+    .input-with-icon .iicon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 14px; }
+    .input-with-icon input { padding-left: 30px; }
+    .checkbox-row { display: flex; align-items: center; gap: 7px; font-size: 12.5px; cursor: pointer; }
+    .checkbox-row input { accent-color: var(--primary); }
 
-    /* ── Input with icon ── */
-    .input-group { position: relative; }
-    .input-group .input-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 14px; }
-    .input-group input { padding-left: 32px; }
-    .input-group-row { display: flex; gap: 8px; }
-
-    /* ── Alert banner ── */
-    .alert {
-      padding: 10px 14px; border-radius: 8px; font-size: 13px;
-      display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px;
-    }
+    /* ── Alerts ── */
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; display: flex; align-items: flex-start; gap: 8px; }
     .alert-warning { background: #FFF7ED; border: 1px solid #FED7AA; color: #92400E; }
     .alert-info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+    .alert-danger { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+    .alert-success { background: #ECFDF5; border: 1px solid #6EE7B7; color: #065F46; }
 
-    /* ── Empty state ── */
-    .empty-state {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 60px 20px; color: var(--text-secondary); gap: 12px;
-    }
-    .empty-state .empty-icon { font-size: 40px; opacity: 0.35; }
-    .empty-state p { font-size: 14px; font-weight: 500; }
-
-    /* ══════════════════════════════════════════
-       PAGE: WALLET
-    ══════════════════════════════════════════ */
-    .wallet-layout { display: flex; gap: 20px; align-items: flex-start; }
-    .wallet-left { width: 280px; min-width: 260px; }
-    .wallet-right { flex: 1; min-width: 0; }
-
-    .wallet-card { }
-    .wallet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
-    .wallet-name { font-size: 16px; font-weight: 700; }
-    .wallet-id { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-    .wallet-todo { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 12px 0; }
-    .wallet-todo-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
-    .todo-count { background: var(--primary); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-    .wallet-assets { margin: 12px 0; }
-    .assets-total { font-size: 22px; font-weight: 700; }
-    .assets-nft { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-    .wallet-btns { display: flex; gap: 8px; margin: 14px 0; }
-    .wallet-btns .btn { flex: 1; height: 40px; font-size: 13px; }
-
-    /* Donut chart */
-    .donut-wrap {
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 20px 0 10px;
-    }
-    .donut-svg { width: 120px; height: 120px; }
-    .donut-empty-text { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
-
-    /* Coin table */
-    .coin-icon {
-      width: 32px; height: 32px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
-    }
-    .coin-info { display: flex; align-items: center; gap: 10px; }
-    .coin-name { font-size: 13px; font-weight: 600; }
-    .coin-network { font-size: 11px; color: var(--text-secondary); }
-    .coin-amount { text-align: right; }
-    .coin-amount-primary { font-size: 13px; font-weight: 600; }
-    .coin-amount-usd { font-size: 11px; color: var(--text-secondary); }
-    .op-icons { display: flex; gap: 8px; justify-content: flex-end; }
-    .op-icon { width: 28px; height: 28px; border-radius: 6px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: background 0.15s; }
-    .op-icon:hover { background: #E2E8F0; }
-
-    .table-toolbar { display: flex; align-items: center; gap: 10px; padding: 14px 0 12px; flex-wrap: wrap; }
-    .table-toolbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-    .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); cursor: pointer; }
-    .checkbox-label input { accent-color: var(--primary); }
-    .add-btn { width: 28px; height: 28px; background: var(--primary); color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; font-weight: 300; border: none; }
-
-    /* ══════════════════════════════════════════
-       PAGE: WHITELIST
-    ══════════════════════════════════════════ */
+    /* ── Page header ── */
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
     .page-title { font-size: 18px; font-weight: 700; }
-    .scope-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-    .scope-tag {
-      display: inline-flex; align-items: center; gap: 5px;
-      background: #EFF6FF; color: var(--primary); border: 1px solid #BFDBFE;
-      border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 500;
+
+    /* ── Stats row ── */
+    .stats-row { display: grid; gap: 16px; margin-bottom: 20px; }
+    .stats-row-4 { grid-template-columns: repeat(4, 1fr); }
+    .stats-row-2 { grid-template-columns: repeat(2, 1fr); }
+    .stat-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 18px 20px; }
+    .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 700; }
+    .stat-blue { color: var(--primary); } .stat-green { color: var(--success); }
+    .stat-orange { color: #F97316; } .stat-red { color: var(--danger); }
+    .stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .stat-link { font-size: 12px; color: var(--primary); cursor: pointer; margin-top: 6px; display: inline-block; }
+    .stat-link:hover { text-decoration: underline; }
+
+    /* ── Empty state ── */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--text-secondary); gap: 12px; }
+    .empty-icon { font-size: 40px; opacity: 0.3; }
+
+    /* ══════════════════════════
+       PAGE: DASHBOARD
+    ══════════════════════════ */
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .kyb-banner { padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .kyb-banner-danger { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+    .kyb-banner-warning { background: #FFF7ED; border: 1px solid #FED7AA; color: #92400E; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #F1F5F9; font-size: 13px; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: var(--text-secondary); font-size: 12px; }
+    .todo-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #F1F5F9; }
+    .todo-item:last-child { border-bottom: none; }
+    .todo-label { font-size: 13px; }
+    .todo-count { background: var(--primary); color: #fff; border-radius: 10px; padding: 1px 10px; font-size: 12px; font-weight: 600; }
+    .todo-count.zero { background: #E2E8F0; color: var(--text-secondary); }
+    .card-title-sm { font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+
+    /* ══════════════════════════
+       PAGE: WALLET (GRID)
+    ══════════════════════════ */
+    .wallet-summary { display: flex; gap: 20px; padding: 16px 0; flex-wrap: wrap; margin-bottom: 4px; }
+    .wallet-summary-item { font-size: 13px; color: var(--text-secondary); }
+    .wallet-summary-item strong { color: var(--text-primary); font-weight: 600; }
+    .wallet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .wallet-card {
+      background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border);
+      padding: 20px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
     }
-    .scope-tag .tag-x { cursor: pointer; opacity: 0.6; font-size: 13px; }
-    .scope-tag .tag-x:hover { opacity: 1; }
-    .scope-arrow { color: var(--text-secondary); font-size: 16px; cursor: pointer; }
+    .wallet-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(59,130,246,0.1); }
+    .wallet-card.disabled { cursor: default; opacity: 0.65; }
+    .wallet-card.disabled:hover { border-color: var(--border); box-shadow: none; }
+    .wallet-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .wallet-card-name { font-size: 14px; font-weight: 700; }
+    .wallet-coin-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .coin-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .wallet-address { font-size: 11px; color: var(--text-secondary); font-family: monospace; background: #F8FAFC; padding: 4px 8px; border-radius: 5px; margin-bottom: 12px; }
+    .wallet-asset { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .wallet-asset-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+    .wallet-card-add { border: 2px dashed var(--border); background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-secondary); min-height: 180px; }
+    .wallet-card-add:hover { border-color: var(--primary); color: var(--primary); }
+    .wallet-card-add .add-plus { font-size: 28px; line-height: 1; }
+    .wallet-card-add .add-text { font-size: 13px; font-weight: 600; }
 
-    /* ══════════════════════════════════════════
-       PAGE: TRANSACTIONS
-    ══════════════════════════════════════════ */
-    .txn-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-    .date-filter { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
-    .date-filter input[type="date"] { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; color: var(--text-primary); }
+    /* ══════════════════════════
+       PAGE: WALLET DETAIL
+    ══════════════════════════ */
+    .wallet-detail-layout { display: flex; gap: 20px; align-items: flex-start; }
+    .wallet-detail-left { width: 280px; min-width: 260px; flex-shrink: 0; }
+    .wallet-detail-right { flex: 1; min-width: 0; }
+    .wallet-info-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-size: 13px; }
+    .wallet-info-row:last-of-type { border-bottom: none; }
+    .wallet-info-label { color: var(--text-secondary); font-size: 12px; }
+    .n-of-m { display: flex; gap: 5px; margin-top: 6px; }
+    .n-dot { width: 26px; height: 26px; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .n-dot-filled { background: var(--primary); color: #fff; }
+    .n-dot-empty { background: #E2E8F0; color: var(--text-secondary); }
+    .op-icons { display: flex; gap: 6px; }
+    .op-btn { width: 28px; height: 28px; border-radius: 6px; background: #F1F5F9; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: background 0.15s; }
+    .op-btn:hover { background: #E2E8F0; }
+    .coin-name-row { display: flex; align-items: center; gap: 8px; }
+    .coin-name-text { font-size: 13px; font-weight: 600; }
+    .coin-network-text { font-size: 11px; color: var(--text-secondary); }
 
-    /* ══════════════════════════════════════════
-       PAGE: LOGIN HISTORY
-    ══════════════════════════════════════════ */
-    /* same generic table styles */
+    /* History tab stats */
+    .history-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .history-stat { background: #F8FAFC; border-radius: 8px; padding: 12px 14px; }
+    .history-stat-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .history-stat-value { font-size: 16px; font-weight: 700; }
 
-    /* ══════════════════════════════════════════
-       PAGE: STRATEGY ENGINE
-    ══════════════════════════════════════════ */
-    .strategy-card { padding: 20px; }
-    .strategy-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-    .strategy-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
-    .strategy-section { margin-bottom: 16px; }
-    .strategy-section-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .strategy-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F1F5F9; font-size: 13px; }
-    .strategy-row-label { width: 100px; color: var(--text-secondary); font-size: 12px; flex-shrink: 0; margin-top: 2px; }
-    .strategy-row-value { flex: 1; }
+    /* ══════════════════════════
+       WHITELIST
+    ══════════════════════════ */
+    .scope-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .scope-tag { display: inline-flex; align-items: center; gap: 5px; background: #EFF6FF; color: var(--primary); border: 1px solid #BFDBFE; border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 500; }
+    .scope-tag .tx { cursor: pointer; opacity: 0.6; }
+    .scope-tag .tx:hover { opacity: 1; }
+
+    /* ══════════════════════════
+       STRATEGY ENGINE
+    ══════════════════════════ */
     .strategy-pills { display: flex; flex-wrap: wrap; gap: 6px; }
     .strategy-pill { background: #EFF6FF; color: var(--primary); border-radius: 4px; padding: 3px 10px; font-size: 11px; font-weight: 500; }
-    .approver-row { display: flex; align-items: center; gap: 8px; }
-    .approver-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-    .approver-name { font-size: 13px; font-weight: 600; }
+    .approver-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .n-of-m-display { display: flex; gap: 5px; align-items: center; }
+    .signer-chip { display: inline-flex; align-items: center; gap: 5px; background: #F8FAFC; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 12px; }
+    .signer-check { color: var(--success); font-weight: 700; }
+    .advanced-condition { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+    .counter-row { display: flex; align-items: center; gap: 8px; }
+    .counter-btn { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-primary); transition: background 0.15s; }
+    .counter-btn:hover { background: #F1F5F9; }
+    .counter-val { width: 42px; text-align: center; font-size: 16px; font-weight: 700; }
 
-    /* ══════════════════════════════════════════
-       SLIDE-OVER PANEL
-    ══════════════════════════════════════════ */
-    .overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500;
-      opacity: 0; pointer-events: none; transition: opacity 0.2s;
-    }
+    /* ══════════════════════════
+       WORKFLOWS
+    ══════════════════════════ */
+    .workflow-item { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; transition: border-color 0.15s; }
+    .workflow-item:hover { border-color: #CBD5E1; }
+    .workflow-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .workflow-id { font-size: 12px; color: var(--text-secondary); font-family: monospace; }
+    .workflow-coin { font-size: 15px; font-weight: 700; }
+    .workflow-amount { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
+    .workflow-addr { font-size: 12px; color: var(--text-secondary); font-family: monospace; margin-bottom: 12px; }
+    .signature-progress { background: #F8FAFC; border-radius: 8px; padding: 12px; }
+    .sig-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+    .sig-row { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 4px 0; }
+    .sig-icon-done { color: var(--success); font-weight: 700; width: 16px; }
+    .sig-icon-wait { color: #CBD5E1; width: 16px; }
+    .workflow-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+    /* ══════════════════════════
+       SETTINGS — ACCOUNTS
+    ══════════════════════════ */
+    /* uses generic table styles */
+
+    /* ══════════════════════════
+       OVERLAY + MODALS
+    ══════════════════════════ */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .overlay.open { opacity: 1; pointer-events: all; }
-    .slideover {
-      position: fixed; top: 0; right: 0; bottom: 0; width: 480px; max-width: 100%;
-      background: var(--card-bg); z-index: 600; box-shadow: -4px 0 24px rgba(0,0,0,0.12);
-      display: flex; flex-direction: column;
-      transform: translateX(100%); transition: transform 0.25s ease;
-    }
-    .slideover.open { transform: translateX(0); }
-    .slideover-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 20px; border-bottom: 1px solid var(--border);
-    }
-    .slideover-title { font-size: 15px; font-weight: 700; }
-    .slideover-close {
-      width: 28px; height: 28px; border-radius: 6px; background: #F1F5F9;
-      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      font-size: 16px; color: var(--text-secondary); transition: background 0.15s;
-    }
-    .slideover-close:hover { background: #E2E8F0; }
-    .slideover-body { flex: 1; overflow-y: auto; padding: 20px; }
 
-    /* ══════════════════════════════════════════
+    /* Generic Modal */
+    .modal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0.95);
+      width: calc(100% - 48px); max-width: 480px; background: var(--card-bg);
+      border-radius: 14px; z-index: 600; box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+    }
+    .modal.open { opacity: 1; pointer-events: all; transform: translate(-50%,-50%) scale(1); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .modal-title { font-size: 15px; font-weight: 700; }
+    .modal-close { width: 28px; height: 28px; border-radius: 6px; background: #F1F5F9; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-secondary); }
+    .modal-close:hover { background: #E2E8F0; }
+    .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
+    .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+    /* Slide-over */
+    .slideover { position: fixed; top: 0; right: 0; bottom: 0; width: 480px; max-width: 100%; background: var(--card-bg); z-index: 600; box-shadow: -4px 0 24px rgba(0,0,0,0.12); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.25s; }
+    .slideover.open { transform: translateX(0); }
+    .so-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .so-title { font-size: 15px; font-weight: 700; }
+    .so-body { flex: 1; overflow-y: auto; padding: 20px; }
+    .so-footer { padding: 14px 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
+
+    /* OTP row */
+    .otp-row { display: flex; gap: 7px; justify-content: center; margin: 16px 0 8px; }
+    .otp-box { width: 44px; height: 50px; border: 1.5px solid var(--border); border-radius: 9px; text-align: center; font-size: 20px; font-weight: 700; font-family: monospace; outline: none; transition: border-color 0.15s; }
+    .otp-box:focus { border-color: var(--primary); }
+    .otp-box.err { border-color: var(--danger); }
+
+    /* QR popup */
+    .qr-display { text-align: center; padding: 20px; }
+    .qr-box { width: 160px; height: 160px; border: 1px solid var(--border); border-radius: 8px; margin: 0 auto 12px; background: #fff; display: flex; align-items: center; justify-content: center; }
+    .qr-address { font-family: monospace; font-size: 13px; font-weight: 600; background: #F1F5F9; padding: 8px 14px; border-radius: 7px; word-break: break-all; margin: 0 20px; }
+
+    /* ══════════════════════════
        MOBILE
-    ══════════════════════════════════════════ */
+    ══════════════════════════ */
+    @media (max-width: 1024px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .wallet-detail-layout { flex-direction: column; }
+      .wallet-detail-left { width: 100%; }
+      .history-stats { grid-template-columns: repeat(2,1fr); }
+    }
     @media (max-width: 767px) {
-      .sidebar {
-        position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%);
-      }
-      .sidebar.mobile-open { transform: translateX(0); }
-      .hamburger { display: flex; flex-direction: column; }
-      .wallet-layout { flex-direction: column; }
-      .wallet-left { width: 100%; }
+      .sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .hamburger { display: flex; }
+      .stats-row-4 { grid-template-columns: repeat(2,1fr); }
+      .history-stats { grid-template-columns: repeat(2,1fr); }
+      .wallet-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── Overlay for mobile sidebar ── -->
-<div class="overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+<!-- ══════════════════════════════════════
+     GLOBAL OVERLAY
+══════════════════════════════════════ -->
+<div class="overlay" id="globalOverlay" onclick="closeAll()"></div>
 
-<!-- ── Slide-over overlay ── -->
-<div class="overlay" id="slideOverlay" onclick="closeSlideOver()"></div>
-
-<!-- ── Add Address Slide-over ── -->
-<div class="slideover" id="slideOver">
-  <div class="slideover-header">
-    <span class="slideover-title">&#9776; Add Address</span>
-    <button class="slideover-close" onclick="closeSlideOver()">&#10005;</button>
+<!-- ══════════════════════════════════════
+     MODAL: Cold Wallet Creation Request
+══════════════════════════════════════ -->
+<div class="modal" id="modal-coldwallet">
+  <div class="modal-header">
+    <span class="modal-title">&#10052; 콜드월렛 생성 요청</span>
+    <button class="modal-close" onclick="closeModal('modal-coldwallet')">&#10005;</button>
   </div>
-  <div class="slideover-body">
-    <div class="alert alert-warning">
-      &#9888; 출금 코인/네트워크 일치 시에만 사용 가능합니다.
+  <div class="modal-body">
+    <div class="alert alert-info" style="margin-bottom:16px;">
+      &#8505; Admin 검토 및 Keypal 주소 생성까지 1~2 영업일 소요됩니다.
     </div>
-    <div style="margin-bottom:20px;"></div>
-    <div id="byCurrency">
-      <div class="form-group">
-        <label class="form-label">Coin <span class="req">*</span></label>
-        <select class="form-control">
-          <option value="">Select coin &rsaquo;</option>
-          <option>USDT (TRC-20)</option>
-          <option>USDT (ERC-20)</option>
-          <option>BTC (Bitcoin)</option>
-          <option>ETH (Ethereum)</option>
-          <option>TRX (TRON)</option>
-          <option>BNB (BSC)</option>
-        </select>
+    <div class="form-group">
+      <label class="form-label">지갑명 <span class="req">*</span></label>
+      <input type="text" class="form-control" placeholder="예: BTC 보관 지갑 #1" maxlength="50" id="cwName" />
+      <div class="form-hint">최대 50자</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">코인 <span class="req">*</span></label>
+      <select class="form-control" id="cwCoin" onchange="updateNetwork()">
+        <option value="">Select coin ▾</option>
+        <option value="BTC">BTC — Bitcoin</option>
+        <option value="ETH">ETH — Ethereum</option>
+        <option value="USDT">USDT — Tether</option>
+        <option value="BNB">BNB — BNB Chain</option>
+        <option value="TRX">TRX — TRON</option>
+        <option value="FIL">FIL — Filecoin</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">네트워크 <span class="req">*</span></label>
+      <select class="form-control" id="cwNetwork">
+        <option value="">코인 선택 후 자동 필터 ▾</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">용도 메모</label>
+      <textarea class="form-control" rows="3" placeholder="선택 사항, 최대 100자" maxlength="100" style="resize:none;"></textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-coldwallet')">취소</button>
+    <button class="btn btn-primary" onclick="openOTPModal('콜드월렛 생성 요청', function(){ closeModal(\'modal-coldwallet\'); addPendingWallet(); })">요청 제출 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Deposit QR
+══════════════════════════════════════ -->
+<div class="modal" id="modal-deposit-qr" style="max-width:400px;">
+  <div class="modal-header">
+    <span class="modal-title">&#8600; 입금 주소 / Deposit Address</span>
+    <button class="modal-close" onclick="closeModal('modal-deposit-qr')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="text-align:center; margin-bottom:14px; font-size:13px; color:var(--text-secondary);" id="qrCoinLabel">코인: USDT — Ethereum (ERC20)</div>
+    <div class="qr-display">
+      <div class="qr-box">
+        <svg width="140" height="140" viewBox="0 0 150 150" style="background:#fff;">
+          <rect x="8" y="8" width="42" height="42" rx="3" fill="#1A2B4A"/>
+          <rect x="14" y="14" width="30" height="30" rx="2" fill="white"/>
+          <rect x="20" y="20" width="18" height="18" fill="#1A2B4A"/>
+          <rect x="100" y="8" width="42" height="42" rx="3" fill="#1A2B4A"/>
+          <rect x="106" y="14" width="30" height="30" rx="2" fill="white"/>
+          <rect x="112" y="20" width="18" height="18" fill="#1A2B4A"/>
+          <rect x="8" y="100" width="42" height="42" rx="3" fill="#1A2B4A"/>
+          <rect x="14" y="106" width="30" height="30" rx="2" fill="white"/>
+          <rect x="20" y="112" width="18" height="18" fill="#1A2B4A"/>
+          <rect x="58" y="8" width="8" height="8" fill="#1A2B4A"/><rect x="70" y="8" width="8" height="8" fill="#1A2B4A"/><rect x="82" y="8" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="58" y="20" width="8" height="8" fill="#1A2B4A"/><rect x="82" y="20" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="64" y="32" width="20" height="8" fill="#1A2B4A"/><rect x="58" y="44" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="8" y="58" width="32" height="8" fill="#1A2B4A"/><rect x="46" y="58" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="64" y="58" width="8" height="8" fill="#1A2B4A"/><rect x="82" y="58" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="100" y="58" width="8" height="8" fill="#1A2B4A"/><rect x="118" y="58" width="24" height="8" fill="#1A2B4A"/>
+          <rect x="8" y="70" width="8" height="8" fill="#1A2B4A"/><rect x="22" y="70" width="20" height="8" fill="#1A2B4A"/>
+          <rect x="52" y="70" width="8" height="8" fill="#1A2B4A"/><rect x="70" y="70" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="88" y="70" width="20" height="8" fill="#1A2B4A"/><rect x="118" y="70" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="8" y="82" width="20" height="8" fill="#1A2B4A"/><rect x="58" y="82" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="76" y="82" width="20" height="8" fill="#1A2B4A"/><rect x="106" y="82" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="58" y="100" width="8" height="8" fill="#1A2B4A"/><rect x="76" y="100" width="20" height="8" fill="#1A2B4A"/>
+          <rect x="58" y="112" width="20" height="8" fill="#1A2B4A"/><rect x="88" y="112" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="106" y="112" width="20" height="8" fill="#1A2B4A"/>
+          <rect x="58" y="124" width="8" height="8" fill="#1A2B4A"/><rect x="76" y="124" width="8" height="8" fill="#1A2B4A"/>
+          <rect x="94" y="124" width="8" height="8" fill="#1A2B4A"/><rect x="112" y="124" width="8" height="8" fill="#1A2B4A"/>
+        </svg>
       </div>
-      <div class="form-group">
-        <label class="form-label">Address <span class="req">*</span></label>
-        <input type="text" class="form-control" placeholder="Enter address" id="addressInput" />
+      <div class="qr-address" id="qrAddress">0x4d4bC4a1...C3E69F21</div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="copyAddress()">&#128203; 복사</button>
+    </div>
+    <div class="alert alert-warning" style="margin-top:14px; font-size:12px;">
+      &#9888; 반드시 해당 네트워크로 입금하세요. 다른 네트워크 입금 시 자산이 소실될 수 있습니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-deposit-qr')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Withdrawal Detail
+══════════════════════════════════════ -->
+<div class="modal" id="modal-withdrawal-detail" style="max-width:500px;">
+  <div class="modal-header">
+    <span class="modal-title">&#8599; 출금 상세 / Withdrawal Detail</span>
+    <button class="modal-close" onclick="closeModal('modal-withdrawal-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">출금 번호</span><span style="font-family:monospace; font-size:12px;">WD-20260407-001</span></div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">요청일시</span><span>2026-04-07 10:22:33</span></div>
+      <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">요청자</span><span style="font-weight:600;">김철수</span></div>
+    </div>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">코인</span><span>USDT — Ethereum (ERC20)</span></div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">수량</span><span style="font-weight:700;">100.00 USDT <span style="color:var(--text-secondary); font-weight:400;">≈ $100.00</span></span></div>
+      <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">수신 주소</span><span style="font-family:monospace; font-size:12px;">0x4d4b...C3E69 <span onclick="copyAddress()" style="color:var(--primary); cursor:pointer;">&#128203;</span></span></div>
+    </div>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
+      <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Travel Rule</div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">수신자</span><span>홍길동</span></div>
+      <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">생년월일</span><span>1990-01-01</span></div>
+    </div>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
+      <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">서명 현황 2/3 완료</div>
+      <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">김철수</span><span style="color:var(--text-secondary); margin-left:auto;">2026-04-07 10:25 완료</span></div>
+      <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="color:var(--text-secondary); margin-left:auto;">2026-04-07 10:28 완료</span></div>
+      <div class="sig-row"><span class="sig-icon-wait">⏳</span><span style="font-weight:600; color:var(--text-secondary);">박민준</span><span style="color:var(--text-secondary); margin-left:auto;">서명 대기 중</span></div>
+    </div>
+    <div class="info-row" style="padding:8px 0;"><span class="info-label">상태</span><span><span class="dot-status dot-purple"></span>Admin 처리 중</span></div>
+    <div class="info-row" style="padding:8px 0; border-bottom:none;"><span class="info-label">TXID</span><span style="color:var(--text-secondary); font-size:12px;">Admin 입력 후 표시</span></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-withdrawal-detail')">닫기</button></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: OTP Confirmation (reusable)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-otp" style="max-width:380px;">
+  <div class="modal-header">
+    <span class="modal-title" id="otpModalTitle">OTP 인증</span>
+    <button class="modal-close" onclick="closeModal('modal-otp')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="text-align:center; color:var(--text-secondary); font-size:13px; margin-bottom:4px;" id="otpModalDesc">인증 앱의 6자리 코드를 입력해주세요.</div>
+    <div class="otp-row" id="otpModalRow">
+      <input class="otp-box" maxlength="1" oninput="otpMove(this,0,'otpModalRow')" onkeydown="otpBack(event,this,0,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" oninput="otpMove(this,1,'otpModalRow')" onkeydown="otpBack(event,this,1,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" oninput="otpMove(this,2,'otpModalRow')" onkeydown="otpBack(event,this,2,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" oninput="otpMove(this,3,'otpModalRow')" onkeydown="otpBack(event,this,3,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" oninput="otpMove(this,4,'otpModalRow')" onkeydown="otpBack(event,this,4,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" oninput="otpMove(this,5,'otpModalRow')" onkeydown="otpBack(event,this,5,'otpModalRow')" />
+    </div>
+    <div style="text-align:center; font-size:11px; color:var(--text-secondary);">Demo: 아무 숫자나 6자리</div>
+    <div class="alert alert-danger" id="otpModalErr" style="display:none; margin-top:12px;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-otp')">취소</button>
+    <button class="btn btn-primary" onclick="confirmOTP()">인증 완료</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Wallet Delete Confirm
+══════════════════════════════════════ -->
+<div class="modal" id="modal-delete-wallet" style="max-width:400px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">&#9888; 지갑 삭제</span>
+    <button class="modal-close" onclick="closeModal('modal-delete-wallet')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">
+      <strong style="color:var(--text-primary);">BTC 보관 지갑 #1</strong>을 삭제하시겠습니까?<br>
+      이 작업은 되돌릴 수 없으며, Admin에게 삭제 요청이 전송됩니다.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-delete-wallet')">취소</button>
+    <button class="btn btn-danger" onclick="openOTPModal('지갑 삭제 확인', function(){ closeModal(\'modal-delete-wallet\'); showToast(\'삭제 요청이 전송되었습니다.\'); })">삭제 요청 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE-OVER: Add Whitelist Address
+══════════════════════════════════════ -->
+<div class="slideover" id="so-add-address">
+  <div class="so-header">
+    <span class="so-title">&#9776; Add Address</span>
+    <button class="modal-close" onclick="closeSO('so-add-address')">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div class="alert alert-warning" style="margin-bottom:16px;">&#9888; 출금 코인/네트워크 일치 시에만 사용 가능합니다.</div>
+    <div class="form-group">
+      <label class="form-label">코인 <span class="req">*</span></label>
+      <select class="form-control">
+        <option value="">Select coin ▾</option>
+        <option>USDT (TRC-20)</option><option>USDT (ERC-20)</option>
+        <option>BTC (Bitcoin)</option><option>ETH (Ethereum)</option>
+        <option>TRX (TRON)</option><option>BNB (BSC)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">네트워크 <span class="req">*</span></label>
+      <select class="form-control">
+        <option value="">코인 선택 후 자동 필터 ▾</option>
+        <option>Ethereum (ERC-20)</option><option>TRON (TRC-20)</option>
+        <option>BNB Smart Chain</option><option>Bitcoin</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">지갑 주소 <span class="req">*</span></label>
+      <input type="text" class="form-control" placeholder="Enter address" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">주소 이름</label>
+      <input type="text" class="form-control" placeholder="자동 생성됩니다" maxlength="50" oninput="this.nextElementSibling.textContent=this.value.length+' / 50'" />
+      <div class="char-count">0 / 50</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Scope <span class="req">*</span></label>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
+        <label class="checkbox-row"><input type="checkbox" checked /> Manual Transfer</label>
+        <label class="checkbox-row"><input type="checkbox" checked /> API Transfer</label>
       </div>
-      <div class="form-group">
-        <label class="form-label">Name</label>
-        <input type="text" class="form-control" placeholder="자동 생성됩니다" id="nameInput" oninput="updateCharCount(this)" maxlength="50" />
-        <div class="char-count"><span id="charCount">0</span> / 50</div>
+    </div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-primary btn-full btn-pill" style="height:44px;"
+      onclick="openOTPModal('Whitelist 주소 추가', function(){ closeSO(\'so-add-address\'); showToast(\'주소 추가 요청이 제출되었습니다. Admin 승인 후 활성화됩니다.\'); })">Save</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE-OVER: Add Coin to Wallet
+══════════════════════════════════════ -->
+<div class="slideover" id="so-add-coin">
+  <div class="so-header">
+    <span class="so-title">+ 코인 추가 / Add Coin</span>
+    <button class="modal-close" onclick="closeSO('so-add-coin')">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div style="background:#F8FAFC; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:13px;">
+      지갑: <strong>BTC 보관 지갑 #1</strong>
+    </div>
+    <div class="alert alert-info" style="margin-bottom:16px; font-size:12px;">
+      &#8505; 동일 코인이라도 네트워크가 다르면 별도 주소가 생성됩니다.<br>
+      예: USDT ERC20 ≠ USDT TRC20 주소
+    </div>
+    <div class="form-group">
+      <label class="form-label">코인 <span class="req">*</span></label>
+      <select class="form-control">
+        <option value="">Select coin ▾</option>
+        <option>USDT</option><option>ETH</option><option>BTC</option>
+        <option>BNB</option><option>TRX</option><option>FIL</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">네트워크 <span class="req">*</span></label>
+      <select class="form-control">
+        <option value="">코인 선택 후 자동 필터 ▾</option>
+        <option>Ethereum (ERC-20)</option><option>TRON (TRC-20)</option>
+        <option>BNB Smart Chain</option><option>Bitcoin Mainnet</option>
+      </select>
+    </div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-primary btn-full btn-pill" style="height:44px;"
+      onclick="openOTPModal('코인 추가 요청', function(){ closeSO(\'so-add-coin\'); showToast(\'코인 추가 요청이 제출되었습니다.\'); })">추가 요청 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE-OVER: Edit Strategy
+══════════════════════════════════════ -->
+<div class="slideover" id="so-edit-strategy" style="width:520px;">
+  <div class="so-header">
+    <span class="so-title">&#9998; 기본 정책 수정</span>
+    <button class="modal-close" onclick="closeSO('so-edit-strategy')">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div style="background:#F8FAFC; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:13px;">
+      지갑: <strong>BTC 보관 지갑 #1</strong>
+    </div>
+    <div class="form-group">
+      <label class="form-label">출금 요청자 / Initiator</label>
+      <div style="border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:6px;">
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+          <span class="signer-chip"><span class="signer-check">✓</span> 김철수 (Master)</span>
+          <span class="signer-chip"><span class="signer-check">✓</span> 이영희</span>
+        </div>
+        <button class="btn btn-outline btn-sm">+ 계정 추가</button>
       </div>
-      <button class="btn btn-primary btn-full btn-pill" style="height:44px; font-size:14px; margin-top:8px;">Save</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">출금 서명자 / Signers</label>
+      <div style="border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:6px;">
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+          <span class="signer-chip"><span class="signer-check">✓</span> 김철수</span>
+          <span class="signer-chip"><span class="signer-check">✓</span> 이영희</span>
+          <span class="signer-chip"><span class="signer-check">✓</span> 박민준</span>
+        </div>
+        <div style="font-size:12px; color:var(--text-secondary);">총 3명 선택됨</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">최소 서명 수 / Minimum Approvals (N)</label>
+      <div class="counter-row" style="margin-top:8px;">
+        <button class="counter-btn" onclick="changeN(-1)">&#8722;</button>
+        <span class="counter-val" id="nVal">2</span>
+        <button class="counter-btn" onclick="changeN(1)">+</button>
+        <span style="font-size:12px; color:var(--text-secondary);">/ 3명</span>
+      </div>
+      <div style="font-size:12px; color:var(--text-secondary); margin-top:8px;">3명 서명자 중 최소 2명 서명 시 출금이 실행됩니다.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">적용 범위 / Scope</label>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+        <label class="checkbox-row"><input type="checkbox" checked /> Transfer Transactions (출금)</label>
+        <label class="checkbox-row"><input type="checkbox" checked /> Edit Basic Strategy (정책 수정)</label>
+        <label class="checkbox-row"><input type="checkbox" checked /> Whitelist Management (WL 신청)</label>
+        <label class="checkbox-row"><input type="checkbox" checked /> Fund Return (자금 반환)</label>
+      </div>
+    </div>
+    <div class="alert alert-info" style="font-size:12px;">
+      &#8505; 정책 변경은 다음 출금 건부터 적용됩니다. 진행 중인 건은 영향 없음.
+    </div>
+  </div>
+  <div class="so-footer">
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeSO('so-edit-strategy')">취소</button>
+      <button class="btn btn-primary" style="flex:1;"
+        onclick="openOTPModal('전략 정책 저장', function(){ closeSO(\'so-edit-strategy\'); showToast(\'정책이 저장되었습니다.\'); })">저장 →</button>
     </div>
   </div>
 </div>
 
-<!-- ── App ── -->
+<!-- ══════════════════════════════════════
+     SLIDE-OVER: Add Account
+══════════════════════════════════════ -->
+<div class="slideover" id="so-add-account">
+  <div class="so-header">
+    <span class="so-title">+ 계정 추가 / Invite</span>
+    <button class="modal-close" onclick="closeSO('so-add-account')">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div class="alert alert-info" style="margin-bottom:16px; font-size:12px;">
+      &#8505; 초대 이메일이 발송되며, 수신자는 링크 클릭 후 PW 설정 → OTP 등록 후 활성화됩니다.<br>
+      쉼표(,)로 구분하여 최대 10개 동시 초대 가능.
+    </div>
+    <div class="form-group">
+      <label class="form-label">이메일 <span class="req">*</span></label>
+      <input type="email" class="form-control" placeholder="name@company.com" />
+      <div class="form-hint">여러 명: 쉼표로 구분 (최대 10개)</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">이름 <span class="req">*</span></label>
+      <input type="text" class="form-control" placeholder="담당자 이름" maxlength="50" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">소속 (부서)</label>
+      <input type="text" class="form-control" placeholder="예: 자산운용팀" maxlength="50" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">직책</label>
+      <input type="text" class="form-control" placeholder="예: 팀장" maxlength="50" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">휴대전화번호</label>
+      <input type="tel" class="form-control" placeholder="010-0000-0000" />
+    </div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-primary btn-full" style="height:44px;"
+      onclick="openOTPModal('계정 초대', function(){ closeSO(\'so-add-account\'); showToast(\'초대 이메일이 발송되었습니다.\'); })">&#9993; 초대 보내기 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE-OVER: Workflow Sign
+══════════════════════════════════════ -->
+<div class="slideover" id="so-workflow-sign" style="width:500px;">
+  <div class="so-header">
+    <span class="so-title">&#128394; 출금 서명</span>
+    <button class="modal-close" onclick="closeSO('so-workflow-sign')">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div class="alert alert-warning" style="margin-bottom:16px; font-size:12px;">
+      &#9888; 서명 전 출금 정보를 반드시 확인해주세요. 서명 후 취소할 수 없습니다.
+    </div>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">출금 번호</span><span style="font-family:monospace; font-size:12px;">WD-20260407-003</span></div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">코인</span><span>USDT — Ethereum (ERC20)</span></div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">수량</span><span style="font-weight:700;">500.00 USDT <span style="color:var(--text-secondary); font-size:12px; font-weight:400;">≈ $500.00</span></span></div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">수신 주소</span><span style="font-family:monospace; font-size:12px;">0xA1b2...C9d0</span></div>
+      <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">요청자</span><span>이영희</span></div>
+    </div>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
+      <div style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">서명 현황 1/3</div>
+      <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="color:var(--text-secondary); margin-left:auto; font-size:11px;">04-07 11:00 완료</span></div>
+      <div class="sig-row"><span class="sig-icon-wait">⏳</span><span style="font-weight:600;">김철수 (나)</span><span style="color:var(--primary); margin-left:auto; font-size:11px; font-weight:600;">서명 대기 중</span></div>
+      <div class="sig-row"><span class="sig-icon-wait">⏳</span><span style="font-weight:600; color:var(--text-secondary);">박민준</span><span style="color:var(--text-secondary); margin-left:auto; font-size:11px;">서명 대기 중</span></div>
+    </div>
+  </div>
+  <div class="so-footer">
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-outline btn-danger" style="flex:1;"
+        onclick="openOTPModal('출금 거절', function(){ closeSO(\'so-workflow-sign\'); showToast(\'출금 건이 거절되었습니다.\'); })">거절하기</button>
+      <button class="btn btn-primary" style="flex:2;"
+        onclick="openOTPModal('출금 서명', function(){ closeSO(\'so-workflow-sign\'); showToast(\'서명이 완료되었습니다.\'); })">&#10003; 서명 완료 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TOAST
+══════════════════════════════════════ -->
+<div id="toast" style="position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1E293B; color:#fff; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:500; z-index:900; opacity:0; transition:all 0.3s; white-space:nowrap; box-shadow:0 8px 20px rgba(0,0,0,0.2);"></div>
+
+<!-- ══════════════════════════════════════
+     APP
+══════════════════════════════════════ -->
 <div class="app">
 
-  <!-- ════════════════════════════
-       SIDEBAR
-  ════════════════════════════ -->
+  <!-- ════════════ SIDEBAR ════════════ -->
   <aside class="sidebar" id="sidebar">
-
-    <!-- Logo -->
     <div class="sidebar-logo">
       <div class="logo-icon">&#8734;</div>
-      <div class="logo-text">
-        INFINITEBLOCK
-        <span>CUSTODY PLATFORM</span>
-      </div>
+      <div class="logo-text">INFINITEBLOCK<span>CUSTODY PLATFORM</span></div>
     </div>
-
-    <!-- Account -->
     <div class="sidebar-account">
       <div class="account-row">
         <div class="account-avatar">I</div>
-        <div class="account-info">
+        <div>
           <div class="account-name">Infiniteblock02</div>
-          <div class="account-balance">$0.00</div>
+          <div class="account-sub">Master Account</div>
         </div>
       </div>
     </div>
-
-    <!-- Nav -->
     <nav class="sidebar-nav">
-      <div class="nav-item active" onclick="showPage('wallet', this)" id="nav-wallet">
-        <span class="nav-icon">&#128188;</span>
-        <span class="nav-label">Wallet</span>
+      <div class="nav-item active" onclick="showPage('dashboard',this)" id="nav-dashboard">
+        <span class="nav-icon">&#127968;</span><span class="nav-label">Dashboard</span>
       </div>
-      <div class="nav-item" onclick="showPage('transactions', this)" id="nav-transactions">
-        <span class="nav-icon">&#8644;</span>
-        <span class="nav-label">Transactions</span>
+      <div class="nav-item" onclick="showPage('wallet',this)" id="nav-wallet">
+        <span class="nav-icon">&#128188;</span><span class="nav-label">Wallet</span>
       </div>
-      <div class="nav-item" onclick="showPage('workflows', this)">
-        <span class="nav-icon">&#10003;</span>
-        <span class="nav-label">Workflows</span>
+      <div class="nav-item" onclick="showPage('transactions',this)" id="nav-transactions">
+        <span class="nav-icon">&#8644;</span><span class="nav-label">Transactions</span>
       </div>
-
+      <div class="nav-item" onclick="showPage('workflows',this)" id="nav-workflows">
+        <span class="nav-icon">&#10003;</span><span class="nav-label">Workflows</span>
+        <span class="nav-badge">2</span>
+      </div>
       <div class="nav-divider"></div>
-
-      <!-- Security (expandable) -->
-      <div class="nav-item" onclick="toggleSub('security-sub', this)">
-        <span class="nav-icon">&#128737;</span>
-        <span class="nav-label">Security</span>
+      <!-- Security -->
+      <div class="nav-item" onclick="toggleSub('sub-security',this)" id="nav-security">
+        <span class="nav-icon">&#128737;</span><span class="nav-label">Security</span>
         <span class="nav-arrow">&#9654;</span>
       </div>
-      <div class="nav-sub" id="security-sub">
-        <div class="nav-sub-item" onclick="showPage('whitelist', null, this)">Whitelist Address</div>
-        <div class="nav-sub-item" onclick="showPage('loginhistory', null, this)">Login History</div>
+      <div class="nav-sub" id="sub-security">
+        <div class="nav-sub-item" onclick="showPage('whitelist',null,this)">Whitelist Address</div>
+        <div class="nav-sub-item" onclick="showPage('loginhistory',null,this)">Login History</div>
       </div>
-
-      <!-- Strategy Engine (expandable) -->
-      <div class="nav-item" onclick="toggleSub('strategy-sub', this)">
-        <span class="nav-icon">&#9881;</span>
-        <span class="nav-label">Strategy Engine</span>
+      <!-- Strategy -->
+      <div class="nav-item" onclick="toggleSub('sub-strategy',this)" id="nav-strategy">
+        <span class="nav-icon">&#9967;</span><span class="nav-label">Strategy Engine</span>
         <span class="nav-arrow">&#9654;</span>
       </div>
-      <div class="nav-sub" id="strategy-sub">
-        <div class="nav-sub-item active" onclick="showPage('strategy', null, this)">Wallet Strategy</div>
+      <div class="nav-sub" id="sub-strategy">
+        <div class="nav-sub-item" onclick="showPage('strategy',null,this)">Wallet Strategy</div>
       </div>
-
       <div class="nav-divider"></div>
-
-      <div class="nav-item" onclick="showPage('developer', this)">
-        <span class="nav-icon">&lt;/&gt;</span>
-        <span class="nav-label">Developer</span>
+      <!-- Settings (Master only) -->
+      <div class="nav-item" onclick="toggleSub('sub-settings',this)" id="nav-settings">
+        <span class="nav-icon">&#9881;</span><span class="nav-label">Settings</span>
+        <span class="nav-arrow">&#9654;</span>
       </div>
-      <div class="nav-item" onclick="showPage('coldwallet', this)">
-        <span class="nav-icon">&#10052;</span>
-        <span class="nav-label">Cold Wallet</span>
+      <div class="nav-sub" id="sub-settings">
+        <div class="nav-sub-item" onclick="showPage('accounts',null,this)">Account Management</div>
+      </div>
+      <div class="nav-item" onclick="showPage('developer',this)">
+        <span class="nav-icon">&lt;/&gt;</span><span class="nav-label">Developer</span>
       </div>
     </nav>
-
-    <!-- Admin button -->
     <div class="sidebar-footer">
       <button class="btn-admin" onclick="window.open('admin.html','_blank')">&#9881; Admin Console</button>
+      <button class="btn-logout" onclick="window.location.href='login.html'">&#8592; 로그아웃</button>
     </div>
   </aside>
 
-  <!-- ════════════════════════════
-       MAIN
-  ════════════════════════════ -->
+  <!-- ════════════ MAIN ════════════ -->
   <div class="main">
     <div class="main-header">
-      <button class="hamburger" id="hamburger" onclick="toggleMobileSidebar()">
-        <span></span><span></span><span></span>
-      </button>
-      <span class="main-header-title" id="headerTitle">Wallet</span>
+      <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <span id="headerTitle" class="main-header-title">Dashboard</span>
+      <span id="headerBreadcrumb"></span>
     </div>
-
     <div class="main-content">
 
       <!-- ══════════════════════════
-           PAGE: WALLET
+           PAGE: DASHBOARD
       ══════════════════════════ -->
-      <div class="page active" id="page-wallet">
-        <div class="wallet-layout">
+      <div class="page active" id="page-dashboard">
+        <!-- KYB Banner (D-38 warning example) -->
+        <div class="kyb-banner kyb-banner-warning">
+          &#9888; KYB 갱신이 38일 후(2026-05-15) 만료됩니다. 담당자에게 갱신을 요청하세요.
+        </div>
+        <div class="dashboard-grid">
+          <!-- Company Info -->
+          <div class="card">
+            <div class="card-title-sm">&#127970; 고객사 정보 Company Info</div>
+            <div class="info-row"><span class="info-label">고객사명</span><span style="font-weight:600;">알파투자운용(주)<br><span style="font-weight:400; font-size:12px; color:var(--text-secondary);">Alpha Investment Management</span></span></div>
+            <div class="info-row"><span class="info-label">사업자번호</span><span style="font-family:monospace; font-size:12px;">123-45-67890</span></div>
+            <div class="info-row"><span class="info-label">KYB 상태</span><span class="badge badge-success">KYB 완료</span></div>
+            <div class="info-row"><span class="info-label">위험등급</span><span class="badge badge-success">저위험 Low Risk</span></div>
+            <div class="info-row"><span class="info-label">다음 KYB 갱신일</span><span>2026-05-15 <span style="color:#F97316; font-size:12px; font-weight:600;">D-38</span></span></div>
+            <div class="info-row" style="border-bottom:none;"><span class="info-label">서비스 상태</span><span><span class="dot-status dot-green"></span>활성화</span></div>
+          </div>
+          <!-- Account Overview -->
+          <div class="card">
+            <div class="card-title-sm">&#128100; 계정 현황 Account Overview</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px;">
+              <div style="text-align:center;">
+                <div style="font-size:28px; font-weight:700; color:var(--primary);">3</div>
+                <div style="font-size:11px; color:var(--text-secondary);">전체</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:28px; font-weight:700; color:var(--success);">3</div>
+                <div style="font-size:11px; color:var(--text-secondary);">활성</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:28px; font-weight:700; color:var(--text-secondary);">0</div>
+                <div style="font-size:11px; color:var(--text-secondary);">비활성</div>
+              </div>
+            </div>
+            <span class="stat-link" onclick="showPage('accounts', document.getElementById('nav-settings'))">계정 관리 →</span>
+          </div>
+          <!-- Wallet Summary -->
+          <div class="card">
+            <div class="card-title-sm">&#128188; 지갑 현황 Wallet Summary</div>
+            <div class="info-row"><span class="info-label">총 지갑 수</span><span style="font-weight:600;">2개</span></div>
+            <div class="info-row"><span class="info-label">총 자산 (USD)</span><span style="font-size:18px; font-weight:700;">$0.00</span></div>
+            <div class="info-row"><span class="info-label">출금 대기 건</span><span><span class="badge badge-warning">2건</span></span></div>
+            <div class="info-row" style="border-bottom:none;"><span class="info-label">생성 요청 대기</span><span><span class="badge badge-info">1건</span></span></div>
+            <span class="stat-link" onclick="showPage('wallet', document.getElementById('nav-wallet'))">지갑 바로가기 →</span>
+          </div>
+          <!-- To-do -->
+          <div class="card">
+            <div class="card-title-sm">&#9989; To-do / Pending Actions</div>
+            <div class="todo-item">
+              <span class="todo-label">서명 대기 출금</span>
+              <span class="todo-count" onclick="showPage('workflows', document.getElementById('nav-workflows'))" style="cursor:pointer;">2</span>
+            </div>
+            <div class="todo-item">
+              <span class="todo-label">Whitelist 승인 대기</span>
+              <span class="todo-count zero">0</span>
+            </div>
+            <div class="todo-item" style="border-bottom:none;">
+              <span class="todo-label">지갑 생성 요청 대기</span>
+              <span class="todo-count zero">0</span>
+            </div>
+            <span class="stat-link" style="margin-top:4px;" onclick="showPage('workflows', document.getElementById('nav-workflows'))">Workflows 바로가기 →</span>
+          </div>
+        </div>
+      </div>
 
-          <!-- Left card -->
-          <div class="wallet-left">
-            <div class="card wallet-card">
-              <div class="wallet-header">
+      <!-- ══════════════════════════
+           PAGE: WALLET (GRID)
+      ══════════════════════════ -->
+      <div class="page" id="page-wallet">
+        <div class="page-header">
+          <h1 class="page-title">Wallet</h1>
+          <button class="btn btn-primary" onclick="openModal('modal-coldwallet')">+ 지갑 추가</button>
+        </div>
+        <div class="wallet-summary">
+          <span class="wallet-summary-item">총 지갑 <strong>2개</strong></span>
+          <span style="color:var(--border);">|</span>
+          <span class="wallet-summary-item">총 자산 <strong>$0.00</strong></span>
+          <span style="color:var(--border);">|</span>
+          <span class="wallet-summary-item">출금 대기 <strong>2건</strong></span>
+        </div>
+        <div class="wallet-grid">
+          <!-- Wallet Card 1: Active -->
+          <div class="wallet-card" onclick="openWalletDetail('wallet1')">
+            <div class="wallet-card-header">
+              <div class="wallet-card-name">BTC 보관 지갑 #1</div>
+              <span class="badge badge-success">&#9679; 활성화</span>
+            </div>
+            <div class="wallet-coin-row">
+              <div class="coin-circle" style="background:#F97316;">B</div>
+              <div><div style="font-size:13px; font-weight:600;">BTC</div><div style="font-size:11px; color:var(--text-secondary);">Bitcoin Mainnet</div></div>
+            </div>
+            <div class="wallet-address">bc1q...3f8e</div>
+            <div class="wallet-asset">$0.00</div>
+            <div class="wallet-asset-sub">0.00000000 BTC</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금</button>
+                <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); showPage('workflows', document.getElementById('nav-workflows'))">&#8599; 출금</button>
+              </div>
+              <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:rgba(239,68,68,0.3);" onclick="event.stopPropagation(); openModal('modal-delete-wallet')">삭제</button>
+            </div>
+          </div>
+          <!-- Wallet Card 2: Active -->
+          <div class="wallet-card" onclick="openWalletDetail('wallet2')">
+            <div class="wallet-card-header">
+              <div class="wallet-card-name">ETH 보관 지갑</div>
+              <span class="badge badge-success">&#9679; 활성화</span>
+            </div>
+            <div class="wallet-coin-row">
+              <div class="coin-circle" style="background:#6366F1;">E</div>
+              <div><div style="font-size:13px; font-weight:600;">ETH</div><div style="font-size:11px; color:var(--text-secondary);">Ethereum Mainnet</div></div>
+            </div>
+            <div class="wallet-address">0x4d4b...C3E69</div>
+            <div class="wallet-asset">$0.00</div>
+            <div class="wallet-asset-sub">0.00000000 ETH</div>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openDepositQR('ETH','Ethereum Mainnet','0x4d4bC4a1...C3E69F21')">&#8600; 입금</button>
+              <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); showPage('workflows', document.getElementById('nav-workflows'))">&#8599; 출금</button>
+            </div>
+          </div>
+          <!-- Wallet Card 3: Pending -->
+          <div class="wallet-card disabled">
+            <div class="wallet-card-header">
+              <div class="wallet-card-name">USDT 운영 지갑</div>
+              <span class="badge badge-gray">&#9679; 요청 중</span>
+            </div>
+            <div class="wallet-coin-row">
+              <div class="coin-circle" style="background:#10B981;">U</div>
+              <div><div style="font-size:13px; font-weight:600;">USDT</div><div style="font-size:11px; color:var(--text-secondary);">TRON (TRC-20)</div></div>
+            </div>
+            <div style="font-size:12px; color:var(--text-secondary); background:#F8FAFC; padding:10px; border-radius:7px; margin-top:10px; line-height:1.5;">
+              &#128336; Admin 처리 대기 중<br>
+              <span style="font-size:11px;">1~2 영업일 소요됩니다</span>
+            </div>
+          </div>
+          <!-- Add Wallet -->
+          <div class="wallet-card wallet-card-add" onclick="openModal('modal-coldwallet')">
+            <div class="add-plus">+</div>
+            <div class="add-text">지갑 추가 요청</div>
+            <div style="font-size:11px; color:var(--text-secondary);">Master 전용</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: WALLET DETAIL
+      ══════════════════════════ -->
+      <div class="page" id="page-wallet-detail">
+        <div class="wallet-detail-layout">
+          <!-- Left info card -->
+          <div class="wallet-detail-left">
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
                 <div>
-                  <div class="wallet-name">Web3</div>
-                  <div class="wallet-id">ID: 1687670</div>
+                  <div style="font-size:15px; font-weight:700;" id="detailWalletName">BTC 보관 지갑 #1</div>
+                  <div style="font-size:11px; color:var(--text-secondary);">ID: 1687670</div>
                 </div>
-                <span class="badge badge-orange">Owner</span>
+                <span class="badge badge-success">&#9679; 활성화</span>
               </div>
-              <div class="wallet-todo">
-                <span class="wallet-todo-label">To-do list</span>
-                <span class="todo-count">0</span>
+              <div class="wallet-info-row"><span class="wallet-info-label">코인</span><span style="font-weight:600;" id="detailCoin">BTC / Bitcoin</span></div>
+              <div class="wallet-info-row"><span class="wallet-info-label">주소</span>
+                <span style="font-family:monospace; font-size:12px;">bc1q...3f8e <span onclick="copyAddress()" style="cursor:pointer; color:var(--primary);">&#128203;</span></span>
               </div>
-              <div class="wallet-assets">
-                <div class="assets-total">$0.00</div>
-                <div class="assets-nft">NFTs: 0.00</div>
+              <div class="wallet-info-row"><span class="wallet-info-label">총 자산</span><span style="font-size:18px; font-weight:700;">$0.00</span></div>
+              <div class="wallet-info-row">
+                <span class="wallet-info-label">서명 정책</span>
+                <span>
+                  <div style="font-size:12px; font-weight:600; margin-bottom:5px;">2 of 3</div>
+                  <div class="n-of-m">
+                    <div class="n-dot n-dot-filled">김</div>
+                    <div class="n-dot n-dot-filled">이</div>
+                    <div class="n-dot n-dot-empty">박</div>
+                  </div>
+                </span>
               </div>
-              <div class="wallet-btns">
-                <button class="btn btn-success" style="height:40px;">&#8600; 입금</button>
-                <button class="btn btn-warning" style="height:40px;">&#8599; 출금</button>
-              </div>
-              <!-- Donut chart -->
-              <div class="donut-wrap">
-                <svg class="donut-svg" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#E2E8F0" stroke-width="5"/>
-                </svg>
-                <div class="donut-empty-text">No Data</div>
+              <div class="wallet-info-row" style="border-bottom:none;"><span class="wallet-info-label">요청자</span><span>김철수</span></div>
+              <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+                <button class="btn btn-success btn-full" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금 주소</button>
+                <button class="btn btn-warning btn-full" onclick="openSO('so-workflow-sign')">&#8599; 출금 신청</button>
+                <button class="btn btn-outline btn-full" onclick="openSO('so-add-coin')">+ 코인 추가 <span style="font-size:10px; color:var(--text-secondary);">(Master)</span></button>
               </div>
             </div>
           </div>
-
-          <!-- Right panel -->
-          <div class="wallet-right">
+          <!-- Right tabs -->
+          <div class="wallet-detail-right">
             <div class="card" style="padding:0;">
               <div style="padding:16px 20px 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                  <div class="tabs" style="border-bottom:none;">
-                    <div class="tab active" onclick="switchWalletTab(this,'tokens')">Tokens</div>
-                    <div class="tab" onclick="switchWalletTab(this,'nfts')">NFTs</div>
-                  </div>
-                  <label class="checkbox-label">
-                    <input type="checkbox" /> Hide small balances
-                  </label>
-                </div>
-                <div class="table-toolbar">
-                  <div class="input-group" style="flex:1; min-width:200px; max-width:320px;">
-                    <span class="input-icon">&#128269;</span>
-                    <input type="text" class="form-control" placeholder="Coin / Contract Address" />
-                  </div>
-                  <select class="form-control" style="width:150px;">
-                    <option>All Networks</option>
-                    <option>Ethereum</option>
-                    <option>TRON</option>
-                    <option>Bitcoin</option>
-                    <option>BSC</option>
-                    <option>Filecoin EVM</option>
-                  </select>
-                  <button class="add-btn">+</button>
+                <div class="tabs" id="walletDetailTabs">
+                  <div class="tab active" onclick="switchDetailTab(this,'coins')">Coins</div>
+                  <div class="tab" onclick="switchDetailTab(this,'history')">History</div>
                 </div>
               </div>
-
-              <!-- Tokens table -->
-              <div id="tab-tokens">
+              <!-- Coins Tab -->
+              <div id="detail-coins">
+                <div style="padding:12px 20px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border);">
+                  <button class="btn btn-primary btn-sm" onclick="openSO('so-add-coin')">+ 코인 추가</button>
+                </div>
                 <div class="table-wrap">
                   <table>
-                    <thead>
-                      <tr>
-                        <th>Coin</th>
-                        <th style="text-align:right;">Total Assets</th>
-                        <th style="text-align:right;">Operation</th>
-                      </tr>
-                    </thead>
+                    <thead><tr><th>코인</th><th>네트워크</th><th>입금 주소</th><th style="text-align:right;">잔액</th><th>Operation</th></tr></thead>
                     <tbody>
-                      <!-- Coin rows -->
                       <tr>
-                        <td><div class="coin-info"><div class="coin-icon" style="background:#EF4444;">T</div><div><div class="coin-name">TRX</div><div class="coin-network">TRON</div></div></div></td>
-                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
-                        <td><div class="op-icons">&#8505; <span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
+                        <td><div class="coin-name-row"><div class="coin-circle" style="background:#F97316; width:28px; height:28px; font-size:11px;">B</div><div><div class="coin-name-text">BTC</div><div class="coin-network-text">Bitcoin</div></div></div></td>
+                        <td style="font-size:12px;">Bitcoin Mainnet</td>
+                        <td style="font-family:monospace; font-size:12px; color:var(--primary); cursor:pointer;" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">bc1q...3f8e &#128203;</td>
+                        <td style="text-align:right;"><div style="font-weight:600;">0.00000000 BTC</div><div style="font-size:11px; color:var(--text-secondary);">≈ $0.00</div></td>
+                        <td><div class="op-icons">
+                          <button class="op-btn" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')" title="입금">&#8600;</button>
+                          <button class="op-btn" onclick="openSO('so-workflow-sign')" title="출금">&#8599;</button>
+                        </div></td>
                       </tr>
                       <tr>
-                        <td><div class="coin-info"><div class="coin-icon" style="background:#8B5CF6;">F</div><div><div class="coin-name">FIL</div><div class="coin-network">Filecoin EVM</div></div></div></td>
-                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
-                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
-                      </tr>
-                      <tr>
-                        <td><div class="coin-info"><div class="coin-icon" style="background:#10B981;">U</div><div><div class="coin-name">USDT</div><div class="coin-network">Ethereum</div></div></div></td>
-                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
-                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
-                      </tr>
-                      <tr>
-                        <td><div class="coin-info"><div class="coin-icon" style="background:#F59E0B;">B</div><div><div class="coin-name">BNB</div><div class="coin-network">BSC</div></div></div></td>
-                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
-                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
-                      </tr>
-                      <tr>
-                        <td><div class="coin-info"><div class="coin-icon" style="background:#F97316;">B</div><div><div class="coin-name">BTC</div><div class="coin-network">Bitcoin</div></div></div></td>
-                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
-                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
-                      </tr>
-                      <tr>
-                        <td><div class="coin-info"><div class="coin-icon" style="background:#6366F1;">E</div><div><div class="coin-name">ETH</div><div class="coin-network">Ethereum</div></div></div></td>
-                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
-                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
-                      </tr>
-                      <tr>
-                        <td><div class="coin-info"><div class="coin-icon" style="background:#10B981;">U</div><div><div class="coin-name">USDT</div><div class="coin-network">TRON</div></div></div></td>
-                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
-                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
+                        <td><div class="coin-name-row"><div class="coin-circle" style="background:#10B981; width:28px; height:28px; font-size:11px;">U</div><div><div class="coin-name-text">USDT</div><div class="coin-network-text">ERC-20</div></div></div></td>
+                        <td style="font-size:12px;">Ethereum (ERC-20)</td>
+                        <td style="font-family:monospace; font-size:12px; color:var(--primary); cursor:pointer;" onclick="openDepositQR('USDT','Ethereum (ERC-20)','0x4d4bC4a1...C3E69F21')">0x4d4b...C3E6 &#128203;</td>
+                        <td style="text-align:right;"><div style="font-weight:600;">0.00 USDT</div><div style="font-size:11px; color:var(--text-secondary);">≈ $0.00</div></td>
+                        <td><div class="op-icons">
+                          <button class="op-btn" onclick="openDepositQR('USDT','Ethereum (ERC-20)','0x4d4bC4a1...C3E69F21')" title="입금">&#8600;</button>
+                          <button class="op-btn" onclick="openSO('so-workflow-sign')" title="출금">&#8599;</button>
+                        </div></td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
-
-              <!-- NFTs tab -->
-              <div id="tab-nfts" style="display:none;">
-                <div class="empty-state">
-                  <div class="empty-icon">&#9783;</div>
-                  <p>No NFTs Found</p>
+              <!-- History Tab -->
+              <div id="detail-history" style="display:none; padding:16px 20px;">
+                <!-- Filters + stats -->
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+                  <div class="tabs" style="border:none; flex-wrap:wrap; gap:4px;">
+                    <div class="tab active" style="border:1px solid var(--border); border-radius:20px; padding:5px 14px; margin-bottom:0; font-size:12px;" onclick="switchSimpleTab(this)">전체 All</div>
+                    <div class="tab" style="border:1px solid var(--border); border-radius:20px; padding:5px 14px; margin-bottom:0; font-size:12px;" onclick="switchSimpleTab(this)">입금</div>
+                    <div class="tab" style="border:1px solid var(--border); border-radius:20px; padding:5px 14px; margin-bottom:0; font-size:12px;" onclick="switchSimpleTab(this)">출금</div>
+                  </div>
+                  <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
+                    <input type="date" class="form-control" style="width:140px; padding:6px 10px; font-size:12px;" value="2025-01-01" />
+                    <input type="date" class="form-control" style="width:140px; padding:6px 10px; font-size:12px;" value="2025-12-31" />
+                    <button class="btn btn-outline btn-sm">&#8595; CSV</button>
+                  </div>
                 </div>
+                <div class="history-stats" style="margin-bottom:14px;">
+                  <div class="history-stat"><div class="history-stat-label">총 입금액</div><div class="history-stat-value" style="color:var(--success);">$0.00</div></div>
+                  <div class="history-stat"><div class="history-stat-label">총 출금액</div><div class="history-stat-value" style="color:var(--danger);">$0.00</div></div>
+                  <div class="history-stat"><div class="history-stat-label">이번달 거래</div><div class="history-stat-value" style="color:var(--primary);">3건</div></div>
+                  <div class="history-stat"><div class="history-stat-label">처리 중</div><div class="history-stat-value" style="color:var(--warning);">1건</div></div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>일시</th><th>유형</th><th>코인</th><th style="text-align:right;">수량</th><th>상태</th><th>TXID</th><th>상세</th></tr></thead>
+                    <tbody>
+                      <tr>
+                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 14:32:08</td>
+                        <td><span class="badge badge-info">입금</span></td>
+                        <td>USDT / TRON</td>
+                        <td style="text-align:right; font-weight:600; color:var(--success);">+1,000.00</td>
+                        <td><span class="dot-status dot-green"></span>완료</td>
+                        <td style="font-family:monospace; font-size:11px; cursor:pointer; color:var(--primary);">0xa1b2...f9e8</td>
+                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-19 09:15:44</td>
+                        <td><span class="badge badge-warning">출금</span></td>
+                        <td>ETH / Ethereum</td>
+                        <td style="text-align:right; font-weight:600; color:var(--danger);">-0.5000</td>
+                        <td><span class="dot-status dot-blue"></span>서명 중</td>
+                        <td style="font-family:monospace; font-size:11px; cursor:pointer; color:var(--primary);">0xd4e5...a2b1</td>
+                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-18 22:07:33</td>
+                        <td><span class="badge badge-info">입금</span></td>
+                        <td>BTC / Bitcoin</td>
+                        <td style="text-align:right; font-weight:600; color:var(--success);">+0.0250</td>
+                        <td><span class="dot-status dot-yellow"></span>보류</td>
+                        <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
+                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: TRANSACTIONS
+      ══════════════════════════ -->
+      <div class="page" id="page-transactions">
+        <div class="page-header">
+          <h1 class="page-title">Transactions</h1>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <input type="date" class="form-control" style="width:140px; padding:7px 10px; font-size:12px;" value="2025-01-01" />
+            <span style="font-size:12px; color:var(--text-secondary);">~</span>
+            <input type="date" class="form-control" style="width:140px; padding:7px 10px; font-size:12px;" value="2025-12-31" />
+            <button class="btn btn-outline btn-sm">&#8595; CSV</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div style="padding:14px 20px 0;">
+            <div class="tabs">
+              <div class="tab active" onclick="switchSimpleTab(this)">전체 All</div>
+              <div class="tab" onclick="switchSimpleTab(this)">입금 Deposit</div>
+              <div class="tab" onclick="switchSimpleTab(this)">출금 Withdrawal</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>일시</th><th>유형</th><th>지갑</th><th>코인</th><th style="text-align:right;">수량</th><th>상태</th><th>TXID</th><th>상세</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 14:32:08</td>
+                  <td><span class="badge badge-info">입금</span></td>
+                  <td style="font-size:12px;">BTC 보관 지갑</td>
+                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#10B981; width:22px; height:22px; font-size:10px;">U</div>USDT/TRON</div></td>
+                  <td style="text-align:right; font-weight:600; color:var(--success);">+1,000.00</td>
+                  <td><span class="dot-status dot-green"></span>완료</td>
+                  <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xa1b2...f9e8</td>
+                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                </tr>
+                <tr>
+                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-19 09:15:44</td>
+                  <td><span class="badge badge-warning">출금</span></td>
+                  <td style="font-size:12px;">ETH 보관 지갑</td>
+                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#6366F1; width:22px; height:22px; font-size:10px;">E</div>ETH/ETH</div></td>
+                  <td style="text-align:right; font-weight:600; color:var(--danger);">-0.5000</td>
+                  <td><span class="dot-status dot-blue"></span>서명 중</td>
+                  <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xd4e5...a2b1</td>
+                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                </tr>
+                <tr>
+                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-18 22:07:33</td>
+                  <td><span class="badge badge-info">입금</span></td>
+                  <td style="font-size:12px;">BTC 보관 지갑</td>
+                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#F97316; width:22px; height:22px; font-size:10px;">B</div>BTC/BTC</div></td>
+                  <td style="text-align:right; font-weight:600; color:var(--success);">+0.0250</td>
+                  <td><span class="dot-status dot-yellow"></span>보류</td>
+                  <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
+                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: WORKFLOWS
+      ══════════════════════════ -->
+      <div class="page" id="page-workflows">
+        <div class="page-header">
+          <h1 class="page-title">Workflows <span style="font-size:14px; font-weight:400; color:var(--text-secondary);">출금 승인 대기함</span></h1>
+        </div>
+        <div class="card" style="padding:0; margin-bottom:20px;">
+          <div style="padding:14px 20px 0;">
+            <div class="tabs">
+              <div class="tab active" onclick="switchWorkflowTab(this,'all')">전체 All</div>
+              <div class="tab" onclick="switchWorkflowTab(this,'pending')">서명 대기 <span style="background:var(--danger); color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; margin-left:4px;">2</span></div>
+              <div class="tab" onclick="switchWorkflowTab(this,'inprogress')">처리 중</div>
+              <div class="tab" onclick="switchWorkflowTab(this,'completed')">완료</div>
+              <div class="tab" onclick="switchWorkflowTab(this,'rejected')">거절</div>
+            </div>
+          </div>
+          <div style="padding:16px 20px;" id="workflows-list">
+            <!-- Item 1: Pending signature -->
+            <div class="workflow-item" data-status="pending">
+              <div class="workflow-header">
+                <div>
+                  <div class="workflow-id">WD-20260407-003</div>
+                  <div class="workflow-coin">USDT — Ethereum (ERC20)</div>
+                </div>
+                <span class="badge badge-warning">&#9679; 서명 대기</span>
+              </div>
+              <div class="workflow-amount">500.00 USDT</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ $500.00</div>
+              <div class="workflow-addr">→ 0xA1b2C3d4E5f6...C9d0 (거래소 출금지갑)</div>
+              <div class="signature-progress">
+                <div class="sig-title">서명 현황 1 / 3</div>
+                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-07 11:00 완료</span></div>
+                <div class="sig-row" style="background:#EFF6FF; border-radius:5px; padding:4px 6px;"><span class="sig-icon-wait" style="color:var(--primary);">→</span><span style="font-weight:700; color:var(--primary);">김철수 (나)</span><span style="font-size:11px; font-weight:600; color:var(--primary); margin-left:auto;">내 서명 필요</span></div>
+                <div class="sig-row"><span class="sig-icon-wait">⏳</span><span style="font-weight:600; color:var(--text-secondary);">박민준</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">대기 중</span></div>
+              </div>
+              <div class="workflow-actions">
+                <button class="btn btn-primary" onclick="openSO('so-workflow-sign')">&#128394; 서명하기</button>
+                <button class="btn btn-outline btn-sm" onclick="openModal('modal-withdrawal-detail')">상세 보기</button>
+              </div>
+            </div>
+            <!-- Item 2: Pending signature -->
+            <div class="workflow-item" data-status="pending">
+              <div class="workflow-header">
+                <div>
+                  <div class="workflow-id">WD-20260406-002</div>
+                  <div class="workflow-coin">BTC — Bitcoin Mainnet</div>
+                </div>
+                <span class="badge badge-warning">&#9679; 서명 대기</span>
+              </div>
+              <div class="workflow-amount">0.0100 BTC</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ $420.00</div>
+              <div class="workflow-addr">→ bc1qxy2kgdygjrsq...nfkj (외부 주소)</div>
+              <div class="signature-progress">
+                <div class="sig-title">서명 현황 0 / 2</div>
+                <div class="sig-row" style="background:#EFF6FF; border-radius:5px; padding:4px 6px;"><span class="sig-icon-wait" style="color:var(--primary);">→</span><span style="font-weight:700; color:var(--primary);">김철수 (나)</span><span style="font-size:11px; font-weight:600; color:var(--primary); margin-left:auto;">내 서명 필요</span></div>
+                <div class="sig-row"><span class="sig-icon-wait">⏳</span><span style="font-weight:600; color:var(--text-secondary);">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">대기 중</span></div>
+              </div>
+              <div class="workflow-actions">
+                <button class="btn btn-primary" onclick="openSO('so-workflow-sign')">&#128394; 서명하기</button>
+                <button class="btn btn-outline btn-sm" onclick="openModal('modal-withdrawal-detail')">상세 보기</button>
+              </div>
+            </div>
+            <!-- Item 3: In progress -->
+            <div class="workflow-item" data-status="inprogress">
+              <div class="workflow-header">
+                <div>
+                  <div class="workflow-id">WD-20260407-001</div>
+                  <div class="workflow-coin">USDT — Ethereum (ERC20)</div>
+                </div>
+                <span class="badge badge-purple">&#9679; Admin 처리 중</span>
+              </div>
+              <div class="workflow-amount">100.00 USDT</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ $100.00</div>
+              <div class="workflow-addr">→ 0x4d4b...C3E69</div>
+              <div class="signature-progress">
+                <div class="sig-title">서명 현황 2 / 3 ✓</div>
+                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">김철수</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-07 10:25 완료</span></div>
+                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-07 10:28 완료</span></div>
+                <div class="sig-row"><span class="sig-icon-wait">—</span><span style="font-weight:600; color:var(--text-secondary);">박민준</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">불필요 (N 충족)</span></div>
+              </div>
+              <div class="workflow-actions">
+                <button class="btn btn-outline btn-sm" onclick="openModal('modal-withdrawal-detail')">상세 보기</button>
               </div>
             </div>
           </div>
@@ -639,30 +1293,26 @@
       <div class="page" id="page-whitelist">
         <div class="page-header">
           <h1 class="page-title">Whitelist Address</h1>
-          <button class="btn btn-primary" onclick="openSlideOver()">+ Add Address</button>
+          <button class="btn btn-primary" onclick="openSO('so-add-address')">+ Add Address</button>
         </div>
         <div class="scope-tags">
-          <span class="scope-tag">Manual Transfer <span class="tag-x">&#10005;</span></span>
-          <span class="scope-tag">API Transfer <span class="tag-x">&#10005;</span></span>
-          <span class="scope-arrow">&#8250;</span>
+          <span class="scope-tag">Manual Transfer <span class="tx">&#10005;</span></span>
+          <span class="scope-tag">API Transfer <span class="tx">&#10005;</span></span>
+          <span style="color:var(--text-secondary); font-size:16px; cursor:pointer;">&#8250;</span>
         </div>
-        <div class="card">
-          <div style="margin-bottom:14px;">
-            <div class="input-group" style="max-width:360px;">
-              <span class="input-icon">&#128269;</span>
+        <div class="card" style="padding:0;">
+          <div style="padding:14px 20px; border-bottom:1px solid var(--border);">
+            <div class="input-with-icon" style="max-width:320px;">
+              <span class="iicon">&#128269;</span>
               <input type="text" class="form-control" placeholder="Currency / Address / Name" />
             </div>
           </div>
           <div class="table-wrap">
             <table>
-              <thead>
-                <tr>
-                  <th>Name</th><th>Type</th><th>Coin</th><th>Address</th><th>Status</th><th>Action</th>
-                </tr>
-              </thead>
+              <thead><tr><th>주소명</th><th>코인</th><th>네트워크</th><th>주소</th><th>Scope</th><th>상태</th><th>Action</th></tr></thead>
               <tbody>
                 <tr>
-                  <td colspan="6">
+                  <td colspan="7">
                     <div class="empty-state">
                       <div class="empty-icon">&#128220;</div>
                       <p>No Address Available</p>
@@ -676,119 +1326,43 @@
       </div>
 
       <!-- ══════════════════════════
-           PAGE: TRANSACTIONS
-      ══════════════════════════ -->
-      <div class="page" id="page-transactions">
-        <div class="txn-header">
-          <h1 class="page-title">Transactions</h1>
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div class="date-filter">
-              <input type="date" value="2025-01-01" />
-              <span>~</span>
-              <input type="date" value="2025-12-31" />
-            </div>
-            <button class="btn btn-outline btn-sm">&#8595; Export CSV</button>
-          </div>
-        </div>
-        <div class="card" style="padding:0;">
-          <div style="padding:16px 20px 0;">
-            <div class="tabs">
-              <div class="tab active" onclick="switchTab(this)">전체 All</div>
-              <div class="tab" onclick="switchTab(this)">입금 Deposit</div>
-              <div class="tab" onclick="switchTab(this)">출금 Withdrawal</div>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>일시 Date/Time</th>
-                  <th>유형 Type</th>
-                  <th>코인 Coin</th>
-                  <th style="text-align:right;">수량 Amount</th>
-                  <th>상태 Status</th>
-                  <th>TXID</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="white-space:nowrap; color:var(--text-secondary); font-size:12px;">2025-11-20 14:32:08</td>
-                  <td><span class="badge badge-info">입금 Deposit</span></td>
-                  <td><div class="coin-info" style="gap:7px;"><div class="coin-icon" style="background:#10B981; width:24px; height:24px; font-size:11px;">U</div><span>USDT / TRON</span></div></td>
-                  <td style="text-align:right; font-weight:600;">1,000.00</td>
-                  <td><span class="dot dot-success"></span>완료 Completed</td>
-                  <td style="font-size:11px; color:var(--text-secondary);">0xa1b2c3...f9e8</td>
-                </tr>
-                <tr>
-                  <td style="white-space:nowrap; color:var(--text-secondary); font-size:12px;">2025-11-19 09:15:44</td>
-                  <td><span class="badge badge-warning">출금 Withdrawal</span></td>
-                  <td><div class="coin-info" style="gap:7px;"><div class="coin-icon" style="background:#6366F1; width:24px; height:24px; font-size:11px;">E</div><span>ETH / Ethereum</span></div></td>
-                  <td style="text-align:right; font-weight:600;">0.5000</td>
-                  <td><span class="dot dot-info"></span>서명 중 Signing</td>
-                  <td style="font-size:11px; color:var(--text-secondary);">0xd4e5f6...a2b1</td>
-                </tr>
-                <tr>
-                  <td style="white-space:nowrap; color:var(--text-secondary); font-size:12px;">2025-11-18 22:07:33</td>
-                  <td><span class="badge badge-info">입금 Deposit</span></td>
-                  <td><div class="coin-info" style="gap:7px;"><div class="coin-icon" style="background:#F97316; width:24px; height:24px; font-size:11px;">B</div><span>BTC / Bitcoin</span></div></td>
-                  <td style="text-align:right; font-weight:600;">0.0250</td>
-                  <td><span class="dot dot-warning"></span>보류 Pending</td>
-                  <td style="font-size:11px; color:var(--text-secondary);">7f8e9d...c3b4</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════
            PAGE: LOGIN HISTORY
       ══════════════════════════ -->
       <div class="page" id="page-loginhistory">
         <div class="page-header">
           <h1 class="page-title">Login History</h1>
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div class="date-filter">
-              <input type="date" value="2025-01-01" />
-              <span>~</span>
-              <input type="date" value="2025-12-31" />
-            </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <input type="date" class="form-control" style="width:140px; padding:7px 10px; font-size:12px;" value="2025-01-01" />
+            <span style="font-size:12px; color:var(--text-secondary);">~</span>
+            <input type="date" class="form-control" style="width:140px; padding:7px 10px; font-size:12px;" value="2025-12-31" />
             <button class="btn btn-outline btn-sm">&#8593; Export</button>
           </div>
         </div>
         <div class="card" style="padding:0;">
           <div class="table-wrap">
             <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Login Account</th>
-                  <th>Login Time</th>
-                  <th>Login Platform</th>
-                  <th>Login IP</th>
-                </tr>
-              </thead>
+              <thead><tr><th>이름</th><th>이메일</th><th>로그인 시간</th><th>플랫폼</th><th>로그인 IP</th></tr></thead>
               <tbody>
                 <tr>
                   <td style="font-weight:600;">NOTAEHAN</td>
                   <td>notaehan@infiniteblock.io</td>
-                  <td style="white-space:nowrap; font-size:12px; color:var(--text-secondary);">2025-11-20 14:30:12</td>
-                  <td><span class="badge badge-info">Web</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">211.234.56.78</td>
+                  <td style="font-size:12px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 14:30:12</td>
+                  <td><span class="badge badge-info">WEB</span></td>
+                  <td style="font-family:monospace; font-size:12px;">211.234.56.78</td>
                 </tr>
                 <tr>
                   <td style="font-weight:600;">NOTAEHAN</td>
                   <td>notaehan@infiniteblock.io</td>
-                  <td style="white-space:nowrap; font-size:12px; color:var(--text-secondary);">2025-11-19 09:12:05</td>
-                  <td><span class="badge badge-purple">Mobile</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">211.234.56.78</td>
+                  <td style="font-size:12px; color:var(--text-secondary); white-space:nowrap;">2025-11-19 09:12:05</td>
+                  <td><span class="badge badge-purple">APP</span></td>
+                  <td style="font-family:monospace; font-size:12px;">211.234.56.78</td>
                 </tr>
                 <tr>
                   <td style="font-weight:600;">NOTAEHAN</td>
                   <td>notaehan@infiniteblock.io</td>
-                  <td style="white-space:nowrap; font-size:12px; color:var(--text-secondary);">2025-11-15 18:44:33</td>
-                  <td><span class="badge badge-info">Web</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">220.81.120.9</td>
+                  <td style="font-size:12px; color:var(--text-secondary); white-space:nowrap;">2025-11-15 18:44:33</td>
+                  <td><span class="badge badge-info">WEB</span></td>
+                  <td style="font-family:monospace; font-size:12px;">220.81.120.9</td>
                 </tr>
               </tbody>
             </table>
@@ -800,109 +1374,184 @@
            PAGE: STRATEGY ENGINE
       ══════════════════════════ -->
       <div class="page" id="page-strategy">
-        <div class="page-header">
-          <h1 class="page-title">Strategy Engine — Wallet Strategy</h1>
+        <div class="page-header"><h1 class="page-title">Strategy Engine</h1></div>
+        <!-- Wallet selector -->
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+          <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">지갑 선택:</span>
+          <select class="form-control" style="width:260px;">
+            <option>BTC 보관 지갑 #1</option>
+            <option>ETH 보관 지갑</option>
+          </select>
         </div>
-        <div class="card" style="padding:0; margin-bottom:16px;">
+        <div class="card" style="padding:0;">
           <div style="padding:16px 20px 0;">
             <div class="tabs">
-              <div class="tab active" onclick="switchTab(this)">Basic</div>
-              <div class="tab" onclick="switchTab(this)">Advanced</div>
-              <div class="tab" onclick="switchTab(this)">? Learn more</div>
+              <div class="tab active" onclick="switchStrategyTab(this,'basic')">Basic Strategy</div>
+              <div class="tab" onclick="switchStrategyTab(this,'advanced')">Advanced Strategy</div>
+              <div class="tab" onclick="switchStrategyTab(this,'records')">승인 기록</div>
             </div>
           </div>
-          <div style="padding:20px;">
-            <div style="font-size:14px; font-weight:700; margin-bottom:12px;">Basic Strategy</div>
-            <div class="alert alert-warning" style="margin-bottom:20px;">
-              &#9888; If an order is not configured with a specific strategy, the wallet's basic strategy will be applied by default.
+          <!-- Basic -->
+          <div id="strategy-basic" style="padding:20px;">
+            <div class="alert alert-warning" style="margin-bottom:20px; font-size:12px;">
+              &#9888; 별도 조건 미설정 시 모든 출금에 이 기본 정책이 적용됩니다.
             </div>
-            <div class="card strategy-card" style="border:1px solid var(--border);">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+            <div style="border:1px solid var(--border); border-radius:10px; padding:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
                 <div>
-                  <div class="strategy-title">Wallet Basic Strategy</div>
-                  <div class="strategy-meta">
-                    Effective Time: 2024-01-01 00:00 &nbsp;|&nbsp; Strategy ID: WBS-20240101-001
-                  </div>
+                  <div style="font-size:15px; font-weight:700;">Wallet Basic Strategy</div>
+                  <div style="font-size:12px; color:var(--text-secondary); margin-top:3px;">적용일: 2024-01-01 00:00 &nbsp;|&nbsp; ID: WBS-20240101-001</div>
                 </div>
                 <div style="display:flex; gap:8px;">
-                  <button class="btn btn-outline btn-sm">Strategy Approval Records</button>
-                  <button class="btn btn-primary btn-sm">Edit</button>
+                  <button class="btn btn-outline btn-sm" onclick="switchStrategyTab(document.querySelector('#page-strategy .tab:nth-child(3)'),'records')">승인 기록</button>
+                  <button class="btn btn-primary btn-sm" onclick="openSO('so-edit-strategy')">&#9998; 정책 수정</button>
                 </div>
               </div>
-              <div class="strategy-row">
-                <span class="strategy-row-label">Initiator</span>
-                <span class="strategy-row-value">All wallet members (including wallet users and API)</span>
-              </div>
-              <div class="strategy-row">
-                <span class="strategy-row-label">Scope</span>
-                <div class="strategy-row-value">
-                  <div class="strategy-pills">
-                    <span class="strategy-pill">Transfer Transactions</span>
-                    <span class="strategy-pill">Edit Basic Strategy</span>
-                    <span class="strategy-pill">Whitelist Management</span>
-                    <span class="strategy-pill">Web3 Transactions</span>
-                    <span class="strategy-pill">Fund Return</span>
-                    <span class="strategy-pill">Trade</span>
+              <div class="info-row"><span class="info-label">요청자 (Initiator)</span><div style="display:flex; gap:6px; flex-wrap:wrap;"><span class="signer-chip">&#128100; 김철수 (Master)</span><span class="signer-chip">&#128100; 이영희</span></div></div>
+              <div class="info-row">
+                <span class="info-label">서명 정책</span>
+                <div>
+                  <div style="font-size:15px; font-weight:700; margin-bottom:6px;">2 <span style="font-size:12px; font-weight:400; color:var(--text-secondary);">of</span> 3</div>
+                  <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <span class="signer-chip"><span class="signer-check">✓</span> 김철수</span>
+                    <span class="signer-chip"><span class="signer-check">✓</span> 이영희</span>
+                    <span class="signer-chip"><span class="signer-check">✓</span> 박민준</span>
                   </div>
                 </div>
               </div>
-              <div class="strategy-row" style="border-bottom:none; flex-direction:column; align-items:flex-start; gap:10px;">
-                <div style="font-size:13px; font-weight:600; color:var(--success);">&#10003; Approval</div>
-                <div style="background:#F8FAFC; border-radius:8px; padding:14px; width:100%;">
-                  <div style="font-size:12px; font-weight:600; margin-bottom:10px;">Approval and Sign</div>
-                  <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">Minimum Approval Count: <strong style="color:var(--text-primary);">1</strong></div>
-                  <div class="approver-row">
-                    <div class="approver-avatar">N</div>
-                    <span class="approver-name">NOTAEHAN</span>
-                  </div>
+              <div class="info-row">
+                <span class="info-label">적용 범위</span>
+                <div class="strategy-pills">
+                  <span class="strategy-pill">Transfer</span>
+                  <span class="strategy-pill">Edit Strategy</span>
+                  <span class="strategy-pill">Whitelist</span>
+                  <span class="strategy-pill">Fund Return</span>
                 </div>
               </div>
+              <div class="info-row" style="border-bottom:none;"><span class="info-label">승인 액션</span><span style="color:var(--success); font-weight:600;">&#10003; Approval &amp; Sign</span></div>
+            </div>
+          </div>
+          <!-- Advanced -->
+          <div id="strategy-advanced" style="display:none; padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div style="font-size:13px; color:var(--text-secondary);">기본 정책에 금액 조건을 추가합니다.</div>
+              <button class="btn btn-primary btn-sm" onclick="showToast('조건 추가 기능은 준비 중입니다.')">+ 조건 추가</button>
+            </div>
+            <div class="advanced-condition">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <div style="font-size:13px; font-weight:600;">조건 1: 출금 금액 ≥ <span style="color:var(--primary);">$50,000</span> 이상</div>
+                <div style="display:flex; gap:6px;">
+                  <button class="btn btn-outline btn-xs">수정</button>
+                  <button class="btn btn-danger btn-xs" style="background:transparent; color:var(--danger); border:1px solid rgba(239,68,68,0.3);">삭제</button>
+                </div>
+              </div>
+              <div style="font-size:12px; color:var(--text-secondary);">서명 요건: <strong style="color:var(--text-primary);">3 of 3</strong> (모든 서명자 동의 필요)</div>
+            </div>
+            <div class="alert alert-info" style="font-size:12px; margin-top:12px;">
+              &#8505; 조건 미해당 시 Basic 정책이 적용됩니다.
+            </div>
+          </div>
+          <!-- Approval Records -->
+          <div id="strategy-records" style="display:none; padding:20px;">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>변경 일시</th><th>변경자</th><th>변경 내용</th><th>유형</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="font-size:12px; white-space:nowrap;">2024-06-15 10:30:00</td>
+                    <td style="font-weight:600;">김철수 (Master)</td>
+                    <td style="font-size:12px; color:var(--text-secondary);">1 of 2 → 2 of 3 (서명자 박민준 추가)</td>
+                    <td><span class="badge badge-info">Basic 수정</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:12px; white-space:nowrap;">2024-01-01 00:00:00</td>
+                    <td style="font-weight:600;">김철수 (Master)</td>
+                    <td style="font-size:12px; color:var(--text-secondary);">최초 정책 생성: 2 of 3</td>
+                    <td><span class="badge badge-success">최초 생성</span></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
 
       <!-- ══════════════════════════
-           PAGE: WORKFLOWS (placeholder)
+           PAGE: SETTINGS — ACCOUNTS
       ══════════════════════════ -->
-      <div class="page" id="page-workflows">
-        <h1 class="page-title" style="margin-bottom:20px;">Workflows</h1>
-        <div class="card">
-          <div class="empty-state">
-            <div class="empty-icon">&#10003;</div>
-            <p>No active workflows</p>
-            <button class="btn btn-primary btn-sm">+ Create Workflow</button>
+      <div class="page" id="page-accounts">
+        <div class="page-header">
+          <h1 class="page-title">Account Management</h1>
+          <button class="btn btn-primary" onclick="openSO('so-add-account')">+ 계정 추가</button>
+        </div>
+        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+          <div class="input-with-icon" style="flex:1; min-width:200px; max-width:280px;">
+            <span class="iicon">&#128269;</span>
+            <input type="text" class="form-control" placeholder="이름 / 이메일 검색" />
+          </div>
+          <select class="form-control" style="width:130px;">
+            <option>전체 상태</option><option>활성화</option><option>비활성화</option>
+          </select>
+          <select class="form-control" style="width:130px;">
+            <option>전체 역할</option><option>Master</option><option>출금 요청자</option><option>출금 서명자</option><option>일반</option>
+          </select>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>이름</th><th>이메일</th><th>소속/직책</th><th>역할</th><th>상태</th><th>마지막 로그인</th><th>관리</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;">김철수</td>
+                  <td>kim@infiniteblock.io</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">자산운용팀 / 팀장</td>
+                  <td><span class="badge badge-info">Master</span></td>
+                  <td><span class="dot-status dot-green"></span>활성화</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-20 14:30</td>
+                  <td style="display:flex; gap:6px;">
+                    <button class="btn btn-outline btn-xs">수정</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">이영희</td>
+                  <td>lee@infiniteblock.io</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">자산운용팀 / 매니저</td>
+                  <td><span class="badge badge-success">출금 서명자</span></td>
+                  <td><span class="dot-status dot-green"></span>활성화</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-20 11:15</td>
+                  <td style="display:flex; gap:6px;">
+                    <button class="btn btn-outline btn-xs">수정</button>
+                    <button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:rgba(239,68,68,0.3);"
+                      onclick="openOTPModal('계정 삭제 확인', function(){ showToast('계정이 삭제되었습니다.'); })">삭제</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">박민준</td>
+                  <td>park@infiniteblock.io</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">자산운용팀 / 대리</td>
+                  <td><span class="badge badge-success">출금 서명자</span></td>
+                  <td><span class="dot-status dot-green"></span>활성화</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-19 09:12</td>
+                  <td style="display:flex; gap:6px;">
+                    <button class="btn btn-outline btn-xs">수정</button>
+                    <button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:rgba(239,68,68,0.3);"
+                      onclick="openOTPModal('계정 삭제 확인', function(){ showToast('계정이 삭제되었습니다.'); })">삭제</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-
 
       <!-- ══════════════════════════
            PAGE: DEVELOPER (placeholder)
       ══════════════════════════ -->
       <div class="page" id="page-developer">
-        <h1 class="page-title" style="margin-bottom:20px;">Developer</h1>
+        <div class="page-header"><h1 class="page-title">Developer</h1><button class="btn btn-primary">+ Create API Key</button></div>
         <div class="card">
-          <div class="alert alert-info" style="margin-bottom:16px;">&#128161; Manage your API keys and webhooks here.</div>
-          <div class="empty-state">
-            <div class="empty-icon">&lt;/&gt;</div>
-            <p>No API Keys configured</p>
-            <button class="btn btn-primary btn-sm">+ Create API Key</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════
-           PAGE: COLD WALLET (placeholder)
-      ══════════════════════════ -->
-      <div class="page" id="page-coldwallet">
-        <h1 class="page-title" style="margin-bottom:20px;">Cold Wallet</h1>
-        <div class="card">
-          <div class="empty-state">
-            <div class="empty-icon">&#10052;</div>
-            <p>No cold wallets configured</p>
-            <button class="btn btn-primary btn-sm">+ Request Cold Wallet</button>
-          </div>
+          <div class="alert alert-info" style="margin-bottom:16px;">&#128161; API 키와 웹훅을 관리하세요.</div>
+          <div class="empty-state"><div class="empty-icon">&lt;/&gt;</div><p>등록된 API 키가 없습니다</p></div>
         </div>
       </div>
 
@@ -914,40 +1563,46 @@
   /* ════════════════════════════════════
      PAGE NAVIGATION
   ════════════════════════════════════ */
-  const pageMap = {
-    wallet: 'Wallet',
-    transactions: 'Transactions',
-    whitelist: 'Whitelist Address',
-    loginhistory: 'Login History',
-    strategy: 'Strategy Engine',
-    workflows: 'Workflows',
+  const pageTitles = {
+    dashboard: 'Dashboard', wallet: 'Wallet', 'wallet-detail': 'Wallet',
+    transactions: 'Transactions', workflows: 'Workflows',
+    whitelist: 'Whitelist Address', loginhistory: 'Login History',
+    strategy: 'Strategy Engine', accounts: 'Account Management',
     developer: 'Developer',
-    coldwallet: 'Cold Wallet',
   };
 
   function showPage(pageId, navEl, subNavEl) {
-    // Hide all pages
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    // Show target
     const target = document.getElementById('page-' + pageId);
     if (target) target.classList.add('active');
 
-    // Update header title
-    const titleEl = document.getElementById('headerTitle');
-    if (titleEl) titleEl.textContent = pageMap[pageId] || pageId;
+    document.getElementById('headerTitle').textContent = pageTitles[pageId] || pageId;
 
-    // Update nav active state
+    // Breadcrumb
+    const bc = document.getElementById('headerBreadcrumb');
+    if (pageId === 'wallet-detail') {
+      bc.innerHTML = '<span class="breadcrumb"><span class="bc-link" onclick="showPage(\'wallet\',document.getElementById(\'nav-wallet\'))">Wallet</span> › <span>' + (document.getElementById('detailWalletName').textContent) + '</span></span>';
+    } else { bc.innerHTML = ''; }
+
+    // Nav highlight
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.querySelectorAll('.nav-sub-item').forEach(n => n.classList.remove('active'));
     if (navEl) navEl.classList.add('active');
     if (subNavEl) subNavEl.classList.add('active');
 
-    // Close mobile sidebar
     closeMobileSidebar();
   }
 
+  function openWalletDetail(walletId) {
+    const names = { wallet1: 'BTC 보관 지갑 #1', wallet2: 'ETH 보관 지갑' };
+    const coins = { wallet1: 'BTC / Bitcoin', wallet2: 'ETH / Ethereum' };
+    document.getElementById('detailWalletName').textContent = names[walletId] || '지갑';
+    document.getElementById('detailCoin').textContent = coins[walletId] || '—';
+    showPage('wallet-detail', document.getElementById('nav-wallet'));
+  }
+
   /* ════════════════════════════════════
-     EXPANDABLE SUB-MENUS
+     SIDEBAR SUB-MENUS
   ════════════════════════════════════ */
   function toggleSub(subId, navEl) {
     const sub = document.getElementById(subId);
@@ -957,65 +1612,198 @@
   }
 
   /* ════════════════════════════════════
-     TABS (generic)
+     TABS
   ════════════════════════════════════ */
-  function switchTab(el) {
+  function switchSimpleTab(el) {
     const parent = el.parentElement;
     parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
   }
 
-  function switchWalletTab(el, tabId) {
-    const parent = el.closest('.card');
-    parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  function switchDetailTab(el, tabId) {
+    document.getElementById('walletDetailTabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-    document.getElementById('tab-tokens').style.display = tabId === 'tokens' ? 'block' : 'none';
-    document.getElementById('tab-nfts').style.display = tabId === 'nfts' ? 'block' : 'none';
+    document.getElementById('detail-coins').style.display = tabId === 'coins' ? 'block' : 'none';
+    document.getElementById('detail-history').style.display = tabId === 'history' ? 'block' : 'none';
   }
 
-  function switchSlideTab(el, tabId) {
-    const container = el.closest('.slideover-body');
-    container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  function switchWorkflowTab(el, status) {
+    el.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-    document.getElementById('byCurrency').style.display = tabId === 'byCurrency' ? 'block' : 'none';
+    const items = document.querySelectorAll('#workflows-list .workflow-item');
+    items.forEach(item => {
+      const s = item.dataset.status;
+      item.style.display = (status === 'all' || s === status) ? 'block' : 'none';
+    });
+  }
+
+  function switchStrategyTab(el, tabId) {
+    document.querySelectorAll('#page-strategy .tab').forEach(t => t.classList.remove('active'));
+    if (el && el.classList) el.classList.add('active');
+    document.getElementById('strategy-basic').style.display = tabId === 'basic' ? 'block' : 'none';
+    document.getElementById('strategy-advanced').style.display = tabId === 'advanced' ? 'block' : 'none';
+    document.getElementById('strategy-records').style.display = tabId === 'records' ? 'block' : 'none';
   }
 
   /* ════════════════════════════════════
-     SLIDE-OVER PANEL
+     MODALS
   ════════════════════════════════════ */
-  function openSlideOver() {
-    document.getElementById('slideOver').classList.add('open');
-    document.getElementById('slideOverlay').classList.add('open');
+  function openModal(id) {
+    document.getElementById('globalOverlay').classList.add('open');
+    document.getElementById(id).classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    // Only close overlay if no other modal/SO open
+    if (!document.querySelector('.modal.open, .slideover.open')) {
+      document.getElementById('globalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
 
-  function closeSlideOver() {
-    document.getElementById('slideOver').classList.remove('open');
-    document.getElementById('slideOverlay').classList.remove('open');
+  /* ════════════════════════════════════
+     SLIDE-OVERS
+  ════════════════════════════════════ */
+  function openSO(id) {
+    document.getElementById('globalOverlay').classList.add('open');
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSO(id) {
+    document.getElementById(id).classList.remove('open');
+    if (!document.querySelector('.modal.open, .slideover.open')) {
+      document.getElementById('globalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+  function closeAll() {
+    document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open'));
+    document.querySelectorAll('.slideover.open').forEach(s => s.classList.remove('open'));
+    document.getElementById('globalOverlay').classList.remove('open');
     document.body.style.overflow = '';
   }
 
   /* ════════════════════════════════════
-     CHAR COUNTER
+     OTP MODAL (reusable)
   ════════════════════════════════════ */
-  function updateCharCount(input) {
-    document.getElementById('charCount').textContent = input.value.length;
+  let otpCallback = null;
+  function openOTPModal(title, cb) {
+    document.getElementById('otpModalTitle').textContent = title || 'OTP 인증';
+    document.getElementById('otpModalErr').style.display = 'none';
+    document.querySelectorAll('#otpModalRow .otp-box').forEach(b => { b.value = ''; b.classList.remove('err'); });
+    otpCallback = cb || null;
+    openModal('modal-otp');
+    setTimeout(() => document.querySelector('#otpModalRow .otp-box').focus(), 100);
+  }
+  function confirmOTP() {
+    const code = Array.from(document.querySelectorAll('#otpModalRow .otp-box')).map(b => b.value).join('');
+    if (code.length < 6) {
+      const err = document.getElementById('otpModalErr');
+      err.textContent = '6자리 코드를 모두 입력해주세요.';
+      err.style.display = 'block';
+      return;
+    }
+    closeModal('modal-otp');
+    if (otpCallback) otpCallback();
+  }
+
+  /* ════════════════════════════════════
+     DEPOSIT QR
+  ════════════════════════════════════ */
+  function openDepositQR(coin, network, address) {
+    document.getElementById('qrCoinLabel').textContent = '코인: ' + coin + ' — ' + network;
+    document.getElementById('qrAddress').textContent = address;
+    openModal('modal-deposit-qr');
+  }
+  function copyAddress() {
+    const addr = document.getElementById('qrAddress').textContent;
+    navigator.clipboard && navigator.clipboard.writeText(addr);
+    showToast('주소가 복사되었습니다.');
+  }
+
+  /* ════════════════════════════════════
+     COLD WALLET CREATION — NETWORK FILTER
+  ════════════════════════════════════ */
+  const networkMap = {
+    BTC: ['Bitcoin Mainnet'],
+    ETH: ['Ethereum Mainnet'],
+    USDT: ['Ethereum (ERC-20)', 'TRON (TRC-20)', 'BNB Smart Chain'],
+    BNB: ['BNB Smart Chain'],
+    TRX: ['TRON Mainnet'],
+    FIL: ['Filecoin EVM'],
+  };
+  function updateNetwork() {
+    const coin = document.getElementById('cwCoin').value;
+    const sel = document.getElementById('cwNetwork');
+    sel.innerHTML = '<option value="">Select network ▾</option>';
+    (networkMap[coin] || []).forEach(n => {
+      const o = document.createElement('option');
+      o.textContent = n;
+      sel.appendChild(o);
+    });
+  }
+  function addPendingWallet() {
+    showToast('콜드월렛 생성 요청이 제출되었습니다. Admin이 처리 후 이메일로 알림드립니다.');
+  }
+
+  /* ════════════════════════════════════
+     STRATEGY COUNTER
+  ════════════════════════════════════ */
+  let nVal = 2;
+  function changeN(delta) {
+    nVal = Math.max(1, Math.min(3, nVal + delta));
+    document.getElementById('nVal').textContent = nVal;
+  }
+
+  /* ════════════════════════════════════
+     OTP INPUT HELPERS
+  ════════════════════════════════════ */
+  function otpMove(el, idx, wrapId) {
+    el.value = el.value.replace(/\D/g,'');
+    const boxes = document.getElementById(wrapId).querySelectorAll('.otp-box');
+    if (el.value && idx < 5) boxes[idx + 1].focus();
+    boxes.forEach(b => b.classList.remove('err'));
+  }
+  function otpBack(e, el, idx, wrapId) {
+    if (e.key === 'Backspace' && !el.value && idx > 0) {
+      document.getElementById(wrapId).querySelectorAll('.otp-box')[idx - 1].focus();
+    }
+  }
+
+  /* ════════════════════════════════════
+     TOAST
+  ════════════════════════════════════ */
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(80px)';
+    }, 3000);
   }
 
   /* ════════════════════════════════════
      MOBILE SIDEBAR
   ════════════════════════════════════ */
-  function toggleMobileSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('mobileOverlay');
-    sidebar.classList.toggle('mobile-open');
-    overlay.classList.toggle('open');
+  function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const ov = document.getElementById('globalOverlay');
+    const isOpen = sb.classList.toggle('open');
+    if (isOpen) { ov.classList.add('open'); ov.onclick = closeMobileSidebar; }
+    else { ov.classList.remove('open'); ov.onclick = closeAll; }
   }
-
   function closeMobileSidebar() {
     if (window.innerWidth < 768) {
-      document.getElementById('sidebar').classList.remove('mobile-open');
-      document.getElementById('mobileOverlay').classList.remove('open');
+      document.getElementById('sidebar').classList.remove('open');
+      if (!document.querySelector('.modal.open, .slideover.open')) {
+        document.getElementById('globalOverlay').classList.remove('open');
+      }
+      document.getElementById('globalOverlay').onclick = closeAll;
     }
   }
 </script>
