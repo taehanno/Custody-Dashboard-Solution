@@ -1219,6 +1219,96 @@
 </div>
 
 <!-- ══════════════════════════════════════
+     MODAL: Coin Rejected Detail (4-5-3)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-coin-rejected" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">&#10006; 코인 추가 거절 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-coin-rejected')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- Coin header -->
+    <div style="display:flex; align-items:center; gap:14px; padding:4px 0 16px;">
+      <div id="crj-circle" style="width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:700; flex-shrink:0;">?</div>
+      <div>
+        <div style="font-size:16px; font-weight:700;" id="crj-coin">—</div>
+        <div style="font-size:12px; color:var(--text-secondary);" id="crj-network">—</div>
+      </div>
+      <span class="badge badge-danger" style="margin-left:auto;">&#10006; 거절됨</span>
+    </div>
+    <!-- Info rows -->
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">지갑명</span><span id="crj-wallet">—</span></div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">요청일시</span><span style="font-size:12px;" id="crj-requested">—</span></div>
+      <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">거절일시</span><span style="font-size:12px;" id="crj-rejected-at">—</span></div>
+    </div>
+    <!-- Reject reason -->
+    <div>
+      <div style="font-size:12px; font-weight:700; color:var(--danger); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        &#9888; Admin 거절 사유
+      </div>
+      <div style="font-size:13px; color:var(--text-primary); background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:12px 14px; line-height:1.7;" id="crj-reason">—</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-coin-rejected')">닫기</button>
+    <button class="btn btn-primary" id="crj-rerequest-btn" onclick="openRerequestCoin()">&#8635; 재요청하기 &#8594;</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDEOVER: Coin Re-request (4-5-4)
+══════════════════════════════════════ -->
+<div class="slideover" id="so-rerequest-coin">
+  <div class="so-header">
+    <div class="so-title">&#8635; 코인 추가 재요청</div>
+    <button class="so-close" onclick="closeSO('so-rerequest-coin')">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <!-- Previous rejected info -->
+    <div class="alert" style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; margin-bottom:16px; padding:12px 14px;">
+      <div style="font-size:12px; font-weight:700; color:var(--danger); margin-bottom:6px;">&#9888; 이전 거절 건 참고</div>
+      <div style="font-size:12px; color:var(--text-secondary); line-height:1.6;" id="rr-prev-summary">—</div>
+    </div>
+    <!-- Form -->
+    <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.04em;">재요청 정보 수정</div>
+    <div class="form-group">
+      <label class="form-label">지갑 <span class="req">*</span></label>
+      <input class="form-control" id="rr-wallet" readonly style="background:#F8FAFC; color:var(--text-secondary);" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">코인 <span class="req">*</span></label>
+      <select class="form-control" id="rr-coin" onchange="updateRRNetworks()">
+        <option value="">Select coin ▾</option>
+        <option value="BTC">BTC — Bitcoin</option>
+        <option value="ETH">ETH — Ethereum</option>
+        <option value="USDT">USDT — Tether</option>
+        <option value="BNB">BNB — BNB Chain</option>
+        <option value="TRX">TRX — TRON</option>
+        <option value="FIL">FIL — Filecoin</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">네트워크 <span class="req">*</span></label>
+      <select class="form-control" id="rr-network">
+        <option value="">코인 선택 후 자동 필터 ▾</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">재요청 사유 <span class="req">*</span></label>
+      <textarea class="form-control" rows="3" id="rr-reason" placeholder="변경 사항 또는 재요청 이유를 입력해주세요. 최대 200자" maxlength="200" style="resize:none;"></textarea>
+    </div>
+    <div class="alert alert-info" style="margin-top:4px;">
+      &#8505; 재요청 후 Admin 검토를 다시 거칩니다. 처리까지 1~2 영업일 소요됩니다.
+    </div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-outline" onclick="closeSO('so-rerequest-coin')">취소</button>
+    <button class="btn btn-primary" onclick="submitRerequestOTP()">재요청 제출 &#8594; OTP</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
      MODAL: Whitelist Detail
 ══════════════════════════════════════ -->
 <div class="modal" id="modal-wl-detail" style="max-width:460px;">
@@ -1921,9 +2011,14 @@
               <span class="todo-label">Whitelist 승인 대기</span>
               <span class="todo-count zero">0</span>
             </div>
-            <div class="todo-item" style="border-bottom:none;">
+            <div class="todo-item">
               <span class="todo-label">지갑 생성 요청 대기</span>
-              <span class="todo-count zero">0</span>
+              <span class="todo-count zero" id="todo-wallet-pending">0</span>
+            </div>
+            <div class="todo-item" style="border-bottom:none;">
+              <span class="todo-label">코인 추가 거절</span>
+              <span class="todo-count zero" id="todo-coin-rejected" style="cursor:pointer;"
+                onclick="gotoRejectedCoins()">0</span>
             </div>
             <span class="stat-link" style="margin-top:4px;" onclick="showPage('workflows', document.getElementById('nav-workflows'))">Workflows 바로가기 →</span>
           </div>
@@ -2115,6 +2210,15 @@
                     &#9203; 요청 중인 코인 <span id="coins-pending-count" style="background:#FEF3C7; color:#92400E; border-radius:10px; padding:1px 8px; font-size:11px;"></span>
                   </div>
                   <div id="coins-pending-list"></div>
+                </div>
+                <!-- Rejected coins section -->
+                <div id="coins-rejected-section" style="display:none; border-top:1px solid var(--border); padding:14px 20px;">
+                  <div style="font-size:12px; font-weight:700; color:var(--danger); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                    &#10006; 거절된 코인
+                    <span id="coins-rejected-count" style="background:#FEE2E2; color:#991B1B; border-radius:10px; padding:1px 8px; font-size:11px;"></span>
+                    <span style="font-size:11px; font-weight:400; color:var(--text-secondary); margin-left:4px;">[상세]에서 거절 사유 확인 및 재요청 가능</span>
+                  </div>
+                  <div id="coins-rejected-list"></div>
                 </div>
               </div>
               <!-- Activity Log Tab -->
@@ -2915,8 +3019,12 @@
   const _COIN_SYMBOLS = { BTC:'B', ETH:'E', USDT:'U', BNB:'B', TRX:'T', FIL:'F', XRP:'X' };
 
   let _COIN_DATA = [
-    { idx:0, coin:'BTC',  network:'Bitcoin Mainnet',   addr:'bc1q4d2jK...3f8e',       balance:'0.00000000', status:'active',  requestedAt:'2025-11-01 09:00' },
-    { idx:1, coin:'USDT', network:'Ethereum (ERC-20)', addr:'0x4d4bC4a1...C3E69F21',  balance:'0.00',       status:'active',  requestedAt:'2025-11-01 09:00' },
+    { idx:0, coin:'BTC',  network:'Bitcoin Mainnet',   addr:'bc1q4d2jK...3f8e',       balance:'0.00000000', status:'active',   requestedAt:'2025-11-01 09:00' },
+    { idx:1, coin:'USDT', network:'Ethereum (ERC-20)', addr:'0x4d4bC4a1...C3E69F21',  balance:'0.00',       status:'active',   requestedAt:'2025-11-01 09:00' },
+    { idx:2, coin:'ETH',  network:'Ethereum Mainnet',  addr:'—',                       balance:'0',          status:'pending',  requestedAt:'2025-11-20 10:30' },
+    { idx:3, coin:'BNB',  network:'BNB Smart Chain',   addr:'—',                       balance:'0',          status:'rejected', requestedAt:'2025-11-15 14:20',
+      rejectedAt:'2025-11-17 09:05',
+      rejectedReason:'해당 코인은 현재 보관 정책상 지원되지 않습니다. BNB Smart Chain 네트워크는 내년 1분기 이후 지원 예정입니다. ERC-20 기반 USDT 또는 Ethereum Mainnet 코인으로 재요청을 권장드립니다.' },
   ];
   let _currentWalletLabel = 'BTC 보관 지갑 #1';
   let _cdDetailIdx = null;
@@ -2939,8 +3047,9 @@
   }
 
   function renderCoinsTab() {
-    const active  = _COIN_DATA.filter(c => c.status === 'active');
-    const pending = _COIN_DATA.filter(c => c.status === 'pending');
+    const active   = _COIN_DATA.filter(c => c.status === 'active');
+    const pending  = _COIN_DATA.filter(c => c.status === 'pending');
+    const rejected = _COIN_DATA.filter(c => c.status === 'rejected');
     const walletName = _currentWalletLabel;
 
     // Active table
@@ -2996,11 +3105,147 @@
           </div>`;
       }).join('');
     }
+
+    // Rejected section
+    const rejectedSection = document.getElementById('coins-rejected-section');
+    const rejectedList    = document.getElementById('coins-rejected-list');
+    const rejectedCount   = document.getElementById('coins-rejected-count');
+    if (rejectedSection) rejectedSection.style.display = rejected.length ? '' : 'none';
+    if (rejectedCount)   rejectedCount.textContent = rejected.length + '건';
+    if (rejectedList && rejected.length) {
+      rejectedList.innerHTML = rejected.map(c => {
+        const color = _COIN_COLORS[c.coin] || '#94A3B8';
+        const sym   = _COIN_SYMBOLS[c.coin] || c.coin[0];
+        return `
+          <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; margin-bottom:8px;">
+            <div class="coin-circle" style="background:${color}; width:32px; height:32px; font-size:12px; flex-shrink:0;">${sym}</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:13px;">${c.coin}</div>
+              <div style="font-size:11px; color:var(--text-secondary);">${c.network}</div>
+              <div style="font-size:11px; color:var(--danger); margin-top:2px;">거절일: ${c.rejectedAt || '—'}</div>
+            </div>
+            <span class="badge badge-danger" style="flex-shrink:0;">&#10006; 거절됨</span>
+            <button class="btn btn-outline btn-xs" style="flex-shrink:0;"
+              onclick="openRejectedDetail(${c.idx})">상세</button>
+          </div>`;
+      }).join('');
+    }
+
+    _updateTodoBadges();
+  }
+
+  function _updateTodoBadges() {
+    const rejected = _COIN_DATA.filter(c => c.status === 'rejected');
+    const el = document.getElementById('todo-coin-rejected');
+    if (!el) return;
+    el.textContent = rejected.length;
+    if (rejected.length > 0) {
+      el.className = 'todo-count';
+      el.style.background = 'var(--danger)';
+    } else {
+      el.className = 'todo-count zero';
+      el.style.background = '';
+    }
+  }
+
+  let _crjIdx = null; // currently-open rejected coin idx
+
+  function openRejectedDetail(idx) {
+    const c = _COIN_DATA.find(d => d.idx === idx);
+    if (!c) return;
+    _crjIdx = idx;
+    const color = _COIN_COLORS[c.coin] || '#94A3B8';
+    const sym   = _COIN_SYMBOLS[c.coin] || c.coin[0];
+    const circle = document.getElementById('crj-circle');
+    circle.style.background = color;
+    circle.textContent = sym;
+    document.getElementById('crj-coin').textContent       = c.coin;
+    document.getElementById('crj-network').textContent    = c.network;
+    document.getElementById('crj-wallet').textContent     = _currentWalletLabel;
+    document.getElementById('crj-requested').textContent  = c.requestedAt;
+    document.getElementById('crj-rejected-at').textContent = c.rejectedAt || '—';
+    document.getElementById('crj-reason').textContent     = c.rejectedReason || '사유 없음';
+    openModal('modal-coin-rejected');
+  }
+
+  function gotoRejectedCoins() {
+    // Navigate to wallet → wallet detail → coins tab rejected section
+    // For demo: open wallet detail page and scroll to rejected section
+    showPage('wallet-detail', document.getElementById('nav-wallet'));
+    setTimeout(() => {
+      // Activate Coins tab if not active
+      const tabs = document.querySelectorAll('#walletDetailTabs .tab');
+      tabs.forEach(t => t.classList.remove('active'));
+      tabs[0] && tabs[0].classList.add('active');
+      ['detail-coins','detail-history','detail-actlog'].forEach((id,i) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = i === 0 ? 'block' : 'none';
+      });
+      const rejSec = document.getElementById('coins-rejected-section');
+      if (rejSec) rejSec.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 300);
+  }
+
+  function openRerequestCoin() {
+    const c = _COIN_DATA.find(d => d.idx === _crjIdx);
+    if (!c) return;
+    closeModal('modal-coin-rejected');
+    _afterClose(() => {
+      // Pre-fill form
+      document.getElementById('rr-wallet').value = _currentWalletLabel;
+      document.getElementById('rr-coin').value = c.coin;
+      updateRRNetworks();
+      setTimeout(() => { document.getElementById('rr-network').value = c.network; }, 50);
+      document.getElementById('rr-reason').value = '';
+      document.getElementById('rr-prev-summary').textContent =
+        `코인: ${c.coin} / 네트워크: ${c.network} / 거절일: ${c.rejectedAt || '—'}\n사유: ${c.rejectedReason || '—'}`;
+      openSO('so-rerequest-coin');
+    });
+  }
+
+  function updateRRNetworks() {
+    const coin = document.getElementById('rr-coin').value;
+    const sel  = document.getElementById('rr-network');
+    sel.innerHTML = '<option value="">네트워크 선택 ▾</option>';
+    (networkMap[coin] || []).forEach(n => {
+      const o = document.createElement('option');
+      o.value = o.textContent = n;
+      sel.appendChild(o);
+    });
+    if ((networkMap[coin] || []).length === 1) sel.value = networkMap[coin][0];
+  }
+
+  function submitRerequestOTP() {
+    const coin    = document.getElementById('rr-coin').value;
+    const network = document.getElementById('rr-network').value;
+    const reason  = (document.getElementById('rr-reason').value || '').trim();
+    if (!coin)    { showToast('코인을 선택해주세요.'); return; }
+    if (!network) { showToast('네트워크를 선택해주세요.'); return; }
+    if (!reason)  { showToast('재요청 사유를 입력해주세요.'); return; }
+    // Dedup check: not already active/pending with same coin+network
+    const dup = _COIN_DATA.find(d => d.coin === coin && d.network === network && (d.status === 'active' || d.status === 'pending'));
+    if (dup) { showToast('이미 활성화 또는 요청 중인 코인/네트워크입니다.'); return; }
+    closeSO('so-rerequest-coin');
+    _afterClose(() => openOTPModal('코인 추가 요청', () => {
+      // Remove the old rejected entry
+      _COIN_DATA = _COIN_DATA.filter(d => d.idx !== _crjIdx);
+      // Add new pending entry
+      const now = new Date();
+      const ts  = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' +
+                  String(now.getDate()).padStart(2,'0') + ' ' +
+                  String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+      _COIN_DATA.push({ idx: _COIN_DATA.length, coin, network, addr:'—', balance:'0', status:'pending', requestedAt: ts });
+      _COIN_DATA.forEach((d, i) => d.idx = i);
+      _crjIdx = null;
+      renderCoinsTab();
+      showToast('코인 추가 재요청이 접수되었습니다. Admin 검토 후 처리됩니다.');
+    }));
   }
 
   function openCoinDetail(idx) {
     const c = _COIN_DATA.find(d => d.idx === idx);
     if (!c) return;
+    if (c.status === 'rejected') { openRejectedDetail(idx); return; }
     _cdDetailIdx = idx;
     const color = _COIN_COLORS[c.coin] || '#94A3B8';
     const sym   = _COIN_SYMBOLS[c.coin] || c.coin[0];
