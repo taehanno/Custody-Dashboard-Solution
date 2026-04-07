@@ -745,8 +745,8 @@
     </div>
     <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
       <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Travel Rule</div>
-      <div class="info-row" style="padding:6px 0;"><span class="info-label">수신자</span><span>홍길동</span></div>
-      <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">생년월일</span><span>1990-01-01</span></div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">수신 VASP</span><span>빗썸 (Bithumb) · KR-BTH</span></div>
+      <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">수신자명</span><span>홍길동</span></div>
     </div>
     <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
       <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">서명 현황 2/3 완료</div>
@@ -1406,6 +1406,11 @@
       <div class="info-row" style="padding:6px 0;"><span class="info-label">수량</span><span style="font-weight:700;">500.00 USDT <span style="color:var(--text-secondary); font-size:12px; font-weight:400;">≈ ₩690,000</span></span></div>
       <div class="info-row" style="padding:6px 0;"><span class="info-label">수신 주소</span><span style="font-family:monospace; font-size:12px;">0xA1b2...C9d0</span></div>
       <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">요청자</span><span>이영희</span></div>
+    </div>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
+      <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Travel Rule</div>
+      <div class="info-row" style="padding:6px 0;"><span class="info-label">수신 VASP</span><span>빗썸 (Bithumb) · KR-BTH</span></div>
+      <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">수신자명</span><span>홍길동</span></div>
     </div>
     <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:14px;">
       <div style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">서명 현황 1/3</div>
@@ -4268,13 +4273,18 @@
       const isPersonal = document.getElementById('bene-type-personal').classList.contains('selected');
       if (isPersonal) {
         const name = document.getElementById('wd-bene-personal-name').value.trim();
-        travelHTML = 'CODE Protocol — ' + vaspName + ' (' + vaspCode + ')<br>'
-          + '<span style="color:var(--text-secondary);">개인 · 성함: ' + name + '</span>';
+        travelHTML = '<div style="font-size:12px; line-height:1.8;">'
+          + '<div><span style="color:var(--text-secondary);">수신 VASP: </span>' + vaspName + ' · ' + vaspCode + '</div>'
+          + '<div><span style="color:var(--text-secondary);">수신자명: </span>' + name + '</div>'
+          + '</div>';
       } else {
         const corp = document.getElementById('wd-bene-corp-name').value.trim();
         const rep  = document.getElementById('wd-bene-corp-rep').value.trim();
-        travelHTML = 'CODE Protocol — ' + vaspName + ' (' + vaspCode + ')<br>'
-          + '<span style="color:var(--text-secondary);">법인 · ' + corp + ' / 대표 ' + rep + '</span>';
+        travelHTML = '<div style="font-size:12px; line-height:1.8;">'
+          + '<div><span style="color:var(--text-secondary);">수신 VASP: </span>' + vaspName + ' · ' + vaspCode + '</div>'
+          + '<div><span style="color:var(--text-secondary);">회사명: </span>' + corp + '</div>'
+          + '<div><span style="color:var(--text-secondary);">대표자명: </span>' + rep + '</div>'
+          + '</div>';
       }
     }
 
