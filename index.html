@@ -434,6 +434,25 @@
     /* Submit btn state */
     .btn-submit-wd { width: 100%; height: 48px; font-size: 15px; font-weight: 700; }
     .btn-submit-wd:disabled { background: #CBD5E1; cursor: not-allowed; opacity: 1; }
+    /* VASP partner grid */
+    .vasp-partner-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 8px; }
+    .vasp-partner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .vasp-partner-card {
+      border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px;
+      cursor: pointer; transition: border-color .15s, background .15s;
+      display: flex; align-items: center; gap: 9px;
+    }
+    .vasp-partner-card:hover { border-color: var(--primary); background: #F8FAFC; }
+    .vasp-partner-card.selected { border-color: var(--primary); background: #EFF6FF; }
+    .vasp-partner-card.other { grid-column: 1 / -1; background: #FAFAFA; }
+    .vasp-partner-card.other.selected { border-color: #F59E0B; background: #FFFBEB; }
+    .vpc-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .vpc-name { font-size: 13px; font-weight: 700; }
+    .vpc-code { font-size: 10px; color: var(--text-secondary); font-family: monospace; margin-top: 1px; }
+    .vpc-badge { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; background: #DCFCE7; color: #166534; margin-left: auto; flex-shrink: 0; }
+    .vpc-badge.unregistered { background: #FEF3C7; color: #92400E; }
+    /* Address input area (appears after VASP selection) */
+    .vasp-addr-input-area { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
 
     @media (max-width: 767px) { .wd-so { width: 100%; } }
   </style>
@@ -921,18 +940,62 @@
 
       <!-- Direct input panel -->
       <div id="addr-direct-panel" style="display:none;">
-        <div class="form-group" style="margin-bottom:8px; margin-top:4px;">
-          <label class="form-label">수신 주소 입력 <span class="req">*</span></label>
-          <input type="text" class="form-control" id="wd-addr-input" placeholder="수신 주소를 입력하세요"
-            oninput="onAddrInput(this.value)" autocomplete="off" />
-          <div class="form-hint">
-            Demo: <code>bithumb123</code> → VASP 확인(A) &nbsp;|&nbsp;
-            <code>0x4d4bInternal</code> → 내부지갑(C) &nbsp;|&nbsp;
-            기타 → VASP 미확인(B)
+        <!-- Step A: VASP partner selection -->
+        <div class="vasp-partner-label">&#127974; 수신 기관 선택 (Admin 등록 VASP)</div>
+        <div class="vasp-partner-grid" id="vasp-partner-grid">
+          <div class="vasp-partner-card" id="vpc-BTH" onclick="selectVASP('BTH','빗썸 (Bithumb)','KR-BTH','&#127974;','#FEF3C7')">
+            <div class="vpc-icon" style="background:#FEF3C7;">&#127974;</div>
+            <div><div class="vpc-name">빗썸</div><div class="vpc-code">KR-BTH</div></div>
+            <span class="vpc-badge">CODE &#10003;</span>
+          </div>
+          <div class="vasp-partner-card" id="vpc-UPT" onclick="selectVASP('UPT','업비트 (Upbit)','KR-UPT','&#127919;','#EFF6FF')">
+            <div class="vpc-icon" style="background:#EFF6FF;">&#127919;</div>
+            <div><div class="vpc-name">업비트</div><div class="vpc-code">KR-UPT</div></div>
+            <span class="vpc-badge">CODE &#10003;</span>
+          </div>
+          <div class="vasp-partner-card" id="vpc-KBT" onclick="selectVASP('KBT','코빗 (Korbit)','KR-KBT','&#128312;','#F0FDF4')">
+            <div class="vpc-icon" style="background:#F0FDF4;">&#128312;</div>
+            <div><div class="vpc-name">코빗</div><div class="vpc-code">KR-KBT</div></div>
+            <span class="vpc-badge">CODE &#10003;</span>
+          </div>
+          <div class="vasp-partner-card" id="vpc-CBX" onclick="selectVASP('CBX','코인베이스 (Coinbase)','US-CBX','&#127881;','#EFF6FF')">
+            <div class="vpc-icon" style="background:#EFF6FF;">&#127881;</div>
+            <div><div class="vpc-name">Coinbase</div><div class="vpc-code">US-CBX</div></div>
+            <span class="vpc-badge">CODE &#10003;</span>
+          </div>
+          <div class="vasp-partner-card" id="vpc-BNB" onclick="selectVASP('BNB','바이낸스 (Binance)','INT-BNB','&#128640;','#FFF7ED')">
+            <div class="vpc-icon" style="background:#FFF7ED;">&#128640;</div>
+            <div><div class="vpc-name">Binance</div><div class="vpc-code">INT-BNB</div></div>
+            <span class="vpc-badge">CODE &#10003;</span>
+          </div>
+          <div class="vasp-partner-card" id="vpc-OKX" onclick="selectVASP('OKX','OKX','INT-OKX','&#128200;','#F8FAFC')">
+            <div class="vpc-icon" style="background:#F8FAFC;">&#128200;</div>
+            <div><div class="vpc-name">OKX</div><div class="vpc-code">INT-OKX</div></div>
+            <span class="vpc-badge">CODE &#10003;</span>
+          </div>
+          <div class="vasp-partner-card other" id="vpc-OTHER" onclick="selectVASP('OTHER','기타 (미등록 VASP)','UNKNOWN','&#9888;&#65039;','#FEF9C3')">
+            <div class="vpc-icon" style="background:#FEF9C3;">&#9888;&#65039;</div>
+            <div><div class="vpc-name">기타 / 미등록 VASP</div><div class="vpc-code">목록에 없는 거래소</div></div>
+            <span class="vpc-badge unregistered">주의</span>
           </div>
         </div>
-        <!-- VASP Lookup result area -->
-        <div id="vasp-lookup-area" style="display:none;"></div>
+
+        <!-- Step B: Address input — appears after VASP is selected -->
+        <div class="vasp-addr-input-area" id="vasp-addr-input-area" style="display:none;">
+          <div class="form-group" style="margin-bottom:8px;">
+            <label class="form-label">수신 주소 입력 <span class="req">*</span></label>
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px; padding:8px 10px; background:#F8FAFC; border-radius:8px; border:1px solid var(--border);">
+              <span id="selected-vasp-icon" style="font-size:15px;"></span>
+              <span style="font-size:12px; font-weight:700;" id="selected-vasp-name"></span>
+              <span style="font-size:10px; font-family:monospace; color:var(--text-secondary);" id="selected-vasp-code"></span>
+              <button style="margin-left:auto; font-size:11px; color:var(--primary); background:none; border:none; cursor:pointer; font-weight:600; padding:0;" onclick="clearVASPSelection()">변경</button>
+            </div>
+            <input type="text" class="form-control" id="wd-addr-input" placeholder="수신 주소를 입력하세요"
+              oninput="onAddrInput(this.value)" autocomplete="off" />
+          </div>
+          <!-- VASP Lookup result area -->
+          <div id="vasp-lookup-area" style="display:none;"></div>
+        </div>
       </div>
     </div>
 
@@ -2171,13 +2234,14 @@
     document.getElementById('wd-amount').value = '';
     document.getElementById('wd-usd').textContent = '≈ $0.00';
     document.getElementById('wd-memo').value = '';
-    document.getElementById('wd-addr-input').value = '';
-    document.getElementById('vasp-lookup-area').style.display = 'none';
+    clearVASPSelection();
     updateWDCoin();
     selectAddrType('whitelist');
     document.getElementById('wd-submit-btn').disabled = false;
     openSO('so-withdrawal');
   }
+
+  let _selectedVASP = null; // { id, name, code }
 
   function selectAddrType(type) {
     const wlPanel  = document.getElementById('addr-whitelist-panel');
@@ -2196,13 +2260,44 @@
       optWL.classList.remove('selected');
       dirPanel.style.display = 'block';
       wlPanel.style.display  = 'none';
-      document.getElementById('vasp-lookup-area').style.display = 'none';
-      // reset to neutral — no case shown until address entered
+      // reset VASP selection and hide address input
+      clearVASPSelection();
       ['case-A','case-B','case-C','case-D'].forEach(id => {
         document.getElementById(id).style.display = 'none';
       });
       document.getElementById('wd-submit-btn').disabled = true;
     }
+  }
+
+  function selectVASP(id, name, code, icon, bgColor) {
+    _selectedVASP = { id, name, code };
+    // Highlight selected card
+    document.querySelectorAll('.vasp-partner-card').forEach(el => el.classList.remove('selected'));
+    document.getElementById('vpc-' + id).classList.add('selected');
+    // Populate selected badge
+    document.getElementById('selected-vasp-icon').innerHTML = icon;
+    document.getElementById('selected-vasp-name').textContent = name;
+    document.getElementById('selected-vasp-code').textContent = code;
+    // Show address input area
+    document.getElementById('vasp-addr-input-area').style.display = 'block';
+    document.getElementById('wd-addr-input').value = '';
+    document.getElementById('vasp-lookup-area').style.display = 'none';
+    // Clear any previous VASP case result
+    ['case-A','case-B','case-C','case-D'].forEach(i => {
+      document.getElementById(i).style.display = 'none';
+    });
+    document.getElementById('wd-submit-btn').disabled = true;
+    // Scroll address input into view
+    setTimeout(() => document.getElementById('wd-addr-input').focus(), 80);
+  }
+
+  function clearVASPSelection() {
+    _selectedVASP = null;
+    document.querySelectorAll('.vasp-partner-card').forEach(el => el.classList.remove('selected'));
+    document.getElementById('vasp-addr-input-area').style.display = 'none';
+    if (document.getElementById('wd-addr-input')) document.getElementById('wd-addr-input').value = '';
+    if (document.getElementById('vasp-lookup-area')) document.getElementById('vasp-lookup-area').style.display = 'none';
+    document.getElementById('wd-submit-btn').disabled = true;
   }
 
   function selectWLItem(idx) {
@@ -2225,7 +2320,7 @@
       return;
     }
     area.style.display = 'block';
-    area.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);"><span class="spin" style="display:inline-block;width:16px;height:16px;border:2px solid #CBD5E1;border-top-color:var(--primary);border-radius:50%;"></span> VASP 조회 중...</div>';
+    area.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);"><span class="spin" style="display:inline-block;width:16px;height:16px;border:2px solid #CBD5E1;border-top-color:var(--primary);border-radius:50%;"></span> CODE Protocol 주소 검증 중...</div>';
     ['case-A','case-B','case-C','case-D'].forEach(id => {
       document.getElementById(id).style.display = 'none';
     });
@@ -2234,14 +2329,23 @@
     _vasp_debounce = setTimeout(() => {
       area.style.display = 'none';
       const v = value.trim().toLowerCase();
-      if (v.includes('bithumb') || v.includes('bth') || v.includes('빗썸')) {
-        showVASPCase('A');
-      } else if (v.includes('internal') || v.includes('0x4d4b') || v.includes('내부')) {
+      // Internal wallet detection (regardless of selected VASP)
+      if (v.includes('internal') || v.includes('0x4d4b') || v.includes('내부')) {
         showVASPCase('C');
+        return;
+      }
+      // If a registered VASP (not OTHER) was selected → always Case A
+      if (_selectedVASP && _selectedVASP.id !== 'OTHER') {
+        // Populate VASP info into Case A
+        document.getElementById('vasp-name').textContent = _selectedVASP.name;
+        document.getElementById('vasp-code').textContent = _selectedVASP.code;
+        document.getElementById('vasp-name-hint').textContent = _selectedVASP.name.split(' ')[0];
+        showVASPCase('A');
       } else {
+        // OTHER or unknown → Case B
         showVASPCase('B');
       }
-    }, 1200);
+    }, 900);
   }
 
   function showVASPCase(caseId) {
