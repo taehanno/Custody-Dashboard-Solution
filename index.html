@@ -1137,10 +1137,10 @@
       </div>
     </div>
 
-    <!-- ── STEP 3: Travel Rule (dynamic) ── -->
+    <!-- ── STEP 3: Travel Rule 수신자 정보 (dynamic) ── -->
     <div class="step-label">
       <div class="step-num">3</div>
-      <div class="step-title">Travel Rule 정보 <span style="font-size:11px; font-weight:400; color:var(--text-secondary);">CODE Protocol</span></div>
+      <div class="step-title">Travel Rule 수신자 정보 <span style="font-size:11px; font-weight:400; color:var(--text-secondary);">CODE Protocol</span></div>
     </div>
     <div class="step-section" id="step3-content">
 
@@ -1156,7 +1156,7 @@
         </div>
       </div>
 
-      <!-- Case A: VASP confirmed (hidden by default) -->
+      <!-- Case A: VASP confirmed -->
       <div id="case-A" style="display:none;">
         <div class="vasp-result vasp-success">
           <div class="vasp-header">
@@ -1172,44 +1172,54 @@
             </div>
           </div>
           <div class="beneficiary-form">
-            <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">수신자 유형 선택</div>
             <!-- 개인 / 법인 toggle -->
+            <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">수신자 유형 선택</div>
             <div style="display:flex; gap:8px; margin-bottom:14px;">
-              <button class="btn-bene-type selected" id="bene-type-personal" onclick="selectBeneType('personal')">&#128100; 개인</button>
-              <button class="btn-bene-type" id="bene-type-corporate" onclick="selectBeneType('corporate')">&#127970; 법인</button>
+              <button class="btn-bene-type selected" id="bene-type-personal" onclick="selectBeneType('personal')">&#128100; 개인 Individual</button>
+              <button class="btn-bene-type" id="bene-type-corporate" onclick="selectBeneType('corporate')">&#127970; 법인 Corporate</button>
             </div>
+
             <!-- 개인 폼 -->
             <div id="bene-personal-form">
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">받는 분 성함 <span class="req">*</span></label>
+              <div class="form-group" style="margin-bottom:10px;">
+                <label class="form-label">받는 분 성함 / Beneficiary Name <span class="req">*</span></label>
                 <input type="text" class="form-control" id="wd-bene-personal-name"
-                  placeholder="홍길동 / Hong Gil-dong" />
-                <div class="form-hint">한글 또는 영문 입력 가능 · 수신 거래소에 등록된 실명</div>
+                  placeholder="홍길동 또는 Hong Gil-dong" />
+                <div class="form-hint">한글, 영문 모두 입력 가능 · 수신 거래소에 등록된 실명</div>
               </div>
             </div>
+
             <!-- 법인 폼 -->
             <div id="bene-corporate-form" style="display:none;">
               <div class="form-group">
-                <label class="form-label">회사명 <span class="req">*</span></label>
+                <label class="form-label">회사명 / Company Name <span class="req">*</span></label>
                 <input type="text" class="form-control" id="wd-bene-corp-name"
-                  placeholder="(주)인피닛블록 / Infiniteblock Inc." />
-                <div class="form-hint">한글 또는 영문 입력 가능</div>
+                  placeholder="(주)인피닛블록 또는 Infiniteblock Inc." />
+                <div class="form-hint">한글, 영문 모두 입력 가능</div>
               </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">대표자 성명 <span class="req">*</span></label>
+              <div class="form-group" style="margin-bottom:10px;">
+                <label class="form-label">대표자 성명 / Representative Name <span class="req">*</span></label>
                 <input type="text" class="form-control" id="wd-bene-corp-rep"
-                  placeholder="홍길동 / Hong Gil-dong" />
-                <div class="form-hint">한글 또는 영문 입력 가능</div>
+                  placeholder="홍길동 또는 Hong Gil-dong" />
+                <div class="form-hint">한글, 영문 모두 입력 가능</div>
               </div>
+            </div>
+
+            <!-- 수신 지갑 주소 (read-only) -->
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">수신 지갑 주소</label>
+              <input type="text" class="form-control" id="wd-recv-addr-display"
+                readonly style="background:#F8FAFC; color:var(--text-secondary); font-family:monospace; font-size:12px; cursor:default;" />
+              <div class="form-hint">자동 채움 (읽기 전용)</div>
             </div>
           </div>
           <div style="margin-top:12px; font-size:11px; color:#065F46; background:rgba(16,185,129,0.08); border-radius:6px; padding:8px 10px;">
-            &#8505; 주소와 성명 정보는 CODE Protocol을 통해 <strong id="vasp-name-hint">빗썸</strong>에서 조회·검증됩니다.
+            &#8505; 입력 정보는 CODE Protocol을 통해 <strong id="vasp-name-hint">빗썸</strong>으로 암호화 전송·검증됩니다.
           </div>
         </div>
       </div>
 
-      <!-- Case B: VASP unconfirmed (hidden by default) -->
+      <!-- Case B: VASP unconfirmed -->
       <div id="case-B" style="display:none;">
         <div class="vasp-result vasp-blocked">
           <div class="vasp-header">
@@ -1217,7 +1227,7 @@
             <span class="vasp-badge vasp-badge-blocked">수신 VASP를 확인할 수 없습니다</span>
           </div>
           <div style="font-size:13px; color:#991B1B; font-weight:500; margin-bottom:12px;">
-            이 주소는 등록된 VASP 주소가 아닙니다. 아래 중 하나를 선택해주세요.
+            수신 VASP를 확인할 수 없습니다. Whitelist 등록 또는 담당자 문의.
           </div>
           <div class="blocked-options">
             <div class="blocked-option">
@@ -1225,7 +1235,7 @@
               <div>
                 <div class="blocked-option-title">Whitelist에 주소 등록 후 출금</div>
                 <div class="blocked-option-desc">신청 후 Admin 승인 완료 시 출금 가능합니다.</div>
-                <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="closeSO('so-withdrawal'); openSO('so-add-address')">Whitelist 신청하기 (Master)</button>
+                <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="closeSO('so-withdrawal'); openSO('so-add-address')">Whitelist 신청하기</button>
               </div>
             </div>
             <div class="blocked-option">
@@ -1237,12 +1247,12 @@
             </div>
           </div>
           <div style="margin-top:12px; padding:10px 12px; background:rgba(239,68,68,0.06); border-radius:8px; font-size:12px; font-weight:600; color:var(--danger); display:flex; align-items:center; gap:6px;">
-            <span>&#10005;</span> 이 주소로는 현재 출금이 불가합니다.
+            <span>&#10005;</span> 현재 이 주소로 출금 불가 — 출금 신청 버튼 비활성화
           </div>
         </div>
       </div>
 
-      <!-- Case C: Internal wallet (hidden by default) -->
+      <!-- Case C: Internal wallet -->
       <div id="case-C" style="display:none;">
         <div class="vasp-result vasp-internal">
           <div class="vasp-header">
@@ -1404,7 +1414,10 @@
       <div class="confirm-summary-row"><span class="confirm-label">수신 주소</span><span style="font-family:monospace; font-size:12px;" id="cf-addr">bc1qar...xy9</span></div>
       <div class="confirm-summary-row"><span class="confirm-label">코인 / 네트워크</span><span id="cf-coin">BTC / Bitcoin Mainnet</span></div>
       <div class="confirm-summary-row"><span class="confirm-label">수량</span><span style="font-weight:700;" id="cf-amount">0.10 BTC <span style="color:var(--text-secondary); font-size:12px; font-weight:400;">≈ $6,250</span></span></div>
-      <div class="confirm-summary-row" id="cf-travel-row"><span class="confirm-label">Travel Rule</span><span id="cf-travel">사전 검증 완료</span></div>
+      <div class="confirm-summary-row" id="cf-travel-row">
+        <span class="confirm-label">Travel Rule</span>
+        <div style="text-align:right; font-size:12px;" id="cf-travel">사전 검증 완료</div>
+      </div>
       <div class="confirm-summary-row" style="border-bottom:none;"><span class="confirm-label">서명 필요</span><span><strong>2 of 3</strong> 서명 수집 후 Admin 처리</span></div>
     </div>
   </div>
@@ -2935,7 +2948,7 @@
       return;
     }
     area.style.display = 'block';
-    area.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);"><span class="spin" style="display:inline-block;width:16px;height:16px;border:2px solid #CBD5E1;border-top-color:var(--primary);border-radius:50%;"></span> CODE Protocol 주소 검증 중...</div>';
+    area.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);"><span class="spin" style="display:inline-block;width:16px;height:16px;border:2px solid #CBD5E1;border-top-color:var(--primary);border-radius:50%;"></span> 수신 VASP 확인 중입니다... 🔄</div>';
     ['case-A','case-B','case-C','case-D'].forEach(id => {
       document.getElementById(id).style.display = 'none';
     });
@@ -2977,6 +2990,15 @@
     });
     // B = blocked, cannot submit
     document.getElementById('wd-submit-btn').disabled = (caseId === 'B');
+    // Case A: auto-fill 수신 지갑 주소 read-only field
+    if (caseId === 'A') {
+      const addr = document.getElementById('wd-addr-input')
+        ? document.getElementById('wd-addr-input').value : '';
+      const recvEl = document.getElementById('wd-recv-addr-display');
+      if (recvEl) recvEl.value = addr;
+      // reset beneficiary type to personal by default
+      selectBeneType('personal');
+    }
   }
 
   function updateWDCoin() {
@@ -3002,6 +3024,19 @@
   }
 
   function openWithdrawalConfirm() {
+    // ── 수신자 정보 검증 (Case A only) ──
+    if (_wdCurrentCase === 'A') {
+      const isPersonal = document.getElementById('bene-type-personal').classList.contains('selected');
+      if (isPersonal) {
+        const name = document.getElementById('wd-bene-personal-name').value.trim();
+        if (!name) { showToast('받는 분 성함을 입력해주세요.'); return; }
+      } else {
+        const corp = document.getElementById('wd-bene-corp-name').value.trim();
+        const rep  = document.getElementById('wd-bene-corp-rep').value.trim();
+        if (!corp || !rep) { showToast('회사명과 대표자 성명을 입력해주세요.'); return; }
+      }
+    }
+
     const coin    = document.getElementById('wd-coin').value;
     const network = coinNetworkMap[coin] || coin;
     const amount  = document.getElementById('wd-amount').value || '0';
@@ -3017,14 +3052,36 @@
       addr = document.getElementById('wd-addr-input').value || '—';
     }
 
-    // Travel rule label
-    const travelLabels = { A: 'CODE Protocol 전송 예정', B: '출금 불가 (미등록 VASP)', C: '내부 이전 — 자동처리', D: '사전 검증 완료 (Whitelist)' };
+    // ── Travel Rule 상세 텍스트 ──
+    let travelHTML = '—';
+    if (_wdCurrentCase === 'D') {
+      travelHTML = '✅ Whitelist 사전 검증 완료';
+    } else if (_wdCurrentCase === 'C') {
+      travelHTML = '✅ 내부 지갑 이전 — 자동처리';
+    } else if (_wdCurrentCase === 'B') {
+      travelHTML = '<span style="color:var(--danger);">✕ 출금 불가 (미등록 VASP)</span>';
+    } else if (_wdCurrentCase === 'A') {
+      const vaspName = document.getElementById('vasp-name').textContent;
+      const vaspCode = document.getElementById('vasp-code').textContent;
+      const isPersonal = document.getElementById('bene-type-personal').classList.contains('selected');
+      if (isPersonal) {
+        const name = document.getElementById('wd-bene-personal-name').value.trim();
+        travelHTML = 'CODE Protocol — ' + vaspName + ' (' + vaspCode + ')<br>'
+          + '<span style="color:var(--text-secondary);">개인 · 성함: ' + name + '</span>';
+      } else {
+        const corp = document.getElementById('wd-bene-corp-name').value.trim();
+        const rep  = document.getElementById('wd-bene-corp-rep').value.trim();
+        travelHTML = 'CODE Protocol — ' + vaspName + ' (' + vaspCode + ')<br>'
+          + '<span style="color:var(--text-secondary);">법인 · ' + corp + ' / 대표 ' + rep + '</span>';
+      }
+    }
 
-    document.getElementById('cf-wallet').textContent  = _wdWalletName;
-    document.getElementById('cf-addr').textContent    = addr.length > 30 ? addr.slice(0,14)+'...'+addr.slice(-8) : addr;
-    document.getElementById('cf-coin').textContent    = symbol + ' / ' + network;
-    document.getElementById('cf-amount').innerHTML    = amount + ' ' + symbol + ' <span style="color:var(--text-secondary);font-size:12px;font-weight:400;">' + usdText + '</span>';
-    document.getElementById('cf-travel').textContent  = travelLabels[_wdCurrentCase] || '—';
+    document.getElementById('cf-wallet').textContent = _wdWalletName;
+    document.getElementById('cf-addr').textContent   = addr.length > 30 ? addr.slice(0,14)+'...'+addr.slice(-8) : addr;
+    document.getElementById('cf-coin').textContent   = symbol + ' / ' + network;
+    document.getElementById('cf-amount').innerHTML   = amount + ' ' + symbol
+      + ' <span style="color:var(--text-secondary);font-size:12px;font-weight:400;">' + usdText + '</span>';
+    document.getElementById('cf-travel').innerHTML   = travelHTML;
 
     openModal('modal-wd-confirm');
   }
