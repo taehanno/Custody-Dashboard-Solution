@@ -442,52 +442,54 @@
     <div class="main">
 
       <!-- ══════════════════════════
-           PAGE: 고객사 목록
+           PAGE: 고객사 목록 (섹션 2)
       ══════════════════════════ -->
       <div class="page active" id="page-clients">
         <div class="page-header">
           <h1 class="page-title">고객사 목록</h1>
-          <button class="btn btn-primary" id="btn-create-client" onclick="openModal('modal-create-client')">+ 고객사 생성</button>
         </div>
 
-        <div class="stats-row" style="grid-template-columns: repeat(4, 1fr);">
-          <div class="stat-card">
-            <span class="stat-label">전체</span>
-            <span class="stat-value stat-blue">24</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">활성화</span>
-            <span class="stat-value stat-green">22</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">출금 차단</span>
-            <span class="stat-value stat-orange">1</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">비활성화</span>
-            <span class="stat-value stat-gray">1</span>
-          </div>
+        <!-- 2-9: 온보딩 상태 흐름 -->
+        <div style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:var(--text-secondary); margin-bottom:16px; flex-wrap:wrap;">
+          <span style="background:#EFF6FF; color:#3B82F6; border-radius:5px; padding:3px 9px; font-weight:600;">⏳ 생성 대기</span>
+          <span>→</span>
+          <span style="background:#F5F3FF; color:#8B5CF6; border-radius:5px; padding:3px 9px; font-weight:600;">⏳ Master 미생성</span>
+          <span>→</span>
+          <span style="background:#ECFDF5; color:#10B981; border-radius:5px; padding:3px 9px; font-weight:600;">● 활성화</span>
+          <span style="margin-left:8px; color:#CBD5E1;">|</span>
+          <span style="background:#FFF7ED; color:#F97316; border-radius:5px; padding:3px 9px; font-weight:600; margin-left:8px;">⚠ 출금 차단</span>
+          <span style="background:#F1F5F9; color:#64748B; border-radius:5px; padding:3px 9px; font-weight:600;">● 비활성화</span>
+        </div>
+
+        <!-- 2-3 Stats -->
+        <div class="stats-row" style="grid-template-columns: repeat(5, 1fr);">
+          <div class="stat-card"><span class="stat-label">전체</span><span class="stat-value stat-blue" id="cs-stat-total">0</span></div>
+          <div class="stat-card"><span class="stat-label">⏳ 생성 대기</span><span class="stat-value" id="cs-stat-pending" style="color:#3B82F6;">0</span></div>
+          <div class="stat-card"><span class="stat-label">활성화</span><span class="stat-value stat-green" id="cs-stat-active">0</span></div>
+          <div class="stat-card"><span class="stat-label">출금 차단</span><span class="stat-value stat-orange" id="cs-stat-blocked">0</span></div>
+          <div class="stat-card"><span class="stat-label">비활성화</span><span class="stat-value stat-gray" id="cs-stat-inactive">0</span></div>
         </div>
 
         <div class="card" style="padding:0;">
-          <div style="padding:16px 20px; border-bottom:1px solid var(--border);">
+          <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
             <div class="toolbar" style="margin-bottom:0;">
               <div class="search-wrap">
                 <span class="search-icon">&#128269;</span>
-                <input type="text" class="form-control" placeholder="고객사명 / 사업자번호 검색" style="width:240px; padding-left:30px;" />
+                <input type="text" id="cs-search" class="form-control" placeholder="고객사명 / 사업자번호 검색" style="width:230px; padding-left:30px;" oninput="renderClientsTable()" />
               </div>
-              <select class="form-control" style="width:140px;">
-                <option>전체 상태</option>
-                <option>활성화</option>
-                <option>출금 차단</option>
-                <option>비활성화</option>
-                <option>대기</option>
+              <select class="form-control" id="cs-filter-status" style="width:150px;" onchange="renderClientsTable()">
+                <option value="">전체 상태</option>
+                <option value="kyb_done">생성 대기</option>
+                <option value="master_pending">Master 미생성</option>
+                <option value="active">활성화</option>
+                <option value="blocked">출금 차단</option>
+                <option value="inactive">비활성화</option>
               </select>
-              <select class="form-control" style="width:140px;">
-                <option>전체 위험등급</option>
-                <option>저위험</option>
-                <option>중위험</option>
-                <option>고위험</option>
+              <select class="form-control" id="cs-filter-risk" style="width:130px;" onchange="renderClientsTable()">
+                <option value="">전체 위험등급</option>
+                <option value="low">저위험</option>
+                <option value="mid">중위험</option>
+                <option value="high">고위험</option>
               </select>
             </div>
           </div>
@@ -503,41 +505,7 @@
                   <th>관리</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td style="font-weight:600;">알파투자운용(주)</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">123-45-67890</td>
-                  <td><span class="badge badge-success">저위험</span></td>
-                  <td>
-                    <div style="font-size:12.5px;">2026-05-09</div>
-                    <div style="font-size:11px; color:#F97316; font-weight:600;">D-32</div>
-                  </td>
-                  <td><span class="badge badge-success">&#9679; 활성화</span></td>
-                  <td><button class="btn btn-outline btn-xs">상세</button></td>
-                </tr>
-                <tr class="row-warn">
-                  <td style="font-weight:600;">베타캐피탈 유한회사</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">234-56-78901</td>
-                  <td><span class="badge badge-warning">중위험</span></td>
-                  <td>
-                    <div style="font-size:12.5px;">2026-04-12</div>
-                    <div style="font-size:11px; color:var(--danger); font-weight:600;">D+5</div>
-                  </td>
-                  <td><span class="badge badge-orange">&#9888; 출금 차단</span></td>
-                  <td><button class="btn btn-outline btn-xs">상세</button></td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">감마트레이딩(주)</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">345-67-89012</td>
-                  <td><span class="badge badge-success">저위험</span></td>
-                  <td>
-                    <div style="font-size:12.5px;">2027-02-05</div>
-                    <div style="font-size:11px; color:var(--text-secondary);">D-304</div>
-                  </td>
-                  <td><span class="badge badge-success">&#9679; 활성화</span></td>
-                  <td><button class="btn btn-outline btn-xs">상세</button></td>
-                </tr>
-              </tbody>
+              <tbody id="clients-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -1333,53 +1301,32 @@
      MODALS
 ════════════════════════════════════ -->
 
-<!-- modal-create-client: 고객사 생성 -->
+<!-- modal-create-client: 고객사 생성 (2-4) -->
 <div class="modal" id="modal-create-client">
   <div class="modal-header">
-    <span class="modal-title">고객사 생성 / Create Client</span>
+    <span class="modal-title">고객사 생성</span>
     <button class="modal-close" onclick="closeModal('modal-create-client')">&#10005;</button>
   </div>
   <div class="modal-body">
-    <!-- KYB 연동 정보 (읽기 전용) -->
+    <!-- KYB 연동 정보 (읽기 전용) — auto-filled from KYB data -->
     <div class="section-box">
       <div class="section-box-title">KYB 연동 정보 (읽기 전용)</div>
-      <div class="info-row">
-        <span class="info-label">법인명 (국문)</span>
-        <span class="info-value">알파투자운용(주)</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">법인명 (영문)</span>
-        <span class="info-value">Alpha Investment Mgmt</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">사업자번호</span>
-        <span class="info-value" style="font-family:monospace;">123-45-67890</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">위험등급</span>
-        <span class="info-value"><span class="badge badge-success">저위험</span></span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">KYB 완료일</span>
-        <span class="info-value">2026-04-07</span>
-      </div>
+      <div class="info-row"><span class="info-label">법인명 (국문)</span><span class="info-value" id="cc-name-kr">—</span></div>
+      <div class="info-row"><span class="info-label">법인명 (영문)</span><span class="info-value" id="cc-name-en">—</span></div>
+      <div class="info-row"><span class="info-label">사업자번호</span><span class="info-value" id="cc-biz-no" style="font-family:monospace;">—</span></div>
+      <div class="info-row"><span class="info-label">위험등급</span><span id="cc-risk">—</span></div>
+      <div class="info-row"><span class="info-label">KYB 완료일</span><span class="info-value" id="cc-kyb-date">—</span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">담당 AML</span><span class="info-value" id="cc-aml-officer">—</span></div>
     </div>
-
     <!-- KYB 갱신 주기 -->
-    <div class="form-group">
-      <span class="form-label">KYB 갱신 주기</span>
+    <div class="form-group" style="margin-bottom:0;">
+      <span class="form-label">KYB 갱신 주기 <span style="color:var(--danger);">*</span></span>
       <div class="radio-group">
-        <label class="radio-item">
-          <input type="radio" name="renewal" value="1" checked onchange="calcNextRenewal()"> 1년
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="renewal" value="2" onchange="calcNextRenewal()"> 2년
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="renewal" value="3" onchange="calcNextRenewal()"> 3년
-        </label>
+        <label class="radio-item"><input type="radio" name="renewal" value="1" checked onchange="calcNextRenewal()"> 1년</label>
+        <label class="radio-item"><input type="radio" name="renewal" value="2" onchange="calcNextRenewal()"> 2년</label>
+        <label class="radio-item"><input type="radio" name="renewal" value="3" onchange="calcNextRenewal()"> 3년</label>
       </div>
-      <div class="renewal-hint" id="renewal-hint">다음 갱신일: 2027-04-07</div>
+      <div class="renewal-hint" id="renewal-hint"></div>
     </div>
   </div>
   <div class="modal-footer">
@@ -1388,7 +1335,7 @@
   </div>
 </div>
 
-<!-- modal-create-master: Master 계정 생성 -->
+<!-- modal-create-master: Master 계정 생성 (2-5) -->
 <div class="modal" id="modal-create-master">
   <div class="modal-header">
     <span class="modal-title">Master 계정 생성</span>
@@ -1398,21 +1345,120 @@
     <div class="section-box" style="margin-bottom:14px;">
       <div class="info-row" style="border-bottom:none; padding:4px 0;">
         <span class="info-label">고객사</span>
-        <span class="info-value">알파투자운용(주)</span>
+        <span class="info-value" id="cm-corp-name">—</span>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label" for="master-email">Master 이메일 주소 <span style="color:var(--danger);">*</span></label>
-      <input type="email" id="master-email" class="form-control" placeholder="master@company.com" style="width:100%;" />
-      <div class="form-hint">임시 비밀번호가 이 이메일로 발송됩니다</div>
+      <input type="email" id="master-email" class="form-control" placeholder="master@company.com" style="width:100%;"
+        oninput="validateMasterEmail()" />
     </div>
+    <div class="form-group">
+      <label class="form-label" for="master-email-confirm">이메일 재입력 <span style="color:var(--danger);">*</span></label>
+      <input type="email" id="master-email-confirm" class="form-control" placeholder="이메일 주소를 다시 입력하세요" style="width:100%;"
+        oninput="validateMasterEmail()" />
+    </div>
+    <div id="master-email-err" style="font-size:12px; color:var(--danger); margin-top:-8px; margin-bottom:10px; display:none;"></div>
     <div class="alert alert-warning" style="margin-bottom:0;">
-      &#9888; Master 계정은 고객사당 1명만 가능합니다.
+      &#9888; Master 계정은 고객사당 1명만 가능합니다. 임시 비밀번호가 이 이메일로 발송됩니다.
     </div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-create-master')">취소</button>
-    <button class="btn btn-primary" onclick="submitCreateMaster()">계정 생성 → OTP</button>
+    <button class="btn btn-primary" id="cm-submit-btn" onclick="submitCreateMaster()">계정 생성 → OTP</button>
+  </div>
+</div>
+
+<!-- modal-client-detail: 고객사 상세 (2-6) -->
+<div class="modal modal-wide" id="modal-client-detail">
+  <div class="modal-header">
+    <span class="modal-title" id="cd-corp-name">고객사 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-client-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- 기본 정보 -->
+    <div class="section-box">
+      <div class="section-box-title">고객사 정보</div>
+      <div class="info-row"><span class="info-label">사업자번호</span><span class="info-value" id="cd-biz-no" style="font-family:monospace;"></span></div>
+      <div class="info-row"><span class="info-label">위험등급</span><span id="cd-risk"></span></div>
+      <div class="info-row"><span class="info-label">상태</span><span id="cd-status-badge"></span></div>
+      <div class="info-row"><span class="info-label">KYB 갱신일</span><span class="info-value" id="cd-kyb-next"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">D-day</span><span class="info-value" id="cd-dday"></span></div>
+    </div>
+    <!-- 2-6 Master 계정 현황 -->
+    <div class="section-box" style="margin-bottom:0;">
+      <div class="section-box-title">Master 계정 현황</div>
+      <div id="cd-master-empty" style="display:none; color:var(--text-secondary); font-size:13px; padding:6px 0;">아직 Master 계정이 생성되지 않았습니다.</div>
+      <div id="cd-master-info">
+        <div class="info-row"><span class="info-label">이메일</span><span class="info-value" id="cd-master-email" style="font-family:monospace;"></span></div>
+        <div class="info-row"><span class="info-label">계정 상태</span><span id="cd-master-status"></span></div>
+        <div class="info-row" style="border-bottom:none;"><span class="info-label">최초 로그인</span><span class="info-value" id="cd-master-first-login"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer" id="cd-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-client-detail')">닫기</button>
+    <button class="btn btn-outline" id="cd-btn-pw-resend" onclick="openMasterPWResend()">임시 PW 재발송</button>
+    <button class="btn btn-primary" id="cd-btn-email-change" onclick="openMasterEmailChange()">이메일 변경</button>
+    <button class="btn btn-primary" id="cd-btn-create-master" onclick="openCreateMasterFromDetail()" style="display:none;">Master 계정 생성 →</button>
+  </div>
+</div>
+
+<!-- modal-master-pw-resend: 임시 PW 재발송 (2-7) -->
+<div class="modal" id="modal-master-pw-resend">
+  <div class="modal-header">
+    <span class="modal-title">임시 PW 재발송</span>
+    <button class="modal-close" onclick="closeModal('modal-master-pw-resend')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="pw-resend-corp"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">이메일</span><span class="info-value" id="pw-resend-email" style="font-family:monospace;"></span></div>
+    </div>
+    <div class="alert alert-info">
+      &#8505; OTP 인증 후 새 임시 비밀번호가 생성되어 이메일로 발송됩니다. <strong>기존 임시 비밀번호는 즉시 만료</strong>됩니다.
+    </div>
+    <div id="pw-resend-limit-warn" style="display:none;" class="alert alert-warning">
+      &#9888; 1시간 내 재발송 횟수: <span id="pw-resend-count"></span> / 3회. 제한에 도달하면 1시간 후 재시도 가능합니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-master-pw-resend')">취소</button>
+    <button class="btn btn-primary" id="pw-resend-btn" onclick="confirmPWResend()">재발송 → OTP</button>
+  </div>
+</div>
+
+<!-- modal-master-email-change: Master 이메일 변경 (2-8) -->
+<div class="modal" id="modal-master-email-change">
+  <div class="modal-header">
+    <span class="modal-title">Master 이메일 변경</span>
+    <button class="modal-close" onclick="closeModal('modal-master-email-change')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="ec-corp"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">현재 이메일</span><span class="info-value" id="ec-current-email" style="font-family:monospace;"></span></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">새 이메일 주소 <span style="color:var(--danger);">*</span></label>
+      <input type="email" id="ec-new-email" class="form-control" style="width:100%;" placeholder="new@company.com" oninput="validateEmailChange()" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">새 이메일 재입력 <span style="color:var(--danger);">*</span></label>
+      <input type="email" id="ec-new-email-confirm" class="form-control" style="width:100%;" placeholder="이메일 주소를 다시 입력하세요" oninput="validateEmailChange()" />
+    </div>
+    <div id="ec-email-err" style="font-size:12px; color:var(--danger); margin-top:-8px; margin-bottom:10px; display:none;"></div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">변경 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea id="ec-reason" class="form-control" rows="2" maxlength="200" style="width:100%; resize:vertical;" placeholder="이메일 변경 사유를 입력하세요" oninput="validateEmailChange()"></textarea>
+    </div>
+    <div class="alert alert-warning" style="margin-top:12px; margin-bottom:0;">
+      &#9888; 변경 시 <strong>기존 세션 전체 즉시 종료</strong>되며, 기존·신규 이메일 모두에 보안 알림이 발송됩니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-master-email-change')">취소</button>
+    <button class="btn btn-danger" id="ec-submit-btn" onclick="confirmEmailChange()">이메일 변경 → OTP</button>
   </div>
 </div>
 
@@ -1963,11 +2009,8 @@
       }
     });
 
-    // 고객사 생성 버튼: general / master
-    var btnCreate = document.getElementById('btn-create-client');
-    if (btnCreate) {
-      btnCreate.style.display = (['general','master'].indexOf(_ADMIN_ROLE) !== -1) ? '' : 'none';
-    }
+    // 고객사 생성 버튼은 테이블 행별로 동적 표시 (renderClientsTable)
+    if (document.getElementById('clients-tbody')) renderClientsTable();
     // VASP 등록 버튼: general / master
     var btnVasp = document.getElementById('btn-create-vasp');
     if (btnVasp) {
@@ -2722,12 +2765,289 @@
   }
 
   /* ════════════════════════════════════
+     섹션 2: 고객사 관리 데이터
+  ════════════════════════════════════ */
+  var _CLIENTS_DATA = [
+    { idx:0, name:'알파투자운용(주)',     nameEn:'Alpha Investment Mgmt',  bizNo:'123-45-67890',
+      riskGrade:'low',  kybCompletedAt:'2025-10-15', nextKYB:'2026-05-09', dDay:-32, kybOfficer:'김담당',
+      status:'active',         masterEmail:'ki***@alpha.com',  masterStatus:'active',  masterFirstLogin:'2025-11-01 09:00' },
+    { idx:1, name:'베타캐피탈 유한회사', nameEn:'Beta Capital Ltd',         bizNo:'234-56-78901',
+      riskGrade:'mid',  kybCompletedAt:'2024-04-01', nextKYB:'2026-04-12', dDay:5,   kybOfficer:'이담당',
+      status:'blocked',        masterEmail:'pa***@beta.com',   masterStatus:'active',  masterFirstLogin:'2025-04-10 14:30' },
+    { idx:2, name:'감마트레이딩(주)',     nameEn:'Gamma Trading Corp',      bizNo:'345-67-89012',
+      riskGrade:'low',  kybCompletedAt:'2025-02-01', nextKYB:'2027-02-05', dDay:-304, kybOfficer:'박담당',
+      status:'active',         masterEmail:'ch***@gamma.com',  masterStatus:'active',  masterFirstLogin:'2025-02-10 10:00' },
+    { idx:3, name:'델타홀딩스 유한회사', nameEn:'Delta Holdings Ltd',       bizNo:'456-78-90123',
+      riskGrade:'low',  kybCompletedAt:'2026-04-07', nextKYB:null, dDay:null, kybOfficer:'김담당',
+      status:'kyb_done',       masterEmail:null, masterStatus:null, masterFirstLogin:null },
+    { idx:4, name:'엡실론파트너스(주)',   nameEn:'Epsilon Partners Corp',   bizNo:'567-89-01234',
+      riskGrade:'low',  kybCompletedAt:'2026-03-20', nextKYB:null, dDay:null, kybOfficer:'이담당',
+      status:'master_pending', masterEmail:null, masterStatus:null, masterFirstLogin:null },
+  ];
+  var _clientDetailIdx = null;
+  // Rate limit tracking for PW resend: { clientIdx: [timestamps] }
+  var _pwResendLog = {};
+
+  var _CS_STATUS_CFG = {
+    kyb_done:       { badge:'<span class="badge" style="background:#EFF6FF;color:#3B82F6;">&#9203; 생성 대기</span>' },
+    master_pending: { badge:'<span class="badge" style="background:#F5F3FF;color:#8B5CF6;">&#9203; Master 미생성</span>' },
+    active:         { badge:'<span class="badge badge-success">&#9679; 활성화</span>' },
+    blocked:        { badge:'<span class="badge badge-orange">&#9888; 출금 차단</span>' },
+    inactive:       { badge:'<span class="badge badge-gray">&#9679; 비활성화</span>' },
+  };
+
+  /* ── 2-3: Render clients table ── */
+  function renderClientsTable() {
+    var tbody = document.getElementById('clients-tbody');
+    if (!tbody) return;
+    var q   = (document.getElementById('cs-search')        || {}).value || '';
+    var fs  = (document.getElementById('cs-filter-status') || {}).value || '';
+    var fr  = (document.getElementById('cs-filter-risk')   || {}).value || '';
+    q = q.toLowerCase();
+
+    var list = _CLIENTS_DATA.filter(function(c) {
+      var matchQ = !q || c.name.toLowerCase().includes(q) || c.bizNo.includes(q);
+      var matchS = !fs || c.status === fs;
+      var matchR = !fr || c.riskGrade === fr;
+      return matchQ && matchS && matchR;
+    });
+
+    // Update stats
+    var all = _CLIENTS_DATA;
+    document.getElementById('cs-stat-total').textContent   = all.length;
+    document.getElementById('cs-stat-pending').textContent = all.filter(function(c){ return c.status==='kyb_done'||c.status==='master_pending'; }).length;
+    document.getElementById('cs-stat-active').textContent  = all.filter(function(c){ return c.status==='active'; }).length;
+    document.getElementById('cs-stat-blocked').textContent = all.filter(function(c){ return c.status==='blocked'; }).length;
+    document.getElementById('cs-stat-inactive').textContent= all.filter(function(c){ return c.status==='inactive'; }).length;
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:32px;">검색 결과가 없습니다.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(function(c) {
+      var riskBadge = _RISK_BADGE[c.riskGrade] || '<span class="badge badge-gray">—</span>';
+      var statusBadge = (_CS_STATUS_CFG[c.status] || {}).badge || '<span class="badge badge-gray">' + c.status + '</span>';
+
+      var kybCell = '—';
+      if (c.nextKYB) {
+        var dDayColor = c.dDay > 0 ? 'var(--danger)' : c.dDay > -40 ? '#F97316' : 'var(--text-secondary)';
+        var dDayLabel = c.dDay > 0 ? 'D+' + c.dDay : 'D' + c.dDay;
+        kybCell = '<div style="font-size:12.5px;">' + c.nextKYB + '</div><div style="font-size:11px; font-weight:600; color:' + dDayColor + ';">' + dDayLabel + '</div>';
+      } else if (c.status === 'kyb_done' || c.status === 'master_pending') {
+        kybCell = '<span style="font-size:11.5px; color:var(--text-secondary);">미설정</span>';
+      }
+
+      var rowCls = (c.dDay !== null && c.dDay > 0) ? ' class="row-warn"' : (c.dDay !== null && c.dDay > -40 ? '' : '');
+
+      // Action buttons
+      var actionBtns = '<button class="btn btn-outline btn-xs" onclick="openClientDetail(' + c.idx + ')">상세</button>';
+      if (c.status === 'kyb_done') {
+        actionBtns = '<button class="btn btn-primary btn-xs" onclick="openCreateClientFromKYB(' + c.idx + ')">고객사 생성</button>';
+      } else if (c.status === 'master_pending') {
+        actionBtns = '<button class="btn btn-outline btn-xs" style="color:#8B5CF6; border-color:rgba(139,92,246,0.4);" onclick="openClientDetail(' + c.idx + ')">Master 생성</button>';
+      }
+
+      return '<tr' + rowCls + '>' +
+        '<td style="font-weight:600;">' + c.name + '</td>' +
+        '<td style="font-size:12px;color:var(--text-secondary);">' + c.bizNo + '</td>' +
+        '<td>' + riskBadge + '</td>' +
+        '<td>' + kybCell + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td>' + actionBtns + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  /* ── 2-4: Open create-client modal populated from KYB data ── */
+  function openCreateClientFromKYB(clientIdx) {
+    var c = _CLIENTS_DATA[clientIdx]; if (!c) return;
+    _clientDetailIdx = clientIdx;
+    // Find matching KYB entry
+    var k = _KYB_DATA.find ? _KYB_DATA.find(function(k){ return k.bizNo === c.bizNo; }) : null;
+    document.getElementById('cc-name-kr').textContent   = c.name;
+    document.getElementById('cc-name-en').textContent   = c.nameEn || '—';
+    document.getElementById('cc-biz-no').textContent    = c.bizNo;
+    document.getElementById('cc-risk').innerHTML        = _RISK_BADGE[c.riskGrade] || '—';
+    document.getElementById('cc-kyb-date').textContent  = c.kybCompletedAt || '—';
+    document.getElementById('cc-aml-officer').textContent = c.kybOfficer || '—';
+    calcNextRenewal();
+    openModal('modal-create-client');
+  }
+
+  /* Also expose for KYB → create client flow */
+  function kybCreateClient() {
+    var k = _KYB_DATA[_kybDetailIdx]; if (!k) return;
+    // Find client entry with matching bizNo
+    var c = null;
+    for (var i = 0; i < _CLIENTS_DATA.length; i++) {
+      if (_CLIENTS_DATA[i].bizNo === k.bizNo) { c = _CLIENTS_DATA[i]; break; }
+    }
+    if (!c) {
+      // Create placeholder client entry
+      c = { idx: _CLIENTS_DATA.length, name: k.corpName, nameEn: k.corpNameEn, bizNo: k.bizNo,
+            riskGrade: k.riskGrade || 'low', kybCompletedAt: k.completedAt || '2026-04-07',
+            nextKYB: null, dDay: null, kybOfficer: k.officer,
+            status: 'kyb_done', masterEmail: null, masterStatus: null, masterFirstLogin: null };
+      _CLIENTS_DATA.push(c);
+    }
+    closeKYBDetail();
+    openCreateClientFromKYB(c.idx);
+  }
+
+  /* ── 2-6: Open client detail ── */
+  function openClientDetail(idx) {
+    var c = _CLIENTS_DATA[idx]; if (!c) return;
+    _clientDetailIdx = idx;
+    document.getElementById('cd-corp-name').textContent  = c.name;
+    document.getElementById('cd-biz-no').textContent     = c.bizNo;
+    document.getElementById('cd-risk').innerHTML         = _RISK_BADGE[c.riskGrade] || '—';
+    document.getElementById('cd-status-badge').innerHTML = (_CS_STATUS_CFG[c.status] || {}).badge || c.status;
+    document.getElementById('cd-kyb-next').textContent   = c.nextKYB || '—';
+
+    var ddEl = document.getElementById('cd-dday');
+    if (c.dDay !== null) {
+      var col = c.dDay > 0 ? 'var(--danger)' : c.dDay > -40 ? '#F97316' : 'var(--text-secondary)';
+      ddEl.innerHTML = '<span style="font-weight:600; color:' + col + ';">' + (c.dDay > 0 ? 'D+' : 'D') + c.dDay + '</span>';
+    } else { ddEl.textContent = '—'; }
+
+    var hasMaster = !!c.masterEmail;
+    document.getElementById('cd-master-empty').style.display = hasMaster ? 'none' : 'block';
+    document.getElementById('cd-master-info').style.display  = hasMaster ? 'block' : 'none';
+    document.getElementById('cd-btn-pw-resend').style.display     = hasMaster ? '' : 'none';
+    document.getElementById('cd-btn-email-change').style.display  = hasMaster ? '' : 'none';
+    document.getElementById('cd-btn-create-master').style.display = hasMaster ? 'none' : '';
+
+    if (hasMaster) {
+      document.getElementById('cd-master-email').textContent = c.masterEmail;
+      document.getElementById('cd-master-status').innerHTML  = c.masterStatus === 'active'
+        ? '<span class="badge badge-success">활성</span>'
+        : '<span class="badge badge-gray">비활성</span>';
+      document.getElementById('cd-master-first-login').textContent = c.masterFirstLogin || '미로그인';
+    }
+    openModal('modal-client-detail');
+  }
+
+  function openCreateMasterFromDetail() {
+    var c = _CLIENTS_DATA[_clientDetailIdx]; if (!c) return;
+    closeModal('modal-client-detail');
+    document.getElementById('cm-corp-name').textContent = c.name;
+    document.getElementById('master-email').value = '';
+    document.getElementById('master-email-confirm').value = '';
+    var errEl = document.getElementById('master-email-err');
+    if (errEl) errEl.style.display = 'none';
+    openModal('modal-create-master');
+  }
+
+  /* ── 2-5: Email validation ── */
+  var _EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  function validateMasterEmail() {
+    var e1 = (document.getElementById('master-email')         || {}).value || '';
+    var e2 = (document.getElementById('master-email-confirm') || {}).value || '';
+    var errEl  = document.getElementById('master-email-err');
+    var submitBtn = document.getElementById('cm-submit-btn');
+    var msg = '';
+    if (!e1) msg = '이메일 주소를 입력해주세요.';
+    else if (!_EMAIL_RE.test(e1)) msg = '올바른 이메일 형식이 아닙니다.';
+    else if (e2 && e1 !== e2) msg = '이메일 주소가 일치하지 않습니다.';
+    if (errEl) { errEl.textContent = msg; errEl.style.display = msg ? 'block' : 'none'; }
+    if (submitBtn) submitBtn.disabled = !!(msg || !e2);
+    return !msg && !!e2;
+  }
+
+  /* ── 2-7: PW Resend ── */
+  function openMasterPWResend() {
+    var c = _CLIENTS_DATA[_clientDetailIdx]; if (!c) return;
+    document.getElementById('pw-resend-corp').textContent  = c.name;
+    document.getElementById('pw-resend-email').textContent = c.masterEmail;
+    // Check rate limit (3/hour)
+    var now = Date.now();
+    var log = _pwResendLog[c.idx] || [];
+    log = log.filter(function(t){ return now - t < 3600000; }); // within 1h
+    _pwResendLog[c.idx] = log;
+    var limitWarnEl  = document.getElementById('pw-resend-limit-warn');
+    var countEl      = document.getElementById('pw-resend-count');
+    var sendBtn      = document.getElementById('pw-resend-btn');
+    if (log.length >= 3) {
+      if (limitWarnEl) { limitWarnEl.style.display = 'block'; }
+      if (countEl) countEl.textContent = log.length;
+      if (sendBtn) { sendBtn.disabled = true; sendBtn.title = '1시간 내 3회 제한 초과'; }
+    } else {
+      if (limitWarnEl) { limitWarnEl.style.display = log.length > 0 ? 'block' : 'none'; }
+      if (countEl) countEl.textContent = log.length;
+      if (sendBtn) { sendBtn.disabled = false; sendBtn.title = ''; }
+    }
+    closeModal('modal-client-detail');
+    openModal('modal-master-pw-resend');
+  }
+  function confirmPWResend() {
+    closeModal('modal-master-pw-resend');
+    openOTPModal('임시 PW 재발송', function() {
+      var c = _CLIENTS_DATA[_clientDetailIdx];
+      if (c) {
+        if (!_pwResendLog[c.idx]) _pwResendLog[c.idx] = [];
+        _pwResendLog[c.idx].push(Date.now());
+      }
+      showToast('새 임시 비밀번호가 발송되었습니다. 기존 임시 비밀번호는 즉시 만료됩니다.');
+    });
+  }
+
+  /* ── 2-8: Email Change ── */
+  function openMasterEmailChange() {
+    var c = _CLIENTS_DATA[_clientDetailIdx]; if (!c) return;
+    document.getElementById('ec-corp').textContent          = c.name;
+    document.getElementById('ec-current-email').textContent = c.masterEmail;
+    document.getElementById('ec-new-email').value = '';
+    document.getElementById('ec-new-email-confirm').value = '';
+    document.getElementById('ec-reason').value = '';
+    var errEl = document.getElementById('ec-email-err');
+    if (errEl) errEl.style.display = 'none';
+    var submitBtn = document.getElementById('ec-submit-btn');
+    if (submitBtn) submitBtn.disabled = true;
+    closeModal('modal-client-detail');
+    openModal('modal-master-email-change');
+  }
+  function validateEmailChange() {
+    var e1  = (document.getElementById('ec-new-email')         || {}).value || '';
+    var e2  = (document.getElementById('ec-new-email-confirm') || {}).value || '';
+    var reason = (document.getElementById('ec-reason')         || {}).value || '';
+    var c   = _CLIENTS_DATA[_clientDetailIdx];
+    var errEl = document.getElementById('ec-email-err');
+    var submitBtn = document.getElementById('ec-submit-btn');
+    var msg = '';
+    if (!e1) msg = '새 이메일을 입력해주세요.';
+    else if (!_EMAIL_RE.test(e1)) msg = '올바른 이메일 형식이 아닙니다.';
+    else if (c && e1 === c.masterEmail) msg = '현재 이메일과 동일합니다.';
+    else if (e2 && e1 !== e2) msg = '이메일 주소가 일치하지 않습니다.';
+    if (errEl) { errEl.textContent = msg; errEl.style.display = msg ? 'block' : 'none'; }
+    var valid = !msg && !!e2 && !!reason.trim();
+    if (submitBtn) submitBtn.disabled = !valid;
+    return valid;
+  }
+  function confirmEmailChange() {
+    if (!validateEmailChange()) return;
+    var newEmail = document.getElementById('ec-new-email').value;
+    closeModal('modal-master-email-change');
+    openOTPModal('Master 이메일 변경', function() {
+      var c = _CLIENTS_DATA[_clientDetailIdx];
+      if (c) {
+        c.masterEmail = newEmail.replace(/^(.{2}).*(@.*)$/, function(_, a, b){ return a + '***' + b; });
+        c.masterFirstLogin = null; // session cleared
+      }
+      renderClientsTable();
+      showToast('이메일이 변경되었습니다. 기존 세션이 종료되고 기존·신규 이메일 모두에 보안 알림이 발송되었습니다.', 5000);
+    });
+  }
+
+  /* ════════════════════════════════════
      CLIENT CREATION FLOW
   ════════════════════════════════════ */
   function calcNextRenewal() {
     var selected = document.querySelector('input[name="renewal"]:checked');
     var years = selected ? parseInt(selected.value) : 1;
-    var today = new Date('2026-04-07'); // using current date from context
+    var base = _CLIENTS_DATA[_clientDetailIdx];
+    var dateStr = (base && base.kybCompletedAt) ? base.kybCompletedAt : '2026-04-07';
+    var today = new Date(dateStr);
     today.setFullYear(today.getFullYear() + years);
     var yyyy = today.getFullYear();
     var mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -2738,18 +3058,35 @@
 
   function submitCreateClient() {
     openOTPModal('고객사 생성', function() {
+      // Update client status to master_pending
+      var c = _CLIENTS_DATA[_clientDetailIdx];
+      if (c && c.status === 'kyb_done') c.status = 'master_pending';
       closeModal('modal-create-client');
+      // Pre-fill master modal
+      var corpName = c ? c.name : '';
+      document.getElementById('cm-corp-name').textContent = corpName;
+      document.getElementById('master-email').value = '';
+      document.getElementById('master-email-confirm').value = '';
+      var errEl = document.getElementById('master-email-err');
+      if (errEl) errEl.style.display = 'none';
+      var submitBtn = document.getElementById('cm-submit-btn');
+      if (submitBtn) submitBtn.disabled = true;
       openModal('modal-create-master');
     });
   }
 
   function submitCreateMaster() {
-    var emailEl = document.getElementById('master-email');
-    if (!emailEl || !emailEl.value.trim()) {
-      emailEl.focus();
-      return;
-    }
+    if (!validateMasterEmail()) return;
+    var email = document.getElementById('master-email').value;
     openOTPModal('Master 계정 생성', function() {
+      var c = _CLIENTS_DATA[_clientDetailIdx];
+      if (c) {
+        c.status = 'active';
+        c.masterEmail = email.replace(/^(.{2}).*(@.*)$/, function(_, a, b){ return a + '***' + b; });
+        c.masterStatus = 'active';
+        c.masterFirstLogin = null;
+        renderClientsTable();
+      }
       closeModal('modal-create-master');
       showToast('Master 계정이 생성되었습니다. 임시 비밀번호가 이메일로 발송되었습니다.');
     });
@@ -2761,6 +3098,7 @@
   (function init() {
     calcNextRenewal();
     applyRoleUI();
+    renderClientsTable();
     renderKYBTable();
     renderCustomerAccounts();
     renderWLApprovalTable();
