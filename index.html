@@ -535,6 +535,41 @@
     .strategy-empty-icon { font-size: 36px; }
     .strategy-empty-title { font-size: 15px; font-weight: 700; }
     .strategy-empty-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-width: 300px; }
+
+    /* ══════════════════════════
+       SECTION 3: ACCOUNT MANAGEMENT
+    ══════════════════════════ */
+    .badge-sky { background: #E0F2FE; color: #0284C7; }
+
+    .acct-stats-bar {
+      display: flex; align-items: center; gap: 0; padding: 14px 20px; margin-bottom: 16px;
+    }
+    .acct-stats-bar .stat-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); padding: 0 20px; }
+    .acct-stats-bar .stat-item:first-child { padding-left: 0; }
+    .acct-stats-bar .stat-item strong { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+    .acct-stats-bar .stat-item.active strong { color: var(--success); }
+    .acct-stats-bar .stat-item.inactive strong { color: var(--danger); }
+    .acct-stats-sep { width: 1px; background: var(--border); height: 24px; }
+
+    .profile-card { display: flex; align-items: center; gap: 20px; padding: 24px; margin-bottom: 20px; }
+    .profile-avatar { width: 72px; height: 72px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 28px; font-weight: 700; flex-shrink: 0; }
+    .profile-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .profile-meta { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+
+    .security-section { margin-bottom: 0; }
+    .security-section-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .security-section-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+    .security-divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+    .pw-strength { display: flex; gap: 4px; margin-top: 6px; }
+    .pw-strength-bar { height: 4px; flex: 1; border-radius: 2px; background: var(--border); }
+    .pw-strength-bar.filled { background: var(--success); }
+    .pw-strength-bar.filled.weak { background: var(--danger); }
+    .pw-strength-bar.filled.medium { background: var(--warning); }
+
+    .otp-reset-qr { width: 160px; height: 160px; background: #F1F5F9; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 12px; }
+    .otp-reset-step { display: none; }
+    .otp-reset-step.active { display: block; }
   </style>
 </head>
 <body>
@@ -942,6 +977,137 @@
   <div class="so-footer">
     <button class="btn btn-primary btn-full" style="height:44px;"
       onclick="openOTPModal('계정 초대', function(){ closeSO(\'so-add-account\'); showToast(\'초대 이메일이 발송되었습니다.\'); })">&#9993; 초대 보내기 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE-OVER: Edit Account
+══════════════════════════════════════ -->
+<div class="slideover" id="so-edit-account">
+  <div class="so-header">
+    <span class="so-title">&#9998; 계정 수정 / Edit Account</span>
+    <button class="modal-close" onclick="closeSO('so-edit-account')">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div class="form-group">
+      <label class="form-label">이메일 &#128274;</label>
+      <input type="email" id="edit-acct-email" class="form-control" readonly style="background:#F8FAFC; color:var(--text-secondary);" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">이름 <span class="req">*</span></label>
+      <input type="text" id="edit-acct-name" class="form-control" placeholder="담당자 이름" maxlength="50" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">소속 (부서)</label>
+      <input type="text" id="edit-acct-dept" class="form-control" placeholder="예: 자산운용팀" maxlength="50" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">직책</label>
+      <input type="text" id="edit-acct-title" class="form-control" placeholder="예: 팀장" maxlength="50" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">휴대전화번호</label>
+      <input type="tel" id="edit-acct-phone" class="form-control" placeholder="010-0000-0000" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">역할 Role</label>
+      <select id="edit-acct-role" class="form-control">
+        <option value="master">Master</option>
+        <option value="requester">출금 요청자</option>
+        <option value="signer">출금 서명자</option>
+        <option value="general">일반</option>
+      </select>
+      <div class="form-hint">Master 역할은 1명만 지정할 수 있습니다.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">계정 상태</label>
+      <div style="display:flex; gap:20px; margin-top:4px;">
+        <label style="display:flex; align-items:center; gap:7px; cursor:pointer; font-size:13px;">
+          <input type="radio" name="edit-acct-status" id="edit-status-active" value="active" checked style="accent-color:var(--primary);" /> 활성화
+        </label>
+        <label style="display:flex; align-items:center; gap:7px; cursor:pointer; font-size:13px;">
+          <input type="radio" name="edit-acct-status" id="edit-status-inactive" value="inactive" style="accent-color:var(--primary);" /> 비활성화
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="so-footer">
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeSO('so-edit-account')">취소</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="saveEditAccount()">&#128274; 저장 &#8594; OTP 인증</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Delete Account
+══════════════════════════════════════ -->
+<div class="modal" id="modal-delete-account" style="max-width:420px;">
+  <div class="modal-header">
+    <span class="modal-title">&#128465; 계정 삭제</span>
+    <button class="modal-close" onclick="closeModal('modal-delete-account')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div id="delete-acct-signer-warn" class="alert alert-warning" style="margin-bottom:14px; font-size:12.5px; display:none;">
+      &#9888; <strong>출금 서명자 계정입니다.</strong><br>
+      이 계정이 출금 정책에 지정되어 있습니다. 삭제 전, 관련 출금 정책을 반드시 수정해 주세요.
+    </div>
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">다음 계정을 삭제합니다. 이 작업은 취소할 수 없습니다.</p>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:8px;">
+      <div style="font-weight:700; font-size:14px; margin-bottom:4px;" id="delete-acct-name-display">—</div>
+      <div style="font-size:12px; color:var(--text-secondary);" id="delete-acct-email-display">—</div>
+      <div style="margin-top:8px;" id="delete-acct-role-display"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-delete-account')">취소</button>
+    <button class="btn btn-danger" onclick="proceedDeleteAccount()">삭제 진행 &#8594; OTP 인증</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: OTP Reset (3-step)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-otp-reset" style="max-width:420px;">
+  <div class="modal-header">
+    <span class="modal-title" id="otp-reset-modal-title">OTP 재설정</span>
+    <button class="modal-close" onclick="closeModal('modal-otp-reset')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- Step 1: Confirm -->
+    <div class="otp-reset-step active" id="otp-reset-step1">
+      <div style="text-align:center; padding:12px 0 8px;">
+        <div style="font-size:40px; margin-bottom:12px;">&#128275;</div>
+        <div style="font-size:15px; font-weight:700; margin-bottom:8px;">OTP를 재설정하시겠습니까?</div>
+        <div style="font-size:13px; color:var(--text-secondary); line-height:1.6;">
+          현재 OTP 인증 설정이 초기화됩니다.<br>
+          계속하려면 현재 비밀번호 확인이 필요합니다.
+        </div>
+      </div>
+    </div>
+    <!-- Step 2: Current PW -->
+    <div class="otp-reset-step" id="otp-reset-step2">
+      <div style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">OTP 재설정을 위해 현재 비밀번호를 입력해주세요.</div>
+      <div class="form-group">
+        <label class="form-label">현재 비밀번호 <span class="req">*</span></label>
+        <input type="password" id="otp-reset-pw" class="form-control" placeholder="현재 비밀번호 입력" />
+      </div>
+    </div>
+    <!-- Step 3: QR Code -->
+    <div class="otp-reset-step" id="otp-reset-step3">
+      <div style="text-align:center; padding:8px 0;">
+        <div class="otp-reset-qr">&#128247;</div>
+        <div style="font-size:13px; font-weight:700; margin-bottom:8px;">새 OTP QR 코드</div>
+        <div style="font-size:12px; color:var(--text-secondary); line-height:1.7; text-align:left; background:#F8FAFC; border-radius:8px; padding:12px; margin-top:8px;">
+          ① Google Authenticator 또는 호환 앱을 실행하세요.<br>
+          ② 위 QR 코드를 스캔하세요.<br>
+          ③ 앱에 표시된 6자리 코드를 로그인 시 입력합니다.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer" id="otp-reset-footer">
+    <!-- dynamically updated by JS -->
   </div>
 </div>
 
@@ -2186,67 +2352,160 @@
       <div class="page" id="page-accounts">
         <div class="page-header">
           <h1 class="page-title">Account Management</h1>
-          <button class="btn btn-primary" onclick="openSO('so-add-account')">+ 계정 추가</button>
         </div>
-        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-          <div class="input-with-icon" style="flex:1; min-width:200px; max-width:280px;">
-            <span class="iicon">&#128269;</span>
-            <input type="text" class="form-control" placeholder="이름 / 이메일 검색" />
+
+        <!-- ── Top-level tabs ── -->
+        <div class="tabs" style="margin-bottom:20px;">
+          <div class="tab active" id="acct-tab-list" onclick="switchAccountTab('list')">계정 목록 Account List</div>
+          <div class="tab" id="acct-tab-profile" onclick="switchAccountTab('profile')">내 계정 My Profile</div>
+        </div>
+
+        <!-- ══════════
+             TAB: ACCOUNT LIST
+        ══════════ -->
+        <div id="acct-panel-list">
+          <!-- Stats bar -->
+          <div class="card acct-stats-bar">
+            <div class="stat-item">전체 <strong id="acct-stat-total">3</strong>명</div>
+            <div class="acct-stats-sep"></div>
+            <div class="stat-item active">활성 <strong id="acct-stat-active">3</strong>명</div>
+            <div class="acct-stats-sep"></div>
+            <div class="stat-item inactive">비활성 <strong id="acct-stat-inactive">0</strong>명</div>
           </div>
-          <select class="form-control" style="width:130px;">
-            <option>전체 상태</option><option>활성화</option><option>비활성화</option>
-          </select>
-          <select class="form-control" style="width:130px;">
-            <option>전체 역할</option><option>Master</option><option>출금 요청자</option><option>출금 서명자</option><option>일반</option>
-          </select>
-        </div>
-        <div class="card" style="padding:0;">
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>이름</th><th>이메일</th><th>소속/직책</th><th>역할</th><th>상태</th><th>마지막 로그인</th><th>관리</th></tr></thead>
-              <tbody>
-                <tr>
-                  <td style="font-weight:600;">김철수</td>
-                  <td>kim@infiniteblock.io</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">자산운용팀 / 팀장</td>
-                  <td><span class="badge badge-info">Master</span></td>
-                  <td><span class="dot-status dot-green"></span>활성화</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-20 14:30</td>
-                  <td style="display:flex; gap:6px;">
-                    <button class="btn btn-outline btn-xs">수정</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">이영희</td>
-                  <td>lee@infiniteblock.io</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">자산운용팀 / 매니저</td>
-                  <td><span class="badge badge-success">출금 서명자</span></td>
-                  <td><span class="dot-status dot-green"></span>활성화</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-20 11:15</td>
-                  <td style="display:flex; gap:6px;">
-                    <button class="btn btn-outline btn-xs">수정</button>
-                    <button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:rgba(239,68,68,0.3);"
-                      onclick="openOTPModal('계정 삭제 확인', function(){ showToast('계정이 삭제되었습니다.'); })">삭제</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">박민준</td>
-                  <td>park@infiniteblock.io</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">자산운용팀 / 대리</td>
-                  <td><span class="badge badge-success">출금 서명자</span></td>
-                  <td><span class="dot-status dot-green"></span>활성화</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-19 09:12</td>
-                  <td style="display:flex; gap:6px;">
-                    <button class="btn btn-outline btn-xs">수정</button>
-                    <button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:rgba(239,68,68,0.3);"
-                      onclick="openOTPModal('계정 삭제 확인', function(){ showToast('계정이 삭제되었습니다.'); })">삭제</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+
+          <!-- Filter row + Add button -->
+          <div style="display:flex; gap:10px; margin-bottom:16px; align-items:center; flex-wrap:wrap;">
+            <div class="input-with-icon" style="flex:1; min-width:180px; max-width:280px;">
+              <span class="iicon">&#128269;</span>
+              <input type="text" class="form-control" id="acct-search" placeholder="이름 / 이메일 검색" oninput="renderAccountTable()" />
+            </div>
+            <select class="form-control" id="acct-filter-role" style="width:140px;" onchange="renderAccountTable()">
+              <option value="">전체 역할</option>
+              <option value="master">Master</option>
+              <option value="requester">출금 요청자</option>
+              <option value="signer">출금 서명자</option>
+              <option value="general">일반</option>
+            </select>
+            <select class="form-control" id="acct-filter-status" style="width:130px;" onchange="renderAccountTable()">
+              <option value="">전체 상태</option>
+              <option value="active">활성화</option>
+              <option value="inactive">비활성화</option>
+            </select>
+            <button class="btn btn-primary" onclick="openSO('so-add-account')" style="margin-left:auto; white-space:nowrap;">+ 계정 추가</button>
           </div>
-        </div>
-      </div>
+
+          <!-- Table -->
+          <div class="card" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>이름</th><th>이메일</th><th>소속/직책</th><th>역할</th>
+                    <th>상태</th><th>마지막 로그인</th><th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="acct-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div><!-- /acct-panel-list -->
+
+        <!-- ══════════
+             TAB: MY PROFILE
+        ══════════ -->
+        <div id="acct-panel-profile" style="display:none;">
+          <!-- Profile card -->
+          <div class="card profile-card">
+            <div class="profile-avatar" id="my-profile-avatar">김</div>
+            <div>
+              <div class="profile-name" id="my-profile-name">김철수</div>
+              <div style="margin-bottom:4px;"><span class="badge badge-purple">Master</span></div>
+              <div class="profile-meta" id="my-profile-meta">자산운용팀 / 팀장 · 마지막 로그인: 2025-11-20 14:30</div>
+            </div>
+          </div>
+
+          <!-- Profile sub-tabs -->
+          <div class="tabs" style="margin-bottom:20px;">
+            <div class="tab active" id="profile-tab-basic" onclick="switchProfileTab('basic')">기본 정보</div>
+            <div class="tab" id="profile-tab-security" onclick="switchProfileTab('security')">보안 설정</div>
+          </div>
+
+          <!-- 기본정보 panel -->
+          <div id="profile-panel-basic">
+            <div class="card">
+              <div class="form-group">
+                <label class="form-label">이름 <span class="req">*</span></label>
+                <input type="text" id="my-name" class="form-control" value="김철수" maxlength="50" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">이메일 &#128274;</label>
+                <input type="email" id="my-email" class="form-control" value="kim@infiniteblock.io" readonly style="background:#F8FAFC; color:var(--text-secondary);" />
+                <div class="form-hint">이메일은 변경할 수 없습니다. 관리자에게 문의하세요.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">소속 (부서)</label>
+                <input type="text" id="my-dept" class="form-control" value="자산운용팀" maxlength="50" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">직책</label>
+                <input type="text" id="my-title" class="form-control" value="팀장" maxlength="50" />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">휴대전화번호</label>
+                <input type="tel" id="my-phone" class="form-control" value="010-1234-5678" />
+              </div>
+              <div style="margin-top:20px; padding-top:20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+                <button class="btn btn-primary" onclick="saveMyProfile()">&#128274; 저장 &#8594; OTP 인증</button>
+              </div>
+            </div>
+          </div><!-- /profile-panel-basic -->
+
+          <!-- 보안설정 panel -->
+          <div id="profile-panel-security" style="display:none;">
+            <div class="card">
+              <!-- 비밀번호 변경 -->
+              <div class="security-section">
+                <div class="security-section-title">&#128274; 비밀번호 변경</div>
+                <div class="security-section-desc">새 비밀번호는 영문·숫자·특수문자를 포함하여 8자 이상으로 설정하세요.</div>
+                <div class="form-group">
+                  <label class="form-label">현재 비밀번호 <span class="req">*</span></label>
+                  <input type="password" id="pw-current" class="form-control" placeholder="현재 비밀번호" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">새 비밀번호 <span class="req">*</span></label>
+                  <input type="password" id="pw-new" class="form-control" placeholder="새 비밀번호 (8자 이상)" oninput="checkPwStrength()" />
+                  <div class="pw-strength" id="pw-strength-bars">
+                    <div class="pw-strength-bar" id="psb1"></div>
+                    <div class="pw-strength-bar" id="psb2"></div>
+                    <div class="pw-strength-bar" id="psb3"></div>
+                    <div class="pw-strength-bar" id="psb4"></div>
+                  </div>
+                  <div class="form-hint" id="pw-strength-label"></div>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">새 비밀번호 확인 <span class="req">*</span></label>
+                  <input type="password" id="pw-confirm" class="form-control" placeholder="새 비밀번호 재입력" />
+                </div>
+                <div style="margin-top:16px; display:flex; justify-content:flex-end;">
+                  <button class="btn btn-primary" onclick="changeMyPassword()">&#128274; 변경 &#8594; OTP 인증</button>
+                </div>
+              </div>
+
+              <div class="security-divider"></div>
+
+              <!-- OTP 재설정 -->
+              <div class="security-section">
+                <div class="security-section-title">&#128241; OTP 재설정</div>
+                <div class="security-section-desc">
+                  OTP 인증 기기를 분실했거나 앱을 재설치한 경우 OTP를 재설정할 수 있습니다.<br>
+                  재설정 후 새 QR 코드로 앱 재등록이 필요합니다.
+                </div>
+                <button class="btn btn-outline" style="color:var(--danger); border-color:rgba(239,68,68,0.4);" onclick="openOTPReset()">OTP 재설정 시작</button>
+              </div>
+            </div>
+          </div><!-- /profile-panel-security -->
+        </div><!-- /acct-panel-profile -->
+      </div><!-- /page-accounts -->
 
       <!-- ══════════════════════════
            PAGE: DEVELOPER (placeholder)
@@ -3113,6 +3372,227 @@
       document.getElementById('globalOverlay').onclick = closeAll;
     }
   }
+
+  /* ════════════════════════════════════
+     SECTION 3: ACCOUNT MANAGEMENT
+  ════════════════════════════════════ */
+  const _ACCOUNTS = [
+    { idx: 0, name: '김철수',  email: 'kim@infiniteblock.io',  dept: '자산운용팀', title: '팀장',   phone: '010-1234-5678', role: 'master',    roleLabel: 'Master',    status: 'active',   lastLogin: '2025-11-20 14:30', isSelf: true  },
+    { idx: 1, name: '이영희',  email: 'lee@infiniteblock.io',  dept: '자산운용팀', title: '매니저', phone: '010-2345-6789', role: 'signer',    roleLabel: '출금 서명자', status: 'active',   lastLogin: '2025-11-20 11:15', isSelf: false },
+    { idx: 2, name: '박민준',  email: 'park@infiniteblock.io', dept: '자산운용팀', title: '대리',   phone: '010-3456-7890', role: 'signer',    roleLabel: '출금 서명자', status: 'active',   lastLogin: '2025-11-19 09:12', isSelf: false },
+    { idx: 3, name: '안소연',  email: 'an@infiniteblock.io',   dept: '준법감시팀', title: '과장',   phone: '010-4567-8901', role: 'requester', roleLabel: '출금 요청자', status: 'inactive', lastLogin: '2025-10-30 16:44', isSelf: false },
+  ];
+
+  let _deleteAcctIdx = null;
+
+  function roleBadge(role, label) {
+    const cls = { master: 'badge-purple', signer: 'badge-info', requester: 'badge-sky', general: 'badge-gray' };
+    return `<span class="badge ${cls[role] || 'badge-gray'}">${label}</span>`;
+  }
+
+  function renderAccountTable() {
+    const q       = (document.getElementById('acct-search')?.value || '').toLowerCase();
+    const fRole   = document.getElementById('acct-filter-role')?.value || '';
+    const fStatus = document.getElementById('acct-filter-status')?.value || '';
+    const tbody   = document.getElementById('acct-table-body');
+    if (!tbody) return;
+
+    let rows = _ACCOUNTS.filter(a => {
+      if (q && !a.name.includes(q) && !a.email.toLowerCase().includes(q)) return false;
+      if (fRole   && a.role   !== fRole)   return false;
+      if (fStatus && a.status !== fStatus) return false;
+      return true;
+    });
+
+    const active   = _ACCOUNTS.filter(a => a.status === 'active').length;
+    const inactive = _ACCOUNTS.length - active;
+    document.getElementById('acct-stat-total').textContent   = _ACCOUNTS.length;
+    document.getElementById('acct-stat-active').textContent  = active;
+    document.getElementById('acct-stat-inactive').textContent= inactive;
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-secondary); padding:40px;">검색 결과가 없습니다.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(a => {
+      const dotCls  = a.status === 'active' ? 'dot-green' : 'dot-gray';
+      const statusTxt = a.status === 'active' ? '활성화' : '비활성화';
+      const canDelete = !a.isSelf;
+      const isMaster  = a.role === 'master';
+      const editBtn   = `<button class="btn btn-outline btn-xs" onclick="openEditAccount(${a.idx})">수정</button>`;
+      const delBtn    = canDelete
+        ? `<button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:rgba(239,68,68,0.3);" onclick="deleteAccountConfirm(${a.idx})">삭제</button>`
+        : '';
+      const selfTag   = a.isSelf ? `<span style="font-size:10px; color:var(--primary); margin-left:6px; font-weight:500;">(나)</span>` : '';
+      return `
+        <tr>
+          <td style="font-weight:600;">${a.name}${selfTag}</td>
+          <td>${a.email}</td>
+          <td style="font-size:12px; color:var(--text-secondary);">${a.dept} / ${a.title}</td>
+          <td>${roleBadge(a.role, a.roleLabel)}</td>
+          <td><span class="dot-status ${dotCls}"></span>${statusTxt}</td>
+          <td style="font-size:12px; color:var(--text-secondary);">${a.lastLogin}</td>
+          <td style="display:flex; gap:6px;">${editBtn}${delBtn}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ── Switch account top-level tabs ──
+  function switchAccountTab(tab) {
+    document.getElementById('acct-tab-list').classList.toggle('active',    tab === 'list');
+    document.getElementById('acct-tab-profile').classList.toggle('active', tab === 'profile');
+    document.getElementById('acct-panel-list').style.display    = tab === 'list'    ? '' : 'none';
+    document.getElementById('acct-panel-profile').style.display = tab === 'profile' ? '' : 'none';
+  }
+
+  // ── Switch My Profile sub-tabs ──
+  function switchProfileTab(tab) {
+    document.getElementById('profile-tab-basic').classList.toggle('active',    tab === 'basic');
+    document.getElementById('profile-tab-security').classList.toggle('active', tab === 'security');
+    document.getElementById('profile-panel-basic').style.display    = tab === 'basic'    ? '' : 'none';
+    document.getElementById('profile-panel-security').style.display = tab === 'security' ? '' : 'none';
+  }
+
+  // ── Edit Account ──
+  function openEditAccount(idx) {
+    const a = _ACCOUNTS[idx];
+    if (!a) return;
+    document.getElementById('edit-acct-email').value = a.email;
+    document.getElementById('edit-acct-name').value  = a.name;
+    document.getElementById('edit-acct-dept').value  = a.dept;
+    document.getElementById('edit-acct-title').value = a.title;
+    document.getElementById('edit-acct-phone').value = a.phone;
+    document.getElementById('edit-acct-role').value  = a.role;
+    document.getElementById(a.status === 'active' ? 'edit-status-active' : 'edit-status-inactive').checked = true;
+    openSO('so-edit-account');
+  }
+
+  function saveEditAccount() {
+    const name = document.getElementById('edit-acct-name').value.trim();
+    if (!name) { showToast('이름을 입력해주세요.'); return; }
+    openOTPModal('계정 수정 저장', function() {
+      closeSO('so-edit-account');
+      showToast('계정 정보가 수정되었습니다.');
+    });
+  }
+
+  // ── Delete Account ──
+  function deleteAccountConfirm(idx) {
+    const a = _ACCOUNTS[idx];
+    if (!a) return;
+    _deleteAcctIdx = idx;
+    document.getElementById('delete-acct-name-display').textContent  = a.name;
+    document.getElementById('delete-acct-email-display').textContent = a.email;
+    document.getElementById('delete-acct-role-display').innerHTML    = roleBadge(a.role, a.roleLabel);
+    const isSigner = a.role === 'signer';
+    document.getElementById('delete-acct-signer-warn').style.display = isSigner ? '' : 'none';
+    openModal('modal-delete-account');
+  }
+
+  function proceedDeleteAccount() {
+    closeModal('modal-delete-account');
+    openOTPModal('계정 삭제 확인', function() {
+      showToast('계정이 삭제되었습니다.');
+      _deleteAcctIdx = null;
+    });
+  }
+
+  // ── My Profile: 기본정보 save ──
+  function saveMyProfile() {
+    const name = document.getElementById('my-name').value.trim();
+    if (!name) { showToast('이름을 입력해주세요.'); return; }
+    openOTPModal('기본 정보 저장', function() {
+      document.getElementById('my-profile-name').textContent = name;
+      document.getElementById('my-profile-avatar').textContent = name.charAt(0);
+      const dept  = document.getElementById('my-dept').value.trim();
+      const title = document.getElementById('my-title').value.trim();
+      document.getElementById('my-profile-meta').textContent =
+        `${dept}${title ? ' / ' + title : ''} · 마지막 로그인: 2025-11-20 14:30`;
+      showToast('기본 정보가 저장되었습니다.');
+    });
+  }
+
+  // ── My Profile: PW change ──
+  function changeMyPassword() {
+    const cur  = document.getElementById('pw-current').value.trim();
+    const nw   = document.getElementById('pw-new').value.trim();
+    const conf = document.getElementById('pw-confirm').value.trim();
+    if (!cur)  { showToast('현재 비밀번호를 입력해주세요.'); return; }
+    if (!nw)   { showToast('새 비밀번호를 입력해주세요.'); return; }
+    if (nw.length < 8) { showToast('새 비밀번호는 8자 이상이어야 합니다.'); return; }
+    if (nw !== conf)   { showToast('새 비밀번호가 일치하지 않습니다.'); return; }
+    openOTPModal('비밀번호 변경', function() {
+      document.getElementById('pw-current').value = '';
+      document.getElementById('pw-new').value     = '';
+      document.getElementById('pw-confirm').value = '';
+      checkPwStrength();
+      showToast('비밀번호가 변경되었습니다.');
+    });
+  }
+
+  function checkPwStrength() {
+    const pw  = document.getElementById('pw-new')?.value || '';
+    const len = pw.length;
+    let score = 0;
+    if (len >= 8)  score++;
+    if (/[A-Z]/.test(pw))  score++;
+    if (/[0-9]/.test(pw))  score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    const labels = ['', '취약', '보통', '강함', '매우 강함'];
+    const colorClass = score <= 1 ? 'weak' : score === 2 ? 'medium' : '';
+    ['psb1','psb2','psb3','psb4'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = 'pw-strength-bar' + (i < score ? ` filled ${colorClass}` : '');
+    });
+    const lbl = document.getElementById('pw-strength-label');
+    if (lbl) lbl.textContent = len > 0 ? `비밀번호 강도: ${labels[score] || ''}` : '';
+  }
+
+  // ── OTP Reset (3-step modal) ──
+  let _otpResetStep = 1;
+
+  function openOTPReset() {
+    _otpResetStep = 1;
+    showOTPResetStep(1);
+    openModal('modal-otp-reset');
+  }
+
+  function showOTPResetStep(step) {
+    _otpResetStep = step;
+    [1,2,3].forEach(s => {
+      document.getElementById(`otp-reset-step${s}`).classList.toggle('active', s === step);
+    });
+    const titles = { 1: 'OTP 재설정', 2: 'OTP 재설정 — 비밀번호 확인', 3: 'OTP 재설정 — 새 QR 코드' };
+    document.getElementById('otp-reset-modal-title').textContent = titles[step];
+
+    const footer = document.getElementById('otp-reset-footer');
+    if (step === 1) {
+      footer.innerHTML = `
+        <button class="btn btn-outline" onclick="closeModal('modal-otp-reset')">취소</button>
+        <button class="btn btn-primary" onclick="showOTPResetStep(2)">확인 →</button>`;
+    } else if (step === 2) {
+      footer.innerHTML = `
+        <button class="btn btn-outline" onclick="showOTPResetStep(1)">이전</button>
+        <button class="btn btn-primary" onclick="verifyOTPResetPW()">확인 →</button>`;
+    } else {
+      footer.innerHTML = `
+        <button class="btn btn-primary btn-full" onclick="closeModal('modal-otp-reset'); showToast('OTP가 재설정되었습니다. 앱에서 새 QR 코드를 등록해주세요.');">완료</button>`;
+    }
+  }
+
+  function verifyOTPResetPW() {
+    const pw = document.getElementById('otp-reset-pw')?.value.trim();
+    if (!pw) { showToast('비밀번호를 입력해주세요.'); return; }
+    showOTPResetStep(3);
+    document.getElementById('otp-reset-pw').value = '';
+  }
+
+  // Initialize account table on load
+  document.addEventListener('DOMContentLoaded', function() {
+    renderAccountTable();
+  });
 </script>
 </body>
 </html>
