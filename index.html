@@ -215,6 +215,30 @@
     .wallet-card-add .add-plus { font-size: 28px; line-height: 1; }
     .wallet-card-add .add-text { font-size: 13px; font-weight: 600; }
 
+    /* ── Wallet Delete Feature ── */
+    .wallet-del-status { min-height: 0; margin-bottom: 0; }
+    .wallet-del-status:not(:empty) { margin-bottom: 8px; }
+    .del-btn-wrap { position: relative; display: inline-block; }
+    .del-btn-wrap[data-tip]:hover::after {
+      content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); right: 0;
+      background: #1E293B; color: #fff; font-size: 11px; white-space: nowrap;
+      padding: 5px 9px; border-radius: 6px; pointer-events: none; z-index: 10;
+    }
+    /* Delete Dashboard */
+    .del-dash { margin-top: 28px; }
+    .del-dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .del-dash-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .del-dash-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .del-stat-card { background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border); padding: 14px 18px; }
+    .del-stat-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .del-stat-value { font-size: 24px; font-weight: 700; }
+    .del-stat-card.dsc-pending  .del-stat-value { color: var(--warning); }
+    .del-stat-card.dsc-rejected .del-stat-value { color: var(--danger); }
+    .del-stat-card.dsc-done     .del-stat-value { color: #94A3B8; }
+    .del-dash-row-pending  td:last-child { color: var(--warning); font-weight: 600; }
+    .del-dash-row-rejected td:last-child { color: var(--danger);  font-weight: 600; }
+    .del-dash-row-done     td:last-child { color: #94A3B8;        font-weight: 600; }
+
     /* ══════════════════════════
        PAGE: WALLET DETAIL
     ══════════════════════════ */
@@ -829,22 +853,145 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     MODAL: Wallet Delete Confirm
+     MODAL: Wallet Delete Confirm (4-3-2)
 ══════════════════════════════════════ -->
-<div class="modal" id="modal-delete-wallet" style="max-width:400px;">
+<div class="modal" id="modal-delete-wallet" style="max-width:440px;">
   <div class="modal-header">
-    <span class="modal-title" style="color:var(--danger);">&#9888; 지갑 삭제</span>
+    <span class="modal-title" style="color:var(--danger);">&#9888; 지갑 삭제 요청</span>
     <button class="modal-close" onclick="closeModal('modal-delete-wallet')">&#10005;</button>
   </div>
   <div class="modal-body">
-    <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">
-      <strong style="color:var(--text-primary);">BTC 보관 지갑 #1</strong>을 삭제하시겠습니까?<br>
-      이 작업은 되돌릴 수 없으며, Admin에게 삭제 요청이 전송됩니다.
-    </p>
+    <!-- Wallet info summary -->
+    <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:14px;">
+      <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px; font-weight:600;">&#9989; 삭제 대상 지갑 확인</div>
+      <div style="display:grid; grid-template-columns:80px 1fr; gap:6px 0; font-size:13px;">
+        <span style="color:var(--text-secondary);">지갑명</span><span id="dw-name" style="font-weight:600;"></span>
+        <span style="color:var(--text-secondary);">코인</span><span id="dw-coin"></span>
+        <span style="color:var(--text-secondary);">네트워크</span><span id="dw-network" style="font-size:12px;"></span>
+        <span style="color:var(--text-secondary);">주소</span><span id="dw-addr" style="font-family:monospace; font-size:11px;"></span>
+        <span style="color:var(--text-secondary);">현재 잔액</span><span id="dw-balance"></span>
+      </div>
+    </div>
+    <!-- 3 warnings -->
+    <div style="display:flex; flex-direction:column; gap:7px; font-size:12px;">
+      <div style="display:flex; gap:8px; align-items:flex-start; color:#92400E; background:#FFFBEB; border:1px solid #FDE68A; border-radius:7px; padding:9px 11px;">
+        <span style="flex-shrink:0;">&#9888;</span>
+        <span>지갑 삭제는 <strong>되돌릴 수 없습니다.</strong> 삭제 완료 후 해당 주소로 입금된 자산은 복구되지 않으니 반드시 입금 주소 공유를 중단해주세요.</span>
+      </div>
+      <div style="display:flex; gap:8px; align-items:flex-start; color:#1E40AF; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:7px; padding:9px 11px;">
+        <span style="flex-shrink:0;">&#8505;</span>
+        <span>삭제 요청은 Admin 검토 후 처리됩니다. 처리 완료 전까지 지갑은 <strong>정상 사용 가능</strong>합니다.</span>
+      </div>
+      <div style="display:flex; gap:8px; align-items:flex-start; color:#065F46; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:7px; padding:9px 11px;">
+        <span style="flex-shrink:0;">&#128196;</span>
+        <span>삭제 완료 후에도 <strong>거래 이력은 Transactions에서 계속 조회</strong>할 수 있습니다.</span>
+      </div>
+    </div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-delete-wallet')">취소</button>
-    <button class="btn btn-danger" onclick="openWalletDeleteOTP()">삭제 요청 →</button>
+    <button class="btn btn-danger" id="dw-submit-btn" onclick="submitDeleteWallet()">삭제 요청 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Wallet Delete — 요청중 상세 (4-3-5)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wallet-del-pending" style="max-width:400px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--warning);">&#9203; 삭제 요청 처리 중</span>
+    <button class="modal-close" onclick="closeModal('modal-wallet-del-pending')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="text-align:center; padding:16px 0 10px;">
+      <div style="font-size:36px; margin-bottom:12px;">&#9203;</div>
+      <div style="font-size:15px; font-weight:700; margin-bottom:6px;">Admin 처리 대기 중</div>
+      <div style="font-size:13px; color:var(--text-secondary);">삭제 요청이 Admin에게 전달되었습니다.<br>처리까지 1~2 영업일 소요될 수 있습니다.</div>
+    </div>
+    <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:12px; margin-top:12px; font-size:13px;">
+      <div style="display:grid; grid-template-columns:80px 1fr; gap:5px 0;">
+        <span style="color:var(--text-secondary);">지갑명</span><span id="wdd-name" style="font-weight:600;"></span>
+        <span style="color:var(--text-secondary);">코인</span><span id="wdd-coin"></span>
+        <span style="color:var(--text-secondary);">요청자</span><span id="wdd-by"></span>
+        <span style="color:var(--text-secondary);">요청 일시</span><span id="wdd-requested" style="font-size:12px;"></span>
+      </div>
+    </div>
+    <div style="margin-top:12px; font-size:12px; color:var(--text-secondary); text-align:center;">
+      요청 취소가 필요한 경우 Admin에게 직접 문의해주세요.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary btn-full" onclick="closeModal('modal-wallet-del-pending')">확인</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Wallet Delete — 반려 상세 (4-3-6)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wallet-del-rejected" style="max-width:420px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">&#10005; 삭제 요청 반려</span>
+    <button class="modal-close" onclick="closeModal('modal-wallet-del-rejected')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:12px; font-size:13px;">
+      <div style="display:grid; grid-template-columns:80px 1fr; gap:5px 0;">
+        <span style="color:var(--text-secondary);">지갑명</span><span id="wdr-name" style="font-weight:600;"></span>
+        <span style="color:var(--text-secondary);">코인</span><span id="wdr-coin"></span>
+        <span style="color:var(--text-secondary);">요청 일시</span><span id="wdr-requested" style="font-size:12px;"></span>
+        <span style="color:var(--text-secondary);">반려 일시</span><span id="wdr-processed" style="font-size:12px;"></span>
+      </div>
+    </div>
+    <!-- Rejection reason -->
+    <div style="font-size:12px; font-weight:600; color:var(--danger); margin-bottom:6px;">반려 사유</div>
+    <div id="wdr-reason" style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:11px 13px; font-size:13px; color:var(--text-primary); line-height:1.6;"></div>
+    <!-- Notices -->
+    <div style="margin-top:12px; display:flex; flex-direction:column; gap:7px; font-size:12px;">
+      <div style="display:flex; gap:8px; align-items:flex-start; color:#065F46; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:7px; padding:9px 11px;">
+        <span style="flex-shrink:0;">&#9989;</span>
+        <span>지갑은 반려 후에도 <strong>계속 정상 사용 가능</strong>합니다. 자산 보관 및 입출금에 영향이 없습니다.</span>
+      </div>
+      <div style="display:flex; gap:8px; align-items:flex-start; color:#1E40AF; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:7px; padding:9px 11px;">
+        <span style="flex-shrink:0;">&#8635;</span>
+        <span>반려 사유를 확인 후 지갑 카드의 <strong>[삭제] 버튼</strong>으로 재요청할 수 있습니다.</span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wallet-del-rejected')">닫기</button>
+    <button class="btn btn-danger" onclick="closeModal('modal-wallet-del-rejected')">재요청하기 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Wallet Delete — 삭제완료 상세 (4-3-7)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wallet-del-done" style="max-width:400px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--text-secondary);">&#9679; 지갑 삭제 완료</span>
+    <button class="modal-close" onclick="closeModal('modal-wallet-del-done')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="text-align:center; padding:10px 0 8px;">
+      <div style="font-size:32px; margin-bottom:10px; color:#94A3B8;">&#128465;</div>
+      <div style="font-size:14px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">지갑 삭제가 완료되었습니다</div>
+    </div>
+    <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:12px; margin-top:10px; font-size:13px;">
+      <div style="display:grid; grid-template-columns:90px 1fr; gap:6px 0;">
+        <span style="color:var(--text-secondary);">지갑명</span><span id="wddone-name" style="font-weight:600;"></span>
+        <span style="color:var(--text-secondary);">코인</span><span id="wddone-coin"></span>
+        <span style="color:var(--text-secondary);">삭제 요청일</span><span id="wddone-requested" style="font-size:12px;"></span>
+        <span style="color:var(--text-secondary);">삭제 처리일</span><span id="wddone-processed" style="font-size:12px;"></span>
+        <span style="color:var(--text-secondary);">처리자</span><span id="wddone-by"></span>
+      </div>
+    </div>
+    <div style="margin-top:12px; display:flex; gap:8px; align-items:flex-start; color:#065F46; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:7px; padding:9px 11px; font-size:12px;">
+      <span style="flex-shrink:0;">&#128196;</span>
+      <span>삭제된 지갑의 <strong>거래 이력은 Transactions 메뉴에서 계속 조회</strong>할 수 있습니다.</span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary btn-full" onclick="closeModal('modal-wallet-del-done')">확인</button>
   </div>
 </div>
 
@@ -2061,10 +2208,15 @@
               <span class="todo-label">지갑 생성 요청 대기</span>
               <span class="todo-count zero" id="todo-wallet-pending">0</span>
             </div>
-            <div class="todo-item" style="border-bottom:none;">
+            <div class="todo-item">
               <span class="todo-label">코인 추가 거절</span>
               <span class="todo-count zero" id="todo-coin-rejected" style="cursor:pointer;"
                 onclick="gotoRejectedCoins()">0</span>
+            </div>
+            <div class="todo-item" style="border-bottom:none;">
+              <span class="todo-label">지갑 삭제 요청 반려</span>
+              <span class="todo-count zero" id="todo-wallet-del-rejected" style="cursor:pointer;"
+                onclick="gotoWalletDelRejected()">0</span>
             </div>
             <span class="stat-link" style="margin-top:4px;" onclick="showPage('workflows', document.getElementById('nav-workflows'))">Workflows 바로가기 →</span>
           </div>
@@ -2088,7 +2240,7 @@
         </div>
         <div class="wallet-grid">
           <!-- Wallet Card 1: Active -->
-          <div class="wallet-card" onclick="openWalletDetail('wallet1')">
+          <div class="wallet-card" id="wallet-card-wallet1" onclick="openWalletDetail('wallet1')">
             <div class="wallet-card-header">
               <div class="wallet-card-name" style="flex:1; min-width:0;">
                 <div class="name-edit-wrap" id="wrap-wallet1">
@@ -2113,16 +2265,21 @@
             <div class="wallet-address">bc1q...3f8e</div>
             <div class="wallet-asset">₩0</div>
             <div class="wallet-asset-sub">0.00000000 BTC</div>
+            <div class="wallet-del-status" id="wds-wallet1"></div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
               <div style="display:flex; gap:6px;">
                 <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금</button>
                 <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); openWithdrawal('BTC 보관 지갑 #1')">&#8599; 출금</button>
               </div>
-              <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:rgba(239,68,68,0.3);" onclick="event.stopPropagation(); openModal('modal-delete-wallet')">삭제</button>
+              <span class="del-btn-wrap" id="del-wrap-wallet1">
+                <button class="btn btn-outline btn-sm wallet-delete-btn" id="delbtn-wallet1"
+                  style="color:var(--danger); border-color:rgba(239,68,68,0.3);"
+                  onclick="event.stopPropagation(); openDeleteWallet('wallet1')">삭제</button>
+              </span>
             </div>
           </div>
           <!-- Wallet Card 2: Active -->
-          <div class="wallet-card" onclick="openWalletDetail('wallet2')">
+          <div class="wallet-card" id="wallet-card-wallet2" onclick="openWalletDetail('wallet2')">
             <div class="wallet-card-header">
               <div class="wallet-card-name" style="flex:1; min-width:0;">
                 <div class="name-edit-wrap" id="wrap-wallet2">
@@ -2147,9 +2304,17 @@
             <div class="wallet-address">0x4d4b...C3E69</div>
             <div class="wallet-asset">₩0</div>
             <div class="wallet-asset-sub">0.00000000 ETH</div>
-            <div style="display:flex; gap:6px; margin-top:4px;">
-              <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openDepositQR('ETH','Ethereum Mainnet','0x4d4bC4a1...C3E69F21')">&#8600; 입금</button>
-              <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); openWithdrawal('ETH 보관 지갑 #1')">&#8599; 출금</button>
+            <div class="wallet-del-status" id="wds-wallet2"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openDepositQR('ETH','Ethereum Mainnet','0x4d4bC4a1...C3E69F21')">&#8600; 입금</button>
+                <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); openWithdrawal('ETH 보관 지갑 #1')">&#8599; 출금</button>
+              </div>
+              <span class="del-btn-wrap" id="del-wrap-wallet2">
+                <button class="btn btn-outline btn-sm wallet-delete-btn" id="delbtn-wallet2"
+                  style="color:var(--danger); border-color:rgba(239,68,68,0.3);"
+                  onclick="event.stopPropagation(); openDeleteWallet('wallet2')">삭제</button>
+              </span>
             </div>
           </div>
           <!-- Wallet Card 3: Pending -->
@@ -2172,6 +2337,30 @@
             <div class="add-plus">+</div>
             <div class="add-text">지갑 추가 요청</div>
             <div style="font-size:11px; color:var(--text-secondary);">Master 전용</div>
+          </div>
+        </div>
+
+        <!-- 4-3-4: Wallet Delete Dashboard -->
+        <div class="del-dash card" style="margin-top:24px;">
+          <div class="del-dash-header">
+            <span class="del-dash-title">&#128465; 지갑 삭제 현황</span>
+          </div>
+          <div class="del-dash-stats" id="del-dash-stats"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>요청 ID</th>
+                  <th>지갑명</th>
+                  <th>코인 / 네트워크</th>
+                  <th>요청자</th>
+                  <th>요청 일시</th>
+                  <th>처리 일시</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+              <tbody id="del-dash-tbody"></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -3112,6 +3301,31 @@
       rejectedAt:'2025-11-17 09:05',
       rejectedReason:'해당 코인은 현재 보관 정책상 지원되지 않습니다. BNB Smart Chain 네트워크는 내년 1분기 이후 지원 예정입니다. ERC-20 기반 USDT 또는 Ethereum Mainnet 코인으로 재요청을 권장드립니다.' },
   ];
+
+  /* ── Wallet delete feature (4-3) ── */
+  var _IS_MASTER = true; // demo: logged-in user is Master
+
+  const _WALLET_DATA = [
+    { id:'wallet1', name:'BTC 보관 지갑 #1', coin:'BTC', network:'Bitcoin Mainnet',  addr:'bc1q...3f8e',    balance:'0.00000000', balanceKRW:'₩0' },
+    { id:'wallet2', name:'ETH 보관 지갑',    coin:'ETH', network:'Ethereum Mainnet', addr:'0x4d4b...C3E69', balance:'0.00000000', balanceKRW:'₩0' },
+  ];
+
+  // Per-wallet delete state: null | 'pending' | 'rejected' | 'done'
+  var _WALLET_DEL_STATE = { wallet1: null, wallet2: null };
+  var _delWalletId = null; // currently-opening delete modal for which wallet
+
+  // Demo historical delete requests for the dashboard
+  var _WALLET_DEL_REQUESTS = [
+    { id:'WDR-001', walletName:'XRP 보관 지갑', coin:'XRP', network:'XRP Ledger',
+      addr:'rHb9...wXm3', balanceKRW:'₩0', requestedBy:'김철수',
+      requestedAt:'2025-10-15 10:00', status:'done',
+      processedAt:'2025-10-16 14:30', processedBy:'Admin' },
+    { id:'WDR-002', walletName:'SOL 테스트 지갑', coin:'SOL', network:'Solana Mainnet',
+      addr:'7xKX...bWp9', balanceKRW:'₩0', requestedBy:'김철수',
+      requestedAt:'2025-11-01 09:00', status:'rejected',
+      processedAt:'2025-11-02 11:30', processedBy:'Admin',
+      reason:'현재 Solana 지갑 삭제는 내부 보안 정책 검토 중으로 일시 중단되었습니다. 2025년 12월 이후 재요청해주세요.' },
+  ];
   let _currentWalletLabel = 'BTC 보관 지갑 #1';
   let _cdDetailIdx = null;
 
@@ -3221,16 +3435,31 @@
   }
 
   function _updateTodoBadges() {
+    // Coin rejected badge
     const rejected = _COIN_DATA.filter(c => c.status === 'rejected');
     const el = document.getElementById('todo-coin-rejected');
-    if (!el) return;
-    el.textContent = rejected.length;
-    if (rejected.length > 0) {
-      el.className = 'todo-count';
-      el.style.background = 'var(--danger)';
-    } else {
-      el.className = 'todo-count zero';
-      el.style.background = '';
+    if (el) {
+      el.textContent = rejected.length;
+      if (rejected.length > 0) {
+        el.className = 'todo-count';
+        el.style.background = 'var(--danger)';
+      } else {
+        el.className = 'todo-count zero';
+        el.style.background = '';
+      }
+    }
+    // Wallet delete rejected badge
+    const walletDelRej = _WALLET_DEL_REQUESTS.filter(r => r.status === 'rejected').length;
+    const wdEl = document.getElementById('todo-wallet-del-rejected');
+    if (wdEl) {
+      wdEl.textContent = walletDelRej;
+      if (walletDelRej > 0) {
+        wdEl.className = 'todo-count';
+        wdEl.style.background = 'var(--danger)';
+      } else {
+        wdEl.className = 'todo-count zero';
+        wdEl.style.background = '';
+      }
     }
   }
 
@@ -3372,9 +3601,179 @@
   /* ── OTP wrappers: close current panel first, then OTP after animation ── */
   function _afterClose(fn) { setTimeout(fn, 260); } // wait for 0.25s slide/fade
 
-  function openWalletDeleteOTP() {
+  /* ── 4-3-1: Open delete wallet modal — checks 4 conditions ── */
+  function openDeleteWallet(walletId) {
+    const w = _WALLET_DATA.find(d => d.id === walletId);
+    if (!w) return;
+
+    // Condition: general account
+    if (!_IS_MASTER) {
+      showToast('Master 계정만 지갑 삭제를 요청할 수 있습니다.'); return;
+    }
+    // Condition: already pending
+    if (_WALLET_DEL_STATE[walletId] === 'pending') {
+      showToast('이미 삭제 요청이 진행 중입니다.'); return;
+    }
+    // Condition: balance > 0 (demo: check string)
+    const hasBalance = parseFloat(w.balance) > 0;
+    if (hasBalance) {
+      showToast('잔액이 있는 지갑은 삭제할 수 없습니다. 먼저 잔액을 출금해주세요.'); return;
+    }
+
+    _delWalletId = walletId;
+    // Populate modal static fields
+    document.getElementById('dw-name').textContent    = w.name;
+    document.getElementById('dw-coin').textContent    = w.coin;
+    document.getElementById('dw-network').textContent = w.network;
+    document.getElementById('dw-addr').textContent    = w.addr;
+
+    // 4-3-2: Simulate real-time balance re-check on modal open
+    const balEl = document.getElementById('dw-balance');
+    balEl.innerHTML = '<span style="color:var(--text-secondary); font-size:12px; font-style:italic;">잔액 확인 중&#8230;</span>';
+    const submitBtn = document.getElementById('dw-submit-btn');
+    submitBtn.disabled = true;
+
+    openModal('modal-delete-wallet');
+
+    setTimeout(() => {
+      balEl.textContent = w.balanceKRW + ' (' + w.balance + ' ' + w.coin + ')';
+      submitBtn.disabled = false;
+    }, 900);
+  }
+
+  /* ── 4-3-3: OTP → submit delete request ── */
+  function submitDeleteWallet() {
+    const w = _WALLET_DATA.find(d => d.id === _delWalletId);
+    if (!w) return;
     closeModal('modal-delete-wallet');
-    _afterClose(() => openOTPModal('지갑 삭제 확인', () => showToast('삭제 요청이 전송되었습니다.')));
+    _afterClose(() => openOTPModal({
+      title: '지갑 삭제 요청',
+      desc: '지갑 삭제 요청은 되돌릴 수 없습니다. OTP 인증 후 Admin에게 전송됩니다.',
+      cb: () => {
+        const now = new Date().toISOString().replace('T',' ').slice(0,16);
+        _WALLET_DEL_STATE[_delWalletId] = 'pending';
+
+        // Add to requests list and re-render dashboard
+        _WALLET_DEL_REQUESTS.unshift({
+          id: 'WDR-' + String(_WALLET_DEL_REQUESTS.length + 1).padStart(3,'0'),
+          walletName: w.name, coin: w.coin, network: w.network,
+          addr: w.addr, balanceKRW: w.balanceKRW,
+          requestedBy: '김철수', requestedAt: now, status: 'pending',
+        });
+        renderWalletDeleteDashboard();
+        _updateWalletDeleteBadge(_delWalletId);
+        _logActivity({
+          ts: now, cat: 'wallet', event: '지갑 삭제 요청', account: '김철수',
+          summary: w.name + ' · ' + w.coin + ' / ' + w.network,
+          detail: { type: 'basic', rows: [
+            ['지갑명', w.name], ['코인', w.coin + ' / ' + w.network], ['주소', w.addr],
+          ]}
+        });
+        showToast('지갑 삭제 요청이 Admin에게 전송되었습니다.');
+      }
+    }));
+  }
+
+  /* ── Update wallet card badge + button state (4-3-3 / 4-3-9) ── */
+  function _updateWalletDeleteBadge(walletId) {
+    const state   = _WALLET_DEL_STATE[walletId];
+    const statusEl = document.getElementById('wds-' + walletId);
+    const btn      = document.getElementById('delbtn-' + walletId);
+    const wrap     = document.getElementById('del-wrap-' + walletId);
+
+    if (!statusEl) return;
+
+    if (state === 'pending') {
+      statusEl.innerHTML = '<span class="badge badge-warning" style="font-size:11px;">&#9203; 삭제 요청 중</span>';
+      if (btn)  { btn.disabled = true; btn.style.opacity = '0.45'; btn.style.cursor = 'not-allowed'; }
+      if (wrap) wrap.removeAttribute('data-tip');
+    } else if (state === 'rejected') {
+      statusEl.innerHTML = '<span class="badge badge-danger" style="font-size:11px;">&#10005; 삭제 반려됨</span>';
+      if (btn)  { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
+      if (wrap) wrap.removeAttribute('data-tip');
+    } else {
+      statusEl.innerHTML = '';
+      if (btn)  { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
+    }
+  }
+
+  /* ── 4-3-4: Render delete dashboard ── */
+  function renderWalletDeleteDashboard() {
+    const pending  = _WALLET_DEL_REQUESTS.filter(r => r.status === 'pending').length;
+    const rejected = _WALLET_DEL_REQUESTS.filter(r => r.status === 'rejected').length;
+    const done     = _WALLET_DEL_REQUESTS.filter(r => r.status === 'done').length;
+
+    const statsEl = document.getElementById('del-dash-stats');
+    if (statsEl) statsEl.innerHTML = `
+      <div class="del-stat-card dsc-pending">
+        <div class="del-stat-label">&#9203; 요청 중</div>
+        <div class="del-stat-value">${pending}</div>
+      </div>
+      <div class="del-stat-card dsc-rejected">
+        <div class="del-stat-label">&#10005; 반려됨</div>
+        <div class="del-stat-value">${rejected}</div>
+      </div>
+      <div class="del-stat-card dsc-done">
+        <div class="del-stat-label">&#9679; 삭제 완료</div>
+        <div class="del-stat-value">${done}</div>
+      </div>
+    `;
+
+    const tbody = document.getElementById('del-dash-tbody');
+    if (!tbody) return;
+    if (_WALLET_DEL_REQUESTS.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-secondary); padding:32px;">삭제 요청 이력이 없습니다.</td></tr>';
+      return;
+    }
+    const statusBadge = { pending:'<span class="badge badge-warning">요청 중</span>', rejected:'<span class="badge badge-danger">반려됨</span>', done:'<span class="badge badge-gray">삭제 완료</span>' };
+    const rowCls = { pending:'del-dash-row-pending', rejected:'del-dash-row-rejected', done:'del-dash-row-done' };
+    tbody.innerHTML = _WALLET_DEL_REQUESTS.map(r => `
+      <tr class="${rowCls[r.status] || ''}" style="cursor:pointer;" onclick="openWalletDelDetail('${r.id}')">
+        <td style="font-family:monospace; font-size:12px;">${r.id}</td>
+        <td style="font-weight:600;">${r.walletName}</td>
+        <td style="font-size:12px;">${r.coin}<br><span style="color:var(--text-secondary);">${r.network}</span></td>
+        <td>${r.requestedBy}</td>
+        <td style="font-size:12px;">${r.requestedAt}</td>
+        <td style="font-size:12px;">${r.processedAt || '—'}</td>
+        <td>${statusBadge[r.status] || r.status}</td>
+      </tr>`).join('');
+    _updateTodoBadges();
+  }
+
+  /* ── 4-3-5/6/7: Open detail popup by status ── */
+  function openWalletDelDetail(id) {
+    const r = _WALLET_DEL_REQUESTS.find(x => x.id === id);
+    if (!r) return;
+    if (r.status === 'pending') {
+      document.getElementById('wdd-name').textContent      = r.walletName;
+      document.getElementById('wdd-coin').textContent      = r.coin + ' / ' + r.network;
+      document.getElementById('wdd-by').textContent        = r.requestedBy;
+      document.getElementById('wdd-requested').textContent = r.requestedAt;
+      openModal('modal-wallet-del-pending');
+    } else if (r.status === 'rejected') {
+      document.getElementById('wdr-name').textContent      = r.walletName;
+      document.getElementById('wdr-coin').textContent      = r.coin + ' / ' + r.network;
+      document.getElementById('wdr-requested').textContent = r.requestedAt;
+      document.getElementById('wdr-processed').textContent = r.processedAt || '—';
+      document.getElementById('wdr-reason').textContent    = r.reason || '사유 없음';
+      openModal('modal-wallet-del-rejected');
+    } else if (r.status === 'done') {
+      document.getElementById('wddone-name').textContent      = r.walletName;
+      document.getElementById('wddone-coin').textContent      = r.coin + ' / ' + r.network;
+      document.getElementById('wddone-requested').textContent = r.requestedAt;
+      document.getElementById('wddone-processed').textContent = r.processedAt || '—';
+      document.getElementById('wddone-by').textContent        = r.processedBy || 'Admin';
+      openModal('modal-wallet-del-done');
+    }
+  }
+
+  /* ── Navigate to wallet page and highlight delete dashboard ── */
+  function gotoWalletDelRejected() {
+    showPage('wallet', document.getElementById('nav-wallet'));
+    setTimeout(() => {
+      const dash = document.querySelector('.del-dash');
+      if (dash) dash.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
   }
   function openCoinAddOTP() {
     const coin    = document.getElementById('ac-coin')?.value;
@@ -4865,13 +5264,13 @@
     renderWLTable();
     renderCoinsTab();
     renderActivityLog();
+    renderWalletDeleteDashboard();
+    _updateTodoBadges();
   });
 
   /* ════════════════════════════════════
      SECTION 7: WHITELIST ADDRESS
   ════════════════════════════════════ */
-  const _IS_MASTER = true; // demo: logged-in user is Master
-
   const _WL_COIN_NETWORKS = {
     BTC:  ['Bitcoin Mainnet'],
     ETH:  ['Ethereum Mainnet'],
