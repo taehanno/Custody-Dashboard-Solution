@@ -219,6 +219,49 @@
     .radio-item input[type=radio] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
     .renewal-hint { font-size: 12px; color: var(--primary); font-weight: 600; margin-top: 8px; }
 
+    /* ── Slide-over (KYB 7-tab form) ── */
+    .slideover-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 490; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    }
+    .slideover-backdrop.open { opacity: 1; pointer-events: all; }
+    .slideover {
+      position: fixed; top: 0; right: 0; bottom: 0; width: min(780px, 100%);
+      background: #fff; z-index: 600; box-shadow: -8px 0 32px rgba(0,0,0,0.16);
+      display: flex; flex-direction: column;
+      transform: translateX(100%); transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    }
+    .slideover.open { transform: translateX(0); }
+    .so-header { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .so-title { font-size: 15px; font-weight: 700; }
+    .so-body { flex: 1; overflow-y: auto; padding: 20px 22px; }
+    .so-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; background: #fff; }
+
+    /* KYB tabs */
+    .kyb-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; }
+    .kyb-tab { padding: 9px 14px; font-size: 12.5px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
+    .kyb-tab:hover { color: var(--text-primary); }
+    .kyb-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+    .kyb-tab.required::after { content: ' *'; color: var(--danger); font-size: 10px; }
+    .kyb-tab.done::after { content: ' ✓'; color: var(--success); font-size: 11px; }
+    .kyb-tab-panel { display: none; }
+    .kyb-tab-panel.active { display: block; }
+    .kyb-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .kyb-field-full { grid-column: 1 / -1; }
+    .kyb-subsection { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+    /* KYB status badges */
+    .badge-kyb-draft    { background: #F1F5F9; color: #64748B; }
+    .badge-kyb-wlf      { background: #EFF6FF; color: #3B82F6; }
+    .badge-kyb-octa     { background: #FFFBEB; color: #F59E0B; }
+    .badge-kyb-done     { background: #ECFDF5; color: #10B981; }
+    .badge-kyb-rejected { background: #FEF2F2; color: #EF4444; }
+
+    /* Account status */
+    .badge-locked-pw  { background: #FEF2F2; color: #EF4444; }
+    .badge-locked-otp { background: #FFF7ED; color: #F97316; }
+    .badge-inactive   { background: #F1F5F9; color: #64748B; }
+
     /* ── Modal infrastructure ── */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.45);
@@ -501,89 +544,100 @@
       </div>
 
       <!-- ══════════════════════════
-           PAGE: KYB 관리
+           PAGE: KYB 관리 (4-3)
       ══════════════════════════ -->
       <div class="page" id="page-kyb">
         <div class="page-header">
           <h1 class="page-title">KYB 관리</h1>
+          <button class="btn btn-primary" id="btn-new-kyb" onclick="openNewKYB()">+ 신규 KYB 등록</button>
         </div>
-        <div class="stats-row">
-          <div class="stat-card"><span class="stat-label">KYB 대기</span><span class="stat-value stat-orange">3</span></div>
-          <div class="stat-card"><span class="stat-label">승인 대기</span><span class="stat-value stat-blue">2</span></div>
-          <div class="stat-card"><span class="stat-label">KYB 완료</span><span class="stat-value stat-green">19</span></div>
-          <div class="stat-card"><span class="stat-label">갱신 경과</span><span class="stat-value stat-red">1</span></div>
+        <!-- 4-3 Stats -->
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);">
+          <div class="stat-card"><span class="stat-label">입력 중</span><span class="stat-value stat-gray" id="kyb-stat-draft">0</span></div>
+          <div class="stat-card"><span class="stat-label">WLF 검사 중</span><span class="stat-value stat-blue" id="kyb-stat-wlf">0</span></div>
+          <div class="stat-card"><span class="stat-label">KYB 완료</span><span class="stat-value stat-green" id="kyb-stat-done">0</span></div>
+          <div class="stat-card"><span class="stat-label">거절</span><span class="stat-value stat-red" id="kyb-stat-rejected">0</span></div>
         </div>
         <div class="card" style="padding:0;">
+          <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+            <div class="toolbar" style="margin-bottom:0;">
+              <div class="search-wrap">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" id="kyb-search" class="form-control" placeholder="법인명 / 사업자번호 검색" style="width:230px; padding-left:30px;" oninput="renderKYBTable()" />
+              </div>
+              <select class="form-control" id="kyb-filter-status" style="width:150px;" onchange="renderKYBTable()">
+                <option value="">전체 상태</option>
+                <option value="draft">입력 중</option>
+                <option value="wlf">WLF 검사 중</option>
+                <option value="octa">OCTA 검증 중</option>
+                <option value="done">KYB 완료</option>
+                <option value="rejected">거절</option>
+              </select>
+            </div>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>고객사명</th>
+                  <th>법인명</th>
+                  <th>사업자번호</th>
                   <th>KYB 상태</th>
                   <th>위험등급</th>
-                  <th>KYB 수행일</th>
-                  <th>다음 수행일</th>
                   <th>담당자</th>
                   <th>액션</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td style="font-weight:600;">델타홀딩스 유한회사</td>
-                  <td><span class="badge badge-info">승인 대기</span></td>
-                  <td><span class="badge badge-gray">미정</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-01</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2026-11-01</td>
-                  <td>김담당</td>
-                  <td style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button class="btn btn-primary btn-xs">OCTA 검증</button>
-                    <button class="btn btn-outline btn-xs">보류</button>
-                  </td>
-                </tr>
-                <tr class="row-danger">
-                  <td style="font-weight:600;">감마트레이딩(주)</td>
-                  <td><span class="badge badge-danger">KYB 만료</span></td>
-                  <td><span class="badge badge-danger">고위험</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2024-03-20</td>
-                  <td style="font-size:12px; color:var(--danger); font-weight:600;">2025-03-20 (경과)</td>
-                  <td>이담당</td>
-                  <td>
-                    <button class="btn btn-warning btn-xs">갱신 시작</button>
-                  </td>
-                </tr>
-              </tbody>
+              <tbody id="kyb-tbody"></tbody>
             </table>
           </div>
         </div>
       </div>
 
       <!-- ══════════════════════════
-           PAGE: 계정 관리 (고객사)
+           PAGE: 계정 관리 (고객사) — 섹션 3
       ══════════════════════════ -->
       <div class="page" id="page-accounts">
         <div class="page-header">
           <h1 class="page-title">계정 관리 (고객사)</h1>
-          <button class="btn btn-primary">+ 계정 생성</button>
         </div>
-        <div class="card">
-          <div class="placeholder-info">
-            <p>고객사 소속 계정의 권한, 역할, 접근 수준을 관리합니다.</p>
+        <!-- Legend -->
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+          <span style="font-size:11.5px; color:var(--text-secondary);">비활성화 유형:</span>
+          <span class="badge badge-locked-pw">PW 잠금 (5회 오류)</span>
+          <span class="badge badge-locked-otp">OTP 잠금 (5회 오류)</span>
+          <span class="badge badge-inactive">수동 비활성화</span>
+        </div>
+        <div class="card" style="padding:0;">
+          <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+            <div class="toolbar" style="margin-bottom:0;">
+              <div class="search-wrap">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" id="acct-search" class="form-control" placeholder="계정명 / 이메일 / 고객사 검색" style="width:250px; padding-left:30px;" oninput="renderCustomerAccounts()" />
+              </div>
+              <select class="form-control" id="acct-filter-status" style="width:150px;" onchange="renderCustomerAccounts()">
+                <option value="">전체 상태</option>
+                <option value="active">활성</option>
+                <option value="inactive_pw">PW 잠금</option>
+                <option value="inactive_otp">OTP 잠금</option>
+                <option value="inactive_manual">수동 비활성화</option>
+              </select>
+            </div>
           </div>
-          <div class="table-wrap" style="margin-top:16px;">
+          <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>계정명</th><th>이메일</th><th>고객사</th><th>역할</th><th>상태</th><th>마지막 로그인</th></tr>
-              </thead>
-              <tbody>
                 <tr>
-                  <td style="font-weight:600;">NOTAEHAN</td>
-                  <td>notaehan@infiniteblock.io</td>
-                  <td>알파투자운용(주)</td>
-                  <td><span class="badge badge-master">Master</span></td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-20 14:30</td>
+                  <th>계정명</th>
+                  <th>이메일</th>
+                  <th>고객사</th>
+                  <th>역할</th>
+                  <th>상태</th>
+                  <th>마지막 로그인</th>
+                  <th>비활성화 사유</th>
+                  <th>액션</th>
                 </tr>
-              </tbody>
+              </thead>
+              <tbody id="acct-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -1393,6 +1447,272 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     MODALS: 계정 관리 액션 (섹션 3)
+══════════════════════════════════════ -->
+
+<!-- PW 재설정 확인 -->
+<div class="modal" id="modal-acct-pw-reset">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">&#128274; PW 재설정</span>
+    <button class="modal-close" onclick="closeModal('modal-acct-pw-reset')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">계정명</span><span class="info-value" id="acct-pw-name"></span></div>
+      <div class="info-row"><span class="info-label">이메일</span><span class="info-value" id="acct-pw-email"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">고객사</span><span class="info-value" id="acct-pw-corp"></span></div>
+    </div>
+    <div class="alert alert-warning">
+      &#9888; 비밀번호를 재설정하면 임시 비밀번호가 해당 이메일로 발송되며, 고객은 <strong>다음 로그인 시 새 비밀번호를 설정</strong>해야 합니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-acct-pw-reset')">취소</button>
+    <button class="btn btn-danger" onclick="confirmAcctPWReset()">PW 재설정 → OTP</button>
+  </div>
+</div>
+
+<!-- OTP 재설정 확인 -->
+<div class="modal" id="modal-acct-otp-reset">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--warning);">&#128274; OTP 재설정</span>
+    <button class="modal-close" onclick="closeModal('modal-acct-otp-reset')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">계정명</span><span class="info-value" id="acct-otp-name"></span></div>
+      <div class="info-row"><span class="info-label">이메일</span><span class="info-value" id="acct-otp-email"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">고객사</span><span class="info-value" id="acct-otp-corp"></span></div>
+    </div>
+    <div class="alert alert-info">
+      &#8505; OTP를 재설정하면 고객은 <strong>다음 로그인 시 OTP 앱에 새 QR코드를 등록</strong>해야 합니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-acct-otp-reset')">취소</button>
+    <button class="btn btn-warning" onclick="confirmAcctOTPReset()">OTP 재설정 → OTP</button>
+  </div>
+</div>
+
+<!-- 수동 비활성화 -->
+<div class="modal" id="modal-acct-deactivate">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">계정 비활성화</span>
+    <button class="modal-close" onclick="closeModal('modal-acct-deactivate')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">계정명</span><span class="info-value" id="acct-deact-name"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">고객사</span><span class="info-value" id="acct-deact-corp"></span></div>
+    </div>
+    <div class="alert alert-warning">&#9888; 비활성화하면 해당 계정은 즉시 로그인이 불가합니다.</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-acct-deactivate')">취소</button>
+    <button class="btn btn-danger" onclick="confirmAcctDeactivate()">비활성화 → OTP</button>
+  </div>
+</div>
+
+<!-- 수동 활성화 -->
+<div class="modal" id="modal-acct-activate">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--success);">계정 활성화</span>
+    <button class="modal-close" onclick="closeModal('modal-acct-activate')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">계정명</span><span class="info-value" id="acct-act-name"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">고객사</span><span class="info-value" id="acct-act-corp"></span></div>
+    </div>
+    <div class="alert alert-info">&#9989; 활성화하면 해당 계정은 즉시 로그인이 가능합니다.</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-acct-activate')">취소</button>
+    <button class="btn btn-success" onclick="confirmAcctActivate()">활성화 → OTP</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE-OVER: KYB 7-탭 입력 폼 (4-4)
+══════════════════════════════════════ -->
+<div class="slideover-backdrop" id="kyb-so-backdrop" onclick="closeKYBDetail()"></div>
+<div class="slideover" id="kyb-so">
+  <div class="so-header">
+    <div>
+      <div class="so-title" id="kyb-so-title">KYB 정보 입력</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="kyb-so-subtitle"></div>
+    </div>
+    <button class="modal-close" onclick="closeKYBDetail()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <!-- Status bar -->
+    <div id="kyb-so-status-bar" style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding:10px 12px; background:#F8FAFC; border-radius:8px; border:1px solid var(--border);">
+      <span style="font-size:12px; color:var(--text-secondary);">KYB 상태:</span>
+      <span id="kyb-so-status-badge"></span>
+    </div>
+    <!-- 7 Tabs -->
+    <div class="kyb-tabs" id="kyb-tabs">
+      <div class="kyb-tab required active" onclick="switchKYBTab(0)" id="ktab-0">① 법인·단체</div>
+      <div class="kyb-tab required" onclick="switchKYBTab(1)" id="ktab-1">② 대표자</div>
+      <div class="kyb-tab required" onclick="switchKYBTab(2)" id="ktab-2">③ 실소유자</div>
+      <div class="kyb-tab" onclick="switchKYBTab(3)" id="ktab-3">④ 등기이사</div>
+      <div class="kyb-tab" onclick="switchKYBTab(4)" id="ktab-4">⑤ 대주주 10%↑</div>
+      <div class="kyb-tab" onclick="switchKYBTab(5)" id="ktab-5">⑥ 대리인</div>
+      <div class="kyb-tab" onclick="switchKYBTab(6)" id="ktab-6" style="opacity:0.4;">⑦ 가상자산사업자</div>
+    </div>
+
+    <!-- Tab ①: 법인 및 단체 -->
+    <div class="kyb-tab-panel active" id="kpanel-0">
+      <div class="kyb-field-grid">
+        <div class="form-group"><label class="form-label">법인명 (국문) <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-corp-name-kr" style="width:100%;" placeholder="알파투자운용 주식회사" /></div>
+        <div class="form-group"><label class="form-label">법인명 (영문) <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-corp-name-en" style="width:100%;" placeholder="Alpha Investment Mgmt" /></div>
+        <div class="form-group"><label class="form-label">사업자등록번호 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-biz-no" style="width:100%;" placeholder="000-00-00000" /></div>
+        <div class="form-group"><label class="form-label">법인등록번호</label><input class="form-control" id="kyb-corp-no" style="width:100%;" placeholder="000000-0000000" /></div>
+        <div class="form-group kyb-field-full"><label class="form-label">본점 소재지 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-addr" style="width:100%;" placeholder="서울특별시 강남구 테헤란로 123" /></div>
+        <div class="form-group"><label class="form-label">설립일 <span style="color:var(--danger);">*</span></label><input type="date" class="form-control" id="kyb-founded" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">업종 <span style="color:var(--danger);">*</span></label>
+          <select class="form-control" id="kyb-industry" style="width:100%;" onchange="checkVASPTab()">
+            <option value="">선택</option>
+            <option>투자자문업</option>
+            <option>자산운용업</option>
+            <option>가상자산사업자(VASP)</option>
+            <option>기타 금융업</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">연락처 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-tel" style="width:100%;" placeholder="02-0000-0000" /></div>
+        <div class="form-group kyb-field-full"><label class="form-label">이메일 <span style="color:var(--danger);">*</span></label><input type="email" class="form-control" id="kyb-email" style="width:100%;" placeholder="contact@company.com" /></div>
+      </div>
+    </div>
+
+    <!-- Tab ②: 대표자 -->
+    <div class="kyb-tab-panel" id="kpanel-1">
+      <div class="kyb-field-grid">
+        <div class="form-group"><label class="form-label">성명 (국문) <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-name-kr" style="width:100%;" placeholder="홍길동" /></div>
+        <div class="form-group"><label class="form-label">성명 (영문) <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-name-en" style="width:100%;" placeholder="Hong Gil-dong" /></div>
+        <div class="form-group"><label class="form-label">생년월일 <span style="color:var(--danger);">*</span></label><input type="date" class="form-control" id="kyb-rep-dob" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">국적 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-nation" style="width:100%;" placeholder="대한민국" /></div>
+        <div class="form-group"><label class="form-label">신분증 종류</label>
+          <select class="form-control" id="kyb-rep-id-type" style="width:100%;">
+            <option>주민등록증</option><option>여권</option><option>운전면허증</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">신분증 번호 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-id-no" style="width:100%;" placeholder="000000-0000000" /></div>
+        <div class="form-group kyb-field-full"><label class="form-label">주소 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-addr" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">직책</label><input class="form-control" id="kyb-rep-title" style="width:100%;" placeholder="대표이사" /></div>
+        <div class="form-group"><label class="form-label">지분율 (%)</label><input type="number" class="form-control" id="kyb-rep-share" style="width:100%;" min="0" max="100" placeholder="0" /></div>
+      </div>
+    </div>
+
+    <!-- Tab ③: 실소유자 -->
+    <div class="kyb-tab-panel" id="kpanel-2">
+      <div class="alert alert-info" style="margin-bottom:14px;">&#8505; 지분율 25% 이상 또는 실질적 지배자를 기재하세요.</div>
+      <div class="kyb-field-grid">
+        <div class="form-group"><label class="form-label">성명 (국문) <span style="color:var(--danger);">*</span></label><input class="form-control" style="width:100%;" placeholder="홍길동" /></div>
+        <div class="form-group"><label class="form-label">생년월일 <span style="color:var(--danger);">*</span></label><input type="date" class="form-control" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">국적 <span style="color:var(--danger);">*</span></label><input class="form-control" style="width:100%;" placeholder="대한민국" /></div>
+        <div class="form-group"><label class="form-label">지분율 (%) <span style="color:var(--danger);">*</span></label><input type="number" class="form-control" style="width:100%;" min="25" max="100" /></div>
+        <div class="form-group kyb-field-full"><label class="form-label">주소 <span style="color:var(--danger);">*</span></label><input class="form-control" style="width:100%;" /></div>
+        <div class="form-group kyb-field-full"><label class="form-label">PEP 여부</label>
+          <div class="radio-group">
+            <label class="radio-item"><input type="radio" name="kyb-pep" value="no" checked> 해당 없음</label>
+            <label class="radio-item"><input type="radio" name="kyb-pep" value="yes"> 정치적 주요인물 (PEP)</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab ④: 등기이사 -->
+    <div class="kyb-tab-panel" id="kpanel-3">
+      <div class="alert alert-info" style="margin-bottom:14px;">&#8505; 선택 항목입니다. 대표자 이외 등기이사가 있는 경우 입력하세요.</div>
+      <div class="kyb-field-grid">
+        <div class="form-group"><label class="form-label">성명 (국문)</label><input class="form-control" style="width:100%;" placeholder="김이사" /></div>
+        <div class="form-group"><label class="form-label">생년월일</label><input type="date" class="form-control" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">국적</label><input class="form-control" style="width:100%;" placeholder="대한민국" /></div>
+        <div class="form-group"><label class="form-label">직책</label><input class="form-control" style="width:100%;" placeholder="이사" /></div>
+      </div>
+    </div>
+
+    <!-- Tab ⑤: 대주주 10%↑ -->
+    <div class="kyb-tab-panel" id="kpanel-4">
+      <div class="alert alert-info" style="margin-bottom:14px;">&#8505; 지분율 10% 이상 주주를 기재하세요 (실소유자와 중복 기재 가능).</div>
+      <div class="kyb-field-grid">
+        <div class="form-group"><label class="form-label">성명 / 법인명</label><input class="form-control" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">지분율 (%)</label><input type="number" class="form-control" style="width:100%;" min="10" max="100" /></div>
+        <div class="form-group"><label class="form-label">국적 / 설립국</label><input class="form-control" style="width:100%;" placeholder="대한민국" /></div>
+        <div class="form-group"><label class="form-label">법인/개인 구분</label>
+          <select class="form-control" style="width:100%;"><option>개인</option><option>법인</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab ⑥: 대리인 -->
+    <div class="kyb-tab-panel" id="kpanel-5">
+      <div class="alert alert-info" style="margin-bottom:14px;">&#8505; KYB 절차를 대리인이 진행하는 경우만 입력하세요.</div>
+      <div class="kyb-field-grid">
+        <div class="form-group"><label class="form-label">성명 (국문)</label><input class="form-control" style="width:100%;" placeholder="이대리" /></div>
+        <div class="form-group"><label class="form-label">생년월일</label><input type="date" class="form-control" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">신분증 종류</label>
+          <select class="form-control" style="width:100%;"><option>주민등록증</option><option>여권</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">신분증 번호</label><input class="form-control" style="width:100%;" /></div>
+        <div class="form-group kyb-field-full"><label class="form-label">위임 범위</label><input class="form-control" style="width:100%;" placeholder="KYB 정보 제출 및 서명 일체" /></div>
+      </div>
+    </div>
+
+    <!-- Tab ⑦: 가상자산사업자 (업종 = VASP 시 활성화) -->
+    <div class="kyb-tab-panel" id="kpanel-6">
+      <div class="alert alert-warning" style="margin-bottom:14px;">&#9888; 업종이 <strong>가상자산사업자(VASP)</strong>인 경우 이 탭을 반드시 입력해야 합니다.</div>
+      <div class="kyb-field-grid">
+        <div class="form-group"><label class="form-label">VASP 허가 번호</label><input class="form-control" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">VASP 등록 국가</label><input class="form-control" style="width:100%;" placeholder="대한민국" /></div>
+        <div class="form-group"><label class="form-label">Travel Rule 솔루션</label><input class="form-control" style="width:100%;" placeholder="VerifyVASP, TRISA 등" /></div>
+        <div class="form-group"><label class="form-label">가상자산 취급 종류</label><input class="form-control" style="width:100%;" placeholder="BTC, ETH, USDT" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="so-footer" id="kyb-so-footer">
+    <button class="btn btn-outline" onclick="closeKYBDetail()">닫기</button>
+    <button class="btn btn-outline" id="kyb-btn-save" onclick="kybSave()">저장</button>
+    <button class="btn btn-primary" id="kyb-btn-wlf" onclick="kybRequestWLF()" style="display:none;">WLF 검사 요청</button>
+    <button class="btn btn-warning" id="kyb-btn-approve-wlf" onclick="kybApproveWLF()" style="display:none;">WLF 결재</button>
+    <button class="btn btn-success" id="kyb-btn-create-client" onclick="kybCreateClient()" style="display:none;">고객사 생성 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     modal-kyb-new: 신규 KYB 등록
+══════════════════════════════════════ -->
+<div class="modal" id="modal-kyb-new">
+  <div class="modal-header">
+    <span class="modal-title">신규 KYB 등록</span>
+    <button class="modal-close" onclick="closeModal('modal-kyb-new')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label class="form-label">법인명 (국문) <span style="color:var(--danger);">*</span></label>
+      <input type="text" class="form-control" id="newkyb-corp-name" style="width:100%;" placeholder="(주)신규법인" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">사업자등록번호 <span style="color:var(--danger);">*</span></label>
+      <input type="text" class="form-control" id="newkyb-biz-no" style="width:100%;" placeholder="000-00-00000" />
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">담당 AML 담당자 <span style="color:var(--danger);">*</span></label>
+      <select class="form-control" id="newkyb-officer" style="width:100%;">
+        <option value="">선택</option>
+        <option>김담당</option>
+        <option>이담당</option>
+        <option>박담당</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-kyb-new')">취소</button>
+    <button class="btn btn-primary" onclick="submitNewKYB()">등록 후 입력 시작</button>
+  </div>
+</div>
+
 <!-- modal-otp: OTP 인증 -->
 <div class="modal" id="modal-otp">
   <div class="modal-header">
@@ -1434,12 +1754,61 @@
     aml_manager: { label: 'AML 관리자',    cls: 'role-badge-aml-manager' }
   };
 
-  /* nav items and who can see them (undefined = all roles) */
+  /* nav items and who can see them (undefined = all roles can see) */
   var NAV_ACCESS = {
     'nav-admin-accounts': ['master'],
-    'nav-vasp':           ['general'],
-    'nav-coins-config':   ['general'],
-    'nav-wl-coins':       ['general']
+    'nav-vasp':           ['general', 'master'],
+    'nav-coins-config':   ['general', 'master'],
+    'nav-wl-coins':       ['general', 'master'],
+    'nav-kyb':            ['aml_officer', 'aml_manager', 'general', 'master'],
+    'nav-accounts':       ['general', 'master'],
+  };
+
+  /* ════════════════════════════════════
+     DATA: 고객사 계정 (섹션 3)
+  ════════════════════════════════════ */
+  var _CUSTOMER_ACCTS = [
+    { idx:0, name:'김철수', email:'kim@alpha.com', corp:'알파투자운용(주)', role:'master', roleLabel:'Master',
+      status:'active', lastLogin:'2025-11-20 14:30', inactiveReason:null },
+    { idx:1, name:'이영희', email:'lee@alpha.com', corp:'알파투자운용(주)', role:'general', roleLabel:'일반',
+      status:'active', lastLogin:'2025-11-19 10:00', inactiveReason:null },
+    { idx:2, name:'박민준', email:'park@beta.com', corp:'베타캐피탈 유한회사', role:'master', roleLabel:'Master',
+      status:'inactive_pw', lastLogin:'2025-11-10 09:00', inactiveReason:'PW 5회 오류' },
+    { idx:3, name:'최유진', email:'choi@gamma.com', corp:'감마트레이딩(주)', role:'general', roleLabel:'일반',
+      status:'inactive_otp', lastLogin:'2025-11-05 15:20', inactiveReason:'OTP 5회 오류' },
+    { idx:4, name:'정소연', email:'jeong@delta.com', corp:'델타홀딩스 유한회사', role:'general', roleLabel:'일반',
+      status:'inactive_manual', lastLogin:'2025-10-30 11:00', inactiveReason:'수동 처리 (Admin)' },
+  ];
+  var _acctActionIdx = null;
+
+  /* ════════════════════════════════════
+     DATA: KYB (섹션 4)
+  ════════════════════════════════════ */
+  var KYB_STATUS_CFG = {
+    draft:    { label:'입력 중',      badgeCls:'badge-kyb-draft',    statKey:'kyb-stat-draft'    },
+    wlf:      { label:'WLF 검사 중',  badgeCls:'badge-kyb-wlf',      statKey:'kyb-stat-wlf'      },
+    octa:     { label:'OCTA 검증 중', badgeCls:'badge-kyb-octa',     statKey:null                },
+    done:     { label:'KYB 완료',     badgeCls:'badge-kyb-done',     statKey:'kyb-stat-done'     },
+    rejected: { label:'거절',         badgeCls:'badge-kyb-rejected', statKey:'kyb-stat-rejected' },
+  };
+
+  var _KYB_DATA = [
+    { idx:0, corpName:'알파투자운용(주)',     corpNameEn:'Alpha Investment Mgmt', bizNo:'123-45-67890',
+      status:'done',     riskGrade:'low',  officer:'김담당', startedAt:'2025-10-01', completedAt:'2025-10-15', requiredDone:true },
+    { idx:1, corpName:'베타캐피탈 유한회사', corpNameEn:'Beta Capital Ltd',        bizNo:'234-56-78901',
+      status:'wlf',      riskGrade:null,   officer:'이담당', startedAt:'2025-11-01', completedAt:null,         requiredDone:true },
+    { idx:2, corpName:'감마트레이딩(주)',     corpNameEn:'Gamma Trading Corp',      bizNo:'345-67-89012',
+      status:'draft',    riskGrade:null,   officer:'박담당', startedAt:'2025-11-20', completedAt:null,         requiredDone:false },
+    { idx:3, corpName:'델타홀딩스 유한회사', corpNameEn:'Delta Holdings Ltd',       bizNo:'456-78-90123',
+      status:'rejected', riskGrade:'high', officer:'김담당', startedAt:'2025-09-01', completedAt:null,         requiredDone:true,
+      rejectedReason:'OCTA 검증 결과 고위험 거래 패턴이 발견되었습니다. 추가 자료 제출 후 재검토 가능합니다.' },
+  ];
+  var _kybDetailIdx = null;
+
+  var _RISK_BADGE = {
+    low:  '<span class="badge badge-success">저위험</span>',
+    mid:  '<span class="badge badge-warning">중위험</span>',
+    high: '<span class="badge badge-danger">고위험</span>',
   };
 
   function switchRole(role) {
@@ -1466,17 +1835,24 @@
       }
     });
 
-    // "고객사 생성" button: general only
+    // 고객사 생성 버튼: general / master
     var btnCreate = document.getElementById('btn-create-client');
     if (btnCreate) {
-      btnCreate.style.display = (_ADMIN_ROLE === 'general') ? '' : 'none';
+      btnCreate.style.display = (['general','master'].indexOf(_ADMIN_ROLE) !== -1) ? '' : 'none';
     }
-
-    // VASP 등록 button: general only
+    // VASP 등록 버튼: general / master
     var btnVasp = document.getElementById('btn-create-vasp');
     if (btnVasp) {
-      btnVasp.style.display = (_ADMIN_ROLE === 'general') ? '' : 'none';
+      btnVasp.style.display = (['general','master'].indexOf(_ADMIN_ROLE) !== -1) ? '' : 'none';
     }
+    // 신규 KYB 등록 버튼: aml_officer only
+    var btnNewKYB = document.getElementById('btn-new-kyb');
+    if (btnNewKYB) {
+      btnNewKYB.style.display = (_ADMIN_ROLE === 'aml_officer') ? '' : 'none';
+    }
+
+    // Re-render KYB table to update action buttons per role
+    if (document.getElementById('kyb-tbody')) renderKYBTable();
   }
 
   /* ════════════════════════════════════
@@ -1653,6 +2029,350 @@
   }
 
   /* ════════════════════════════════════
+     섹션 3: 고객사 계정 관리
+  ════════════════════════════════════ */
+  function renderCustomerAccounts() {
+    var tbody = document.getElementById('acct-tbody');
+    if (!tbody) return;
+    var q      = (document.getElementById('acct-search')        || {}).value || '';
+    var fStatus= (document.getElementById('acct-filter-status') || {}).value || '';
+    q = q.toLowerCase();
+
+    var list = _CUSTOMER_ACCTS.filter(function(a) {
+      var matchQ = !q || a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q) || a.corp.toLowerCase().includes(q);
+      var matchS = !fStatus || a.status === fStatus;
+      return matchQ && matchS;
+    });
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);padding:32px;">검색 결과가 없습니다.</td></tr>';
+      return;
+    }
+
+    var roleBadgeMap = { master:'badge-master', general:'badge-general' };
+    tbody.innerHTML = list.map(function(a) {
+      var statusBadge = {
+        active:         '<span class="badge badge-success">&#9679; 활성</span>',
+        inactive_pw:    '<span class="badge badge-locked-pw">&#128274; PW 잠금</span>',
+        inactive_otp:   '<span class="badge badge-locked-otp">&#128274; OTP 잠금</span>',
+        inactive_manual:'<span class="badge badge-inactive">&#9679; 비활성화</span>',
+      }[a.status] || '';
+
+      var actions = '';
+      if (a.status === 'active') {
+        actions = '<button class="btn btn-outline btn-xs" style="color:var(--danger);border-color:rgba(239,68,68,0.3);" onclick="openAcctDeactivate(' + a.idx + ')">비활성화</button>';
+      } else if (a.status === 'inactive_pw') {
+        actions = '<button class="btn btn-danger btn-xs" onclick="openAcctPWReset(' + a.idx + ')">PW 재설정</button>';
+      } else if (a.status === 'inactive_otp') {
+        actions = '<button class="btn btn-warning btn-xs" onclick="openAcctOTPReset(' + a.idx + ')">OTP 재설정</button>';
+      } else if (a.status === 'inactive_manual') {
+        actions = '<button class="btn btn-success btn-xs" onclick="openAcctActivate(' + a.idx + ')">활성화</button>';
+      }
+
+      return '<tr>' +
+        '<td style="font-weight:600;">' + a.name + '</td>' +
+        '<td style="font-size:12px;color:var(--text-secondary);">' + a.email + '</td>' +
+        '<td>' + a.corp + '</td>' +
+        '<td><span class="badge ' + (roleBadgeMap[a.role] || 'badge-gray') + '">' + a.roleLabel + '</span></td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td style="font-size:12px;color:var(--text-secondary);">' + a.lastLogin + '</td>' +
+        '<td style="font-size:12px;color:var(--text-secondary);">' + (a.inactiveReason || '—') + '</td>' +
+        '<td>' + actions + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function openAcctPWReset(idx) {
+    var a = _CUSTOMER_ACCTS[idx]; if (!a) return;
+    _acctActionIdx = idx;
+    document.getElementById('acct-pw-name').textContent  = a.name;
+    document.getElementById('acct-pw-email').textContent = a.email;
+    document.getElementById('acct-pw-corp').textContent  = a.corp;
+    openModal('modal-acct-pw-reset');
+  }
+  function confirmAcctPWReset() {
+    closeModal('modal-acct-pw-reset');
+    openOTPModal('PW 재설정', function() {
+      _CUSTOMER_ACCTS[_acctActionIdx].status = 'active';
+      _CUSTOMER_ACCTS[_acctActionIdx].inactiveReason = null;
+      renderCustomerAccounts();
+      showToast('PW가 재설정되었습니다. 임시 비밀번호가 이메일로 발송되었습니다.');
+    });
+  }
+
+  function openAcctOTPReset(idx) {
+    var a = _CUSTOMER_ACCTS[idx]; if (!a) return;
+    _acctActionIdx = idx;
+    document.getElementById('acct-otp-name').textContent  = a.name;
+    document.getElementById('acct-otp-email').textContent = a.email;
+    document.getElementById('acct-otp-corp').textContent  = a.corp;
+    openModal('modal-acct-otp-reset');
+  }
+  function confirmAcctOTPReset() {
+    closeModal('modal-acct-otp-reset');
+    openOTPModal('OTP 재설정', function() {
+      _CUSTOMER_ACCTS[_acctActionIdx].status = 'active';
+      _CUSTOMER_ACCTS[_acctActionIdx].inactiveReason = null;
+      renderCustomerAccounts();
+      showToast('OTP가 재설정되었습니다. 고객의 다음 로그인 시 OTP 재등록이 필요합니다.');
+    });
+  }
+
+  function openAcctDeactivate(idx) {
+    var a = _CUSTOMER_ACCTS[idx]; if (!a) return;
+    _acctActionIdx = idx;
+    document.getElementById('acct-deact-name').textContent = a.name;
+    document.getElementById('acct-deact-corp').textContent = a.corp;
+    openModal('modal-acct-deactivate');
+  }
+  function confirmAcctDeactivate() {
+    closeModal('modal-acct-deactivate');
+    openOTPModal('계정 비활성화', function() {
+      _CUSTOMER_ACCTS[_acctActionIdx].status = 'inactive_manual';
+      _CUSTOMER_ACCTS[_acctActionIdx].inactiveReason = '수동 처리 (Admin)';
+      renderCustomerAccounts();
+      showToast('계정이 비활성화되었습니다.');
+    });
+  }
+
+  function openAcctActivate(idx) {
+    var a = _CUSTOMER_ACCTS[idx]; if (!a) return;
+    _acctActionIdx = idx;
+    document.getElementById('acct-act-name').textContent = a.name;
+    document.getElementById('acct-act-corp').textContent = a.corp;
+    openModal('modal-acct-activate');
+  }
+  function confirmAcctActivate() {
+    closeModal('modal-acct-activate');
+    openOTPModal('계정 활성화', function() {
+      _CUSTOMER_ACCTS[_acctActionIdx].status = 'active';
+      _CUSTOMER_ACCTS[_acctActionIdx].inactiveReason = null;
+      renderCustomerAccounts();
+      showToast('계정이 활성화되었습니다.');
+    });
+  }
+
+  /* ════════════════════════════════════
+     섹션 4: KYB 관리
+  ════════════════════════════════════ */
+  function renderKYBTable() {
+    var tbody = document.getElementById('kyb-tbody');
+    if (!tbody) return;
+    var q = (document.getElementById('kyb-search')        || {}).value || '';
+    var fs= (document.getElementById('kyb-filter-status') || {}).value || '';
+    q = q.toLowerCase();
+
+    var list = _KYB_DATA.filter(function(k) {
+      var matchQ = !q || k.corpName.toLowerCase().includes(q) || k.bizNo.includes(q);
+      var matchS = !fs || k.status === fs;
+      return matchQ && matchS;
+    });
+
+    // Update stats
+    ['draft','wlf','done','rejected'].forEach(function(s) {
+      var el = document.getElementById('kyb-stat-' + s);
+      if (el) el.textContent = _KYB_DATA.filter(function(k){ return k.status === s; }).length;
+    });
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:32px;">검색 결과가 없습니다.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(function(k) {
+      var cfg = KYB_STATUS_CFG[k.status] || {};
+      var statusBadge = '<span class="badge ' + (cfg.badgeCls||'badge-gray') + '">' + (cfg.label||k.status) + '</span>';
+      var riskBadge = k.riskGrade ? (_RISK_BADGE[k.riskGrade] || '<span class="badge badge-gray">'+k.riskGrade+'</span>') : '<span class="badge badge-gray">—</span>';
+
+      // 4-5 Button policy per status + role
+      var actions = '';
+      if (k.status === 'draft') {
+        if (_ADMIN_ROLE === 'aml_officer') {
+          actions = '<button class="btn btn-primary btn-xs" onclick="openKYBDetail('+k.idx+')">이어쓰기</button>';
+        } else {
+          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+        }
+      } else if (k.status === 'wlf') {
+        if (_ADMIN_ROLE === 'aml_manager') {
+          actions = '<button class="btn btn-warning btn-xs" onclick="openKYBDetail('+k.idx+')">WLF 결재</button>';
+        } else {
+          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+        }
+      } else if (k.status === 'octa') {
+        actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+      } else if (k.status === 'done') {
+        if (['general','master'].indexOf(_ADMIN_ROLE) !== -1) {
+          actions = '<button class="btn btn-success btn-xs" onclick="openKYBDetail('+k.idx+')">고객사 생성</button>';
+        } else {
+          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+        }
+      } else if (k.status === 'rejected') {
+        if (_ADMIN_ROLE === 'aml_officer') {
+          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">재검토</button>';
+        } else {
+          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+        }
+      }
+
+      var rowCls = k.status === 'rejected' ? ' class="row-danger"' : '';
+      return '<tr' + rowCls + '>' +
+        '<td style="font-weight:600;">' + k.corpName + '</td>' +
+        '<td style="font-family:monospace;font-size:12px;color:var(--text-secondary);">' + k.bizNo + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td>' + riskBadge + '</td>' +
+        '<td>' + k.officer + '</td>' +
+        '<td>' + actions + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  /* ── KYB Detail Slide-over ── */
+  function openKYBDetail(idx) {
+    var k = _KYB_DATA[idx]; if (!k) return;
+    _kybDetailIdx = idx;
+
+    document.getElementById('kyb-so-title').textContent    = k.corpName;
+    document.getElementById('kyb-so-subtitle').textContent = k.bizNo + ' · 담당: ' + k.officer;
+
+    var cfg = KYB_STATUS_CFG[k.status] || {};
+    document.getElementById('kyb-so-status-badge').innerHTML = '<span class="badge ' + (cfg.badgeCls||'badge-gray') + '">' + (cfg.label||k.status) + '</span>';
+
+    // 4-5: Button visibility by status + role
+    var canEditAll    = k.status === 'draft';
+    var canEditLimited= !canEditAll; // WLF중/완료/거절: 연락처·이메일만
+    var showWLFReq    = k.status === 'draft' && k.requiredDone && _ADMIN_ROLE === 'aml_officer';
+    var showWLFApprove= k.status === 'wlf'  && _ADMIN_ROLE === 'aml_manager';
+    var showCreateClient = k.status === 'done' && ['general','master'].indexOf(_ADMIN_ROLE) !== -1;
+
+    document.getElementById('kyb-btn-wlf').style.display         = showWLFReq     ? '' : 'none';
+    document.getElementById('kyb-btn-approve-wlf').style.display = showWLFApprove ? '' : 'none';
+    document.getElementById('kyb-btn-create-client').style.display= showCreateClient? '' : 'none';
+
+    // Limited edit hint
+    var saveBtn = document.getElementById('kyb-btn-save');
+    if (canEditLimited) {
+      saveBtn.title = '연락처·이메일만 수정 가능합니다';
+    } else {
+      saveBtn.title = '';
+    }
+
+    // Prefill demo data for 알파투자운용
+    if (k.corpName === '알파투자운용(주)') {
+      document.getElementById('kyb-corp-name-kr').value = '알파투자운용 주식회사';
+      document.getElementById('kyb-corp-name-en').value = 'Alpha Investment Mgmt';
+      document.getElementById('kyb-biz-no').value = '123-45-67890';
+      document.getElementById('kyb-addr').value = '서울특별시 강남구 테헤란로 123';
+      document.getElementById('kyb-industry').value = '자산운용업';
+      document.getElementById('kyb-tel').value = '02-1234-5678';
+      document.getElementById('kyb-email').value = 'contact@alpha.com';
+      document.getElementById('kyb-rep-name-kr').value = '홍길동';
+      document.getElementById('kyb-rep-name-en').value = 'Hong Gil-dong';
+      document.getElementById('kyb-rep-dob').value = '1975-06-15';
+      document.getElementById('kyb-rep-nation').value = '대한민국';
+      document.getElementById('kyb-rep-id-no').value = '750615-1000000';
+      document.getElementById('kyb-rep-addr').value = '서울시 강남구 논현동 100';
+      document.getElementById('kyb-rep-title').value = '대표이사';
+      document.getElementById('kyb-rep-share').value = '51';
+    }
+
+    switchKYBTab(0);
+    openSO('kyb-so');
+  }
+
+  function openNewKYB() { openModal('modal-kyb-new'); }
+
+  function submitNewKYB() {
+    var name = (document.getElementById('newkyb-corp-name') || {}).value || '';
+    var bizNo= (document.getElementById('newkyb-biz-no')    || {}).value || '';
+    var officer = (document.getElementById('newkyb-officer') || {}).value || '';
+    if (!name || !bizNo || !officer) { showToast('모든 항목을 입력해주세요.'); return; }
+    var newEntry = {
+      idx: _KYB_DATA.length, corpName: name, corpNameEn: '', bizNo: bizNo,
+      status: 'draft', riskGrade: null, officer: officer,
+      startedAt: '2026-04-07', completedAt: null, requiredDone: false
+    };
+    _KYB_DATA.push(newEntry);
+    closeModal('modal-kyb-new');
+    renderKYBTable();
+    openKYBDetail(newEntry.idx);
+    showToast('신규 KYB가 등록되었습니다. 정보를 입력해주세요.');
+  }
+
+  function kybSave() {
+    showToast('저장되었습니다.');
+  }
+
+  function kybRequestWLF() {
+    var k = _KYB_DATA[_kybDetailIdx]; if (!k) return;
+    closeKYBDetail();
+    openOTPModal('WLF 검사 요청', function() {
+      k.status = 'wlf';
+      renderKYBTable();
+      showToast('WLF 검사 요청이 제출되었습니다. AML 관리자 결재 대기 중입니다.');
+    });
+  }
+
+  function kybApproveWLF() {
+    var k = _KYB_DATA[_kybDetailIdx]; if (!k) return;
+    closeKYBDetail();
+    openOTPModal('WLF 결재', function() {
+      k.status = 'octa';
+      renderKYBTable();
+      showToast('WLF 결재 완료. OCTA 외부 검증이 요청되었습니다.');
+      // Simulate OCTA response after short delay
+      setTimeout(function() {
+        k.status = 'done';
+        k.riskGrade = 'low';
+        k.completedAt = '2026-04-07';
+        renderKYBTable();
+        showToast('OCTA 검증 완료 — 위험등급: 저위험. KYB 완료 상태로 전환되었습니다.', 5000);
+      }, 3000);
+    });
+  }
+
+  function kybCreateClient() {
+    var k = _KYB_DATA[_kybDetailIdx]; if (!k) return;
+    closeKYBDetail();
+    // Pre-fill and open the create client modal
+    openModal('modal-create-client');
+    showToast('KYB 정보가 연동되었습니다. 고객사 생성을 진행해주세요.');
+  }
+
+  /* ── KYB Slide-over open/close ── */
+  function openSO(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('open');
+    var bd = document.getElementById('kyb-so-backdrop');
+    if (bd) bd.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeKYBDetail() {
+    var el = document.getElementById('kyb-so');
+    if (el) el.classList.remove('open');
+    var bd = document.getElementById('kyb-so-backdrop');
+    if (bd) bd.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function switchKYBTab(idx) {
+    for (var i = 0; i < 7; i++) {
+      var tab   = document.getElementById('ktab-' + i);
+      var panel = document.getElementById('kpanel-' + i);
+      if (tab)   tab.classList.toggle('active', i === idx);
+      if (panel) panel.classList.toggle('active', i === idx);
+    }
+  }
+
+  function checkVASPTab() {
+    var industry = (document.getElementById('kyb-industry') || {}).value || '';
+    var tab7 = document.getElementById('ktab-6');
+    if (tab7) {
+      tab7.style.opacity = industry === '가상자산사업자(VASP)' ? '1' : '0.4';
+      tab7.title = industry === '가상자산사업자(VASP)' ? '' : '업종이 가상자산사업자(VASP)인 경우에만 입력합니다.';
+    }
+  }
+
+  /* ════════════════════════════════════
      CLIENT CREATION FLOW
   ════════════════════════════════════ */
   function calcNextRenewal() {
@@ -1692,6 +2412,8 @@
   (function init() {
     calcNextRenewal();
     applyRoleUI();
+    renderKYBTable();
+    renderCustomerAccounts();
   })();
 </script>
 </body>
