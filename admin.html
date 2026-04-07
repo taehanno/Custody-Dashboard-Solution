@@ -782,7 +782,6 @@
           <div class="admin-tab" id="cw-tab-sign"              onclick="switchCWTab('sign')">출금 서명</div>
           <div class="admin-tab" id="cw-tab-delete"            onclick="switchCWTab('delete')">지갑 삭제 요청</div>
           <div class="admin-tab" id="cw-tab-coin"              onclick="switchCWTab('coin')">코인 추가 요청</div>
-          <div class="admin-tab" id="cw-tab-walletreq"         onclick="switchCWTab('walletreq')">지갑 요청</div>
           <div class="admin-tab" id="cw-tab-allwallets"        onclick="switchCWTab('allwallets')">전체 지갑 목록</div>
         </div>
 
@@ -865,43 +864,6 @@
               <table>
                 <thead><tr><th>고객사</th><th>지갑명</th><th>코인</th><th>네트워크</th><th>요청일시</th><th>상태</th><th>처리</th></tr></thead>
                 <tbody id="cw-coin-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 6-6-1: 지갑 요청 -->
-        <div class="admin-tab-panel" id="cw-panel-walletreq">
-          <div class="stats-row" style="grid-template-columns:repeat(4,1fr); margin-bottom:16px;">
-            <div class="stat-card"><span class="stat-label">생성 대기</span><span class="stat-value stat-orange" id="wr-stat-create-pending">0</span></div>
-            <div class="stat-card"><span class="stat-label">삭제 대기</span><span class="stat-value stat-red"    id="wr-stat-delete-pending">0</span></div>
-            <div class="stat-card"><span class="stat-label">처리 완료</span><span class="stat-value stat-green"  id="wr-stat-done">0</span></div>
-            <div class="stat-card"><span class="stat-label">전체 지갑</span><span class="stat-value"            id="wr-stat-total">0</span></div>
-          </div>
-          <div class="card" style="padding:0;">
-            <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
-              <div class="toolbar" style="margin-bottom:0;">
-                <div class="search-wrap">
-                  <span class="search-icon">&#128269;</span>
-                  <input type="text" id="wr-search" class="form-control" placeholder="고객사 / 지갑명 검색" style="width:220px; padding-left:30px;" oninput="renderCWWalletRequests()" />
-                </div>
-                <select class="form-control" id="wr-filter-type" style="width:130px;" onchange="renderCWWalletRequests()">
-                  <option value="">요청 유형 전체</option>
-                  <option value="create">생성 요청</option>
-                  <option value="delete">삭제 요청</option>
-                </select>
-                <select class="form-control" id="wr-filter-status" style="width:130px;" onchange="renderCWWalletRequests()">
-                  <option value="">전체 상태</option>
-                  <option value="pending">처리 대기</option>
-                  <option value="done">처리 완료</option>
-                  <option value="cancelled">취소됨</option>
-                </select>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>고객사</th><th>지갑명</th><th>코인</th><th>요청 유형</th><th>요청일시</th><th>상태</th><th>처리</th></tr></thead>
-                <tbody id="cw-walletreq-tbody"></tbody>
               </table>
             </div>
           </div>
@@ -2251,43 +2213,6 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     MODAL: 지갑 요청 상세 (6-6-2/3)
-══════════════════════════════════════ -->
-<div class="modal" id="modal-cw-req-detail">
-  <div class="modal-header">
-    <span class="modal-title" id="cwr-modal-title">지갑 요청 상세</span>
-    <button class="modal-close" onclick="closeModal('modal-cw-req-detail')">&#10005;</button>
-  </div>
-  <div class="modal-body">
-    <div class="section-box">
-      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="cwr-corp"></span></div>
-      <div class="info-row"><span class="info-label">요청자</span><span class="info-value" id="cwr-requester"></span></div>
-      <div class="info-row"><span class="info-label">요청일시</span><span class="info-value" id="cwr-requested" style="font-size:12px;"></span></div>
-      <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="cwr-walletname" style="font-weight:600;"></span></div>
-      <div class="info-row"><span class="info-label">코인</span><span class="info-value" id="cwr-coin"></span></div>
-      <div id="cwr-memo-row" class="info-row"><span class="info-label">용도 메모</span><span class="info-value" id="cwr-memo"></span></div>
-      <!-- 삭제 요청용 잔액 -->
-      <div id="cwr-balance-row" class="info-row" style="display:none; border-bottom:none;"><span class="info-label">현재 잔액</span><span class="info-value" id="cwr-balance" style="font-family:monospace;"></span></div>
-    </div>
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-      <span style="font-size:12px; color:var(--text-secondary);">상태:</span>
-      <span id="cwr-status-badge"></span>
-    </div>
-    <!-- 잔액 경고 (삭제 요청) -->
-    <div id="cwr-balance-warn" class="alert alert-warning" style="display:none; margin-top:12px;">
-      &#9888; 잔액이 남아 있어 삭제할 수 없습니다. 고객사에 출금 후 재요청을 안내하세요.
-    </div>
-  </div>
-  <div class="modal-footer" id="cwr-footer">
-    <button class="btn btn-outline" onclick="closeModal('modal-cw-req-detail')">닫기</button>
-    <!-- 생성 요청 pending -->
-    <button class="btn btn-primary btn-sm" id="cwr-btn-register" onclick="openCWAddrRegisterFromReq()" style="display:none;">주소 등록 →</button>
-    <!-- 삭제 요청 pending -->
-    <button class="btn btn-danger btn-sm" id="cwr-btn-delete" onclick="confirmCWReqDelete()" style="display:none;">삭제 처리 → OTP</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
      MODAL: 지갑 비활성화 (6-6-6)
 ══════════════════════════════════════ -->
 <div class="modal" id="modal-cw-deactivate">
@@ -3506,15 +3431,7 @@
      SECTION 6: 콜드월렛 운영
   ════════════════════════════════════ */
 
-  /* ── 6-6 지갑 요청 / 전체 지갑 목록 data ── */
-  var _CW_WALLET_REQUESTS = [
-    { idx:0, type:'create', corp:'알파투자운용(주)', walletName:'BTC 보관 지갑 #1', coin:'BTC', network:'Bitcoin Mainnet', memo:'OTC 자산 보관용', requester:'김철수 (Master)', requestedAt:'2026-04-07 09:15', status:'pending' },
-    { idx:1, type:'delete', corp:'베타캐피탈 유한회사', walletName:'ETH 운용 지갑', coin:'ETH', network:'Ethereum Mainnet', memo:null, requester:'박민준 (Master)', requestedAt:'2026-04-06 14:30', status:'pending', balance:'0.00000000' },
-    { idx:2, type:'create', corp:'감마트레이딩(주)', walletName:'USDT 보관 #2', coin:'USDT', network:'TRON (TRC-20)', memo:'운용 보관용', requester:'최유진 (Master)', requestedAt:'2026-04-03 11:00', status:'done' },
-    { idx:3, type:'delete', corp:'알파투자운용(주)', walletName:'XRP 테스트 지갑', coin:'XRP', network:'XRP Ledger', memo:null, requester:'김철수 (Master)', requestedAt:'2026-04-01 15:00', status:'cancelled', balance:'0.00000000' },
-    { idx:4, type:'create', corp:'델타홀딩스 유한회사', walletName:'SOL 보관 지갑', coin:'SOL', network:'Solana Mainnet', memo:'스테이킹 보관', requester:'이정수 (Master)', requestedAt:'2026-04-05 10:20', status:'pending' },
-  ];
-
+  /* ── 6-6 전체 지갑 목록 data ── */
   var _CW_ALL_WALLETS = [
     { idx:0, corp:'알파투자운용(주)', walletName:'BTC 보관 지갑 #1', coin:'BTC', addr:'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', status:'active',   balance:'0.00000000', deactivatedReason:null, deactivatedAt:null },
     { idx:1, corp:'베타캐피탈 유한회사', walletName:'USDT 운용 지갑', coin:'USDT', addr:'0x4d4b...C3E69', status:'active',   balance:'5000.00',    deactivatedReason:null, deactivatedAt:null },
@@ -3524,133 +3441,8 @@
     { idx:5, corp:'감마트레이딩(주)', walletName:'SOL 운용 지갑',   coin:'SOL',  addr:'So1ana9p...iDP', status:'active',   balance:'120.500000', deactivatedReason:null, deactivatedAt:null },
   ];
 
-  var _cwWalletReqActiveIdx = null;
   var _cwAllWalletActiveIdx = null;
   var _cwDropdownOpen = false;
-
-  /* ── 6-6-1: 지갑 요청 render ── */
-  function renderCWWalletRequests() {
-    var q      = (document.getElementById('wr-search') || {}).value || '';
-    var fType  = (document.getElementById('wr-filter-type') || {}).value || '';
-    var fStat  = (document.getElementById('wr-filter-status') || {}).value || '';
-    q = q.toLowerCase();
-
-    var createPending = _CW_WALLET_REQUESTS.filter(function(r){ return r.type === 'create' && r.status === 'pending'; });
-    var deletePending = _CW_WALLET_REQUESTS.filter(function(r){ return r.type === 'delete' && r.status === 'pending'; });
-    var done          = _CW_WALLET_REQUESTS.filter(function(r){ return r.status === 'done'; });
-
-    var scp = document.getElementById('wr-stat-create-pending'); if (scp) scp.textContent = createPending.length;
-    var sdp = document.getElementById('wr-stat-delete-pending'); if (sdp) sdp.textContent = deletePending.length;
-    var sdn = document.getElementById('wr-stat-done');           if (sdn) sdn.textContent = done.length;
-    var stl = document.getElementById('wr-stat-total');          if (stl) stl.textContent = _CW_ALL_WALLETS.filter(function(w){ return w.status !== 'deleted'; }).length + '개';
-
-    var filtered = _CW_WALLET_REQUESTS.filter(function(r) {
-      if (fType && r.type !== fType) return false;
-      if (fStat && r.status !== fStat) return false;
-      if (q && !(r.corp.toLowerCase().includes(q) || r.walletName.toLowerCase().includes(q))) return false;
-      return true;
-    });
-
-    var tbody = document.getElementById('cw-walletreq-tbody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-secondary);">검색 결과가 없습니다.</td></tr>';
-      return;
-    }
-    filtered.forEach(function(r) {
-      var typeBadge = r.type === 'create'
-        ? '<span class="badge" style="background:#FFFBEB;color:#F59E0B;border:1px solid #FDE68A;">&#128993; 생성</span>'
-        : '<span class="badge" style="background:#FEF2F2;color:#EF4444;border:1px solid #FECACA;">&#128308; 삭제</span>';
-      var statusBadge;
-      if (r.status === 'pending')   statusBadge = '<span class="badge badge-warning">&#9203; 대기</span>';
-      else if (r.status === 'done') statusBadge = '<span class="badge badge-success">&#9679; 완료</span>';
-      else                          statusBadge = '<span class="badge badge-gray">&#10005; 취소</span>';
-      var actionBtn = (r.status === 'pending')
-        ? '<button class="btn btn-primary btn-xs" onclick="openCWReqDetail(' + r.idx + ')">상세</button>'
-        : '<button class="btn btn-outline btn-xs" onclick="openCWReqDetail(' + r.idx + ')">상세</button>';
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + r.corp + '</td>'
-        + '<td style="font-weight:600;">' + r.walletName + '</td>'
-        + '<td><span class="badge badge-info">' + r.coin + '</span></td>'
-        + '<td>' + typeBadge + '</td>'
-        + '<td style="font-size:11.5px;color:var(--text-secondary);white-space:nowrap;">' + r.requestedAt + '</td>'
-        + '<td>' + statusBadge + '</td>'
-        + '<td>' + actionBtn + '</td>';
-      tbody.appendChild(tr);
-    });
-  }
-
-  /* ── 6-6-2/3: 지갑 요청 상세 ── */
-  function openCWReqDetail(idx) {
-    _cwWalletReqActiveIdx = idx;
-    var r = _CW_WALLET_REQUESTS[idx];
-    var isCreate = r.type === 'create';
-
-    document.getElementById('cwr-modal-title').textContent = isCreate ? '지갑 생성 요청 상세' : '지갑 삭제 요청 상세';
-    document.getElementById('cwr-corp').textContent        = r.corp;
-    document.getElementById('cwr-requester').textContent   = r.requester;
-    document.getElementById('cwr-requested').textContent   = r.requestedAt;
-    document.getElementById('cwr-walletname').textContent  = r.walletName;
-    document.getElementById('cwr-coin').textContent        = r.coin + ' / ' + r.network;
-
-    var memoRow = document.getElementById('cwr-memo-row');
-    memoRow.style.display = isCreate ? '' : 'none';
-    if (isCreate) document.getElementById('cwr-memo').textContent = r.memo || '—';
-
-    var balRow = document.getElementById('cwr-balance-row');
-    balRow.style.display = isCreate ? 'none' : '';
-    if (!isCreate) document.getElementById('cwr-balance').textContent = r.balance || '0.00000000';
-
-    var statusMap = {
-      pending:   '<span class="badge badge-warning">&#9203; 처리 대기</span>',
-      done:      '<span class="badge badge-success">&#9679; 처리 완료</span>',
-      cancelled: '<span class="badge badge-gray">&#10005; 취소됨</span>',
-    };
-    document.getElementById('cwr-status-badge').innerHTML = statusMap[r.status] || '';
-
-    var balWarn = document.getElementById('cwr-balance-warn');
-    var hasBalance = !isCreate && parseFloat(r.balance) > 0;
-    balWarn.style.display = hasBalance ? 'block' : 'none';
-
-    var btnRegister = document.getElementById('cwr-btn-register');
-    var btnDelete   = document.getElementById('cwr-btn-delete');
-    btnRegister.style.display = (isCreate  && r.status === 'pending') ? '' : 'none';
-    btnDelete.style.display   = (!isCreate && r.status === 'pending') ? '' : 'none';
-    btnDelete.disabled = hasBalance;
-
-    openModal('modal-cw-req-detail');
-  }
-
-  function openCWAddrRegisterFromReq() {
-    var r = _CW_WALLET_REQUESTS[_cwWalletReqActiveIdx];
-    if (!r) return;
-    closeModal('modal-cw-req-detail');
-    // Reuse existing CW address SO
-    var cwIdx = _CW_REQUESTS.length; // new temp entry
-    _CW_REQUESTS.push({ idx: cwIdx, corp: r.corp, walletName: r.walletName, coin: r.coin, network: r.network, memo: r.memo, requestedAt: r.requestedAt, status: 'pending', addr: null, _reqRef: _cwWalletReqActiveIdx });
-    openCWAddrRegister(cwIdx);
-  }
-
-  function confirmCWReqDelete() {
-    var r = _CW_WALLET_REQUESTS[_cwWalletReqActiveIdx];
-    if (!r || parseFloat(r.balance) > 0) return;
-    closeModal('modal-cw-req-detail');
-    openOTPModal('지갑 삭제 처리 확인', function() {
-      r.status = 'done';
-      // Mark wallet as deleted in _CW_ALL_WALLETS if found
-      _CW_ALL_WALLETS.forEach(function(w) {
-        if (w.corp === r.corp && w.walletName === r.walletName) {
-          w.status = 'deleted';
-          w.deletedAt = '2026-04-07 ' + new Date().toTimeString().slice(0,5);
-          w.deletedReason = '고객사 요청으로 삭제';
-        }
-      });
-      renderCWWalletRequests();
-      renderCWAllWallets();
-      showToast(r.corp + ' · ' + r.walletName + ' 지갑이 삭제되었습니다. Master에게 이메일 알림이 발송되었습니다.', 4000);
-    });
-  }
 
   /* ── 6-6-4: 전체 지갑 목록 render ── */
   function renderCWAllWallets() {
@@ -3870,7 +3662,7 @@
 
   /* ── Tab Switch ── */
   function switchCWTab(tab) {
-    ['create','sign','delete','coin','walletreq','allwallets'].forEach(function(t) {
+    ['create','sign','delete','coin','allwallets'].forEach(function(t) {
       document.getElementById('cw-tab-' + t).classList.toggle('active', t === tab);
       document.getElementById('cw-panel-' + t).classList.toggle('active', t === tab);
     });
@@ -4368,7 +4160,6 @@
     renderSignRequests();
     renderWalletDelAdmin();
     renderCoinAddRequests();
-    renderCWWalletRequests();
     renderCWAllWallets();
   })();
 </script>
