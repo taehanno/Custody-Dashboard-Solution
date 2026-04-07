@@ -727,59 +727,66 @@
       </div>
 
       <!-- ══════════════════════════
-           PAGE: Whitelist 승인
+           PAGE: Whitelist 승인 (섹션 5)
       ══════════════════════════ -->
       <div class="page" id="page-whitelist">
         <div class="page-header">
           <h1 class="page-title">Whitelist 승인</h1>
         </div>
+        <!-- 5-1 Stats -->
         <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
-          <div class="stat-card"><span class="stat-label">승인 대기</span><span class="stat-value stat-orange">5</span></div>
-          <div class="stat-card"><span class="stat-label">승인 완료</span><span class="stat-value stat-green">142</span></div>
-          <div class="stat-card"><span class="stat-label">거절</span><span class="stat-value stat-red">8</span></div>
+          <div class="stat-card"><span class="stat-label">승인 대기</span><span class="stat-value stat-orange" id="wl-stat-pending">0</span></div>
+          <div class="stat-card"><span class="stat-label">승인 완료</span><span class="stat-value stat-green" id="wl-stat-approved">0</span></div>
+          <div class="stat-card"><span class="stat-label">거절</span><span class="stat-value stat-red" id="wl-stat-rejected">0</span></div>
         </div>
         <div class="card" style="padding:0;">
+          <!-- Toolbar -->
+          <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+            <div class="toolbar" style="margin-bottom:0; justify-content:space-between; align-items:center;">
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <div class="search-wrap">
+                  <span class="search-icon">&#128269;</span>
+                  <input type="text" id="wl-search" class="form-control" placeholder="고객사 / 주소 / 주소명 검색" style="width:220px; padding-left:30px;" oninput="renderWLApprovalTable()" />
+                </div>
+                <select class="form-control" id="wl-filter-coin" style="width:110px;" onchange="renderWLApprovalTable()">
+                  <option value="">전체 코인</option>
+                  <option>BTC</option><option>ETH</option><option>USDT</option><option>BNB</option>
+                </select>
+                <select class="form-control" id="wl-filter-status" style="width:130px;" onchange="renderWLApprovalTable()">
+                  <option value="">전체 상태</option>
+                  <option value="pending">승인 대기</option>
+                  <option value="approved">승인 완료</option>
+                  <option value="rejected">거절</option>
+                  <option value="inactive">강제 비활성화</option>
+                </select>
+              </div>
+              <!-- Bulk action bar (hidden until selection) -->
+              <div id="wl-bulk-bar" style="display:none; gap:8px; align-items:center;">
+                <span id="wl-sel-count" style="font-size:12px; color:var(--text-secondary);"></span>
+                <button class="btn btn-success btn-sm" onclick="wlBulkApprove()">일괄 승인</button>
+                <button class="btn btn-danger btn-sm" onclick="wlBulkReject()">일괄 거절</button>
+              </div>
+            </div>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
+                  <th style="width:36px;"><input type="checkbox" id="wl-check-all" onchange="wlToggleAll(this)" title="대기 건 전체 선택" /></th>
                   <th>고객사</th>
                   <th>코인</th>
                   <th>네트워크</th>
                   <th>주소</th>
                   <th>주소명</th>
+                  <th>신청일</th>
                   <th>상태</th>
                   <th>처리</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td style="font-weight:600;">알파투자운용(주)</td>
-                  <td><span class="badge badge-info">USDT</span></td>
-                  <td>TRON (TRC-20)</td>
-                  <td style="font-family:monospace; font-size:11.5px;">TRX9a...3f8e</td>
-                  <td>출금 주소 A</td>
-                  <td><span class="badge badge-warning">승인 대기</span></td>
-                  <td style="display:flex; gap:6px;">
-                    <button class="btn btn-success btn-xs">승인 Approve</button>
-                    <button class="btn btn-danger btn-xs">거절 Reject</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">베타캐피탈 유한회사</td>
-                  <td><span class="badge badge-info">ETH</span></td>
-                  <td>Ethereum (ERC-20)</td>
-                  <td style="font-family:monospace; font-size:11.5px;">0xA1b2...C9d0</td>
-                  <td>거래소 출금지갑</td>
-                  <td><span class="badge badge-warning">승인 대기</span></td>
-                  <td style="display:flex; gap:6px;">
-                    <button class="btn btn-success btn-xs">승인 Approve</button>
-                    <button class="btn btn-danger btn-xs">거절 Reject</button>
-                  </td>
-                </tr>
-              </tbody>
+              <tbody id="wl-approval-tbody"></tbody>
             </table>
           </div>
+          <div class="table-note" id="wl-table-note"></div>
         </div>
       </div>
 
@@ -1713,6 +1720,127 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     MODALS: Whitelist 처리 (섹션 5)
+══════════════════════════════════════ -->
+
+<!-- 5-2: 단건 승인 -->
+<div class="modal" id="modal-wl-approve">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--success);">&#9989; Whitelist 주소 승인</span>
+    <button class="modal-close" onclick="closeModal('modal-wl-approve')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="wla-corp"></span></div>
+      <div class="info-row"><span class="info-label">코인 / 네트워크</span><span class="info-value" id="wla-coin"></span></div>
+      <div class="info-row"><span class="info-label">주소</span><span class="info-value" id="wla-addr" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">주소명</span><span class="info-value" id="wla-label"></span></div>
+    </div>
+    <div class="alert alert-info">&#9989; 승인 후 고객 포털에 즉시 반영되며 Master 계정에 이메일 알림이 발송됩니다.</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wl-approve')">취소</button>
+    <button class="btn btn-success" onclick="confirmWLApprove()">승인 → OTP</button>
+  </div>
+</div>
+
+<!-- 5-3: 단건 거절 -->
+<div class="modal" id="modal-wl-reject">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">&#10005; Whitelist 주소 거절</span>
+    <button class="modal-close" onclick="closeModal('modal-wl-reject')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="wlr-corp"></span></div>
+      <div class="info-row"><span class="info-label">코인 / 네트워크</span><span class="info-value" id="wlr-coin"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">주소</span><span class="info-value" id="wlr-addr" style="font-family:monospace; font-size:12px;"></span></div>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">거절 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea class="form-control" id="wlr-reason" rows="3" maxlength="200" style="width:100%; resize:vertical;" placeholder="거절 사유를 입력하세요 (최대 200자)" oninput="document.getElementById('wlr-reason-count').textContent=this.value.length+' / 200'"></textarea>
+      <div style="display:flex; justify-content:space-between; margin-top:4px;">
+        <span class="form-hint">거절 사유는 Master 계정에 이메일로 발송됩니다.</span>
+        <span id="wlr-reason-count" style="font-size:11px; color:var(--text-secondary);">0 / 200</span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wl-reject')">취소</button>
+    <button class="btn btn-danger" onclick="confirmWLReject()">거절 → OTP</button>
+  </div>
+</div>
+
+<!-- 5-4: 일괄 승인 -->
+<div class="modal" id="modal-wl-bulk-approve">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--success);">&#9989; 일괄 승인</span>
+    <button class="modal-close" onclick="closeModal('modal-wl-bulk-approve')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="text-align:center; padding:10px 0 6px;">
+      <div style="font-size:28px; margin-bottom:8px;">&#9989;</div>
+      <div style="font-size:15px; font-weight:700;" id="wlba-count-msg"></div>
+    </div>
+    <div class="alert alert-info" style="margin-top:12px;">&#9989; 선택된 모든 주소가 즉시 승인되며 각 고객사 Master 계정에 이메일이 발송됩니다.</div>
+    <div id="wlba-list" style="max-height:180px; overflow-y:auto; margin-top:10px; font-size:12px; border:1px solid var(--border); border-radius:8px;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wl-bulk-approve')">취소</button>
+    <button class="btn btn-success" onclick="confirmWLBulkApprove()">일괄 승인 → OTP</button>
+  </div>
+</div>
+
+<!-- 5-5: 일괄 거절 -->
+<div class="modal" id="modal-wl-bulk-reject">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">&#10005; 일괄 거절</span>
+    <button class="modal-close" onclick="closeModal('modal-wl-bulk-reject')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div id="wlbr-count-msg" style="font-size:13px; font-weight:600; margin-bottom:12px;"></div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">공통 거절 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea class="form-control" id="wlbr-reason" rows="3" maxlength="200" style="width:100%; resize:vertical;" placeholder="선택된 모든 건에 동일하게 적용됩니다 (최대 200자)" oninput="document.getElementById('wlbr-reason-count').textContent=this.value.length+' / 200'"></textarea>
+      <div style="display:flex; justify-content:flex-end; margin-top:4px;">
+        <span id="wlbr-reason-count" style="font-size:11px; color:var(--text-secondary);">0 / 200</span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wl-bulk-reject')">취소</button>
+    <button class="btn btn-danger" onclick="confirmWLBulkReject()">일괄 거절 → OTP</button>
+  </div>
+</div>
+
+<!-- 5-6: 강제 비활성화 -->
+<div class="modal" id="modal-wl-deactivate">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">강제 비활성화</span>
+    <button class="modal-close" onclick="closeModal('modal-wl-deactivate')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="wld-corp"></span></div>
+      <div class="info-row"><span class="info-label">주소</span><span class="info-value" id="wld-addr" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">주소명</span><span class="info-value" id="wld-label"></span></div>
+    </div>
+    <div class="form-group" style="margin-bottom:8px;">
+      <label class="form-label">비활성화 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea class="form-control" id="wld-reason" rows="3" maxlength="200" style="width:100%; resize:vertical;" placeholder="비활성화 사유를 입력하세요 (최대 200자)" oninput="document.getElementById('wld-reason-count').textContent=this.value.length+' / 200'"></textarea>
+      <div style="display:flex; justify-content:flex-end; margin-top:4px;">
+        <span id="wld-reason-count" style="font-size:11px; color:var(--text-secondary);">0 / 200</span>
+      </div>
+    </div>
+    <div class="alert alert-warning" style="margin-bottom:0;">&#9888; 비활성화 즉시 해당 주소로의 출금이 차단되며 Master 계정에 알림이 발송됩니다.</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wl-deactivate')">취소</button>
+    <button class="btn btn-danger" onclick="confirmWLDeactivate()">비활성화 → OTP</button>
+  </div>
+</div>
+
 <!-- modal-otp: OTP 인증 -->
 <div class="modal" id="modal-otp">
   <div class="modal-header">
@@ -2373,6 +2501,227 @@
   }
 
   /* ════════════════════════════════════
+     섹션 5: Whitelist 주소 관리
+  ════════════════════════════════════ */
+  var _WL_APPR_DATA = [
+    { idx:0, corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',    addr:'TRX9a...3f8e',   label:'출금 주소 A',     status:'pending',  requestedAt:'2026-03-28 09:15' },
+    { idx:1, corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum (ERC-20)', addr:'0xA1b2...C9d0',  label:'거래소 출금지갑',  status:'pending',  requestedAt:'2026-03-29 11:30' },
+    { idx:2, corp:'알파투자운용(주)',     coin:'BTC',  network:'Bitcoin Mainnet',   addr:'bc1qar...xy9f3', label:'장기보관 주소',    status:'pending',  requestedAt:'2026-04-01 14:00' },
+    { idx:3, corp:'감마트레이딩(주)',     coin:'USDT', network:'Ethereum (ERC-20)', addr:'0xF3c4...D2a1',  label:'운영 지갑',       status:'pending',  requestedAt:'2026-04-02 10:20' },
+    { idx:4, corp:'델타홀딩스 유한회사', coin:'BNB',  network:'BNB Smart Chain',   addr:'0xC5d6...E4b3',  label:'BNB 출금 주소',  status:'pending',  requestedAt:'2026-04-03 15:45' },
+    { idx:5, corp:'알파투자운용(주)',     coin:'ETH',  network:'Ethereum Mainnet',  addr:'0x9A8b...7C6d',  label:'빗썸 입금 주소',  status:'approved', requestedAt:'2026-03-01 09:00', processedAt:'2026-03-02 10:00' },
+    { idx:6, corp:'베타캐피탈 유한회사', coin:'BTC',  network:'Bitcoin Mainnet',   addr:'1A1zP...e5Kb',   label:'콜드 스토리지',   status:'rejected', requestedAt:'2026-03-10 14:00', processedAt:'2026-03-11 09:30', rejectReason:'P2PKH 형식 주소는 지원하지 않습니다. SegWit(bc1q) 형식으로 재신청해주세요.' },
+    { idx:7, corp:'감마트레이딩(주)',     coin:'USDT', network:'TRON (TRC-20)',    addr:'TKabc...d12e',   label:'OTC 출금 주소',  status:'approved', requestedAt:'2026-02-20 11:00', processedAt:'2026-02-21 14:00' },
+    { idx:8, corp:'델타홀딩스 유한회사', coin:'ETH',  network:'Ethereum Mainnet',  addr:'0xD7e8...F9a0',  label:'파트너 지갑',     status:'inactive', requestedAt:'2026-02-01 10:00', processedAt:'2026-02-15 09:00', deactReason:'이상 거래 패턴 감지로 임시 차단 처리' },
+  ];
+  var _wlActionIdx  = null;
+  var _wlBulkIdxs   = [];
+
+  function renderWLApprovalTable() {
+    var tbody = document.getElementById('wl-approval-tbody');
+    if (!tbody) return;
+    var q   = (document.getElementById('wl-search')        || {}).value || '';
+    var fc  = (document.getElementById('wl-filter-coin')   || {}).value || '';
+    var fs  = (document.getElementById('wl-filter-status') || {}).value || '';
+    q = q.toLowerCase();
+
+    var list = _WL_APPR_DATA.filter(function(w) {
+      var matchQ = !q || w.corp.toLowerCase().includes(q) || w.addr.toLowerCase().includes(q) || w.label.toLowerCase().includes(q);
+      var matchC = !fc || w.coin === fc;
+      var matchS = !fs || w.status === fs;
+      return matchQ && matchC && matchS;
+    });
+
+    // Update stats
+    document.getElementById('wl-stat-pending').textContent  = _WL_APPR_DATA.filter(function(w){ return w.status==='pending'; }).length;
+    document.getElementById('wl-stat-approved').textContent = _WL_APPR_DATA.filter(function(w){ return w.status==='approved'; }).length;
+    document.getElementById('wl-stat-rejected').textContent = _WL_APPR_DATA.filter(function(w){ return w.status==='rejected'; }).length;
+
+    var pending = list.filter(function(w){ return w.status === 'pending'; });
+    var noteEl = document.getElementById('wl-table-note');
+    if (noteEl) noteEl.textContent = '전체 ' + list.length + '건 표시 중  |  승인 대기 ' + _WL_APPR_DATA.filter(function(w){ return w.status==='pending'; }).length + '건';
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-secondary);padding:32px;">검색 결과가 없습니다.</td></tr>';
+      return;
+    }
+
+    var statusCfg = {
+      pending:  { badge:'badge-warning', label:'&#9203; 승인 대기' },
+      approved: { badge:'badge-success', label:'&#9989; 승인 완료' },
+      rejected: { badge:'badge-danger',  label:'&#10005; 거절' },
+      inactive: { badge:'badge-gray',    label:'&#9675; 비활성화' },
+    };
+
+    tbody.innerHTML = list.map(function(w) {
+      var sc = statusCfg[w.status] || {};
+      var isPending = w.status === 'pending';
+      var checkbox = isPending
+        ? '<input type="checkbox" class="wl-check" data-idx="' + w.idx + '" onchange="wlUpdateBulkBar()">'
+        : '';
+      var actions = '';
+      if (w.status === 'pending') {
+        actions = '<button class="btn btn-success btn-xs" onclick="openWLApprove(' + w.idx + ')">승인</button> ' +
+                  '<button class="btn btn-danger btn-xs" onclick="openWLReject(' + w.idx + ')">거절</button>';
+      } else if (w.status === 'approved') {
+        actions = '<button class="btn btn-outline btn-xs" style="color:var(--danger);border-color:rgba(239,68,68,0.3);" onclick="openWLDeactivate(' + w.idx + ')">강제 비활성화</button>';
+      } else {
+        actions = '<span style="color:var(--text-secondary);font-size:12px;">—</span>';
+      }
+      var rowCls = w.status === 'rejected' ? ' class="row-danger"' : (w.status==='inactive' ? ' style="opacity:0.65;"' : '');
+      return '<tr' + rowCls + '>' +
+        '<td>' + checkbox + '</td>' +
+        '<td style="font-weight:600;">' + w.corp + '</td>' +
+        '<td><span class="badge badge-info">' + w.coin + '</span></td>' +
+        '<td style="font-size:12px;">' + w.network + '</td>' +
+        '<td style="font-family:monospace;font-size:11.5px;">' + w.addr + '</td>' +
+        '<td>' + w.label + '</td>' +
+        '<td style="font-size:12px;color:var(--text-secondary);">' + w.requestedAt + '</td>' +
+        '<td><span class="badge ' + sc.badge + '">' + sc.label + '</span></td>' +
+        '<td>' + actions + '</td>' +
+        '</tr>';
+    }).join('');
+
+    wlUpdateBulkBar();
+  }
+
+  function wlToggleAll(masterCb) {
+    document.querySelectorAll('.wl-check').forEach(function(cb) { cb.checked = masterCb.checked; });
+    wlUpdateBulkBar();
+  }
+
+  function wlUpdateBulkBar() {
+    var checked = Array.from(document.querySelectorAll('.wl-check:checked'));
+    _wlBulkIdxs = checked.map(function(cb){ return parseInt(cb.dataset.idx); });
+    var bar = document.getElementById('wl-bulk-bar');
+    var countEl = document.getElementById('wl-sel-count');
+    if (bar) bar.style.display = _wlBulkIdxs.length > 0 ? 'flex' : 'none';
+    if (countEl) countEl.textContent = _wlBulkIdxs.length + '건 선택됨';
+  }
+
+  /* ── 5-2: 단건 승인 ── */
+  function openWLApprove(idx) {
+    var w = _WL_APPR_DATA[idx]; if (!w) return;
+    _wlActionIdx = idx;
+    document.getElementById('wla-corp').textContent  = w.corp;
+    document.getElementById('wla-coin').textContent  = w.coin + ' / ' + w.network;
+    document.getElementById('wla-addr').textContent  = w.addr;
+    document.getElementById('wla-label').textContent = w.label;
+    openModal('modal-wl-approve');
+  }
+  function confirmWLApprove() {
+    closeModal('modal-wl-approve');
+    openOTPModal('Whitelist 주소 승인', function() {
+      var now = '2026-04-07 ' + new Date().toTimeString().slice(0,5);
+      _WL_APPR_DATA[_wlActionIdx].status = 'approved';
+      _WL_APPR_DATA[_wlActionIdx].processedAt = now;
+      renderWLApprovalTable();
+      showToast('주소가 승인되었습니다. 고객 포털에 즉시 반영되었습니다.');
+    });
+  }
+
+  /* ── 5-3: 단건 거절 ── */
+  function openWLReject(idx) {
+    var w = _WL_APPR_DATA[idx]; if (!w) return;
+    _wlActionIdx = idx;
+    document.getElementById('wlr-corp').textContent = w.corp;
+    document.getElementById('wlr-coin').textContent = w.coin + ' / ' + w.network;
+    document.getElementById('wlr-addr').textContent = w.addr;
+    var ta = document.getElementById('wlr-reason');
+    ta.value = ''; document.getElementById('wlr-reason-count').textContent = '0 / 200';
+    openModal('modal-wl-reject');
+  }
+  function confirmWLReject() {
+    var reason = (document.getElementById('wlr-reason') || {}).value || '';
+    if (!reason.trim()) { showToast('거절 사유를 입력해주세요.'); return; }
+    closeModal('modal-wl-reject');
+    openOTPModal('Whitelist 주소 거절', function() {
+      var now = '2026-04-07 ' + new Date().toTimeString().slice(0,5);
+      _WL_APPR_DATA[_wlActionIdx].status = 'rejected';
+      _WL_APPR_DATA[_wlActionIdx].processedAt = now;
+      _WL_APPR_DATA[_wlActionIdx].rejectReason = reason;
+      renderWLApprovalTable();
+      showToast('주소가 거절 처리되었습니다. 사유가 이메일로 발송되었습니다.');
+    });
+  }
+
+  /* ── 5-4: 일괄 승인 ── */
+  function wlBulkApprove() {
+    if (_wlBulkIdxs.length === 0) return;
+    document.getElementById('wlba-count-msg').textContent = _wlBulkIdxs.length + '건을 일괄 승인합니다';
+    var listEl = document.getElementById('wlba-list');
+    listEl.innerHTML = _wlBulkIdxs.map(function(idx) {
+      var w = _WL_APPR_DATA[idx];
+      return '<div style="padding:7px 12px; border-bottom:1px solid var(--border);">' +
+        '<span style="font-weight:600;">' + w.corp + '</span> · ' +
+        '<span style="font-family:monospace;">' + w.addr + '</span> (' + w.coin + ')' +
+        '</div>';
+    }).join('');
+    openModal('modal-wl-bulk-approve');
+  }
+  function confirmWLBulkApprove() {
+    closeModal('modal-wl-bulk-approve');
+    openOTPModal('일괄 승인', function() {
+      var now = '2026-04-07 ' + new Date().toTimeString().slice(0,5);
+      _wlBulkIdxs.forEach(function(idx) {
+        _WL_APPR_DATA[idx].status = 'approved';
+        _WL_APPR_DATA[idx].processedAt = now;
+      });
+      _wlBulkIdxs = [];
+      renderWLApprovalTable();
+      showToast('선택한 주소가 모두 승인 처리되었습니다.');
+    });
+  }
+
+  /* ── 5-5: 일괄 거절 ── */
+  function wlBulkReject() {
+    if (_wlBulkIdxs.length === 0) return;
+    document.getElementById('wlbr-count-msg').textContent = _wlBulkIdxs.length + '건을 일괄 거절합니다';
+    var ta = document.getElementById('wlbr-reason');
+    ta.value = ''; document.getElementById('wlbr-reason-count').textContent = '0 / 200';
+    openModal('modal-wl-bulk-reject');
+  }
+  function confirmWLBulkReject() {
+    var reason = (document.getElementById('wlbr-reason') || {}).value || '';
+    if (!reason.trim()) { showToast('거절 사유를 입력해주세요.'); return; }
+    closeModal('modal-wl-bulk-reject');
+    openOTPModal('일괄 거절', function() {
+      var now = '2026-04-07 ' + new Date().toTimeString().slice(0,5);
+      _wlBulkIdxs.forEach(function(idx) {
+        _WL_APPR_DATA[idx].status = 'rejected';
+        _WL_APPR_DATA[idx].processedAt = now;
+        _WL_APPR_DATA[idx].rejectReason = reason;
+      });
+      _wlBulkIdxs = [];
+      renderWLApprovalTable();
+      showToast('선택한 주소가 모두 거절 처리되었습니다. 사유가 이메일로 발송되었습니다.');
+    });
+  }
+
+  /* ── 5-6: 강제 비활성화 ── */
+  function openWLDeactivate(idx) {
+    var w = _WL_APPR_DATA[idx]; if (!w) return;
+    _wlActionIdx = idx;
+    document.getElementById('wld-corp').textContent  = w.corp;
+    document.getElementById('wld-addr').textContent  = w.addr;
+    document.getElementById('wld-label').textContent = w.label;
+    var ta = document.getElementById('wld-reason');
+    ta.value = ''; document.getElementById('wld-reason-count').textContent = '0 / 200';
+    openModal('modal-wl-deactivate');
+  }
+  function confirmWLDeactivate() {
+    var reason = (document.getElementById('wld-reason') || {}).value || '';
+    if (!reason.trim()) { showToast('비활성화 사유를 입력해주세요.'); return; }
+    closeModal('modal-wl-deactivate');
+    openOTPModal('강제 비활성화', function() {
+      _WL_APPR_DATA[_wlActionIdx].status = 'inactive';
+      _WL_APPR_DATA[_wlActionIdx].deactReason = reason;
+      renderWLApprovalTable();
+      showToast('주소가 비활성화되었습니다. 해당 주소로의 출금이 즉시 차단됩니다.');
+    });
+  }
+
+  /* ════════════════════════════════════
      CLIENT CREATION FLOW
   ════════════════════════════════════ */
   function calcNextRenewal() {
@@ -2414,6 +2763,7 @@
     applyRoleUI();
     renderKYBTable();
     renderCustomerAccounts();
+    renderWLApprovalTable();
   })();
 </script>
 </body>
