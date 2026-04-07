@@ -602,6 +602,31 @@
     .act-log-dot { width:8px; height:8px; border-radius:50%; background:var(--primary); flex-shrink:0; margin-top:4px; }
     .act-log-time { color:var(--text-secondary); white-space:nowrap; min-width:110px; }
     .act-log-msg { color:var(--text-primary); }
+    /* Activity Log full tab */
+    .al-filter-bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+    .al-filter-bar input[type=date], .al-filter-bar select { height:32px; padding:0 8px; font-size:12px; border:1px solid var(--border); border-radius:7px; background:#fff; font-family:inherit; }
+    .al-filter-bar select { padding-right:22px; }
+    .al-csv-btn { margin-left:auto; }
+    .al-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .al-table th { background:#F8FAFC; padding:8px 10px; font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; border-bottom:1px solid var(--border); text-align:left; white-space:nowrap; }
+    .al-table td { padding:10px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    .al-table tr:last-child td { border-bottom:none; }
+    .al-table tr:hover td { background:#F8FAFC; }
+    .al-event-name { font-weight:600; color:var(--text-primary); margin-bottom:2px; }
+    .al-event-summary { font-size:11px; color:var(--text-secondary); line-height:1.4; }
+    .al-cat-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+    .al-cat-wallet   { background:#EFF6FF; color:#2563EB; }
+    .al-cat-coin     { background:#F0FDF4; color:#059669; }
+    .al-cat-withdraw { background:#FFF7ED; color:#EA580C; }
+    .al-cat-strategy { background:#F5F3FF; color:#7C3AED; }
+    .al-cat-whitelist{ background:#FFF1F2; color:#E11D48; }
+    .al-cat-account  { background:#F8FAFC; color:#475569; }
+    /* Detail modal diff table */
+    .diff-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
+    .diff-table th { background:#F8FAFC; padding:7px 10px; font-weight:700; color:var(--text-secondary); border:1px solid var(--border); text-align:left; }
+    .diff-table td { padding:7px 10px; border:1px solid var(--border); }
+    .diff-table .diff-before { background:#FEF2F2; color:#991B1B; }
+    .diff-table .diff-after  { background:#ECFDF5; color:#065F46; }
 
     /* ══════════════════════════
        SECTION 7: WHITELIST
@@ -1215,6 +1240,22 @@
   </div>
   <div class="modal-footer" id="cd-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-coin-detail')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Activity Log Detail (4-8-4)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-al-detail" style="max-width:500px;">
+  <div class="modal-header">
+    <span class="modal-title" id="al-detail-title">활동 로그 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-al-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body" id="al-detail-body">
+    <!-- Dynamic content rendered by openALDetail() -->
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-al-detail')">닫기</button>
   </div>
 </div>
 
@@ -2226,12 +2267,51 @@
                   <div id="coins-rejected-list"></div>
                 </div>
               </div>
-              <!-- Activity Log Tab -->
-              <div id="detail-actlog" style="display:none; padding:16px 20px;">
-                <div style="font-size:13px; font-weight:700; margin-bottom:10px; color:var(--text-primary);">지갑 활동 기록</div>
-                <div id="walletActivityLog">
-                  <div style="font-size:12px; color:var(--text-secondary); padding:10px 0;">활동 기록이 없습니다.</div>
+              <!-- Activity Log Tab (4-8) -->
+              <div id="detail-actlog" style="display:none;">
+                <div style="padding:14px 20px; border-bottom:1px solid var(--border);">
+                  <!-- Filter bar -->
+                  <div class="al-filter-bar">
+                    <input type="date" id="al-date-from" value="2025-10-08" title="시작일" />
+                    <span style="font-size:12px; color:var(--text-secondary);">~</span>
+                    <input type="date" id="al-date-to" value="2026-04-07" title="종료일" />
+                    <select id="al-cat-filter" onchange="renderActivityLog()">
+                      <option value="">전체 유형</option>
+                      <option value="wallet">지갑 관리</option>
+                      <option value="coin">코인 관리</option>
+                      <option value="withdraw">출금 관리</option>
+                      <option value="strategy">Strategy Engine</option>
+                      <option value="whitelist">Whitelist</option>
+                      <option value="account">계정 관리</option>
+                    </select>
+                    <select id="al-acct-filter" onchange="renderActivityLog()">
+                      <option value="">전체 계정</option>
+                      <option value="김철수">김철수</option>
+                      <option value="이영희">이영희</option>
+                      <option value="박민준">박민준</option>
+                      <option value="Admin">Admin</option>
+                    </select>
+                    <button class="btn btn-outline btn-sm al-csv-btn" onclick="downloadALCSV()">&#8595; CSV</button>
+                    <button class="btn btn-outline btn-sm" onclick="renderActivityLog()" style="margin-left:0;">&#8635; 새로고침</button>
+                  </div>
+                  <div style="font-size:11px; color:var(--text-secondary);">* 최근 30일 기본 표시 · 읽기 전용 (Master·일반 모두 조회 가능)</div>
                 </div>
+                <!-- Table -->
+                <div class="table-wrap" style="overflow-x:auto;">
+                  <table class="al-table" id="al-table">
+                    <thead>
+                      <tr>
+                        <th style="width:130px;">일시</th>
+                        <th style="width:90px;">카테고리</th>
+                        <th>이벤트 · 요약</th>
+                        <th style="width:80px;">처리 계정</th>
+                        <th style="width:50px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="al-tbody"></tbody>
+                  </table>
+                </div>
+                <div id="al-empty" style="display:none; text-align:center; padding:30px; font-size:13px; color:var(--text-secondary);">조건에 맞는 활동 기록이 없습니다.</div>
               </div>
               <!-- History Tab -->
               <div id="detail-history" style="display:none; padding:16px 20px;">
@@ -2931,9 +3011,10 @@
   function switchDetailTab(el, tabId) {
     document.getElementById('walletDetailTabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-    document.getElementById('detail-coins').style.display = tabId === 'coins' ? 'block' : 'none';
+    document.getElementById('detail-coins').style.display   = tabId === 'coins'   ? 'block' : 'none';
     document.getElementById('detail-history').style.display = tabId === 'history' ? 'block' : 'none';
-    document.getElementById('detail-actlog').style.display = tabId === 'actlog' ? 'block' : 'none';
+    document.getElementById('detail-actlog').style.display  = tabId === 'actlog'  ? 'block' : 'none';
+    if (tabId === 'actlog') renderActivityLog();
   }
 
   function switchWorkflowTab(el, status) {
@@ -3502,28 +3583,256 @@
   /* ════════════════════════════════════
      WALLET INLINE NAME EDIT (Master only)
   ════════════════════════════════════ */
-  /* Activity log */
-  const _walletActivityLog = [];
-  function _logActivity(msg) {
-    const now = new Date();
-    const ts = now.getFullYear() + '-' +
-      String(now.getMonth()+1).padStart(2,'0') + '-' +
-      String(now.getDate()).padStart(2,'0') + ' ' +
-      String(now.getHours()).padStart(2,'0') + ':' +
-      String(now.getMinutes()).padStart(2,'0');
-    _walletActivityLog.unshift({ ts, msg });
-    _renderActivityLog();
+  /* ════════════════════════════════════
+     SECTION 4-8: ACTIVITY LOG
+  ════════════════════════════════════ */
+  /* Category metadata */
+  const _AL_CATS = {
+    wallet:    { label:'지갑 관리',        cls:'al-cat-wallet'    },
+    coin:      { label:'코인 관리',        cls:'al-cat-coin'      },
+    withdraw:  { label:'출금 관리',        cls:'al-cat-withdraw'  },
+    strategy:  { label:'Strategy Engine', cls:'al-cat-strategy'  },
+    whitelist: { label:'Whitelist',        cls:'al-cat-whitelist' },
+    account:   { label:'계정 관리',        cls:'al-cat-account'   },
+  };
+
+  /* Demo log data — 22 event types across 6 categories */
+  let _AL_DATA = [
+    // 지갑 관리
+    { id:1,  ts:'2025-11-01 09:00', cat:'wallet',   event:'지갑 생성 요청',   account:'김철수',
+      summary:'BTC 보관 지갑 #1 · Bitcoin Mainnet',
+      detail:{ type:'basic', rows:[ ['지갑명','BTC 보관 지갑 #1'], ['코인','BTC / Bitcoin Mainnet'], ['요청 사유','신규 BTC 보관 목적'] ] } },
+    { id:2,  ts:'2025-11-02 11:20', cat:'wallet',   event:'지갑 활성화',      account:'Admin',
+      summary:'BTC 보관 지갑 #1 활성화 완료',
+      detail:{ type:'basic', rows:[ ['지갑명','BTC 보관 지갑 #1'], ['처리자','Admin'], ['활성화 일시','2025-11-02 11:20'] ] } },
+    { id:3,  ts:'2025-11-05 14:30', cat:'wallet',   event:'지갑명 변경',      account:'김철수',
+      summary:'"BTC Wallet #1" → "BTC 보관 지갑 #1"',
+      detail:{ type:'diff', label:'지갑명', before:'BTC Wallet #1', after:'BTC 보관 지갑 #1' } },
+    { id:4,  ts:'2025-11-10 09:15', cat:'wallet',   event:'지갑 생성 요청',   account:'김철수',
+      summary:'ETH 보관 지갑 · Ethereum Mainnet',
+      detail:{ type:'basic', rows:[ ['지갑명','ETH 보관 지갑'], ['코인','ETH / Ethereum Mainnet'], ['요청 사유','ETH 자산 분리 보관'] ] } },
+    { id:5,  ts:'2025-11-11 10:00', cat:'wallet',   event:'지갑 활성화',      account:'Admin',
+      summary:'ETH 보관 지갑 활성화 완료',
+      detail:{ type:'basic', rows:[ ['지갑명','ETH 보관 지갑'], ['처리자','Admin'], ['활성화 일시','2025-11-11 10:00'] ] } },
+    // 코인 관리
+    { id:6,  ts:'2025-11-01 09:05', cat:'coin',     event:'코인 추가 요청',   account:'김철수',
+      summary:'BTC · Bitcoin Mainnet',
+      detail:{ type:'basic', rows:[ ['코인','BTC'], ['네트워크','Bitcoin Mainnet'], ['요청일','2025-11-01 09:05'] ] } },
+    { id:7,  ts:'2025-11-02 11:25', cat:'coin',     event:'코인 추가 승인',   account:'Admin',
+      summary:'BTC · Bitcoin Mainnet 승인 완료, 주소 발급',
+      detail:{ type:'basic', rows:[ ['코인','BTC'], ['네트워크','Bitcoin Mainnet'], ['발급 주소','bc1q4d2jK...3f8e'], ['처리자','Admin'] ] } },
+    { id:8,  ts:'2025-11-15 14:20', cat:'coin',     event:'코인 추가 요청',   account:'김철수',
+      summary:'BNB · BNB Smart Chain',
+      detail:{ type:'basic', rows:[ ['코인','BNB'], ['네트워크','BNB Smart Chain'], ['요청일','2025-11-15 14:20'] ] } },
+    { id:9,  ts:'2025-11-17 09:05', cat:'coin',     event:'코인 추가 거절',   account:'Admin',
+      summary:'BNB · BNB Smart Chain — 정책 미지원',
+      detail:{ type:'reason', rows:[ ['코인','BNB'], ['네트워크','BNB Smart Chain'], ['처리자','Admin'] ],
+        reason:'해당 코인은 현재 보관 정책상 지원되지 않습니다. BNB Smart Chain 네트워크는 내년 1분기 이후 지원 예정입니다.' } },
+    { id:10, ts:'2025-11-18 10:00', cat:'coin',     event:'코인 추가 재요청', account:'김철수',
+      summary:'BNB → USDT · Ethereum (ERC-20) 으로 변경 재요청',
+      detail:{ type:'basic', rows:[ ['이전 코인','BNB / BNB Smart Chain'], ['재요청 코인','USDT'], ['재요청 네트워크','Ethereum (ERC-20)'], ['재요청 사유','정책 지원 코인으로 변경'] ] } },
+    { id:11, ts:'2025-11-20 09:00', cat:'coin',     event:'코인 추가 취소',   account:'이영희',
+      summary:'TRX · TRON Mainnet 요청 취소',
+      detail:{ type:'basic', rows:[ ['코인','TRX'], ['네트워크','TRON Mainnet'], ['취소자','이영희'] ] } },
+    // 출금 관리
+    { id:12, ts:'2025-11-18 22:07', cat:'withdraw', event:'출금 신청',         account:'이영희',
+      summary:'USDT 100.00 → 0x4d4b...C3E69 (빗썸)',
+      detail:{ type:'basic', rows:[ ['출금번호','WD-20251118-001'], ['코인','USDT / Ethereum (ERC-20)'], ['수량','100.00 USDT ≈ ₩138,000'], ['수신주소','0x4d4bC4a1...C3E69F21'], ['수신 VASP','빗썸 (Bithumb) · KR-BTH'], ['수신자명','홍길동'] ] } },
+    { id:13, ts:'2025-11-19 09:12', cat:'withdraw', event:'출금 서명',         account:'김철수',
+      summary:'WD-20251118-001 서명 완료 (1/3)',
+      detail:{ type:'basic', rows:[ ['출금번호','WD-20251118-001'], ['서명자','김철수'], ['서명일시','2025-11-19 09:12'], ['현황','1 / 3 서명 수집'] ] } },
+    { id:14, ts:'2025-11-19 11:30', cat:'withdraw', event:'출금 서명',         account:'이영희',
+      summary:'WD-20251118-001 서명 완료 (2/3)',
+      detail:{ type:'basic', rows:[ ['출금번호','WD-20251118-001'], ['서명자','이영희'], ['서명일시','2025-11-19 11:30'], ['현황','2 / 3 서명 수집'] ] } },
+    { id:15, ts:'2025-11-19 14:05', cat:'withdraw', event:'출금 완료',         account:'Admin',
+      summary:'WD-20251118-001 USDT 100.00 on-chain 완료',
+      detail:{ type:'basic', rows:[ ['출금번호','WD-20251118-001'], ['TXID','0xa1b2c3...f9e8'], ['완료일시','2025-11-19 14:05'], ['처리자','Admin'] ] } },
+    { id:16, ts:'2025-11-20 10:00', cat:'withdraw', event:'출금 거절',         account:'박민준',
+      summary:'WD-20251120-002 서명 거절',
+      detail:{ type:'reason', rows:[ ['출금번호','WD-20251120-002'], ['거절자','박민준'], ['거절일시','2025-11-20 10:00'] ],
+        reason:'수신 주소가 Whitelist에 미등록되어 있습니다. 먼저 Whitelist 신청 후 출금 재신청해주세요.' } },
+    // Strategy Engine
+    { id:17, ts:'2025-11-03 10:00', cat:'strategy', event:'출금 정책 최초 설정', account:'김철수',
+      summary:'BTC 보관 지갑 #1 · 2 of 3 서명',
+      detail:{ type:'strategy', rows:[ ['지갑','BTC 보관 지갑 #1'], ['정책','2 of 3 서명'], ['서명자','김철수, 이영희, 박민준'], ['요청자','김철수'], ['설정일','2025-11-03 10:00'] ] } },
+    { id:18, ts:'2025-11-18 16:00', cat:'strategy', event:'출금 정책 수정',    account:'김철수',
+      summary:'서명자 변경: 박민준 → 안소연',
+      detail:{ type:'strategy-diff', rows:[
+        ['구분','변경 전','변경 후'],
+        ['정책','2 of 3','2 of 3'],
+        ['서명자','김철수, 이영희, 박민준','김철수, 이영희, 안소연'],
+        ['요청자','김철수','김철수'],
+      ]} },
+    // Whitelist
+    { id:19, ts:'2025-11-12 09:30', cat:'whitelist',event:'Whitelist 신청',   account:'이영희',
+      summary:'빗썸 출금 주소 · 0x4d4b...C3E69',
+      detail:{ type:'basic', rows:[ ['라벨','빗썸 출금 주소'], ['코인','USDT / Ethereum (ERC-20)'], ['주소','0x4d4bC4a1...C3E69F21'], ['신청자','이영희'] ] } },
+    { id:20, ts:'2025-11-13 11:00', cat:'whitelist',event:'Whitelist 승인',   account:'Admin',
+      summary:'빗썸 출금 주소 승인 완료',
+      detail:{ type:'basic', rows:[ ['라벨','빗썸 출금 주소'], ['처리자','Admin'], ['승인일시','2025-11-13 11:00'] ] } },
+    { id:21, ts:'2025-11-21 14:00', cat:'whitelist',event:'Whitelist 비활성화',account:'Admin',
+      summary:'업비트 주소 임시 비활성화',
+      detail:{ type:'reason', rows:[ ['라벨','업비트 출금 주소'], ['처리자','Admin'], ['처리일시','2025-11-21 14:00'] ],
+        reason:'이상 거래 탐지로 인한 임시 비활성화. 담당자 확인 후 재활성화 예정입니다.' } },
+    { id:22, ts:'2025-11-22 09:00', cat:'whitelist',event:'Whitelist 삭제',   account:'김철수',
+      summary:'테스트 주소 삭제',
+      detail:{ type:'basic', rows:[ ['라벨','테스트 주소'], ['코인','ETH / Ethereum Mainnet'], ['삭제자','김철수'], ['삭제일시','2025-11-22 09:00'] ] } },
+  ].reverse(); // newest first
+
+  /* Append a new log entry (called by other actions) */
+  function _logActivity(eventData) {
+    // Accept legacy string call (wallet rename) or full object
+    if (typeof eventData === 'string') {
+      const now = new Date();
+      const ts  = _fmtTS(now);
+      eventData = { ts, cat:'wallet', event:'지갑명 변경', account:'김철수', summary:eventData,
+        detail:{ type:'basic', rows:[ ['변경 내용', eventData] ] } };
+    }
+    eventData.id = Date.now();
+    _AL_DATA.unshift(eventData);
+    renderActivityLog();
   }
-  function _renderActivityLog() {
-    const el = document.getElementById('walletActivityLog');
-    if (!el) return;
-    if (!_walletActivityLog.length) {
-      el.innerHTML = '<div style="font-size:12px; color:var(--text-secondary); padding:10px 0;">활동 기록이 없습니다.</div>';
+
+  function _fmtTS(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0') + ' ' +
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function renderActivityLog() {
+    const tbody   = document.getElementById('al-tbody');
+    const emptyEl = document.getElementById('al-empty');
+    if (!tbody) return;
+
+    const catF  = (document.getElementById('al-cat-filter')  || {}).value  || '';
+    const acctF = (document.getElementById('al-acct-filter') || {}).value  || '';
+    const from  = (document.getElementById('al-date-from')   || {}).value  || '';
+    const to    = (document.getElementById('al-date-to')     || {}).value  || '';
+
+    const filtered = _AL_DATA.filter(e => {
+      if (catF  && e.cat     !== catF)  return false;
+      if (acctF && e.account !== acctF) return false;
+      if (from  && e.ts.slice(0,10) < from) return false;
+      if (to    && e.ts.slice(0,10) > to)   return false;
+      return true;
+    });
+
+    if (!filtered.length) {
+      tbody.innerHTML = '';
+      if (emptyEl) emptyEl.style.display = '';
       return;
     }
-    el.innerHTML = _walletActivityLog.slice(0,10).map(e =>
-      `<div class="act-log-item"><div class="act-log-dot"></div><div class="act-log-time">${e.ts}</div><div class="act-log-msg">${e.msg}</div></div>`
-    ).join('');
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    tbody.innerHTML = filtered.map(e => {
+      const cat = _AL_CATS[e.cat] || { label:e.cat, cls:'al-cat-account' };
+      return `<tr>
+        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">${e.ts}</td>
+        <td><span class="al-cat-badge ${cat.cls}">${cat.label}</span></td>
+        <td>
+          <div class="al-event-name">${e.event}</div>
+          <div class="al-event-summary">${e.summary}</div>
+        </td>
+        <td style="font-size:12px; font-weight:600;">${e.account}</td>
+        <td><button class="btn btn-outline btn-xs" onclick="openALDetail(${e.id})">보기</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function openALDetail(id) {
+    const e = _AL_DATA.find(d => d.id === id);
+    if (!e) return;
+    const cat = _AL_CATS[e.cat] || { label:e.cat, cls:'al-cat-account' };
+    document.getElementById('al-detail-title').innerHTML =
+      `<span class="al-cat-badge ${cat.cls}" style="margin-right:8px;">${cat.label}</span>${e.event}`;
+
+    let bodyHTML = `
+      <div style="font-size:11px; color:var(--text-secondary); margin-bottom:12px;">일시: ${e.ts} &nbsp;|&nbsp; 처리 계정: <strong>${e.account}</strong></div>
+      <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">요약: ${e.summary}</div>`;
+
+    const d = e.detail;
+    if (d.type === 'basic') {
+      bodyHTML += `<div style="background:#F8FAFC; border-radius:8px; padding:12px 14px;">` +
+        d.rows.map(([k,v]) =>
+          `<div class="info-row" style="padding:6px 0; border-bottom:1px solid var(--border);">
+            <span class="info-label" style="min-width:100px;">${k}</span>
+            <span style="font-size:12px;">${v}</span>
+          </div>`
+        ).join('') + `</div>`;
+    } else if (d.type === 'diff') {
+      bodyHTML += `
+        <div style="background:#F8FAFC; border-radius:8px; padding:12px 14px; margin-bottom:10px;">
+          <div class="info-row" style="padding:6px 0;"><span class="info-label">항목</span><span>${d.label}</span></div>
+        </div>
+        <table class="diff-table">
+          <thead><tr><th>구분</th><th>내용</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600; color:#991B1B;">변경 전</td><td class="diff-before">${d.before}</td></tr>
+            <tr><td style="font-weight:600; color:#065F46;">변경 후</td><td class="diff-after">${d.after}</td></tr>
+          </tbody>
+        </table>`;
+    } else if (d.type === 'reason') {
+      bodyHTML += `<div style="background:#F8FAFC; border-radius:8px; padding:12px 14px; margin-bottom:10px;">` +
+        d.rows.map(([k,v]) =>
+          `<div class="info-row" style="padding:6px 0; border-bottom:1px solid var(--border);">
+            <span class="info-label" style="min-width:100px;">${k}</span>
+            <span style="font-size:12px;">${v}</span>
+          </div>`
+        ).join('') + `</div>
+        <div>
+          <div style="font-size:12px; font-weight:700; color:var(--danger); margin-bottom:6px;">Admin 사유</div>
+          <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:12px 14px; font-size:13px; line-height:1.7;">${d.reason}</div>
+        </div>`;
+    } else if (d.type === 'strategy') {
+      bodyHTML += `<div style="background:#F8FAFC; border-radius:8px; padding:12px 14px;">` +
+        d.rows.map(([k,v]) =>
+          `<div class="info-row" style="padding:6px 0; border-bottom:1px solid var(--border);">
+            <span class="info-label" style="min-width:100px;">${k}</span>
+            <span style="font-size:12px;">${v}</span>
+          </div>`
+        ).join('') + `</div>`;
+    } else if (d.type === 'strategy-diff') {
+      const [header, ...rows] = d.rows;
+      bodyHTML += `
+        <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">정책 변경 전/후 비교</div>
+        <table class="diff-table">
+          <thead><tr>${header.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>${rows.map(([label, before, after]) => `
+            <tr>
+              <td style="font-weight:600;">${label}</td>
+              <td class="${before !== after ? 'diff-before' : ''}">${before}</td>
+              <td class="${before !== after ? 'diff-after'  : ''}">${after}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    document.getElementById('al-detail-body').innerHTML = bodyHTML;
+    openModal('modal-al-detail');
+  }
+
+  function downloadALCSV() {
+    const catF  = (document.getElementById('al-cat-filter')  || {}).value  || '';
+    const acctF = (document.getElementById('al-acct-filter') || {}).value  || '';
+    const from  = (document.getElementById('al-date-from')   || {}).value  || '';
+    const to    = (document.getElementById('al-date-to')     || {}).value  || '';
+    const rows  = _AL_DATA.filter(e => {
+      if (catF  && e.cat     !== catF)  return false;
+      if (acctF && e.account !== acctF) return false;
+      if (from  && e.ts.slice(0,10) < from) return false;
+      if (to    && e.ts.slice(0,10) > to)   return false;
+      return true;
+    });
+    const header = ['일시','카테고리','이벤트','요약','처리계정'];
+    const csv = [header, ...rows.map(e => [
+      e.ts, (_AL_CATS[e.cat]||{}).label||e.cat, e.event, e.summary.replace(/,/g,''), e.account
+    ])].map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a'); a.href = url;
+    a.download = 'activity-log-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+    showToast('CSV 파일이 다운로드되었습니다.');
   }
 
   /* Validate inline input — returns error string or '' */
@@ -3587,7 +3896,9 @@
           document.getElementById('input-detail').dataset.original = val;
           _updateDetailBreadcrumb(val);
         }
-        _logActivity(`지갑명 변경: "${originalName}" → "${val}"`);
+        _logActivity({ cat:'wallet', event:'지갑명 변경', account:'김철수',
+          summary:`"${originalName}" → "${val}"`,
+          detail:{ type:'diff', label:'지갑명', before:originalName, after:val } });
         showToast('지갑명이 변경되었습니다.');
       }
     }));
@@ -3636,7 +3947,9 @@
         });
         _currentWalletLabel = val;
         _updateDetailBreadcrumb(val);
-        _logActivity(`지갑명 변경: "${originalName}" → "${val}"`);
+        _logActivity({ cat:'wallet', event:'지갑명 변경', account:'김철수',
+          summary:`"${originalName}" → "${val}"`,
+          detail:{ type:'diff', label:'지갑명', before:originalName, after:val } });
         showToast('지갑명이 변경되었습니다.');
       }
     }));
@@ -4551,6 +4864,7 @@
     renderAccountTable();
     renderWLTable();
     renderCoinsTab();
+    renderActivityLog();
   });
 
   /* ════════════════════════════════════
