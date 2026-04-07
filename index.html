@@ -573,15 +573,35 @@
     .otp-reset-step.active { display: block; }
 
     /* ══════════════════════════
-       INLINE NAME EDIT
+       INLINE NAME EDIT (Master-only)
     ══════════════════════════ */
     .name-edit-wrap { display:flex; align-items:center; gap:6px; min-width:0; }
-    .edit-pencil-btn { width:22px; height:22px; border:none; background:none; cursor:pointer; color:var(--text-secondary); font-size:12px; border-radius:4px; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.15s; flex-shrink:0; }
-    .name-edit-wrap:hover .edit-pencil-btn { opacity:1; }
-    .name-inline-edit { display:none; align-items:center; gap:4px; }
-    .name-inline-input { height:28px; padding:3px 8px; font-size:13px; font-weight:600; border:1px solid var(--primary); border-radius:6px; font-family:inherit; outline:none; min-width:0; flex:1; }
-    .name-confirm-btn { width:26px; height:26px; background:var(--success); color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .edit-pencil-btn { width:22px; height:22px; border:none; background:none; cursor:pointer; color:var(--text-secondary); font-size:13px; border-radius:4px; display:flex; align-items:center; justify-content:center; opacity:0.55; transition:opacity 0.15s, color 0.15s; flex-shrink:0; }
+    .edit-pencil-btn:hover { opacity:1; color:var(--primary); }
+    .name-inline-edit { display:none; align-items:center; gap:4px; flex:1; min-width:0; }
+    .name-inline-input { height:28px; padding:3px 8px; font-size:13px; font-weight:600; border:1.5px solid var(--primary); border-radius:6px; font-family:inherit; outline:none; min-width:0; flex:1; transition:border-color 0.15s; }
+    .name-inline-input.invalid { border-color:var(--danger); }
+    .name-inline-hint { font-size:11px; color:var(--danger); margin-top:3px; display:none; }
+    .name-inline-hint.show { display:block; }
+    .name-confirm-btn { width:26px; height:26px; background:var(--success); color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:opacity 0.15s; }
+    .name-confirm-btn:disabled { opacity:0.35; cursor:not-allowed; }
     .name-cancel-btn  { width:26px; height:26px; background:var(--border); color:var(--text-secondary); border:none; border-radius:5px; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    /* OTP — 6-box component */
+    .otp-attempt-row { text-align:center; font-size:12px; color:var(--text-secondary); margin-top:6px; min-height:18px; }
+    .otp-attempt-row.warn { color:var(--warning); font-weight:600; }
+    .otp-attempt-row.danger { color:var(--danger); font-weight:700; }
+    .otp-preview-box { background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:4px; }
+    .otp-preview-row { display:flex; align-items:center; gap:8px; font-size:12px; }
+    .otp-preview-label { color:var(--text-secondary); width:36px; flex-shrink:0; }
+    .otp-preview-val { font-weight:600; color:var(--text-primary); }
+    .otp-preview-val.after { color:var(--primary); }
+    .otp-desc { text-align:center; color:var(--text-secondary); font-size:13px; margin-bottom:4px; line-height:1.5; }
+    /* Activity log */
+    .act-log-item { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); font-size:12px; }
+    .act-log-item:last-child { border-bottom:none; }
+    .act-log-dot { width:8px; height:8px; border-radius:50%; background:var(--primary); flex-shrink:0; margin-top:4px; }
+    .act-log-time { color:var(--text-secondary); white-space:nowrap; min-width:110px; }
+    .act-log-msg { color:var(--text-primary); }
 
     /* ══════════════════════════
        SECTION 7: WHITELIST
@@ -743,27 +763,43 @@
 <!-- ══════════════════════════════════════
      MODAL: OTP Confirmation (reusable)
 ══════════════════════════════════════ -->
-<div class="modal" id="modal-otp" style="max-width:380px;">
+<div class="modal" id="modal-otp" style="max-width:400px;">
   <div class="modal-header">
     <span class="modal-title" id="otpModalTitle">OTP 인증</span>
     <button class="modal-close" onclick="closeModal('modal-otp')">&#10005;</button>
   </div>
   <div class="modal-body">
-    <div style="text-align:center; color:var(--text-secondary); font-size:13px; margin-bottom:4px;" id="otpModalDesc">인증 앱의 6자리 코드를 입력해주세요.</div>
-    <div class="otp-row" id="otpModalRow">
-      <input class="otp-box" maxlength="1" oninput="otpMove(this,0,'otpModalRow')" onkeydown="otpBack(event,this,0,'otpModalRow')" />
-      <input class="otp-box" maxlength="1" oninput="otpMove(this,1,'otpModalRow')" onkeydown="otpBack(event,this,1,'otpModalRow')" />
-      <input class="otp-box" maxlength="1" oninput="otpMove(this,2,'otpModalRow')" onkeydown="otpBack(event,this,2,'otpModalRow')" />
-      <input class="otp-box" maxlength="1" oninput="otpMove(this,3,'otpModalRow')" onkeydown="otpBack(event,this,3,'otpModalRow')" />
-      <input class="otp-box" maxlength="1" oninput="otpMove(this,4,'otpModalRow')" onkeydown="otpBack(event,this,4,'otpModalRow')" />
-      <input class="otp-box" maxlength="1" oninput="otpMove(this,5,'otpModalRow')" onkeydown="otpBack(event,this,5,'otpModalRow')" />
+    <!-- Action description -->
+    <div class="otp-desc" id="otpModalDesc">인증 앱의 6자리 코드를 입력해주세요.</div>
+    <!-- Before/After preview (wallet rename etc.) -->
+    <div class="otp-preview-box" id="otpPreviewBox" style="display:none;">
+      <div class="otp-preview-row" style="margin-bottom:6px;">
+        <span class="otp-preview-label">변경 전</span>
+        <span class="otp-preview-val" id="otpPreviewBefore"></span>
+      </div>
+      <div style="text-align:center; font-size:16px; color:var(--text-secondary); line-height:1;">&#8595;</div>
+      <div class="otp-preview-row" style="margin-top:6px;">
+        <span class="otp-preview-label">변경 후</span>
+        <span class="otp-preview-val after" id="otpPreviewAfter"></span>
+      </div>
     </div>
-    <div style="text-align:center; font-size:11px; color:var(--text-secondary);">Demo: 아무 숫자나 6자리</div>
-    <div class="alert alert-danger" id="otpModalErr" style="display:none; margin-top:12px;"></div>
+    <!-- 6-box OTP input -->
+    <div class="otp-row" id="otpModalRow">
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,0,'otpModalRow')" onkeydown="otpBack(event,this,0,'otpModalRow')" onpaste="otpPaste(event,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,1,'otpModalRow')" onkeydown="otpBack(event,this,1,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,2,'otpModalRow')" onkeydown="otpBack(event,this,2,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,3,'otpModalRow')" onkeydown="otpBack(event,this,3,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,4,'otpModalRow')" onkeydown="otpBack(event,this,4,'otpModalRow')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,5,'otpModalRow')" onkeydown="otpBack(event,this,5,'otpModalRow')" />
+    </div>
+    <div style="text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:4px;">Demo: 아무 숫자나 6자리</div>
+    <!-- Attempt counter + error -->
+    <div class="otp-attempt-row" id="otpAttemptRow"></div>
+    <div class="alert alert-danger" id="otpModalErr" style="display:none; margin-top:8px;"></div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-otp')">취소</button>
-    <button class="btn btn-primary" onclick="confirmOTP()">인증 완료</button>
+    <button class="btn btn-primary" id="otpConfirmBtn" onclick="confirmOTP()">인증 완료</button>
   </div>
 </div>
 
@@ -1913,16 +1949,19 @@
           <!-- Wallet Card 1: Active -->
           <div class="wallet-card" onclick="openWalletDetail('wallet1')">
             <div class="wallet-card-header">
-              <div class="wallet-card-name">
+              <div class="wallet-card-name" style="flex:1; min-width:0;">
                 <div class="name-edit-wrap" id="wrap-wallet1">
                   <span id="lbl-wallet1">BTC 보관 지갑 #1</span>
                   <button class="edit-pencil-btn" title="이름 수정" onclick="event.stopPropagation(); startEditName('wallet1')">&#9998;</button>
                 </div>
                 <div class="name-inline-edit" id="edit-wallet1">
-                  <input class="name-inline-input" id="input-wallet1" value="BTC 보관 지갑 #1" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')saveWalletName('wallet1'); if(event.key==='Escape')cancelEditName('wallet1');" />
-                  <button class="name-confirm-btn" onclick="event.stopPropagation(); saveWalletName('wallet1')" title="저장">&#10003;</button>
+                  <input class="name-inline-input" id="input-wallet1" value="BTC 보관 지갑 #1" onclick="event.stopPropagation()"
+                    oninput="onNameInput('input-wallet1','hint-wallet1','savebtn-wallet1',this.dataset.original)"
+                    onkeydown="if(event.key==='Enter')saveWalletName('wallet1'); if(event.key==='Escape')cancelEditName('wallet1');" />
+                  <button class="name-confirm-btn" id="savebtn-wallet1" onclick="event.stopPropagation(); saveWalletName('wallet1')" title="저장" disabled>&#10003;</button>
                   <button class="name-cancel-btn" onclick="event.stopPropagation(); cancelEditName('wallet1')" title="취소">&#10005;</button>
                 </div>
+                <div class="name-inline-hint" id="hint-wallet1"></div>
               </div>
               <span class="badge badge-success">&#9679; 활성화</span>
             </div>
@@ -1944,16 +1983,19 @@
           <!-- Wallet Card 2: Active -->
           <div class="wallet-card" onclick="openWalletDetail('wallet2')">
             <div class="wallet-card-header">
-              <div class="wallet-card-name">
+              <div class="wallet-card-name" style="flex:1; min-width:0;">
                 <div class="name-edit-wrap" id="wrap-wallet2">
                   <span id="lbl-wallet2">ETH 보관 지갑</span>
                   <button class="edit-pencil-btn" title="이름 수정" onclick="event.stopPropagation(); startEditName('wallet2')">&#9998;</button>
                 </div>
                 <div class="name-inline-edit" id="edit-wallet2">
-                  <input class="name-inline-input" id="input-wallet2" value="ETH 보관 지갑" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')saveWalletName('wallet2'); if(event.key==='Escape')cancelEditName('wallet2');" />
-                  <button class="name-confirm-btn" onclick="event.stopPropagation(); saveWalletName('wallet2')" title="저장">&#10003;</button>
+                  <input class="name-inline-input" id="input-wallet2" value="ETH 보관 지갑" onclick="event.stopPropagation()"
+                    oninput="onNameInput('input-wallet2','hint-wallet2','savebtn-wallet2',this.dataset.original)"
+                    onkeydown="if(event.key==='Enter')saveWalletName('wallet2'); if(event.key==='Escape')cancelEditName('wallet2');" />
+                  <button class="name-confirm-btn" id="savebtn-wallet2" onclick="event.stopPropagation(); saveWalletName('wallet2')" title="저장" disabled>&#10003;</button>
                   <button class="name-cancel-btn" onclick="event.stopPropagation(); cancelEditName('wallet2')" title="취소">&#10005;</button>
                 </div>
+                <div class="name-inline-hint" id="hint-wallet2"></div>
               </div>
               <span class="badge badge-success">&#9679; 활성화</span>
             </div>
@@ -2009,10 +2051,13 @@
                       <button class="edit-pencil-btn" title="이름 수정" onclick="startEditDetailName()">&#9998;</button>
                     </div>
                     <div class="name-inline-edit" id="edit-detail">
-                      <input class="name-inline-input" id="input-detail" value="BTC 보관 지갑 #1" onkeydown="if(event.key==='Enter')saveDetailName(); if(event.key==='Escape')cancelDetailName();" />
-                      <button class="name-confirm-btn" onclick="saveDetailName()" title="저장">&#10003;</button>
+                      <input class="name-inline-input" id="input-detail" value="BTC 보관 지갑 #1"
+                        oninput="onNameInput('input-detail','hint-detail','savebtn-detail',this.dataset.original)"
+                        onkeydown="if(event.key==='Enter')saveDetailName(); if(event.key==='Escape')cancelDetailName();" />
+                      <button class="name-confirm-btn" id="savebtn-detail" onclick="saveDetailName()" title="저장" disabled>&#10003;</button>
                       <button class="name-cancel-btn" onclick="cancelDetailName()" title="취소">&#10005;</button>
                     </div>
+                    <div class="name-inline-hint" id="hint-detail"></div>
                   </div>
                   <div style="font-size:11px; color:var(--text-secondary);">ID: 1687670</div>
                 </div>
@@ -2049,6 +2094,7 @@
                 <div class="tabs" id="walletDetailTabs">
                   <div class="tab active" onclick="switchDetailTab(this,'coins')">Coins</div>
                   <div class="tab" onclick="switchDetailTab(this,'history')">History</div>
+                  <div class="tab" onclick="switchDetailTab(this,'actlog')">활동 로그</div>
                 </div>
               </div>
               <!-- Coins Tab -->
@@ -2069,6 +2115,13 @@
                     &#9203; 요청 중인 코인 <span id="coins-pending-count" style="background:#FEF3C7; color:#92400E; border-radius:10px; padding:1px 8px; font-size:11px;"></span>
                   </div>
                   <div id="coins-pending-list"></div>
+                </div>
+              </div>
+              <!-- Activity Log Tab -->
+              <div id="detail-actlog" style="display:none; padding:16px 20px;">
+                <div style="font-size:13px; font-weight:700; margin-bottom:10px; color:var(--text-primary);">지갑 활동 기록</div>
+                <div id="walletActivityLog">
+                  <div style="font-size:12px; color:var(--text-secondary); padding:10px 0;">활동 기록이 없습니다.</div>
                 </div>
               </div>
               <!-- History Tab -->
@@ -2771,6 +2824,7 @@
     el.classList.add('active');
     document.getElementById('detail-coins').style.display = tabId === 'coins' ? 'block' : 'none';
     document.getElementById('detail-history').style.display = tabId === 'history' ? 'block' : 'none';
+    document.getElementById('detail-actlog').style.display = tabId === 'actlog' ? 'block' : 'none';
   }
 
   function switchWorkflowTab(el, status) {
@@ -3020,25 +3074,104 @@
     _afterClose(() => openOTPModal('출금 거절', () => showToast('출금 건이 거절되었습니다.')));
   }
 
-  function openOTPModal(title, cb) {
+  /* OTP attempt tracking */
+  let _otpAttempts = 0;
+  const OTP_MAX = 5;
+
+  /* Accepts legacy (title, cb) OR options object {title, desc, before, after, cb} */
+  function openOTPModal(titleOrOpts, cb) {
+    let title, desc, before, after, callback;
+    if (titleOrOpts && typeof titleOrOpts === 'object') {
+      title = titleOrOpts.title; desc = titleOrOpts.desc;
+      before = titleOrOpts.before; after = titleOrOpts.after;
+      callback = titleOrOpts.cb;
+    } else {
+      title = titleOrOpts; callback = cb;
+      // Look up action description from table
+      desc = _OTP_DESCS[title] || '인증 앱의 6자리 코드를 입력해주세요.';
+    }
     document.getElementById('otpModalTitle').textContent = title || 'OTP 인증';
-    document.getElementById('otpModalErr').style.display = 'none';
+    document.getElementById('otpModalDesc').textContent = desc || '인증 앱의 6자리 코드를 입력해주세요.';
+    // Preview box (before/after)
+    const prevBox = document.getElementById('otpPreviewBox');
+    if (before !== undefined && after !== undefined) {
+      document.getElementById('otpPreviewBefore').textContent = before;
+      document.getElementById('otpPreviewAfter').textContent = after;
+      prevBox.style.display = '';
+    } else {
+      prevBox.style.display = 'none';
+    }
+    // Reset boxes
     document.querySelectorAll('#otpModalRow .otp-box').forEach(b => { b.value = ''; b.classList.remove('err'); });
-    otpCallback = cb || null;
+    document.getElementById('otpModalErr').style.display = 'none';
+    document.getElementById('otpAttemptRow').textContent = '';
+    document.getElementById('otpAttemptRow').className = 'otp-attempt-row';
+    document.getElementById('otpConfirmBtn').disabled = false;
+    _otpAttempts = 0;
+    otpCallback = callback || null;
     openModal('modal-otp');
-    setTimeout(() => document.querySelector('#otpModalRow .otp-box').focus(), 100);
+    setTimeout(() => document.querySelector('#otpModalRow .otp-box').focus(), 120);
   }
+
   function confirmOTP() {
     const code = Array.from(document.querySelectorAll('#otpModalRow .otp-box')).map(b => b.value).join('');
+    const err = document.getElementById('otpModalErr');
+    const attemptRow = document.getElementById('otpAttemptRow');
     if (code.length < 6) {
-      const err = document.getElementById('otpModalErr');
       err.textContent = '6자리 코드를 모두 입력해주세요.';
       err.style.display = 'block';
+      document.querySelectorAll('#otpModalRow .otp-box').forEach(b => { if (!b.value) b.classList.add('err'); });
+      return;
+    }
+    // Demo: any 6 digits passes — simulate wrong code for testing when code is 000000
+    const isWrong = (code === '000000');
+    if (isWrong) {
+      _otpAttempts++;
+      const left = OTP_MAX - _otpAttempts;
+      document.querySelectorAll('#otpModalRow .otp-box').forEach(b => { b.value = ''; b.classList.add('err'); });
+      document.querySelector('#otpModalRow .otp-box').focus();
+      err.style.display = 'none';
+      if (left <= 0) {
+        attemptRow.textContent = '인증 실패 횟수 초과. 계정이 잠금 처리됩니다.';
+        attemptRow.className = 'otp-attempt-row danger';
+        document.getElementById('otpConfirmBtn').disabled = true;
+        setTimeout(() => {
+          closeModal('modal-otp');
+          showToast('보안 정책에 따라 계정이 잠금되었습니다. 관리자에게 문의하세요.');
+        }, 1800);
+        return;
+      }
+      attemptRow.textContent = `잘못된 코드입니다. 남은 시도: ${left}회`;
+      attemptRow.className = left <= 2 ? 'otp-attempt-row danger' : 'otp-attempt-row warn';
       return;
     }
     closeModal('modal-otp');
     if (otpCallback) otpCallback();
   }
+
+  /* Action description table */
+  const _OTP_DESCS = {
+    '지갑 삭제 확인':     '지갑 삭제는 되돌릴 수 없습니다. 본인 확인을 위해 OTP를 입력해주세요.',
+    '지갑명 수정':        '지갑 이름 변경을 최종 확인합니다. 아래 변경 내용을 확인하고 OTP를 입력해주세요.',
+    '콜드월렛 생성 요청': 'Admin에게 콜드월렛 생성을 요청합니다. OTP로 본인 확인이 필요합니다.',
+    '코인 추가 요청':     '새 코인 주소를 지갑에 추가합니다. OTP로 본인 확인이 필요합니다.',
+    '코인 요청 취소':     '코인 추가 요청을 취소합니다. OTP로 본인 확인이 필요합니다.',
+    '출금 서명':          '출금 트랜잭션에 서명합니다. 서명 후에는 취소할 수 없습니다.',
+    '출금 거절':          '출금 요청을 거절합니다. 사유는 요청자에게 알림으로 전달됩니다.',
+    '출금 신청 OTP 인증': '출금을 신청합니다. 금액 및 주소를 재확인하고 OTP를 입력해주세요.',
+    '계정 초대':          '새 계정을 조직에 초대합니다. 초대 이메일이 즉시 발송됩니다.',
+    '계정 수정 저장':     '계정 정보 변경사항을 저장합니다. OTP로 본인 확인이 필요합니다.',
+    '계정 삭제 확인':     '계정을 영구 삭제합니다. 이 작업은 되돌릴 수 없습니다.',
+    '기본 정보 저장':     '내 프로필 정보를 저장합니다. OTP로 본인 확인이 필요합니다.',
+    '비밀번호 변경':      '비밀번호 변경을 최종 확인합니다. 변경 후 재로그인이 필요합니다.',
+    '출금 정책 저장 OTP': '출금 정책을 저장합니다. 정책 변경은 즉시 적용됩니다.',
+    '정책 수정 OTP':      '출금 정책 수정사항을 적용합니다. OTP로 본인 확인이 필요합니다.',
+    'Whitelist 주소 신청':'새 Whitelist 주소를 등록합니다. 승인 후 출금에 사용 가능합니다.',
+    '주소 비활성화':      'Whitelist 주소를 임시 비활성화합니다. 언제든지 재활성화 가능합니다.',
+    '주소 활성화':        'Whitelist 주소를 다시 활성화합니다.',
+    '주소 삭제':          'Whitelist 주소를 영구 삭제합니다. 이 작업은 되돌릴 수 없습니다.',
+    '조건 삭제 OTP':      '출금 조건을 삭제합니다. OTP로 본인 확인이 필요합니다.',
+  };
 
   /* ════════════════════════════════════
      DEPOSIT QR
@@ -3117,24 +3250,97 @@
   }
 
   /* ════════════════════════════════════
-     WALLET INLINE NAME EDIT
+     WALLET INLINE NAME EDIT (Master only)
   ════════════════════════════════════ */
+  /* Activity log */
+  const _walletActivityLog = [];
+  function _logActivity(msg) {
+    const now = new Date();
+    const ts = now.getFullYear() + '-' +
+      String(now.getMonth()+1).padStart(2,'0') + '-' +
+      String(now.getDate()).padStart(2,'0') + ' ' +
+      String(now.getHours()).padStart(2,'0') + ':' +
+      String(now.getMinutes()).padStart(2,'0');
+    _walletActivityLog.unshift({ ts, msg });
+    _renderActivityLog();
+  }
+  function _renderActivityLog() {
+    const el = document.getElementById('walletActivityLog');
+    if (!el) return;
+    if (!_walletActivityLog.length) {
+      el.innerHTML = '<div style="font-size:12px; color:var(--text-secondary); padding:10px 0;">활동 기록이 없습니다.</div>';
+      return;
+    }
+    el.innerHTML = _walletActivityLog.slice(0,10).map(e =>
+      `<div class="act-log-item"><div class="act-log-dot"></div><div class="act-log-time">${e.ts}</div><div class="act-log-msg">${e.msg}</div></div>`
+    ).join('');
+  }
+
+  /* Validate inline input — returns error string or '' */
+  function _validateWalletName(val, originalName) {
+    if (!val) return '지갑명을 입력해주세요.';
+    if (val.length > 30) return '최대 30자까지 입력 가능합니다.';
+    if (val === originalName) return '기존 지갑명과 동일합니다.';
+    return '';
+  }
+
+  /* Live validation on input */
+  function onNameInput(inputId, hintId, saveBtnId, originalName) {
+    const val = (document.getElementById(inputId).value || '').trim();
+    const errMsg = _validateWalletName(val, originalName);
+    const inp = document.getElementById(inputId);
+    const hint = document.getElementById(hintId);
+    const btn = document.getElementById(saveBtnId);
+    if (errMsg) {
+      inp.classList.add('invalid');
+      hint.textContent = errMsg;
+      hint.classList.add('show');
+      btn.disabled = true;
+    } else {
+      inp.classList.remove('invalid');
+      hint.classList.remove('show');
+      btn.disabled = false;
+    }
+  }
+
   function startEditName(wId) {
-    const lbl = document.getElementById('lbl-' + wId);
+    const originalName = document.getElementById('lbl-' + wId).textContent.trim();
     const inp = document.getElementById('input-' + wId);
-    inp.value = lbl.textContent.trim();
+    inp.value = originalName;
+    inp.dataset.original = originalName;
+    inp.classList.remove('invalid');
+    const hint = document.getElementById('hint-' + wId);
+    if (hint) { hint.classList.remove('show'); }
+    document.getElementById('savebtn-' + wId).disabled = true; // same name initially
     document.getElementById('wrap-' + wId).style.display = 'none';
-    const editEl = document.getElementById('edit-' + wId);
-    editEl.style.display = 'flex';
-    inp.focus();
-    inp.select();
+    document.getElementById('edit-' + wId).style.display = 'flex';
+    setTimeout(() => { inp.focus(); inp.select(); }, 30);
   }
   function saveWalletName(wId) {
-    const val = (document.getElementById('input-' + wId).value || '').trim();
-    if (!val) { showToast('지갑명을 입력해주세요.'); return; }
-    document.getElementById('lbl-' + wId).textContent = val;
+    const inp = document.getElementById('input-' + wId);
+    const val = (inp.value || '').trim();
+    const originalName = inp.dataset.original || '';
+    const errMsg = _validateWalletName(val, originalName);
+    if (errMsg) { showToast(errMsg); return; }
     cancelEditName(wId);
-    showToast('지갑명이 변경되었습니다.');
+    _afterClose(() => openOTPModal({
+      title: '지갑명 수정',
+      desc: _OTP_DESCS['지갑명 수정'],
+      before: originalName,
+      after: val,
+      cb: () => {
+        document.getElementById('lbl-' + wId).textContent = val;
+        // Sync detail page if open
+        if (document.getElementById('detailWalletName').textContent === originalName) {
+          document.getElementById('detailWalletName').textContent = val;
+          document.getElementById('input-detail').value = val;
+          document.getElementById('input-detail').dataset.original = val;
+          _updateDetailBreadcrumb(val);
+        }
+        _logActivity(`지갑명 변경: "${originalName}" → "${val}"`);
+        showToast('지갑명이 변경되었습니다.');
+      }
+    }));
   }
   function cancelEditName(wId) {
     document.getElementById('edit-' + wId).style.display = 'none';
@@ -3142,25 +3348,58 @@
   }
 
   function startEditDetailName() {
-    const lbl = document.getElementById('detailWalletName');
+    const originalName = document.getElementById('detailWalletName').textContent.trim();
     const inp = document.getElementById('input-detail');
-    inp.value = lbl.textContent.trim();
+    inp.value = originalName;
+    inp.dataset.original = originalName;
+    inp.classList.remove('invalid');
+    const hint = document.getElementById('hint-detail');
+    if (hint) { hint.classList.remove('show'); }
+    document.getElementById('savebtn-detail').disabled = true;
     document.getElementById('wrap-detail').style.display = 'none';
     document.getElementById('edit-detail').style.display = 'flex';
-    inp.focus();
-    inp.select();
+    setTimeout(() => { inp.focus(); inp.select(); }, 30);
   }
   function saveDetailName() {
-    const val = (document.getElementById('input-detail').value || '').trim();
-    if (!val) { showToast('지갑명을 입력해주세요.'); return; }
-    document.getElementById('detailWalletName').textContent = val;
-    _currentWalletLabel = val;
+    const inp = document.getElementById('input-detail');
+    const val = (inp.value || '').trim();
+    const originalName = inp.dataset.original || '';
+    const errMsg = _validateWalletName(val, originalName);
+    if (errMsg) { showToast(errMsg); return; }
     cancelDetailName();
-    showToast('지갑명이 변경되었습니다.');
+    _afterClose(() => openOTPModal({
+      title: '지갑명 수정',
+      desc: _OTP_DESCS['지갑명 수정'],
+      before: originalName,
+      after: val,
+      cb: () => {
+        document.getElementById('detailWalletName').textContent = val;
+        document.getElementById('input-detail').dataset.original = val;
+        // Sync card label if visible
+        ['wallet1','wallet2'].forEach(wId => {
+          const lbl = document.getElementById('lbl-' + wId);
+          if (lbl && lbl.textContent.trim() === originalName) {
+            lbl.textContent = val;
+            const cinp = document.getElementById('input-' + wId);
+            if (cinp) cinp.dataset.original = val;
+          }
+        });
+        _currentWalletLabel = val;
+        _updateDetailBreadcrumb(val);
+        _logActivity(`지갑명 변경: "${originalName}" → "${val}"`);
+        showToast('지갑명이 변경되었습니다.');
+      }
+    }));
   }
   function cancelDetailName() {
     document.getElementById('edit-detail').style.display = 'none';
     document.getElementById('wrap-detail').style.display = '';
+  }
+  function _updateDetailBreadcrumb(name) {
+    const bc = document.getElementById('headerBreadcrumb');
+    if (bc && bc.innerHTML.includes('Wallet')) {
+      bc.innerHTML = '<span class="breadcrumb"><span class="bc-link" onclick="showPage(\'wallet\',document.getElementById(\'nav-wallet\'))">Wallet</span> › <span>' + name + '</span></span>';
+    }
   }
 
   /* ════════════════════════════════════
@@ -3517,15 +3756,26 @@
      OTP INPUT HELPERS
   ════════════════════════════════════ */
   function otpMove(el, idx, wrapId) {
-    el.value = el.value.replace(/\D/g,'');
+    el.value = el.value.replace(/\D/g,'').slice(0,1);
     const boxes = document.getElementById(wrapId).querySelectorAll('.otp-box');
     if (el.value && idx < 5) boxes[idx + 1].focus();
     boxes.forEach(b => b.classList.remove('err'));
+    document.getElementById('otpModalErr') && (document.getElementById('otpModalErr').style.display = 'none');
   }
   function otpBack(e, el, idx, wrapId) {
     if (e.key === 'Backspace' && !el.value && idx > 0) {
       document.getElementById(wrapId).querySelectorAll('.otp-box')[idx - 1].focus();
     }
+  }
+  function otpPaste(e, wrapId) {
+    e.preventDefault();
+    const digits = (e.clipboardData.getData('text') || '').replace(/\D/g,'').slice(0,6);
+    if (!digits) return;
+    const boxes = document.getElementById(wrapId).querySelectorAll('.otp-box');
+    digits.split('').forEach((d, i) => { if (boxes[i]) boxes[i].value = d; });
+    const next = Math.min(digits.length, 5);
+    boxes[next].focus();
+    boxes.forEach(b => b.classList.remove('err'));
   }
 
   /* ════════════════════════════════════
