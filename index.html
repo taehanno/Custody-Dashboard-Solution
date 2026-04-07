@@ -343,6 +343,99 @@
       .history-stats { grid-template-columns: repeat(2,1fr); }
       .wallet-grid { grid-template-columns: 1fr; }
     }
+
+    /* ══════════════════════════
+       WITHDRAWAL REQUEST STYLES
+    ══════════════════════════ */
+    .wd-so { width: 640px; }
+    .step-label {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    }
+    .step-num {
+      width: 24px; height: 24px; border-radius: 50%; background: var(--primary);
+      color: #fff; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-title { font-size: 14px; font-weight: 700; }
+    .step-section { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+    .radio-option {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px; border-radius: 8px; cursor: pointer;
+      border: 1.5px solid var(--border); margin-bottom: 8px; transition: border-color 0.15s;
+    }
+    .radio-option:hover { border-color: var(--primary); }
+    .radio-option.selected { border-color: var(--primary); background: #EFF6FF; }
+    .radio-option input[type=radio] { margin-top: 2px; accent-color: var(--primary); flex-shrink: 0; }
+    .radio-option-label { font-size: 13px; font-weight: 600; }
+    .radio-option-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    /* Whitelist list inside step */
+    .wl-list { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 10px; }
+    .wl-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; border-bottom: 1px solid #F1F5F9; cursor: pointer;
+      transition: background 0.12s;
+    }
+    .wl-item:last-child { border-bottom: none; }
+    .wl-item:hover { background: #F8FAFC; }
+    .wl-item.selected { background: #EFF6FF; }
+    .wl-item-name { font-size: 13px; font-weight: 600; }
+    .wl-item-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .wl-item-right { text-align: right; }
+    .wl-item-coin { font-size: 12px; font-weight: 600; color: var(--primary); }
+    .wl-item-addr { font-size: 11px; color: var(--text-secondary); font-family: monospace; }
+    /* VASP lookup */
+    .vasp-loading {
+      display: flex; align-items: center; gap: 8px; padding: 12px 14px;
+      background: #F8FAFC; border-radius: 8px; font-size: 13px; color: var(--text-secondary);
+      margin-top: 10px;
+    }
+    .spin { display: inline-block; animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    /* VASP result boxes */
+    .vasp-result { border-radius: 10px; padding: 14px; margin-top: 10px; }
+    .vasp-success { background: #ECFDF5; border: 1px solid #6EE7B7; }
+    .vasp-blocked { background: #FEF2F2; border: 1px solid #FECACA; }
+    .vasp-internal { background: #F0FDF4; border: 1px solid #86EFAC; }
+    .vasp-whitelist { background: #EFF6FF; border: 1px solid #BFDBFE; }
+    .vasp-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .vasp-badge { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 4px; }
+    .vasp-badge-success { background: #ECFDF5; color: #065F46; }
+    .vasp-badge-blocked { background: #FEF2F2; color: #991B1B; }
+    .vasp-institution {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.7); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
+    }
+    .vasp-inst-icon { font-size: 20px; }
+    .vasp-inst-name { font-size: 14px; font-weight: 700; }
+    .vasp-inst-code { font-size: 11px; color: var(--text-secondary); font-family: monospace; margin-top: 1px; }
+    .blocked-options { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .blocked-option {
+      display: flex; align-items: flex-start; gap: 10px; padding: 12px;
+      background: rgba(255,255,255,0.6); border-radius: 8px; border: 1px solid #FECACA;
+    }
+    .blocked-option-icon { font-size: 16px; margin-top: 1px; }
+    .blocked-option-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .blocked-option-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+    /* Amount input */
+    .amount-wrap { position: relative; }
+    .amount-wrap input { padding-right: 72px; font-size: 16px; font-weight: 600; }
+    .amount-max {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: var(--primary); color: #fff; border: none; border-radius: 5px;
+      padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .amount-usd { font-size: 12px; color: var(--text-secondary); margin-top: 5px; text-align: right; }
+    /* Beneficiary form */
+    .beneficiary-form { border-top: 1px solid rgba(0,0,0,0.06); padding-top: 12px; margin-top: 12px; }
+    /* Confirm popup summary */
+    .confirm-summary-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-size: 13px; }
+    .confirm-summary-row:last-child { border-bottom: none; }
+    .confirm-label { color: var(--text-secondary); font-size: 12px; }
+    /* Submit btn state */
+    .btn-submit-wd { width: 100%; height: 48px; font-size: 15px; font-weight: 700; }
+    .btn-submit-wd:disabled { background: #CBD5E1; cursor: not-allowed; opacity: 1; }
+
+    @media (max-width: 767px) { .wd-so { width: 100%; } }
   </style>
 </head>
 <body>
@@ -765,6 +858,273 @@
 </div>
 
 <!-- ══════════════════════════════════════
+     SLIDE-OVER: Withdrawal Request (Section 6)
+══════════════════════════════════════ -->
+<div class="slideover wd-so" id="so-withdrawal">
+  <div class="so-header">
+    <div>
+      <div class="so-title">&#8599; 출금 신청 / Withdrawal Request</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="wd-wallet-label">지갑: BTC 보관 지갑 #1 &nbsp;|&nbsp; 잔액: 0.50 BTC ($31,250)</div>
+    </div>
+    <button class="modal-close" onclick="closeSO('so-withdrawal')">&#10005;</button>
+  </div>
+  <div class="so-body">
+
+    <!-- ── STEP 1: Recipient Address ── -->
+    <div class="step-label">
+      <div class="step-num">1</div>
+      <div class="step-title">수신 주소 / Recipient Address</div>
+    </div>
+    <div class="step-section">
+      <!-- Address type toggle -->
+      <div class="radio-option selected" id="opt-whitelist" onclick="selectAddrType('whitelist')">
+        <input type="radio" name="addrType" value="whitelist" checked />
+        <div>
+          <div class="radio-option-label">&#9989; Whitelist 주소 선택</div>
+          <div class="radio-option-desc">사전 등록·승인된 주소에서 선택합니다. Travel Rule 입력 불필요.</div>
+        </div>
+      </div>
+      <div class="radio-option" id="opt-direct" onclick="selectAddrType('direct')">
+        <input type="radio" name="addrType" value="direct" />
+        <div>
+          <div class="radio-option-label">&#9998; 직접 주소 입력 (Travel Rule 적용)</div>
+          <div class="radio-option-desc">CODE Protocol로 수신 VASP를 자동 조회합니다.</div>
+        </div>
+      </div>
+
+      <!-- Whitelist list (Case D) -->
+      <div id="addr-whitelist-panel">
+        <div class="wl-list">
+          <div class="wl-item selected" id="wl-0" onclick="selectWLItem(0)">
+            <div>
+              <div class="wl-item-name">거래소 출금주소</div>
+              <div class="wl-item-meta">Manual Transfer &#10003;</div>
+            </div>
+            <div class="wl-item-right">
+              <div class="wl-item-coin">USDT / ERC-20</div>
+              <div class="wl-item-addr">0x4d4b...C3E69</div>
+            </div>
+          </div>
+          <div class="wl-item" id="wl-1" onclick="selectWLItem(1)">
+            <div>
+              <div class="wl-item-name">법인 보관지갑 A</div>
+              <div class="wl-item-meta">Manual Transfer &#10003;</div>
+            </div>
+            <div class="wl-item-right">
+              <div class="wl-item-coin">BTC / Bitcoin</div>
+              <div class="wl-item-addr">bc1qar...xy9</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="closeSO('so-withdrawal'); openSO('so-add-address')">+ Whitelist 추가 (Master)</button>
+      </div>
+
+      <!-- Direct input panel -->
+      <div id="addr-direct-panel" style="display:none;">
+        <div class="form-group" style="margin-bottom:8px; margin-top:4px;">
+          <label class="form-label">수신 주소 입력 <span class="req">*</span></label>
+          <input type="text" class="form-control" id="wd-addr-input" placeholder="수신 주소를 입력하세요"
+            oninput="onAddrInput(this.value)" autocomplete="off" />
+          <div class="form-hint">
+            Demo: <code>bithumb123</code> → VASP 확인(A) &nbsp;|&nbsp;
+            <code>0x4d4bInternal</code> → 내부지갑(C) &nbsp;|&nbsp;
+            기타 → VASP 미확인(B)
+          </div>
+        </div>
+        <!-- VASP Lookup result area -->
+        <div id="vasp-lookup-area" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Coin / Amount ── -->
+    <div class="step-label">
+      <div class="step-num">2</div>
+      <div class="step-title">코인 / 수량</div>
+    </div>
+    <div class="step-section">
+      <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:140px;">
+          <label class="form-label">코인 <span class="req">*</span></label>
+          <select class="form-control" id="wd-coin" onchange="updateWDCoin()">
+            <option value="BTC">BTC — Bitcoin</option>
+            <option value="ETH">ETH — Ethereum</option>
+            <option value="USDT-ERC">USDT — ERC-20</option>
+            <option value="USDT-TRC">USDT — TRC-20</option>
+          </select>
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label class="form-label">네트워크</label>
+          <div class="form-control" style="background:#F8FAFC; color:var(--text-secondary); cursor:default;" id="wd-network">Bitcoin Mainnet</div>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">수량 <span class="req">*</span></label>
+        <div class="amount-wrap">
+          <input type="number" class="form-control" id="wd-amount" placeholder="0.00000000"
+            oninput="updateUSD()" min="0" step="0.00000001" />
+          <button class="amount-max" onclick="setMaxAmount()">MAX</button>
+        </div>
+        <div class="amount-usd" id="wd-usd">≈ $0.00</div>
+        <div class="form-hint" style="margin-top:4px;">가용 잔액: <strong>0.50000000 BTC</strong> &nbsp;|&nbsp; 네트워크 수수료: ~0.00005 BTC</div>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Travel Rule (dynamic) ── -->
+    <div class="step-label">
+      <div class="step-num">3</div>
+      <div class="step-title">Travel Rule 정보 <span style="font-size:11px; font-weight:400; color:var(--text-secondary);">CODE Protocol</span></div>
+    </div>
+    <div class="step-section" id="step3-content">
+
+      <!-- Case D (default): Whitelist selected -->
+      <div id="case-D">
+        <div class="vasp-result vasp-whitelist">
+          <div class="vasp-header">
+            <span style="font-size:16px;">&#9989;</span>
+            <span class="vasp-badge vasp-badge-success">Whitelist 사전 등록 주소</span>
+          </div>
+          <div style="font-size:13px; color:#1E40AF; font-weight:500;">Travel Rule 정보 입력이 필요하지 않습니다.</div>
+          <div style="font-size:12px; color:#3B82F6; margin-top:4px;">사전 검증 완료된 주소입니다.</div>
+        </div>
+      </div>
+
+      <!-- Case A: VASP confirmed (hidden by default) -->
+      <div id="case-A" style="display:none;">
+        <div class="vasp-result vasp-success">
+          <div class="vasp-header">
+            <span style="font-size:16px;">&#9989;</span>
+            <span class="vasp-badge vasp-badge-success">수신 VASP 확인됨</span>
+            <span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">CODE Protocol 연동 ●</span>
+          </div>
+          <div class="vasp-institution">
+            <span class="vasp-inst-icon">&#127974;</span>
+            <div>
+              <div class="vasp-inst-name" id="vasp-name">빗썸 (Bithumb)</div>
+              <div class="vasp-inst-code" id="vasp-code">KR-BTH</div>
+            </div>
+          </div>
+          <div class="beneficiary-form">
+            <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">수신자 정보 (Beneficiary Info)</div>
+            <div class="form-group">
+              <label class="form-label">성명 / Name <span class="req">*</span></label>
+              <input type="text" class="form-control" id="wd-beneficiary-name" placeholder="수신 거래소에 등록된 실명" />
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">생년월일 / Date of Birth <span class="req">*</span></label>
+              <div style="display:flex; gap:6px;">
+                <input type="text" class="form-control" placeholder="YYYY" maxlength="4" style="width:80px;" id="wd-dob-y" />
+                <input type="text" class="form-control" placeholder="MM" maxlength="2" style="width:60px;" id="wd-dob-m" />
+                <input type="text" class="form-control" placeholder="DD" maxlength="2" style="width:60px;" id="wd-dob-d" />
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px; font-size:11px; color:#065F46; background:rgba(16,185,129,0.08); border-radius:6px; padding:8px 10px;">
+            &#8505; 입력하신 정보는 CODE Protocol을 통해 <strong id="vasp-name-hint">빗썸</strong>으로 암호화 전송됩니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- Case B: VASP unconfirmed (hidden by default) -->
+      <div id="case-B" style="display:none;">
+        <div class="vasp-result vasp-blocked">
+          <div class="vasp-header">
+            <span style="font-size:16px;">&#9888;&#65039;</span>
+            <span class="vasp-badge vasp-badge-blocked">수신 VASP를 확인할 수 없습니다</span>
+          </div>
+          <div style="font-size:13px; color:#991B1B; font-weight:500; margin-bottom:12px;">
+            이 주소는 등록된 VASP 주소가 아닙니다. 아래 중 하나를 선택해주세요.
+          </div>
+          <div class="blocked-options">
+            <div class="blocked-option">
+              <div class="blocked-option-icon">&#128220;</div>
+              <div>
+                <div class="blocked-option-title">Whitelist에 주소 등록 후 출금</div>
+                <div class="blocked-option-desc">신청 후 Admin 승인 완료 시 출금 가능합니다.</div>
+                <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="closeSO('so-withdrawal'); openSO('so-add-address')">Whitelist 신청하기 (Master)</button>
+              </div>
+            </div>
+            <div class="blocked-option">
+              <div class="blocked-option-icon">&#128222;</div>
+              <div>
+                <div class="blocked-option-title">담당자에게 VASP 등록 요청</div>
+                <div class="blocked-option-desc">해당 거래소/VASP 정보를 담당자에게 전달하여 Admin에서 VASP를 먼저 등록해주세요.</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px; padding:10px 12px; background:rgba(239,68,68,0.06); border-radius:8px; font-size:12px; font-weight:600; color:var(--danger); display:flex; align-items:center; gap:6px;">
+            <span>&#10005;</span> 이 주소로는 현재 출금이 불가합니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- Case C: Internal wallet (hidden by default) -->
+      <div id="case-C" style="display:none;">
+        <div class="vasp-result vasp-internal">
+          <div class="vasp-header">
+            <span style="font-size:16px;">&#9989;</span>
+            <span class="vasp-badge vasp-badge-success">내부 지갑 이전 확인됨</span>
+          </div>
+          <div class="vasp-institution">
+            <span class="vasp-inst-icon">&#8644;</span>
+            <div>
+              <div class="vasp-inst-name">인피닛블록 내부 지갑</div>
+              <div class="vasp-inst-code">ETH 보관 지갑 (알파투자운용(주))</div>
+            </div>
+          </div>
+          <div style="font-size:13px; color:#065F46; font-weight:500;">Travel Rule 정보 입력이 필요하지 않습니다.</div>
+          <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">내부 이전 건으로 자동 처리됩니다.</div>
+        </div>
+      </div>
+
+    </div><!-- /step3-content -->
+
+    <!-- ── STEP 4: Memo ── -->
+    <div class="step-label">
+      <div class="step-num">4</div>
+      <div class="step-title">메모 <span style="font-size:12px; font-weight:400; color:var(--text-secondary);">(선택)</span></div>
+    </div>
+    <div class="step-section">
+      <textarea class="form-control" rows="3" placeholder="최대 100자. 내부 메모용으로만 사용됩니다." maxlength="100" id="wd-memo"
+        oninput="this.nextElementSibling.textContent=this.value.length+' / 100'" style="resize:none;"></textarea>
+      <div class="char-count">0 / 100</div>
+    </div>
+
+  </div><!-- /so-body -->
+  <div class="so-footer">
+    <button class="btn btn-primary btn-submit-wd" id="wd-submit-btn" onclick="openWithdrawalConfirm()">
+      출금 신청 Submit Withdrawal
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Withdrawal Final Confirm
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wd-confirm" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title">&#9888; 출금 신청 최종 확인</span>
+    <button class="modal-close" onclick="closeModal('modal-wd-confirm')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="alert alert-warning" style="margin-bottom:14px; font-size:12px;">
+      &#9888; 제출 후 취소는 서명자 전원 거절 또는 Admin만 가능합니다.
+    </div>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px;">
+      <div class="confirm-summary-row"><span class="confirm-label">지갑</span><span style="font-weight:600;" id="cf-wallet">BTC 보관 지갑 #1</span></div>
+      <div class="confirm-summary-row"><span class="confirm-label">수신 주소</span><span style="font-family:monospace; font-size:12px;" id="cf-addr">bc1qar...xy9</span></div>
+      <div class="confirm-summary-row"><span class="confirm-label">코인 / 네트워크</span><span id="cf-coin">BTC / Bitcoin Mainnet</span></div>
+      <div class="confirm-summary-row"><span class="confirm-label">수량</span><span style="font-weight:700;" id="cf-amount">0.10 BTC <span style="color:var(--text-secondary); font-size:12px; font-weight:400;">≈ $6,250</span></span></div>
+      <div class="confirm-summary-row" id="cf-travel-row"><span class="confirm-label">Travel Rule</span><span id="cf-travel">사전 검증 완료</span></div>
+      <div class="confirm-summary-row" style="border-bottom:none;"><span class="confirm-label">서명 필요</span><span><strong>2 of 3</strong> 서명 수집 후 Admin 처리</span></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wd-confirm')">취소</button>
+    <button class="btn btn-primary" onclick="submitWithdrawal()">확인 및 신청 &#8599;</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
      TOAST
 ══════════════════════════════════════ -->
 <div id="toast" style="position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1E293B; color:#fff; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:500; z-index:900; opacity:0; transition:all 0.3s; white-space:nowrap; box-shadow:0 8px 20px rgba(0,0,0,0.2);"></div>
@@ -948,7 +1308,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
               <div style="display:flex; gap:6px;">
                 <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금</button>
-                <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); showPage('workflows', document.getElementById('nav-workflows'))">&#8599; 출금</button>
+                <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); openWithdrawal('BTC 보관 지갑 #1')">&#8599; 출금</button>
               </div>
               <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:rgba(239,68,68,0.3);" onclick="event.stopPropagation(); openModal('modal-delete-wallet')">삭제</button>
             </div>
@@ -968,7 +1328,7 @@
             <div class="wallet-asset-sub">0.00000000 ETH</div>
             <div style="display:flex; gap:6px; margin-top:4px;">
               <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openDepositQR('ETH','Ethereum Mainnet','0x4d4bC4a1...C3E69F21')">&#8600; 입금</button>
-              <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); showPage('workflows', document.getElementById('nav-workflows'))">&#8599; 출금</button>
+              <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); openWithdrawal('ETH 보관 지갑 #1')">&#8599; 출금</button>
             </div>
           </div>
           <!-- Wallet Card 3: Pending -->
@@ -1029,7 +1389,7 @@
               <div class="wallet-info-row" style="border-bottom:none;"><span class="wallet-info-label">요청자</span><span>김철수</span></div>
               <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
                 <button class="btn btn-success btn-full" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금 주소</button>
-                <button class="btn btn-warning btn-full" onclick="openSO('so-workflow-sign')">&#8599; 출금 신청</button>
+                <button class="btn btn-warning btn-full" onclick="openWithdrawal('BTC 보관 지갑 #1')">&#8599; 출금 신청</button>
                 <button class="btn btn-outline btn-full" onclick="openSO('so-add-coin')">+ 코인 추가 <span style="font-size:10px; color:var(--text-secondary);">(Master)</span></button>
               </div>
             </div>
@@ -1059,7 +1419,7 @@
                         <td style="text-align:right;"><div style="font-weight:600;">0.00000000 BTC</div><div style="font-size:11px; color:var(--text-secondary);">≈ $0.00</div></td>
                         <td><div class="op-icons">
                           <button class="op-btn" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')" title="입금">&#8600;</button>
-                          <button class="op-btn" onclick="openSO('so-workflow-sign')" title="출금">&#8599;</button>
+                          <button class="op-btn" onclick="openWithdrawal('BTC 보관 지갑 #1')" title="출금">&#8599;</button>
                         </div></td>
                       </tr>
                       <tr>
@@ -1069,7 +1429,7 @@
                         <td style="text-align:right;"><div style="font-weight:600;">0.00 USDT</div><div style="font-size:11px; color:var(--text-secondary);">≈ $0.00</div></td>
                         <td><div class="op-icons">
                           <button class="op-btn" onclick="openDepositQR('USDT','Ethereum (ERC-20)','0x4d4bC4a1...C3E69F21')" title="입금">&#8600;</button>
-                          <button class="op-btn" onclick="openSO('so-workflow-sign')" title="출금">&#8599;</button>
+                          <button class="op-btn" onclick="openWithdrawal('BTC 보관 지갑 #1')" title="출금">&#8599;</button>
                         </div></td>
                       </tr>
                     </tbody>
@@ -1785,6 +2145,170 @@
       t.style.opacity = '0';
       t.style.transform = 'translateX(-50%) translateY(80px)';
     }, 3000);
+  }
+
+  /* ════════════════════════════════════
+     WITHDRAWAL REQUEST
+  ════════════════════════════════════ */
+  const coinNetworkMap = {
+    'BTC':      'Bitcoin Mainnet',
+    'ETH':      'Ethereum Mainnet',
+    'USDT-ERC': 'Ethereum (ERC-20)',
+    'USDT-TRC': 'TRON (TRC-20)',
+  };
+  const coinUSDPrice = { 'BTC': 62500, 'ETH': 3200, 'USDT-ERC': 1, 'USDT-TRC': 1 };
+  const wdMaxBalance = { 'BTC': 0.5, 'ETH': 4.2, 'USDT-ERC': 12500, 'USDT-TRC': 8000 };
+
+  let _wdWalletName = '';
+  let _wdCurrentCase = 'D'; // A B C D
+  let _vasp_timer = null;
+
+  function openWithdrawal(walletName, balance) {
+    _wdWalletName = walletName || 'BTC 보관 지갑 #1';
+    document.getElementById('wd-wallet-label').textContent = '지갑: ' + _wdWalletName;
+    // reset form
+    document.getElementById('wd-coin').value = 'BTC';
+    document.getElementById('wd-amount').value = '';
+    document.getElementById('wd-usd').textContent = '≈ $0.00';
+    document.getElementById('wd-memo').value = '';
+    document.getElementById('wd-addr-input').value = '';
+    document.getElementById('vasp-lookup-area').style.display = 'none';
+    updateWDCoin();
+    selectAddrType('whitelist');
+    document.getElementById('wd-submit-btn').disabled = false;
+    openSO('so-withdrawal');
+  }
+
+  function selectAddrType(type) {
+    const wlPanel  = document.getElementById('addr-whitelist-panel');
+    const dirPanel = document.getElementById('addr-direct-panel');
+    const optWL    = document.getElementById('opt-whitelist');
+    const optDir   = document.getElementById('opt-direct');
+
+    if (type === 'whitelist') {
+      optWL.classList.add('selected');
+      optDir.classList.remove('selected');
+      wlPanel.style.display  = 'block';
+      dirPanel.style.display = 'none';
+      showVASPCase('D');
+    } else {
+      optDir.classList.add('selected');
+      optWL.classList.remove('selected');
+      dirPanel.style.display = 'block';
+      wlPanel.style.display  = 'none';
+      document.getElementById('vasp-lookup-area').style.display = 'none';
+      // reset to neutral — no case shown until address entered
+      ['case-A','case-B','case-C','case-D'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById('wd-submit-btn').disabled = true;
+    }
+  }
+
+  function selectWLItem(idx) {
+    document.querySelectorAll('.wl-item').forEach((el, i) => {
+      el.classList.toggle('selected', i === idx);
+    });
+    document.getElementById('wd-submit-btn').disabled = false;
+  }
+
+  let _vasp_debounce = null;
+  function onAddrInput(value) {
+    clearTimeout(_vasp_debounce);
+    const area = document.getElementById('vasp-lookup-area');
+    if (!value || value.trim().length < 5) {
+      area.style.display = 'none';
+      ['case-A','case-B','case-C','case-D'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById('wd-submit-btn').disabled = true;
+      return;
+    }
+    area.style.display = 'block';
+    area.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);"><span class="spin" style="display:inline-block;width:16px;height:16px;border:2px solid #CBD5E1;border-top-color:var(--primary);border-radius:50%;"></span> VASP 조회 중...</div>';
+    ['case-A','case-B','case-C','case-D'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.getElementById('wd-submit-btn').disabled = true;
+
+    _vasp_debounce = setTimeout(() => {
+      area.style.display = 'none';
+      const v = value.trim().toLowerCase();
+      if (v.includes('bithumb') || v.includes('bth') || v.includes('빗썸')) {
+        showVASPCase('A');
+      } else if (v.includes('internal') || v.includes('0x4d4b') || v.includes('내부')) {
+        showVASPCase('C');
+      } else {
+        showVASPCase('B');
+      }
+    }, 1200);
+  }
+
+  function showVASPCase(caseId) {
+    _wdCurrentCase = caseId;
+    ['case-A','case-B','case-C','case-D'].forEach(id => {
+      document.getElementById(id).style.display = (id === 'case-' + caseId) ? 'block' : 'none';
+    });
+    // B = blocked, cannot submit
+    document.getElementById('wd-submit-btn').disabled = (caseId === 'B');
+  }
+
+  function updateWDCoin() {
+    const coin = document.getElementById('wd-coin').value;
+    document.getElementById('wd-network').textContent = coinNetworkMap[coin] || coin;
+    const max = wdMaxBalance[coin] || 0;
+    document.querySelector('.form-hint strong') && (document.querySelector('.form-hint strong').textContent = max.toFixed(8) + ' ' + coin.split('-')[0]);
+    updateUSD();
+  }
+
+  function updateUSD() {
+    const coin   = document.getElementById('wd-coin').value;
+    const amount = parseFloat(document.getElementById('wd-amount').value) || 0;
+    const price  = coinUSDPrice[coin] || 0;
+    const usd    = (amount * price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('wd-usd').textContent = '≈ $' + usd;
+  }
+
+  function setMaxAmount() {
+    const coin = document.getElementById('wd-coin').value;
+    document.getElementById('wd-amount').value = wdMaxBalance[coin] || 0;
+    updateUSD();
+  }
+
+  function openWithdrawalConfirm() {
+    const coin    = document.getElementById('wd-coin').value;
+    const network = coinNetworkMap[coin] || coin;
+    const amount  = document.getElementById('wd-amount').value || '0';
+    const usdText = document.getElementById('wd-usd').textContent;
+    const symbol  = coin.split('-')[0];
+
+    // Get address
+    let addr = '—';
+    if (_wdCurrentCase === 'D') {
+      const sel = document.querySelector('.wl-item.selected');
+      addr = sel ? sel.querySelector('.wl-item-addr').textContent : '(선택 안 됨)';
+    } else {
+      addr = document.getElementById('wd-addr-input').value || '—';
+    }
+
+    // Travel rule label
+    const travelLabels = { A: 'CODE Protocol 전송 예정', B: '출금 불가 (미등록 VASP)', C: '내부 이전 — 자동처리', D: '사전 검증 완료 (Whitelist)' };
+
+    document.getElementById('cf-wallet').textContent  = _wdWalletName;
+    document.getElementById('cf-addr').textContent    = addr.length > 30 ? addr.slice(0,14)+'...'+addr.slice(-8) : addr;
+    document.getElementById('cf-coin').textContent    = symbol + ' / ' + network;
+    document.getElementById('cf-amount').innerHTML    = amount + ' ' + symbol + ' <span style="color:var(--text-secondary);font-size:12px;font-weight:400;">' + usdText + '</span>';
+    document.getElementById('cf-travel').textContent  = travelLabels[_wdCurrentCase] || '—';
+
+    openModal('modal-wd-confirm');
+  }
+
+  function submitWithdrawal() {
+    closeModal('modal-wd-confirm');
+    openOTPModal('출금 신청 OTP 인증', function() {
+      closeSO('so-withdrawal');
+      showToast('출금 신청이 완료되었습니다. 서명자에게 알림이 발송됩니다.');
+    });
   }
 
   /* ════════════════════════════════════
