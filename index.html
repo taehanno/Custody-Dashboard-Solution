@@ -375,10 +375,7 @@
     <div class="alert alert-warning">
       &#9888; 출금 코인/네트워크 일치 시에만 사용 가능합니다.
     </div>
-    <div class="tabs" style="margin-bottom:20px;">
-      <div class="tab active" onclick="switchSlideTab(this, 'byCurrency')">By Currency</div>
-      <div class="tab" onclick="switchSlideTab(this, 'byNetwork')">By Network</div>
-    </div>
+    <div style="margin-bottom:20px;"></div>
     <div id="byCurrency">
       <div class="form-group">
         <label class="form-label">Coin <span class="req">*</span></label>
@@ -400,28 +397,6 @@
         <label class="form-label">Name</label>
         <input type="text" class="form-control" placeholder="자동 생성됩니다" id="nameInput" oninput="updateCharCount(this)" maxlength="50" />
         <div class="char-count"><span id="charCount">0</span> / 50</div>
-      </div>
-      <button class="btn btn-primary btn-full btn-pill" style="height:44px; font-size:14px; margin-top:8px;">Save</button>
-    </div>
-    <div id="byNetwork" style="display:none;">
-      <div class="form-group">
-        <label class="form-label">Network <span class="req">*</span></label>
-        <select class="form-control">
-          <option value="">Select network &rsaquo;</option>
-          <option>Ethereum (ERC-20)</option>
-          <option>TRON (TRC-20)</option>
-          <option>BNB Smart Chain</option>
-          <option>Bitcoin</option>
-          <option>Filecoin EVM</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Address <span class="req">*</span></label>
-        <input type="text" class="form-control" placeholder="Enter address" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Name</label>
-        <input type="text" class="form-control" placeholder="자동 생성됩니다" maxlength="50" />
       </div>
       <button class="btn btn-primary btn-full btn-pill" style="height:44px; font-size:14px; margin-top:8px;">Save</button>
     </div>
@@ -1003,7 +978,6 @@
     container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('byCurrency').style.display = tabId === 'byCurrency' ? 'block' : 'none';
-    document.getElementById('byNetwork').style.display = tabId === 'byNetwork' ? 'block' : 'none';
   }
 
   /* ════════════════════════════════════
