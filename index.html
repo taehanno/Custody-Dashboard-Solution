@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infiniteblock Custody — Customer Portal</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-bg: #1A2B4A;
+      --sidebar-active: #2563EB;
+      --primary: #3B82F6;
+      --main-bg: #F4F6FA;
+      --card-bg: #FFFFFF;
+      --text-primary: #1E293B;
+      --text-secondary: #64748B;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --deposit-btn: #22C55E;
+      --withdraw-btn: #F97316;
+      --border: #E2E8F0;
+    }
+    html, body { height: 100%; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; color: var(--text-primary); background: var(--main-bg); }
+
+    /* ── Layout ── */
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 240px; min-width: 240px; background: var(--sidebar-bg);
+      display: flex; flex-direction: column; height: 100vh;
+      overflow-y: auto; overflow-x: hidden; z-index: 100;
+      transition: transform 0.25s ease;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+    /* Logo */
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .logo-icon {
+      width: 32px; height: 32px; background: var(--primary); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700;
+    }
+    .logo-text { color: #fff; font-size: 15px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.2; }
+    .logo-text span { display: block; font-size: 10px; font-weight: 400; color: rgba(255,255,255,0.5); letter-spacing: 0.5px; }
+
+    /* Account area */
+    .sidebar-account {
+      padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .account-row { display: flex; align-items: center; gap: 10px; }
+    .account-avatar {
+      width: 36px; height: 36px; background: var(--primary); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0;
+    }
+    .account-info { flex: 1; min-width: 0; }
+    .account-name { color: #fff; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .account-balance { color: rgba(255,255,255,0.45); font-size: 11px; margin-top: 2px; }
+
+    /* Nav */
+    .sidebar-nav { flex: 1; padding: 8px 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; color: rgba(255,255,255,0.65); font-size: 13px;
+      cursor: pointer; border-radius: 8px; margin: 2px 8px;
+      transition: background 0.15s, color 0.15s;
+      user-select: none; position: relative;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .nav-item.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
+    .nav-item .nav-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+    .nav-item .nav-label { flex: 1; }
+    .nav-item .nav-arrow { font-size: 10px; color: rgba(255,255,255,0.4); transition: transform 0.2s; }
+    .nav-item.expanded .nav-arrow { transform: rotate(90deg); }
+    .nav-sub { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
+    .nav-sub.open { max-height: 200px; }
+    .nav-sub-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px 8px 46px; color: rgba(255,255,255,0.55); font-size: 12.5px;
+      cursor: pointer; border-radius: 8px; margin: 1px 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-sub-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .nav-sub-item.active { color: #fff; font-weight: 600; }
+    .nav-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 6px 16px; }
+
+    /* Admin button */
+    .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .btn-admin {
+      width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+      color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 500;
+      cursor: pointer; text-align: center; transition: background 0.15s, color 0.15s;
+      font-family: inherit;
+    }
+    .btn-admin:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+    /* ── Main ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .main-header {
+      height: 56px; background: var(--card-bg); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 24px; gap: 12px; flex-shrink: 0;
+    }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+    .hamburger span { display: block; width: 20px; height: 2px; background: var(--text-primary); margin: 4px 0; border-radius: 1px; transition: 0.2s; }
+    .main-header-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .main-content { flex: 1; overflow-y: auto; padding: 24px; }
+
+    /* ── Page visibility ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card-bg); border-radius: 12px;
+      border: 1px solid var(--border); padding: 20px;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; transition: opacity 0.15s, background 0.15s;
+      font-family: inherit; white-space: nowrap;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--deposit-btn); color: #fff; }
+    .btn-warning { background: var(--withdraw-btn); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+    .btn-pill { border-radius: 24px; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+    .btn-full { width: 100%; }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      border-radius: 4px; padding: 2px 10px; font-size: 12px; font-weight: 500;
+    }
+    .badge-success { background: #ECFDF5; color: #10B981; }
+    .badge-warning { background: #FFFBEB; color: #F59E0B; }
+    .badge-danger { background: #FEF2F2; color: #EF4444; }
+    .badge-info { background: #EFF6FF; color: #3B82F6; }
+    .badge-purple { background: #F5F3FF; color: #8B5CF6; }
+    .badge-orange { background: #FFF7ED; color: #F97316; }
+
+    /* ── Status dot ── */
+    .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+    .dot-success { background: var(--success); }
+    .dot-info { background: var(--primary); }
+    .dot-warning { background: var(--warning); }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; border-bottom: 2px solid var(--border); gap: 0; }
+    .tab {
+      padding: 10px 18px; font-size: 13px; font-weight: 500; color: var(--text-secondary);
+      cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600;
+      color: var(--text-secondary); border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 14px 12px; font-size: 13px; color: var(--text-primary);
+      border-bottom: 1px solid #F1F5F9; vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #F8FAFC; }
+
+    /* ── Forms ── */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+    .form-label .req { color: var(--danger); margin-left: 2px; }
+    .form-control {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 13px; color: var(--text-primary);
+      font-family: inherit; outline: none; transition: border-color 0.15s;
+      background: #fff;
+    }
+    .form-control:focus { border-color: var(--primary); }
+    .form-control::placeholder { color: var(--text-secondary); }
+    select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+    .form-hint { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+    .char-count { font-size: 11px; color: var(--text-secondary); text-align: right; margin-top: 4px; }
+
+    /* ── Input with icon ── */
+    .input-group { position: relative; }
+    .input-group .input-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 14px; }
+    .input-group input { padding-left: 32px; }
+    .input-group-row { display: flex; gap: 8px; }
+
+    /* ── Alert banner ── */
+    .alert {
+      padding: 10px 14px; border-radius: 8px; font-size: 13px;
+      display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px;
+    }
+    .alert-warning { background: #FFF7ED; border: 1px solid #FED7AA; color: #92400E; }
+    .alert-info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 60px 20px; color: var(--text-secondary); gap: 12px;
+    }
+    .empty-state .empty-icon { font-size: 40px; opacity: 0.35; }
+    .empty-state p { font-size: 14px; font-weight: 500; }
+
+    /* ══════════════════════════════════════════
+       PAGE: WALLET
+    ══════════════════════════════════════════ */
+    .wallet-layout { display: flex; gap: 20px; align-items: flex-start; }
+    .wallet-left { width: 280px; min-width: 260px; }
+    .wallet-right { flex: 1; min-width: 0; }
+
+    .wallet-card { }
+    .wallet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .wallet-name { font-size: 16px; font-weight: 700; }
+    .wallet-id { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .wallet-todo { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 12px 0; }
+    .wallet-todo-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+    .todo-count { background: var(--primary); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .wallet-assets { margin: 12px 0; }
+    .assets-total { font-size: 22px; font-weight: 700; }
+    .assets-nft { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .wallet-btns { display: flex; gap: 8px; margin: 14px 0; }
+    .wallet-btns .btn { flex: 1; height: 40px; font-size: 13px; }
+
+    /* Donut chart */
+    .donut-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 20px 0 10px;
+    }
+    .donut-svg { width: 120px; height: 120px; }
+    .donut-empty-text { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+
+    /* Coin table */
+    .coin-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .coin-info { display: flex; align-items: center; gap: 10px; }
+    .coin-name { font-size: 13px; font-weight: 600; }
+    .coin-network { font-size: 11px; color: var(--text-secondary); }
+    .coin-amount { text-align: right; }
+    .coin-amount-primary { font-size: 13px; font-weight: 600; }
+    .coin-amount-usd { font-size: 11px; color: var(--text-secondary); }
+    .op-icons { display: flex; gap: 8px; justify-content: flex-end; }
+    .op-icon { width: 28px; height: 28px; border-radius: 6px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: background 0.15s; }
+    .op-icon:hover { background: #E2E8F0; }
+
+    .table-toolbar { display: flex; align-items: center; gap: 10px; padding: 14px 0 12px; flex-wrap: wrap; }
+    .table-toolbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); cursor: pointer; }
+    .checkbox-label input { accent-color: var(--primary); }
+    .add-btn { width: 28px; height: 28px; background: var(--primary); color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; font-weight: 300; border: none; }
+
+    /* ══════════════════════════════════════════
+       PAGE: WHITELIST
+    ══════════════════════════════════════════ */
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .page-title { font-size: 18px; font-weight: 700; }
+    .scope-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .scope-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #EFF6FF; color: var(--primary); border: 1px solid #BFDBFE;
+      border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 500;
+    }
+    .scope-tag .tag-x { cursor: pointer; opacity: 0.6; font-size: 13px; }
+    .scope-tag .tag-x:hover { opacity: 1; }
+    .scope-arrow { color: var(--text-secondary); font-size: 16px; cursor: pointer; }
+
+    /* ══════════════════════════════════════════
+       PAGE: TRANSACTIONS
+    ══════════════════════════════════════════ */
+    .txn-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .date-filter { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+    .date-filter input[type="date"] { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; color: var(--text-primary); }
+
+    /* ══════════════════════════════════════════
+       PAGE: LOGIN HISTORY
+    ══════════════════════════════════════════ */
+    /* same generic table styles */
+
+    /* ══════════════════════════════════════════
+       PAGE: STRATEGY ENGINE
+    ══════════════════════════════════════════ */
+    .strategy-card { padding: 20px; }
+    .strategy-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .strategy-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+    .strategy-section { margin-bottom: 16px; }
+    .strategy-section-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .strategy-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F1F5F9; font-size: 13px; }
+    .strategy-row-label { width: 100px; color: var(--text-secondary); font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+    .strategy-row-value { flex: 1; }
+    .strategy-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .strategy-pill { background: #EFF6FF; color: var(--primary); border-radius: 4px; padding: 3px 10px; font-size: 11px; font-weight: 500; }
+    .approver-row { display: flex; align-items: center; gap: 8px; }
+    .approver-avatar { width: 28px; height: 28px; background: var(--primary); border-radius: 50%; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .approver-name { font-size: 13px; font-weight: 600; }
+
+    /* ══════════════════════════════════════════
+       SLIDE-OVER PANEL
+    ══════════════════════════════════════════ */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+    .slideover {
+      position: fixed; top: 0; right: 0; bottom: 0; width: 480px; max-width: 100%;
+      background: var(--card-bg); z-index: 600; box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+      display: flex; flex-direction: column;
+      transform: translateX(100%); transition: transform 0.25s ease;
+    }
+    .slideover.open { transform: translateX(0); }
+    .slideover-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px; border-bottom: 1px solid var(--border);
+    }
+    .slideover-title { font-size: 15px; font-weight: 700; }
+    .slideover-close {
+      width: 28px; height: 28px; border-radius: 6px; background: #F1F5F9;
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--text-secondary); transition: background 0.15s;
+    }
+    .slideover-close:hover { background: #E2E8F0; }
+    .slideover-body { flex: 1; overflow-y: auto; padding: 20px; }
+
+    /* ══════════════════════════════════════════
+       MOBILE
+    ══════════════════════════════════════════ */
+    @media (max-width: 767px) {
+      .sidebar {
+        position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%);
+      }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .hamburger { display: flex; flex-direction: column; }
+      .wallet-layout { flex-direction: column; }
+      .wallet-left { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Overlay for mobile sidebar ── -->
+<div class="overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+
+<!-- ── Slide-over overlay ── -->
+<div class="overlay" id="slideOverlay" onclick="closeSlideOver()"></div>
+
+<!-- ── Add Address Slide-over ── -->
+<div class="slideover" id="slideOver">
+  <div class="slideover-header">
+    <span class="slideover-title">&#9776; Add Address</span>
+    <button class="slideover-close" onclick="closeSlideOver()">&#10005;</button>
+  </div>
+  <div class="slideover-body">
+    <div class="alert alert-warning">
+      &#9888; 출금 코인/네트워크 일치 시에만 사용 가능합니다.
+    </div>
+    <div class="tabs" style="margin-bottom:20px;">
+      <div class="tab active" onclick="switchSlideTab(this, 'byCurrency')">By Currency</div>
+      <div class="tab" onclick="switchSlideTab(this, 'byNetwork')">By Network</div>
+    </div>
+    <div id="byCurrency">
+      <div class="form-group">
+        <label class="form-label">Coin <span class="req">*</span></label>
+        <select class="form-control">
+          <option value="">Select coin &rsaquo;</option>
+          <option>USDT (TRC-20)</option>
+          <option>USDT (ERC-20)</option>
+          <option>BTC (Bitcoin)</option>
+          <option>ETH (Ethereum)</option>
+          <option>TRX (TRON)</option>
+          <option>BNB (BSC)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Address <span class="req">*</span></label>
+        <input type="text" class="form-control" placeholder="Enter address" id="addressInput" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" placeholder="자동 생성됩니다" id="nameInput" oninput="updateCharCount(this)" maxlength="50" />
+        <div class="char-count"><span id="charCount">0</span> / 50</div>
+      </div>
+      <button class="btn btn-primary btn-full btn-pill" style="height:44px; font-size:14px; margin-top:8px;">Save</button>
+    </div>
+    <div id="byNetwork" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">Network <span class="req">*</span></label>
+        <select class="form-control">
+          <option value="">Select network &rsaquo;</option>
+          <option>Ethereum (ERC-20)</option>
+          <option>TRON (TRC-20)</option>
+          <option>BNB Smart Chain</option>
+          <option>Bitcoin</option>
+          <option>Filecoin EVM</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Address <span class="req">*</span></label>
+        <input type="text" class="form-control" placeholder="Enter address" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" placeholder="자동 생성됩니다" maxlength="50" />
+      </div>
+      <button class="btn btn-primary btn-full btn-pill" style="height:44px; font-size:14px; margin-top:8px;">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── App ── -->
+<div class="app">
+
+  <!-- ════════════════════════════
+       SIDEBAR
+  ════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <div class="logo-icon">&#8734;</div>
+      <div class="logo-text">
+        INFINITEBLOCK
+        <span>CUSTODY PLATFORM</span>
+      </div>
+    </div>
+
+    <!-- Account -->
+    <div class="sidebar-account">
+      <div class="account-row">
+        <div class="account-avatar">I</div>
+        <div class="account-info">
+          <div class="account-name">Infiniteblock02</div>
+          <div class="account-balance">$0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showPage('wallet', this)" id="nav-wallet">
+        <span class="nav-icon">&#128188;</span>
+        <span class="nav-label">Wallet</span>
+      </div>
+      <div class="nav-item" onclick="showPage('transactions', this)" id="nav-transactions">
+        <span class="nav-icon">&#8644;</span>
+        <span class="nav-label">Transactions</span>
+      </div>
+      <div class="nav-item" onclick="showPage('workflows', this)">
+        <span class="nav-icon">&#10003;</span>
+        <span class="nav-label">Workflows</span>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <!-- Security (expandable) -->
+      <div class="nav-item" onclick="toggleSub('security-sub', this)">
+        <span class="nav-icon">&#128737;</span>
+        <span class="nav-label">Security</span>
+        <span class="nav-arrow">&#9654;</span>
+      </div>
+      <div class="nav-sub" id="security-sub">
+        <div class="nav-sub-item" onclick="showPage('whitelist', null, this)">Whitelist Address</div>
+        <div class="nav-sub-item" onclick="showPage('kyt', null, this)">KYT Management</div>
+        <div class="nav-sub-item" onclick="showPage('loginhistory', null, this)">Login History</div>
+      </div>
+
+      <!-- Strategy Engine (expandable) -->
+      <div class="nav-item" onclick="toggleSub('strategy-sub', this)">
+        <span class="nav-icon">&#9881;</span>
+        <span class="nav-label">Strategy Engine</span>
+        <span class="nav-arrow">&#9654;</span>
+      </div>
+      <div class="nav-sub" id="strategy-sub">
+        <div class="nav-sub-item active" onclick="showPage('strategy', null, this)">Wallet Strategy</div>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <div class="nav-item" onclick="showPage('developer', this)">
+        <span class="nav-icon">&lt;/&gt;</span>
+        <span class="nav-label">Developer</span>
+      </div>
+      <div class="nav-item" onclick="showPage('coldwallet', this)">
+        <span class="nav-icon">&#10052;</span>
+        <span class="nav-label">Cold Wallet</span>
+      </div>
+    </nav>
+
+    <!-- Admin button -->
+    <div class="sidebar-footer">
+      <button class="btn-admin" onclick="window.open('admin.html','_blank')">&#9881; Admin Console</button>
+    </div>
+  </aside>
+
+  <!-- ════════════════════════════
+       MAIN
+  ════════════════════════════ -->
+  <div class="main">
+    <div class="main-header">
+      <button class="hamburger" id="hamburger" onclick="toggleMobileSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="main-header-title" id="headerTitle">Wallet</span>
+    </div>
+
+    <div class="main-content">
+
+      <!-- ══════════════════════════
+           PAGE: WALLET
+      ══════════════════════════ -->
+      <div class="page active" id="page-wallet">
+        <div class="wallet-layout">
+
+          <!-- Left card -->
+          <div class="wallet-left">
+            <div class="card wallet-card">
+              <div class="wallet-header">
+                <div>
+                  <div class="wallet-name">Web3</div>
+                  <div class="wallet-id">ID: 1687670</div>
+                </div>
+                <span class="badge badge-orange">Owner</span>
+              </div>
+              <div class="wallet-todo">
+                <span class="wallet-todo-label">To-do list</span>
+                <span class="todo-count">0</span>
+              </div>
+              <div class="wallet-assets">
+                <div class="assets-total">$0.00</div>
+                <div class="assets-nft">NFTs: 0.00</div>
+              </div>
+              <div class="wallet-btns">
+                <button class="btn btn-success" style="height:40px;">&#8600; 입금</button>
+                <button class="btn btn-warning" style="height:40px;">&#8599; 출금</button>
+              </div>
+              <!-- Donut chart -->
+              <div class="donut-wrap">
+                <svg class="donut-svg" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#E2E8F0" stroke-width="5"/>
+                </svg>
+                <div class="donut-empty-text">No Data</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right panel -->
+          <div class="wallet-right">
+            <div class="card" style="padding:0;">
+              <div style="padding:16px 20px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                  <div class="tabs" style="border-bottom:none;">
+                    <div class="tab active" onclick="switchWalletTab(this,'tokens')">Tokens</div>
+                    <div class="tab" onclick="switchWalletTab(this,'nfts')">NFTs</div>
+                  </div>
+                  <label class="checkbox-label">
+                    <input type="checkbox" /> Hide small balances
+                  </label>
+                </div>
+                <div class="table-toolbar">
+                  <div class="input-group" style="flex:1; min-width:200px; max-width:320px;">
+                    <span class="input-icon">&#128269;</span>
+                    <input type="text" class="form-control" placeholder="Coin / Contract Address" />
+                  </div>
+                  <select class="form-control" style="width:150px;">
+                    <option>All Networks</option>
+                    <option>Ethereum</option>
+                    <option>TRON</option>
+                    <option>Bitcoin</option>
+                    <option>BSC</option>
+                    <option>Filecoin EVM</option>
+                  </select>
+                  <button class="add-btn">+</button>
+                </div>
+              </div>
+
+              <!-- Tokens table -->
+              <div id="tab-tokens">
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Coin</th>
+                        <th style="text-align:right;">Total Assets</th>
+                        <th style="text-align:right;">Operation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Coin rows -->
+                      <tr>
+                        <td><div class="coin-info"><div class="coin-icon" style="background:#EF4444;">T</div><div><div class="coin-name">TRX</div><div class="coin-network">TRON</div></div></div></td>
+                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
+                        <td><div class="op-icons">&#8505; <span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
+                      </tr>
+                      <tr>
+                        <td><div class="coin-info"><div class="coin-icon" style="background:#8B5CF6;">F</div><div><div class="coin-name">FIL</div><div class="coin-network">Filecoin EVM</div></div></div></td>
+                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
+                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
+                      </tr>
+                      <tr>
+                        <td><div class="coin-info"><div class="coin-icon" style="background:#10B981;">U</div><div><div class="coin-name">USDT</div><div class="coin-network">Ethereum</div></div></div></td>
+                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
+                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
+                      </tr>
+                      <tr>
+                        <td><div class="coin-info"><div class="coin-icon" style="background:#F59E0B;">B</div><div><div class="coin-name">BNB</div><div class="coin-network">BSC</div></div></div></td>
+                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
+                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
+                      </tr>
+                      <tr>
+                        <td><div class="coin-info"><div class="coin-icon" style="background:#F97316;">B</div><div><div class="coin-name">BTC</div><div class="coin-network">Bitcoin</div></div></div></td>
+                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
+                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
+                      </tr>
+                      <tr>
+                        <td><div class="coin-info"><div class="coin-icon" style="background:#6366F1;">E</div><div><div class="coin-name">ETH</div><div class="coin-network">Ethereum</div></div></div></td>
+                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
+                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
+                      </tr>
+                      <tr>
+                        <td><div class="coin-info"><div class="coin-icon" style="background:#10B981;">U</div><div><div class="coin-name">USDT</div><div class="coin-network">TRON</div></div></div></td>
+                        <td class="coin-amount"><div class="coin-amount-primary">0.00</div><div class="coin-amount-usd">$0.00</div></td>
+                        <td><div class="op-icons"><span class="op-icon">&#8505;</span><span class="op-icon">&#8600;</span><span class="op-icon">&#8599;</span></div></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- NFTs tab -->
+              <div id="tab-nfts" style="display:none;">
+                <div class="empty-state">
+                  <div class="empty-icon">&#9783;</div>
+                  <p>No NFTs Found</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: WHITELIST ADDRESS
+      ══════════════════════════ -->
+      <div class="page" id="page-whitelist">
+        <div class="page-header">
+          <h1 class="page-title">Whitelist Address</h1>
+          <button class="btn btn-primary" onclick="openSlideOver()">+ Add Address</button>
+        </div>
+        <div class="scope-tags">
+          <span class="scope-tag">Manual Transfer <span class="tag-x">&#10005;</span></span>
+          <span class="scope-tag">API Transfer <span class="tag-x">&#10005;</span></span>
+          <span class="scope-arrow">&#8250;</span>
+        </div>
+        <div class="card">
+          <div style="margin-bottom:14px;">
+            <div class="input-group" style="max-width:360px;">
+              <span class="input-icon">&#128269;</span>
+              <input type="text" class="form-control" placeholder="Currency / Address / Name" />
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th><th>Type</th><th>Coin</th><th>Address</th><th>Status</th><th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6">
+                    <div class="empty-state">
+                      <div class="empty-icon">&#128220;</div>
+                      <p>No Address Available</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: TRANSACTIONS
+      ══════════════════════════ -->
+      <div class="page" id="page-transactions">
+        <div class="txn-header">
+          <h1 class="page-title">Transactions</h1>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="date-filter">
+              <input type="date" value="2025-01-01" />
+              <span>~</span>
+              <input type="date" value="2025-12-31" />
+            </div>
+            <button class="btn btn-outline btn-sm">&#8595; Export CSV</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div style="padding:16px 20px 0;">
+            <div class="tabs">
+              <div class="tab active" onclick="switchTab(this)">전체 All</div>
+              <div class="tab" onclick="switchTab(this)">입금 Deposit</div>
+              <div class="tab" onclick="switchTab(this)">출금 Withdrawal</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>일시 Date/Time</th>
+                  <th>유형 Type</th>
+                  <th>코인 Coin</th>
+                  <th style="text-align:right;">수량 Amount</th>
+                  <th>상태 Status</th>
+                  <th>TXID</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="white-space:nowrap; color:var(--text-secondary); font-size:12px;">2025-11-20 14:32:08</td>
+                  <td><span class="badge badge-info">입금 Deposit</span></td>
+                  <td><div class="coin-info" style="gap:7px;"><div class="coin-icon" style="background:#10B981; width:24px; height:24px; font-size:11px;">U</div><span>USDT / TRON</span></div></td>
+                  <td style="text-align:right; font-weight:600;">1,000.00</td>
+                  <td><span class="dot dot-success"></span>완료 Completed</td>
+                  <td style="font-size:11px; color:var(--text-secondary);">0xa1b2c3...f9e8</td>
+                </tr>
+                <tr>
+                  <td style="white-space:nowrap; color:var(--text-secondary); font-size:12px;">2025-11-19 09:15:44</td>
+                  <td><span class="badge badge-warning">출금 Withdrawal</span></td>
+                  <td><div class="coin-info" style="gap:7px;"><div class="coin-icon" style="background:#6366F1; width:24px; height:24px; font-size:11px;">E</div><span>ETH / Ethereum</span></div></td>
+                  <td style="text-align:right; font-weight:600;">0.5000</td>
+                  <td><span class="dot dot-info"></span>서명 중 Signing</td>
+                  <td style="font-size:11px; color:var(--text-secondary);">0xd4e5f6...a2b1</td>
+                </tr>
+                <tr>
+                  <td style="white-space:nowrap; color:var(--text-secondary); font-size:12px;">2025-11-18 22:07:33</td>
+                  <td><span class="badge badge-info">입금 Deposit</span></td>
+                  <td><div class="coin-info" style="gap:7px;"><div class="coin-icon" style="background:#F97316; width:24px; height:24px; font-size:11px;">B</div><span>BTC / Bitcoin</span></div></td>
+                  <td style="text-align:right; font-weight:600;">0.0250</td>
+                  <td><span class="dot dot-warning"></span>보류 Pending</td>
+                  <td style="font-size:11px; color:var(--text-secondary);">7f8e9d...c3b4</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: LOGIN HISTORY
+      ══════════════════════════ -->
+      <div class="page" id="page-loginhistory">
+        <div class="page-header">
+          <h1 class="page-title">Login History</h1>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="date-filter">
+              <input type="date" value="2025-01-01" />
+              <span>~</span>
+              <input type="date" value="2025-12-31" />
+            </div>
+            <button class="btn btn-outline btn-sm">&#8593; Export</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Login Account</th>
+                  <th>Login Time</th>
+                  <th>Login Platform</th>
+                  <th>Login IP</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;">NOTAEHAN</td>
+                  <td>notaehan@infiniteblock.io</td>
+                  <td style="white-space:nowrap; font-size:12px; color:var(--text-secondary);">2025-11-20 14:30:12</td>
+                  <td><span class="badge badge-info">Web</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">211.234.56.78</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">NOTAEHAN</td>
+                  <td>notaehan@infiniteblock.io</td>
+                  <td style="white-space:nowrap; font-size:12px; color:var(--text-secondary);">2025-11-19 09:12:05</td>
+                  <td><span class="badge badge-purple">Mobile</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">211.234.56.78</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">NOTAEHAN</td>
+                  <td>notaehan@infiniteblock.io</td>
+                  <td style="white-space:nowrap; font-size:12px; color:var(--text-secondary);">2025-11-15 18:44:33</td>
+                  <td><span class="badge badge-info">Web</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">220.81.120.9</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: STRATEGY ENGINE
+      ══════════════════════════ -->
+      <div class="page" id="page-strategy">
+        <div class="page-header">
+          <h1 class="page-title">Strategy Engine — Wallet Strategy</h1>
+        </div>
+        <div class="card" style="padding:0; margin-bottom:16px;">
+          <div style="padding:16px 20px 0;">
+            <div class="tabs">
+              <div class="tab active" onclick="switchTab(this)">Basic</div>
+              <div class="tab" onclick="switchTab(this)">Advanced</div>
+              <div class="tab" onclick="switchTab(this)">? Learn more</div>
+            </div>
+          </div>
+          <div style="padding:20px;">
+            <div style="font-size:14px; font-weight:700; margin-bottom:12px;">Basic Strategy</div>
+            <div class="alert alert-warning" style="margin-bottom:20px;">
+              &#9888; If an order is not configured with a specific strategy, the wallet's basic strategy will be applied by default.
+            </div>
+            <div class="card strategy-card" style="border:1px solid var(--border);">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                <div>
+                  <div class="strategy-title">Wallet Basic Strategy</div>
+                  <div class="strategy-meta">
+                    Effective Time: 2024-01-01 00:00 &nbsp;|&nbsp; Strategy ID: WBS-20240101-001
+                  </div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-outline btn-sm">Strategy Approval Records</button>
+                  <button class="btn btn-primary btn-sm">Edit</button>
+                </div>
+              </div>
+              <div class="strategy-row">
+                <span class="strategy-row-label">Initiator</span>
+                <span class="strategy-row-value">All wallet members (including wallet users and API)</span>
+              </div>
+              <div class="strategy-row">
+                <span class="strategy-row-label">Scope</span>
+                <div class="strategy-row-value">
+                  <div class="strategy-pills">
+                    <span class="strategy-pill">Transfer Transactions</span>
+                    <span class="strategy-pill">Edit Basic Strategy</span>
+                    <span class="strategy-pill">Whitelist Management</span>
+                    <span class="strategy-pill">Web3 Transactions</span>
+                    <span class="strategy-pill">Fund Return</span>
+                    <span class="strategy-pill">Trade</span>
+                  </div>
+                </div>
+              </div>
+              <div class="strategy-row" style="border-bottom:none; flex-direction:column; align-items:flex-start; gap:10px;">
+                <div style="font-size:13px; font-weight:600; color:var(--success);">&#10003; Approval</div>
+                <div style="background:#F8FAFC; border-radius:8px; padding:14px; width:100%;">
+                  <div style="font-size:12px; font-weight:600; margin-bottom:10px;">Approval and Sign</div>
+                  <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">Minimum Approval Count: <strong style="color:var(--text-primary);">1</strong></div>
+                  <div class="approver-row">
+                    <div class="approver-avatar">N</div>
+                    <span class="approver-name">NOTAEHAN</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: WORKFLOWS (placeholder)
+      ══════════════════════════ -->
+      <div class="page" id="page-workflows">
+        <h1 class="page-title" style="margin-bottom:20px;">Workflows</h1>
+        <div class="card">
+          <div class="empty-state">
+            <div class="empty-icon">&#10003;</div>
+            <p>No active workflows</p>
+            <button class="btn btn-primary btn-sm">+ Create Workflow</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: KYT (placeholder)
+      ══════════════════════════ -->
+      <div class="page" id="page-kyt">
+        <h1 class="page-title" style="margin-bottom:20px;">KYT Management</h1>
+        <div class="card">
+          <div class="empty-state">
+            <div class="empty-icon">&#128737;</div>
+            <p>No KYT alerts</p>
+            <div class="form-hint" style="margin-top:4px;">Know Your Transaction monitoring is active</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: DEVELOPER (placeholder)
+      ══════════════════════════ -->
+      <div class="page" id="page-developer">
+        <h1 class="page-title" style="margin-bottom:20px;">Developer</h1>
+        <div class="card">
+          <div class="alert alert-info" style="margin-bottom:16px;">&#128161; Manage your API keys and webhooks here.</div>
+          <div class="empty-state">
+            <div class="empty-icon">&lt;/&gt;</div>
+            <p>No API Keys configured</p>
+            <button class="btn btn-primary btn-sm">+ Create API Key</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: COLD WALLET (placeholder)
+      ══════════════════════════ -->
+      <div class="page" id="page-coldwallet">
+        <h1 class="page-title" style="margin-bottom:20px;">Cold Wallet</h1>
+        <div class="card">
+          <div class="empty-state">
+            <div class="empty-icon">&#10052;</div>
+            <p>No cold wallets configured</p>
+            <button class="btn btn-primary btn-sm">+ Request Cold Wallet</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+  /* ════════════════════════════════════
+     PAGE NAVIGATION
+  ════════════════════════════════════ */
+  const pageMap = {
+    wallet: 'Wallet',
+    transactions: 'Transactions',
+    whitelist: 'Whitelist Address',
+    kyt: 'KYT Management',
+    loginhistory: 'Login History',
+    strategy: 'Strategy Engine',
+    workflows: 'Workflows',
+    developer: 'Developer',
+    coldwallet: 'Cold Wallet',
+  };
+
+  function showPage(pageId, navEl, subNavEl) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    // Show target
+    const target = document.getElementById('page-' + pageId);
+    if (target) target.classList.add('active');
+
+    // Update header title
+    const titleEl = document.getElementById('headerTitle');
+    if (titleEl) titleEl.textContent = pageMap[pageId] || pageId;
+
+    // Update nav active state
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-sub-item').forEach(n => n.classList.remove('active'));
+    if (navEl) navEl.classList.add('active');
+    if (subNavEl) subNavEl.classList.add('active');
+
+    // Close mobile sidebar
+    closeMobileSidebar();
+  }
+
+  /* ════════════════════════════════════
+     EXPANDABLE SUB-MENUS
+  ════════════════════════════════════ */
+  function toggleSub(subId, navEl) {
+    const sub = document.getElementById(subId);
+    const isOpen = sub.classList.contains('open');
+    sub.classList.toggle('open');
+    navEl.classList.toggle('expanded', !isOpen);
+  }
+
+  /* ════════════════════════════════════
+     TABS (generic)
+  ════════════════════════════════════ */
+  function switchTab(el) {
+    const parent = el.parentElement;
+    parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function switchWalletTab(el, tabId) {
+    const parent = el.closest('.card');
+    parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-tokens').style.display = tabId === 'tokens' ? 'block' : 'none';
+    document.getElementById('tab-nfts').style.display = tabId === 'nfts' ? 'block' : 'none';
+  }
+
+  function switchSlideTab(el, tabId) {
+    const container = el.closest('.slideover-body');
+    container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('byCurrency').style.display = tabId === 'byCurrency' ? 'block' : 'none';
+    document.getElementById('byNetwork').style.display = tabId === 'byNetwork' ? 'block' : 'none';
+  }
+
+  /* ════════════════════════════════════
+     SLIDE-OVER PANEL
+  ════════════════════════════════════ */
+  function openSlideOver() {
+    document.getElementById('slideOver').classList.add('open');
+    document.getElementById('slideOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSlideOver() {
+    document.getElementById('slideOver').classList.remove('open');
+    document.getElementById('slideOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  /* ════════════════════════════════════
+     CHAR COUNTER
+  ════════════════════════════════════ */
+  function updateCharCount(input) {
+    document.getElementById('charCount').textContent = input.value.length;
+  }
+
+  /* ════════════════════════════════════
+     MOBILE SIDEBAR
+  ════════════════════════════════════ */
+  function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('open');
+  }
+
+  function closeMobileSidebar() {
+    if (window.innerWidth < 768) {
+      document.getElementById('sidebar').classList.remove('mobile-open');
+      document.getElementById('mobileOverlay').classList.remove('open');
+    }
+  }
+</script>
+</body>
+</html>

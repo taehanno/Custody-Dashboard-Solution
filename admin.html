@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infiniteblock Custody — Admin Console</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-bg: #1E293B;
+      --topbar-bg: #1A2B4A;
+      --primary: #3B82F6;
+      --main-bg: #F4F6FA;
+      --card-bg: #FFFFFF;
+      --text-primary: #1E293B;
+      --text-secondary: #64748B;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --border: #E2E8F0;
+    }
+    html, body { height: 100%; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; color: var(--text-primary); background: var(--main-bg); }
+
+    /* ── Layout ── */
+    .app { display: flex; flex-direction: column; height: 100vh; }
+    .body-wrap { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Top Bar ── */
+    .topbar {
+      height: 50px; background: var(--topbar-bg);
+      display: flex; align-items: center; padding: 0 20px;
+      gap: 12px; flex-shrink: 0; z-index: 200;
+    }
+    .topbar-logo { display: flex; align-items: center; gap: 8px; }
+    .logo-icon { width: 28px; height: 28px; background: var(--primary); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700; }
+    .topbar-brand { color: #fff; font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
+    .admin-badge { background: #F97316; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .topbar-email { color: rgba(255,255,255,0.6); font-size: 12px; }
+    .btn-portal {
+      padding: 6px 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px; color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: background 0.15s; font-family: inherit;
+    }
+    .btn-portal:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; margin-right: 4px; }
+    .hamburger span { display: block; width: 18px; height: 2px; background: rgba(255,255,255,0.8); margin: 3px 0; border-radius: 1px; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 200px; min-width: 200px; background: var(--sidebar-bg);
+      overflow-y: auto; overflow-x: hidden;
+      transition: transform 0.25s ease;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    .sidebar-section { padding: 14px 12px 4px; }
+    .sidebar-section-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.8px; padding: 0 6px; margin-bottom: 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 8px; color: rgba(255,255,255,0.6); font-size: 12.5px;
+      cursor: pointer; border-radius: 7px; margin: 1px 0;
+      transition: background 0.15s, color 0.15s; user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .nav-item.active { background: var(--primary); color: #fff; font-weight: 600; }
+    .nav-icon { font-size: 14px; flex-shrink: 0; }
+
+    /* ── Main ── */
+    .main { flex: 1; overflow-y: auto; padding: 24px; background: var(--main-bg); }
+
+    /* ── Page visibility ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Cards ── */
+    .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
+
+    /* ── Stat cards row ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+    @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    .stat-card {
+      background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border);
+      padding: 16px 20px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .stat-blue { color: var(--primary); }
+    .stat-green { color: var(--success); }
+    .stat-orange { color: #F97316; }
+    .stat-red { color: var(--danger); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 500;
+      cursor: pointer; border: none; transition: opacity 0.15s, background 0.15s;
+      font-family: inherit; white-space: nowrap;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-warning { background: #F97316; color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+    .btn-sm { padding: 5px 11px; font-size: 12px; }
+    .btn-xs { padding: 3px 9px; font-size: 11px; border-radius: 6px; }
+
+    /* ── Badge ── */
+    .badge { display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; padding: 2px 9px; font-size: 11px; font-weight: 600; }
+    .badge-success { background: #ECFDF5; color: #10B981; }
+    .badge-warning { background: #FFFBEB; color: #F59E0B; }
+    .badge-danger { background: #FEF2F2; color: #EF4444; }
+    .badge-info { background: #EFF6FF; color: #3B82F6; }
+    .badge-orange { background: #FFF7ED; color: #F97316; }
+    .badge-gray { background: #F1F5F9; color: var(--text-secondary); }
+
+    /* ── Page header ── */
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .page-title { font-size: 18px; font-weight: 700; }
+
+    /* ── Toolbar ── */
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .toolbar-right { margin-left: auto; display: flex; gap: 8px; }
+    .form-control {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 12.5px;
+      color: var(--text-primary); font-family: inherit; outline: none; background: #fff;
+      transition: border-color 0.15s;
+    }
+    .form-control:focus { border-color: var(--primary); }
+    select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; cursor: pointer; }
+    .search-wrap { position: relative; }
+    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; }
+    .search-wrap input { padding-left: 30px; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 10px 12px; text-align: left; font-size: 11.5px; font-weight: 700;
+      color: var(--text-secondary); border-bottom: 1px solid var(--border);
+      white-space: nowrap; background: #FAFBFC;
+    }
+    thead th:first-child { border-radius: 0; }
+    tbody td {
+      padding: 12px 12px; font-size: 12.5px; color: var(--text-primary);
+      border-bottom: 1px solid #F1F5F9; vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #F8FAFC; }
+    tr.row-danger td { background: #FEF9F9; }
+    tr.row-danger:hover td { background: #FEF2F2; }
+
+    /* ── Alert ── */
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+    .alert-warning { background: #FFF7ED; border: 1px solid #FED7AA; color: #92400E; }
+    .alert-info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+
+    /* ── Empty state ── */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--text-secondary); gap: 12px; }
+    .empty-icon { font-size: 36px; opacity: 0.35; }
+
+    /* ── Placeholder page ── */
+    .placeholder-info { display: flex; flex-direction: column; gap: 12px; }
+    .placeholder-info p { color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+
+    /* ── Rule param table ── */
+    .param-code { font-family: 'Courier New', monospace; font-size: 12px; font-weight: 700; color: var(--primary); background: #EFF6FF; padding: 2px 7px; border-radius: 4px; }
+    .param-value { font-weight: 700; color: var(--text-primary); }
+    .input-number { width: 80px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-family: inherit; text-align: right; }
+
+    /* ── Mobile ── */
+    @media (max-width: 767px) {
+      .sidebar { position: fixed; left: 0; top: 50px; bottom: 0; z-index: 150; transform: translateX(-100%); }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .hamburger { display: flex; flex-direction: column; }
+      .topbar-email { display: none; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="mobileOverlay" onclick="closeMobileSidebar()" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:140;opacity:0;pointer-events:none;transition:opacity 0.2s;"></div>
+
+<div class="app">
+
+  <!-- ════════════════════════════
+       TOP BAR
+  ════════════════════════════ -->
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleMobileSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-logo">
+      <div class="logo-icon">&#8734;</div>
+      <span class="topbar-brand">INFINITEBLOCK</span>
+      <span class="admin-badge">ADMIN CONSOLE</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-email">admin@infiniteblock.io</span>
+      <button class="btn-portal" onclick="window.open('index.html','_blank')">&#8592; 고객 포털</button>
+    </div>
+  </div>
+
+  <div class="body-wrap">
+
+    <!-- ════════════════════════════
+         SIDEBAR
+    ════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- 고객 관리 -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">고객 관리</div>
+        <div class="nav-item active" onclick="showPage('clients', this)">
+          <span class="nav-icon">&#127970;</span> 고객사 목록
+        </div>
+        <div class="nav-item" onclick="showPage('kyb', this)">
+          <span class="nav-icon">&#128272;</span> KYB 관리
+        </div>
+        <div class="nav-item" onclick="showPage('accounts', this)">
+          <span class="nav-icon">&#128100;</span> 계정 관리
+        </div>
+      </div>
+
+      <!-- 지갑·자산 -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">지갑·자산</div>
+        <div class="nav-item" onclick="showPage('coldwallet', this)">
+          <span class="nav-icon">&#127974;</span> 콜드월렛 관리
+        </div>
+        <div class="nav-item" onclick="showPage('whitelist', this)">
+          <span class="nav-icon">&#9989;</span> Whitelist 승인
+        </div>
+        <div class="nav-item" onclick="showPage('transactions', this)">
+          <span class="nav-icon">&#128202;</span> 거래 내역
+        </div>
+      </div>
+
+      <!-- AML -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">AML</div>
+        <div class="nav-item" onclick="showPage('str', this)">
+          <span class="nav-icon">&#128737;</span> STR / 이상거래
+        </div>
+        <div class="nav-item" onclick="showPage('pep', this)">
+          <span class="nav-icon">&#128683;</span> 내부요주의인물
+        </div>
+        <div class="nav-item" onclick="showPage('country', this)">
+          <span class="nav-icon">&#127757;</span> 국가위험정책
+        </div>
+        <div class="nav-item" onclick="showPage('strparam', this)">
+          <span class="nav-icon">&#9881;</span> STR 룰 파라미터
+        </div>
+      </div>
+
+      <!-- 시스템 -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">시스템</div>
+        <div class="nav-item" onclick="showPage('activitylog', this)">
+          <span class="nav-icon">&#128203;</span> 활동 로그
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ════════════════════════════
+         MAIN
+    ════════════════════════════ -->
+    <div class="main">
+
+      <!-- ══════════════════════════
+           PAGE: 고객사 목록
+      ══════════════════════════ -->
+      <div class="page active" id="page-clients">
+        <div class="page-header">
+          <h1 class="page-title">고객사 목록</h1>
+          <button class="btn btn-primary">+ 고객사 등록</button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <span class="stat-label">전체</span>
+            <span class="stat-value stat-blue">24</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">활성화</span>
+            <span class="stat-value stat-green">19</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">갱신 임박</span>
+            <span class="stat-value stat-orange">3</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">비활성화</span>
+            <span class="stat-value stat-red">2</span>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div style="padding:16px 20px; border-bottom:1px solid var(--border);">
+            <div class="toolbar" style="margin-bottom:0;">
+              <div class="search-wrap">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" class="form-control" placeholder="고객사명 / 사업자번호 검색" style="width:240px; padding-left:30px;" />
+              </div>
+              <select class="form-control" style="width:140px;">
+                <option>전체 상태</option>
+                <option>활성화</option>
+                <option>비활성화</option>
+                <option>대기</option>
+              </select>
+              <select class="form-control" style="width:140px;">
+                <option>전체 위험등급</option>
+                <option>저위험</option>
+                <option>중위험</option>
+                <option>고위험</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>고객사명</th>
+                  <th>사업자번호</th>
+                  <th>위험등급</th>
+                  <th>KYB 상태</th>
+                  <th>다음 갱신일</th>
+                  <th>계정상태</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;">알파투자운용(주)</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">123-45-67890</td>
+                  <td><span class="badge badge-success">저위험 Low Risk</span></td>
+                  <td><span class="badge badge-success">KYB 완료</span></td>
+                  <td>
+                    <div style="font-size:12.5px;">2026-12-01</div>
+                    <div style="font-size:11px; color:var(--text-secondary);">D-238</div>
+                  </td>
+                  <td><span class="badge badge-success">활성화</span></td>
+                  <td><button class="btn btn-outline btn-xs">상세</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">베타캐피탈 유한회사</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">234-56-78901</td>
+                  <td><span class="badge badge-warning">중위험 Medium Risk</span></td>
+                  <td><span class="badge badge-success">KYB 완료</span></td>
+                  <td>
+                    <div style="font-size:12.5px;">2026-05-15</div>
+                    <div style="font-size:11px; color:#F97316; font-weight:600;">D-38</div>
+                  </td>
+                  <td><span class="badge badge-success">활성화</span></td>
+                  <td><button class="btn btn-outline btn-xs">상세</button></td>
+                </tr>
+                <tr class="row-danger">
+                  <td style="font-weight:600;">감마트레이딩(주)</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">345-67-89012</td>
+                  <td><span class="badge badge-danger">고위험 High Risk</span></td>
+                  <td><span class="badge badge-danger">KYB 만료 Expired</span></td>
+                  <td>
+                    <div style="font-size:12.5px;">2026-03-20</div>
+                    <div style="font-size:11px; color:var(--danger); font-weight:600;">D+18</div>
+                  </td>
+                  <td><span class="badge badge-danger">비활성화</span></td>
+                  <td><button class="btn btn-warning btn-xs">KYB 갱신</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">델타홀딩스 유한회사</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">456-78-90123</td>
+                  <td><span class="badge badge-gray">—</span></td>
+                  <td><span class="badge badge-info">승인 대기 Pending</span></td>
+                  <td><span style="color:var(--text-secondary);">—</span></td>
+                  <td><span class="badge badge-info">대기</span></td>
+                  <td><button class="btn btn-primary btn-xs">KYB 검토</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: KYB 관리
+      ══════════════════════════ -->
+      <div class="page" id="page-kyb">
+        <div class="page-header">
+          <h1 class="page-title">KYB 관리</h1>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><span class="stat-label">KYB 대기</span><span class="stat-value stat-orange">3</span></div>
+          <div class="stat-card"><span class="stat-label">승인 대기</span><span class="stat-value stat-blue">2</span></div>
+          <div class="stat-card"><span class="stat-label">KYB 완료</span><span class="stat-value stat-green">19</span></div>
+          <div class="stat-card"><span class="stat-label">갱신 경과</span><span class="stat-value stat-red">1</span></div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>고객사명</th>
+                  <th>KYB 상태</th>
+                  <th>위험등급</th>
+                  <th>KYB 수행일</th>
+                  <th>다음 수행일</th>
+                  <th>담당자</th>
+                  <th>액션</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;">델타홀딩스 유한회사</td>
+                  <td><span class="badge badge-info">승인 대기</span></td>
+                  <td><span class="badge badge-gray">미정</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-01</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2026-11-01</td>
+                  <td>김담당</td>
+                  <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="btn btn-primary btn-xs">OCTA 검증</button>
+                    <button class="btn btn-outline btn-xs">보류</button>
+                  </td>
+                </tr>
+                <tr class="row-danger">
+                  <td style="font-weight:600;">감마트레이딩(주)</td>
+                  <td><span class="badge badge-danger">KYB 만료</span></td>
+                  <td><span class="badge badge-danger">고위험</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2024-03-20</td>
+                  <td style="font-size:12px; color:var(--danger); font-weight:600;">2025-03-20 (경과)</td>
+                  <td>이담당</td>
+                  <td>
+                    <button class="btn btn-warning btn-xs">갱신 시작</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: Whitelist 승인
+      ══════════════════════════ -->
+      <div class="page" id="page-whitelist">
+        <div class="page-header">
+          <h1 class="page-title">Whitelist 승인</h1>
+        </div>
+        <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="stat-card"><span class="stat-label">승인 대기</span><span class="stat-value stat-orange">5</span></div>
+          <div class="stat-card"><span class="stat-label">승인 완료</span><span class="stat-value stat-green">142</span></div>
+          <div class="stat-card"><span class="stat-label">거절</span><span class="stat-value stat-red">8</span></div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>고객사</th>
+                  <th>코인</th>
+                  <th>네트워크</th>
+                  <th>주소</th>
+                  <th>주소명</th>
+                  <th>상태</th>
+                  <th>처리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;">알파투자운용(주)</td>
+                  <td><span class="badge badge-info">USDT</span></td>
+                  <td>TRON (TRC-20)</td>
+                  <td style="font-family:monospace; font-size:11.5px;">TRX9a...3f8e</td>
+                  <td>출금 주소 A</td>
+                  <td><span class="badge badge-warning">승인 대기</span></td>
+                  <td style="display:flex; gap:6px;">
+                    <button class="btn btn-success btn-xs">승인 Approve</button>
+                    <button class="btn btn-danger btn-xs">거절 Reject</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">베타캐피탈 유한회사</td>
+                  <td><span class="badge badge-info">ETH</span></td>
+                  <td>Ethereum (ERC-20)</td>
+                  <td style="font-family:monospace; font-size:11.5px;">0xA1b2...C9d0</td>
+                  <td>거래소 출금지갑</td>
+                  <td><span class="badge badge-warning">승인 대기</span></td>
+                  <td style="display:flex; gap:6px;">
+                    <button class="btn btn-success btn-xs">승인 Approve</button>
+                    <button class="btn btn-danger btn-xs">거절 Reject</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 콜드월렛 관리
+      ══════════════════════════ -->
+      <div class="page" id="page-coldwallet">
+        <div class="page-header">
+          <h1 class="page-title">콜드월렛 관리</h1>
+        </div>
+        <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="stat-card"><span class="stat-label">주소 입력 대기</span><span class="stat-value stat-orange">3</span></div>
+          <div class="stat-card"><span class="stat-label">운영 중</span><span class="stat-value stat-green">47</span></div>
+          <div class="stat-card"><span class="stat-label">TXID 미입력</span><span class="stat-value stat-blue">12</span></div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>고객사</th>
+                  <th>지갑명</th>
+                  <th>코인</th>
+                  <th>네트워크</th>
+                  <th>요청일</th>
+                  <th>상태</th>
+                  <th>처리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;">알파투자운용(주)</td>
+                  <td>Cold-01</td>
+                  <td><span class="badge badge-info">BTC</span></td>
+                  <td>Bitcoin</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-15</td>
+                  <td><span class="badge badge-warning">주소 대기</span></td>
+                  <td><button class="btn btn-primary btn-xs">주소 입력</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">베타캐피탈 유한회사</td>
+                  <td>Cold-02</td>
+                  <td><span class="badge badge-info">ETH</span></td>
+                  <td>Ethereum</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-18</td>
+                  <td><span class="badge badge-warning">주소 대기</span></td>
+                  <td><button class="btn btn-primary btn-xs">주소 입력</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 거래 내역 (admin)
+      ══════════════════════════ -->
+      <div class="page" id="page-transactions">
+        <div class="page-header">
+          <h1 class="page-title">거래 내역</h1>
+          <button class="btn btn-outline btn-sm">&#8595; Export</button>
+        </div>
+        <div class="card" style="padding:0;">
+          <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
+            <div class="toolbar" style="margin-bottom:0; flex-wrap:wrap; gap:8px;">
+              <div class="search-wrap">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" class="form-control" placeholder="고객사 / TXID 검색" style="width:220px; padding-left:30px;" />
+              </div>
+              <select class="form-control" style="width:130px;"><option>전체 코인</option><option>USDT</option><option>BTC</option><option>ETH</option></select>
+              <select class="form-control" style="width:130px;"><option>전체 유형</option><option>입금</option><option>출금</option></select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>일시</th><th>고객사</th><th>유형</th><th>코인</th><th style="text-align:right;">수량</th><th>상태</th><th>TXID</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 14:32:08</td>
+                  <td style="font-weight:600;">알파투자운용(주)</td>
+                  <td><span class="badge badge-info">입금</span></td>
+                  <td>USDT / TRON</td>
+                  <td style="text-align:right; font-weight:600;">1,000.00</td>
+                  <td><span class="badge badge-success">완료</span></td>
+                  <td style="font-family:monospace; font-size:11px;">0xa1b2c3...f9e8</td>
+                </tr>
+                <tr>
+                  <td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">2025-11-19 09:15:44</td>
+                  <td style="font-weight:600;">베타캐피탈 유한회사</td>
+                  <td><span class="badge badge-warning">출금</span></td>
+                  <td>ETH / Ethereum</td>
+                  <td style="text-align:right; font-weight:600;">0.5000</td>
+                  <td><span class="badge badge-info">서명 중</span></td>
+                  <td style="font-family:monospace; font-size:11px;">0xd4e5f6...a2b1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: STR / 이상거래
+      ══════════════════════════ -->
+      <div class="page" id="page-str">
+        <div class="page-header">
+          <h1 class="page-title">STR / 이상거래</h1>
+          <button class="btn btn-outline btn-sm">&#8595; Export</button>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><span class="stat-label">미처리 7일+</span><span class="stat-value stat-red">2</span></div>
+          <div class="stat-card"><span class="stat-label">검출</span><span class="stat-value stat-orange">5</span></div>
+          <div class="stat-card"><span class="stat-label">보고 완료</span><span class="stat-value stat-green">18</span></div>
+          <div class="stat-card"><span class="stat-label">미보고</span><span class="stat-value stat-blue">42</span></div>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>이상거래번호</th>
+                  <th>검출일시</th>
+                  <th>경과</th>
+                  <th>고객사</th>
+                  <th>룰 ID</th>
+                  <th>상태</th>
+                  <th>처리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="row-danger">
+                  <td style="font-family:monospace; font-size:12px; font-weight:700;">STR-20251110-001</td>
+                  <td style="font-size:11.5px; white-space:nowrap;">2025-11-10 08:22:14</td>
+                  <td><span style="color:var(--danger); font-weight:700; font-size:12px;">D+10 &#9650;</span></td>
+                  <td style="font-weight:600;">감마트레이딩(주)</td>
+                  <td><span class="badge badge-danger">RM01</span></td>
+                  <td><span class="badge badge-danger">미처리</span></td>
+                  <td><button class="btn btn-warning btn-xs">처리</button></td>
+                </tr>
+                <tr>
+                  <td style="font-family:monospace; font-size:12px; font-weight:700;">STR-20251118-002</td>
+                  <td style="font-size:11.5px; white-space:nowrap;">2025-11-18 14:55:02</td>
+                  <td><span style="color:var(--warning); font-size:12px;">D+2</span></td>
+                  <td style="font-weight:600;">베타캐피탈 유한회사</td>
+                  <td><span class="badge badge-warning">RD02</span></td>
+                  <td><span class="badge badge-warning">검출</span></td>
+                  <td><button class="btn btn-warning btn-xs">처리</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: STR 룰 파라미터
+      ══════════════════════════ -->
+      <div class="page" id="page-strparam">
+        <div class="page-header">
+          <h1 class="page-title">STR 룰 파라미터</h1>
+        </div>
+        <div class="alert alert-warning">
+          &#128274; 임계값 <strong>[숫자]</strong>는 AML 관리자만 수정 가능. 변경 시 OTP 인증 필수.
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>룰 ID</th>
+                  <th>룰명</th>
+                  <th>파라미터 설명</th>
+                  <th style="text-align:right;">현재값</th>
+                  <th>수정</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="param-code">RM01</span></td>
+                  <td style="font-weight:600;">고액현금거래</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">단일거래 임계금액 (USD)</td>
+                  <td style="text-align:right;"><span class="param-value">10,000</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">RM02</span></td>
+                  <td style="font-weight:600;">분산입금 패턴</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">시간 내 반복 건수 임계치</td>
+                  <td style="text-align:right;"><span class="param-value">5</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">RD02</span></td>
+                  <td style="font-weight:600;">급격한 자산변동</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">24시간 변동률 임계치 (%)</td>
+                  <td style="text-align:right;"><span class="param-value">300</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">RD13</span></td>
+                  <td style="font-weight:600;">다수 주소 분산</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">출금 주소 다양성 임계치</td>
+                  <td style="text-align:right;"><span class="param-value">10</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">RM35</span></td>
+                  <td style="font-weight:600;">믹서/토네이도 연계</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">믹서 주소 연계 홉(hop) 수</td>
+                  <td style="text-align:right;"><span class="param-value">3</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">RM40</span></td>
+                  <td style="font-weight:600;">고위험국가 거래</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">거래 누적 임계금액 (USD)</td>
+                  <td style="text-align:right;"><span class="param-value">5,000</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 계정 관리 (placeholder)
+      ══════════════════════════ -->
+      <div class="page" id="page-accounts">
+        <div class="page-header">
+          <h1 class="page-title">계정 관리</h1>
+          <button class="btn btn-primary">+ 계정 생성</button>
+        </div>
+        <div class="card">
+          <div class="placeholder-info">
+            <p>고객사 소속 계정의 권한, 역할, 접근 수준을 관리합니다.</p>
+          </div>
+          <div class="table-wrap" style="margin-top:16px;">
+            <table>
+              <thead>
+                <tr><th>계정명</th><th>이메일</th><th>고객사</th><th>역할</th><th>상태</th><th>마지막 로그인</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;">NOTAEHAN</td>
+                  <td>notaehan@infiniteblock.io</td>
+                  <td>알파투자운용(주)</td>
+                  <td><span class="badge badge-info">Admin</span></td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-20 14:30</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 내부요주의인물 (placeholder)
+      ══════════════════════════ -->
+      <div class="page" id="page-pep">
+        <div class="page-header">
+          <h1 class="page-title">내부요주의인물 (PEP/Watchlist)</h1>
+          <button class="btn btn-primary">+ 등록</button>
+        </div>
+        <div class="card">
+          <div class="placeholder-info">
+            <p>정치적 주요인물(PEP), 제재 대상자 및 내부 요주의 인물 목록을 관리합니다.</p>
+          </div>
+          <div class="empty-state">
+            <div class="empty-icon">&#128683;</div>
+            <p>등록된 요주의인물이 없습니다</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 국가위험정책 (placeholder)
+      ══════════════════════════ -->
+      <div class="page" id="page-country">
+        <div class="page-header">
+          <h1 class="page-title">국가위험정책</h1>
+        </div>
+        <div class="card">
+          <div class="placeholder-info">
+            <p>FATF 고위험·비협력 국가 및 내부 위험 등급별 국가 정책을 관리합니다.</p>
+          </div>
+          <div class="table-wrap" style="margin-top:16px;">
+            <table>
+              <thead>
+                <tr><th>국가코드</th><th>국가명</th><th>위험등급</th><th>FATF 제재</th><th>정책</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>KP</td><td>북한</td><td><span class="badge badge-danger">최고위험</span></td><td><span class="badge badge-danger">&#9888; 블랙리스트</span></td><td>거래 전면 차단</td></tr>
+                <tr><td>IR</td><td>이란</td><td><span class="badge badge-danger">최고위험</span></td><td><span class="badge badge-danger">&#9888; 블랙리스트</span></td><td>거래 전면 차단</td></tr>
+                <tr><td>RU</td><td>러시아</td><td><span class="badge badge-warning">고위험</span></td><td><span class="badge badge-warning">감시대상</span></td><td>강화 심사</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 활동 로그 (placeholder)
+      ══════════════════════════ -->
+      <div class="page" id="page-activitylog">
+        <div class="page-header">
+          <h1 class="page-title">활동 로그</h1>
+          <button class="btn btn-outline btn-sm">&#8595; Export</button>
+        </div>
+        <div class="card" style="padding:0;">
+          <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
+            <div class="toolbar" style="margin-bottom:0;">
+              <div class="search-wrap">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" class="form-control" placeholder="관리자 / 액션 검색" style="width:220px; padding-left:30px;" />
+              </div>
+              <select class="form-control" style="width:140px;"><option>전체 액션</option><option>로그인</option><option>승인</option><option>거절</option><option>수정</option></select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>일시</th><th>관리자</th><th>액션</th><th>대상</th><th>IP</th><th>결과</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 15:10:05</td>
+                  <td>admin@infiniteblock.io</td>
+                  <td><span class="badge badge-success">승인</span></td>
+                  <td style="font-size:12px;">Whitelist — TRX9a...3f8e (알파투자운용)</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">192.168.1.100</td>
+                  <td><span class="badge badge-success">성공</span></td>
+                </tr>
+                <tr>
+                  <td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 09:05:22</td>
+                  <td>admin@infiniteblock.io</td>
+                  <td><span class="badge badge-info">로그인</span></td>
+                  <td style="font-size:12px;">Admin Console</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">192.168.1.100</td>
+                  <td><span class="badge badge-success">성공</span></td>
+                </tr>
+                <tr>
+                  <td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">2025-11-19 17:30:44</td>
+                  <td>admin@infiniteblock.io</td>
+                  <td><span class="badge badge-danger">수정</span></td>
+                  <td style="font-size:12px;">STR 룰 RM01 임계값 10,000 → 15,000</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">192.168.1.100</td>
+                  <td><span class="badge badge-success">성공</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /body-wrap -->
+</div><!-- /app -->
+
+<script>
+  /* ════════════════════════════════════
+     PAGE NAVIGATION
+  ════════════════════════════════════ */
+  function showPage(pageId, navEl) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page-' + pageId);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (navEl) navEl.classList.add('active');
+
+    closeMobileSidebar();
+  }
+
+  /* ════════════════════════════════════
+     MOBILE SIDEBAR
+  ════════════════════════════════════ */
+  function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    const isOpen = sidebar.classList.toggle('mobile-open');
+    overlay.style.opacity = isOpen ? '1' : '0';
+    overlay.style.pointerEvents = isOpen ? 'all' : 'none';
+  }
+
+  function closeMobileSidebar() {
+    if (window.innerWidth < 768) {
+      document.getElementById('sidebar').classList.remove('mobile-open');
+      const overlay = document.getElementById('mobileOverlay');
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+    }
+  }
+</script>
+</body>
+</html>
