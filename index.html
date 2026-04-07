@@ -573,6 +573,17 @@
     .otp-reset-step.active { display: block; }
 
     /* ══════════════════════════
+       INLINE NAME EDIT
+    ══════════════════════════ */
+    .name-edit-wrap { display:flex; align-items:center; gap:6px; min-width:0; }
+    .edit-pencil-btn { width:22px; height:22px; border:none; background:none; cursor:pointer; color:var(--text-secondary); font-size:12px; border-radius:4px; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.15s; flex-shrink:0; }
+    .name-edit-wrap:hover .edit-pencil-btn { opacity:1; }
+    .name-inline-edit { display:none; align-items:center; gap:4px; }
+    .name-inline-input { height:28px; padding:3px 8px; font-size:13px; font-weight:600; border:1px solid var(--primary); border-radius:6px; font-family:inherit; outline:none; min-width:0; flex:1; }
+    .name-confirm-btn { width:26px; height:26px; background:var(--success); color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .name-cancel-btn  { width:26px; height:26px; background:var(--border); color:var(--text-secondary); border:none; border-radius:5px; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+    /* ══════════════════════════
        SECTION 7: WHITELIST
     ══════════════════════════ */
     .wl-more-wrap { position: relative; display: inline-block; }
@@ -637,7 +648,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-coldwallet')">취소</button>
-    <button class="btn btn-primary" onclick="openOTPModal('콜드월렛 생성 요청', function(){ closeModal(\'modal-coldwallet\'); addPendingWallet(); })">요청 제출 →</button>
+    <button class="btn btn-primary" onclick="openWalletCreateOTP()">요청 제출 →</button>
   </div>
 </div>
 
@@ -1902,7 +1913,17 @@
           <!-- Wallet Card 1: Active -->
           <div class="wallet-card" onclick="openWalletDetail('wallet1')">
             <div class="wallet-card-header">
-              <div class="wallet-card-name">BTC 보관 지갑 #1</div>
+              <div class="wallet-card-name">
+                <div class="name-edit-wrap" id="wrap-wallet1">
+                  <span id="lbl-wallet1">BTC 보관 지갑 #1</span>
+                  <button class="edit-pencil-btn" title="이름 수정" onclick="event.stopPropagation(); startEditName('wallet1')">&#9998;</button>
+                </div>
+                <div class="name-inline-edit" id="edit-wallet1">
+                  <input class="name-inline-input" id="input-wallet1" value="BTC 보관 지갑 #1" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')saveWalletName('wallet1'); if(event.key==='Escape')cancelEditName('wallet1');" />
+                  <button class="name-confirm-btn" onclick="event.stopPropagation(); saveWalletName('wallet1')" title="저장">&#10003;</button>
+                  <button class="name-cancel-btn" onclick="event.stopPropagation(); cancelEditName('wallet1')" title="취소">&#10005;</button>
+                </div>
+              </div>
               <span class="badge badge-success">&#9679; 활성화</span>
             </div>
             <div class="wallet-coin-row">
@@ -1923,7 +1944,17 @@
           <!-- Wallet Card 2: Active -->
           <div class="wallet-card" onclick="openWalletDetail('wallet2')">
             <div class="wallet-card-header">
-              <div class="wallet-card-name">ETH 보관 지갑</div>
+              <div class="wallet-card-name">
+                <div class="name-edit-wrap" id="wrap-wallet2">
+                  <span id="lbl-wallet2">ETH 보관 지갑</span>
+                  <button class="edit-pencil-btn" title="이름 수정" onclick="event.stopPropagation(); startEditName('wallet2')">&#9998;</button>
+                </div>
+                <div class="name-inline-edit" id="edit-wallet2">
+                  <input class="name-inline-input" id="input-wallet2" value="ETH 보관 지갑" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')saveWalletName('wallet2'); if(event.key==='Escape')cancelEditName('wallet2');" />
+                  <button class="name-confirm-btn" onclick="event.stopPropagation(); saveWalletName('wallet2')" title="저장">&#10003;</button>
+                  <button class="name-cancel-btn" onclick="event.stopPropagation(); cancelEditName('wallet2')" title="취소">&#10005;</button>
+                </div>
+              </div>
               <span class="badge badge-success">&#9679; 활성화</span>
             </div>
             <div class="wallet-coin-row">
@@ -1972,7 +2003,17 @@
             <div class="card">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
                 <div>
-                  <div style="font-size:15px; font-weight:700;" id="detailWalletName">BTC 보관 지갑 #1</div>
+                  <div style="font-size:15px; font-weight:700;">
+                    <div class="name-edit-wrap" id="wrap-detail">
+                      <span id="detailWalletName">BTC 보관 지갑 #1</span>
+                      <button class="edit-pencil-btn" title="이름 수정" onclick="startEditDetailName()">&#9998;</button>
+                    </div>
+                    <div class="name-inline-edit" id="edit-detail">
+                      <input class="name-inline-input" id="input-detail" value="BTC 보관 지갑 #1" onkeydown="if(event.key==='Enter')saveDetailName(); if(event.key==='Escape')cancelDetailName();" />
+                      <button class="name-confirm-btn" onclick="saveDetailName()" title="저장">&#10003;</button>
+                      <button class="name-cancel-btn" onclick="cancelDetailName()" title="취소">&#10005;</button>
+                    </div>
+                  </div>
                   <div style="font-size:11px; color:var(--text-secondary);">ID: 1687670</div>
                 </div>
                 <span class="badge badge-success">&#9679; 활성화</span>
@@ -2693,10 +2734,12 @@
   }
 
   function openWalletDetail(walletId) {
-    const names = { wallet1: 'BTC 보관 지갑 #1', wallet2: 'ETH 보관 지갑' };
     const coins = { wallet1: 'BTC / Bitcoin', wallet2: 'ETH / Ethereum' };
-    const wName = names[walletId] || '지갑';
+    // Read current name from the live label span (may have been inline-edited)
+    const lblEl = document.getElementById('lbl-' + walletId);
+    const wName = lblEl ? lblEl.textContent.trim() : '지갑';
     document.getElementById('detailWalletName').textContent = wName;
+    document.getElementById('input-detail').value = wName;
     document.getElementById('detailCoin').textContent = coins[walletId] || '—';
     _currentWalletLabel = wName;
     document.getElementById('ac-wallet-label') && (document.getElementById('ac-wallet-label').textContent = wName);
@@ -3032,8 +3075,92 @@
       sel.appendChild(o);
     });
   }
-  function addPendingWallet() {
+  function openWalletCreateOTP() {
+    const name = (document.getElementById('cwName').value || '').trim();
+    const coin = document.getElementById('cwCoin').value;
+    const network = document.getElementById('cwNetwork').value;
+    if (!name)    { showToast('지갑명을 입력해주세요.'); return; }
+    if (!coin)    { showToast('코인을 선택해주세요.'); return; }
+    if (!network) { showToast('네트워크를 선택해주세요.'); return; }
+    closeModal('modal-coldwallet');
+    _afterClose(() => openOTPModal('콜드월렛 생성 요청', () => addPendingWallet(name, coin, network)));
+  }
+
+  function addPendingWallet(name, coin, network) {
+    // Add a pending card to wallet grid
+    const grid = document.querySelector('.wallet-grid');
+    const addCard = grid.querySelector('.wallet-card-add');
+    const coinInitial = coin.charAt(0);
+    const colorMap = { BTC:'#F97316', ETH:'#6366F1', USDT:'#10B981', BNB:'#EAB308', TRX:'#EF4444', FIL:'#8B5CF6' };
+    const bg = colorMap[coin] || '#94A3B8';
+    const card = document.createElement('div');
+    card.className = 'wallet-card disabled';
+    card.innerHTML = `
+      <div class="wallet-card-header">
+        <div class="wallet-card-name">${name}</div>
+        <span class="badge badge-gray">&#9679; 요청 중</span>
+      </div>
+      <div class="wallet-coin-row">
+        <div class="coin-circle" style="background:${bg};">${coinInitial}</div>
+        <div><div style="font-size:13px; font-weight:600;">${coin}</div><div style="font-size:11px; color:var(--text-secondary);">${network}</div></div>
+      </div>
+      <div style="font-size:12px; color:var(--text-secondary); background:#F8FAFC; padding:10px; border-radius:7px; margin-top:10px; line-height:1.5;">
+        &#128336; Admin 처리 대기 중<br>
+        <span style="font-size:11px;">1~2 영업일 소요됩니다</span>
+      </div>`;
+    grid.insertBefore(card, addCard);
+    // Clear form
+    document.getElementById('cwName').value = '';
+    document.getElementById('cwCoin').value = '';
+    document.getElementById('cwNetwork').innerHTML = '<option value="">코인 선택 후 자동 필터 ▾</option>';
     showToast('콜드월렛 생성 요청이 제출되었습니다. Admin이 처리 후 이메일로 알림드립니다.');
+  }
+
+  /* ════════════════════════════════════
+     WALLET INLINE NAME EDIT
+  ════════════════════════════════════ */
+  function startEditName(wId) {
+    const lbl = document.getElementById('lbl-' + wId);
+    const inp = document.getElementById('input-' + wId);
+    inp.value = lbl.textContent.trim();
+    document.getElementById('wrap-' + wId).style.display = 'none';
+    const editEl = document.getElementById('edit-' + wId);
+    editEl.style.display = 'flex';
+    inp.focus();
+    inp.select();
+  }
+  function saveWalletName(wId) {
+    const val = (document.getElementById('input-' + wId).value || '').trim();
+    if (!val) { showToast('지갑명을 입력해주세요.'); return; }
+    document.getElementById('lbl-' + wId).textContent = val;
+    cancelEditName(wId);
+    showToast('지갑명이 변경되었습니다.');
+  }
+  function cancelEditName(wId) {
+    document.getElementById('edit-' + wId).style.display = 'none';
+    document.getElementById('wrap-' + wId).style.display = '';
+  }
+
+  function startEditDetailName() {
+    const lbl = document.getElementById('detailWalletName');
+    const inp = document.getElementById('input-detail');
+    inp.value = lbl.textContent.trim();
+    document.getElementById('wrap-detail').style.display = 'none';
+    document.getElementById('edit-detail').style.display = 'flex';
+    inp.focus();
+    inp.select();
+  }
+  function saveDetailName() {
+    const val = (document.getElementById('input-detail').value || '').trim();
+    if (!val) { showToast('지갑명을 입력해주세요.'); return; }
+    document.getElementById('detailWalletName').textContent = val;
+    _currentWalletLabel = val;
+    cancelDetailName();
+    showToast('지갑명이 변경되었습니다.');
+  }
+  function cancelDetailName() {
+    document.getElementById('edit-detail').style.display = 'none';
+    document.getElementById('wrap-detail').style.display = '';
   }
 
   /* ════════════════════════════════════
