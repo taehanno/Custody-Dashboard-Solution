@@ -772,7 +772,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-delete-wallet')">취소</button>
-    <button class="btn btn-danger" onclick="openOTPModal('지갑 삭제 확인', function(){ closeModal(\'modal-delete-wallet\'); showToast(\'삭제 요청이 전송되었습니다.\'); })">삭제 요청 →</button>
+    <button class="btn btn-danger" onclick="openWalletDeleteOTP()">삭제 요청 →</button>
   </div>
 </div>
 
@@ -869,7 +869,7 @@
   </div>
   <div class="so-footer">
     <button class="btn btn-primary btn-full btn-pill" style="height:44px;"
-      onclick="openOTPModal('코인 추가 요청', function(){ closeSO(\'so-add-coin\'); showToast(\'코인 추가 요청이 제출되었습니다.\'); })">추가 요청 →</button>
+      onclick="openCoinAddOTP()">추가 요청 →</button>
   </div>
 </div>
 
@@ -1243,10 +1243,8 @@
   </div>
   <div class="so-footer">
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-outline btn-danger" style="flex:1;"
-        onclick="openOTPModal('출금 거절', function(){ closeSO(\'so-workflow-sign\'); showToast(\'출금 건이 거절되었습니다.\'); })">거절하기</button>
-      <button class="btn btn-primary" style="flex:2;"
-        onclick="openOTPModal('출금 서명', function(){ closeSO(\'so-workflow-sign\'); showToast(\'서명이 완료되었습니다.\'); })">&#10003; 서명 완료 →</button>
+      <button class="btn btn-outline btn-danger" style="flex:1;" onclick="openWorkflowRejectOTP()">거절하기</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="openWorkflowSignOTP()">&#10003; 서명 완료 →</button>
     </div>
   </div>
 </div>
@@ -2777,6 +2775,26 @@
      OTP MODAL (reusable)
   ════════════════════════════════════ */
   let otpCallback = null;
+  /* ── OTP wrappers: close current panel first, then OTP after animation ── */
+  function _afterClose(fn) { setTimeout(fn, 260); } // wait for 0.25s slide/fade
+
+  function openWalletDeleteOTP() {
+    closeModal('modal-delete-wallet');
+    _afterClose(() => openOTPModal('지갑 삭제 확인', () => showToast('삭제 요청이 전송되었습니다.')));
+  }
+  function openCoinAddOTP() {
+    closeSO('so-add-coin');
+    _afterClose(() => openOTPModal('코인 추가 요청', () => showToast('코인 추가 요청이 제출되었습니다.')));
+  }
+  function openWorkflowSignOTP() {
+    closeSO('so-workflow-sign');
+    _afterClose(() => openOTPModal('출금 서명', () => showToast('서명이 완료되었습니다.')));
+  }
+  function openWorkflowRejectOTP() {
+    closeSO('so-workflow-sign');
+    _afterClose(() => openOTPModal('출금 거절', () => showToast('출금 건이 거절되었습니다.')));
+  }
+
   function openOTPModal(title, cb) {
     document.getElementById('otpModalTitle').textContent = title || 'OTP 인증';
     document.getElementById('otpModalErr').style.display = 'none';
