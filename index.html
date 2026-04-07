@@ -803,7 +803,7 @@
       <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="color:var(--text-secondary); margin-left:auto;">2026-04-07 10:28 완료</span></div>
       <div class="sig-row"><span class="sig-icon-wait">⏳</span><span style="font-weight:600; color:var(--text-secondary);">박민준</span><span style="color:var(--text-secondary); margin-left:auto;">서명 대기 중</span></div>
     </div>
-    <div class="info-row" style="padding:8px 0;"><span class="info-label">상태</span><span><span class="dot-status dot-purple"></span>Admin 처리 중</span></div>
+    <div class="info-row" style="padding:8px 0;"><span class="info-label">상태</span><span><span class="badge badge-purple">🔄 처리 중</span></span></div>
     <div class="info-row" style="padding:8px 0; border-bottom:none;"><span class="info-label">TXID</span><span style="color:var(--text-secondary); font-size:12px;">Admin 입력 후 표시</span></div>
   </div>
   <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-withdrawal-detail')">닫기</button></div>
@@ -2532,7 +2532,7 @@
                         <td><span class="badge badge-info">입금</span></td>
                         <td>USDT / TRON</td>
                         <td style="text-align:right; font-weight:600; color:var(--success);">+1,000.00</td>
-                        <td><span class="dot-status dot-green"></span>완료</td>
+                        <td><span class="badge badge-success">● 완료</span></td>
                         <td style="font-family:monospace; font-size:11px; cursor:pointer; color:var(--primary);">0xa1b2...f9e8</td>
                         <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
                       </tr>
@@ -2541,7 +2541,7 @@
                         <td><span class="badge badge-warning">출금</span></td>
                         <td>ETH / Ethereum</td>
                         <td style="text-align:right; font-weight:600; color:var(--danger);">-0.5000</td>
-                        <td><span class="dot-status dot-blue"></span>서명 중</td>
+                        <td><span class="badge badge-warning">⏳ 서명 대기</span></td>
                         <td style="font-family:monospace; font-size:11px; cursor:pointer; color:var(--primary);">0xd4e5...a2b1</td>
                         <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
                       </tr>
@@ -2550,7 +2550,34 @@
                         <td><span class="badge badge-info">입금</span></td>
                         <td>BTC / Bitcoin</td>
                         <td style="text-align:right; font-weight:600; color:var(--success);">+0.0250</td>
-                        <td><span class="dot-status dot-yellow"></span>보류</td>
+                        <td><span class="badge badge-success">● 완료</span></td>
+                        <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
+                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-17 16:44:20</td>
+                        <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
+                        <td>USDT / TRON</td>
+                        <td style="text-align:right; font-weight:600; color:var(--danger);">-200.00</td>
+                        <td><span class="badge badge-purple">🔄 처리 중</span></td>
+                        <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
+                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-16 11:22:05</td>
+                        <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
+                        <td>BTC / Bitcoin</td>
+                        <td style="text-align:right; font-weight:600; color:var(--danger);">-0.0050</td>
+                        <td><span class="badge badge-info">↗ 출금 중</span></td>
+                        <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xf1e2...c3b4</td>
+                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-15 08:55:30</td>
+                        <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
+                        <td>ETH / Ethereum</td>
+                        <td style="text-align:right; font-weight:600; color:var(--danger);">-1.0000</td>
+                        <td><span class="badge badge-danger">✕ 거절</span></td>
                         <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
                         <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
                       </tr>
@@ -2594,7 +2621,7 @@
                   <td style="font-size:12px;">BTC 보관 지갑</td>
                   <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#10B981; width:22px; height:22px; font-size:10px;">U</div>USDT/TRON</div></td>
                   <td style="text-align:right; font-weight:600; color:var(--success);">+1,000.00</td>
-                  <td><span class="dot-status dot-green"></span>완료</td>
+                  <td><span class="badge badge-success">● 완료</span></td>
                   <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xa1b2...f9e8</td>
                   <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
                 </tr>
@@ -2604,7 +2631,7 @@
                   <td style="font-size:12px;">ETH 보관 지갑</td>
                   <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#6366F1; width:22px; height:22px; font-size:10px;">E</div>ETH/ETH</div></td>
                   <td style="text-align:right; font-weight:600; color:var(--danger);">-0.5000</td>
-                  <td><span class="dot-status dot-blue"></span>서명 중</td>
+                  <td><span class="badge badge-warning">⏳ 서명 대기</span></td>
                   <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xd4e5...a2b1</td>
                   <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
                 </tr>
@@ -2614,7 +2641,37 @@
                   <td style="font-size:12px;">BTC 보관 지갑</td>
                   <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#F97316; width:22px; height:22px; font-size:10px;">B</div>BTC/BTC</div></td>
                   <td style="text-align:right; font-weight:600; color:var(--success);">+0.0250</td>
-                  <td><span class="dot-status dot-yellow"></span>보류</td>
+                  <td><span class="badge badge-success">● 완료</span></td>
+                  <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
+                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                </tr>
+                <tr>
+                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-17 16:44:20</td>
+                  <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
+                  <td style="font-size:12px;">ETH 보관 지갑</td>
+                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#10B981; width:22px; height:22px; font-size:10px;">U</div>USDT/TRON</div></td>
+                  <td style="text-align:right; font-weight:600; color:var(--danger);">-200.00</td>
+                  <td><span class="badge badge-purple">🔄 처리 중</span></td>
+                  <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
+                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                </tr>
+                <tr>
+                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-16 11:22:05</td>
+                  <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
+                  <td style="font-size:12px;">BTC 보관 지갑</td>
+                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#F97316; width:22px; height:22px; font-size:10px;">B</div>BTC/BTC</div></td>
+                  <td style="text-align:right; font-weight:600; color:var(--danger);">-0.0050</td>
+                  <td><span class="badge badge-info">↗ 출금 중</span></td>
+                  <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xf1e2...c3b4</td>
+                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                </tr>
+                <tr>
+                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-15 08:55:30</td>
+                  <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
+                  <td style="font-size:12px;">ETH 보관 지갑</td>
+                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#6366F1; width:22px; height:22px; font-size:10px;">E</div>ETH/ETH</div></td>
+                  <td style="text-align:right; font-weight:600; color:var(--danger);">-1.0000</td>
+                  <td><span class="badge badge-danger">✕ 거절</span></td>
                   <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
                   <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
                 </tr>
@@ -2649,7 +2706,7 @@
                   <div class="workflow-id">WD-20260407-003</div>
                   <div class="workflow-coin">USDT — Ethereum (ERC20)</div>
                 </div>
-                <span class="badge badge-warning">&#9679; 서명 대기</span>
+                <span class="badge badge-warning">⏳ 서명 대기</span>
               </div>
               <div class="workflow-amount">500.00 USDT</div>
               <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩690,000</div>
@@ -2672,7 +2729,7 @@
                   <div class="workflow-id">WD-20260406-002</div>
                   <div class="workflow-coin">BTC — Bitcoin Mainnet</div>
                 </div>
-                <span class="badge badge-warning">&#9679; 서명 대기</span>
+                <span class="badge badge-warning">⏳ 서명 대기</span>
               </div>
               <div class="workflow-amount">0.0100 BTC</div>
               <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩579,600</div>
@@ -2687,14 +2744,14 @@
                 <button class="btn btn-outline btn-sm" onclick="openModal('modal-withdrawal-detail')">상세 보기</button>
               </div>
             </div>
-            <!-- Item 3: In progress -->
+            <!-- Item 3: Processing (🔄 처리 중 — Admin Keypal 서명 전) -->
             <div class="workflow-item" data-status="inprogress">
               <div class="workflow-header">
                 <div>
                   <div class="workflow-id">WD-20260407-001</div>
                   <div class="workflow-coin">USDT — Ethereum (ERC20)</div>
                 </div>
-                <span class="badge badge-purple">&#9679; Admin 처리 중</span>
+                <span class="badge badge-purple">🔄 처리 중</span>
               </div>
               <div class="workflow-amount">100.00 USDT</div>
               <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩138,000</div>
@@ -2704,6 +2761,34 @@
                 <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">김철수</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-07 10:25 완료</span></div>
                 <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-07 10:28 완료</span></div>
                 <div class="sig-row"><span class="sig-icon-wait">—</span><span style="font-weight:600; color:var(--text-secondary);">박민준</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">불필요 (N 충족)</span></div>
+              </div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-top:8px; padding:8px; background:#F8FAFC; border-radius:6px;">Admin이 처리 중입니다. 완료 후 TXID가 등록됩니다.</div>
+              <div class="workflow-actions">
+                <button class="btn btn-outline btn-sm" onclick="openModal('modal-withdrawal-detail')">상세 보기</button>
+              </div>
+            </div>
+            <!-- Item 4: Broadcasting (↗ 출금 중 — TXID 등록 후 1 confirm 대기) -->
+            <div class="workflow-item" data-status="inprogress">
+              <div class="workflow-header">
+                <div>
+                  <div class="workflow-id">WD-20260405-001</div>
+                  <div class="workflow-coin">BTC — Bitcoin Mainnet</div>
+                </div>
+                <span class="badge badge-info">↗ 출금 중</span>
+              </div>
+              <div class="workflow-amount">0.0200 BTC</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩1,159,200</div>
+              <div class="workflow-addr">→ bc1q9d2...nfkj (외부 주소)</div>
+              <div class="signature-progress">
+                <div class="sig-title">서명 현황 2 / 2 ✓</div>
+                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">김철수</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-05 14:10 완료</span></div>
+                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-05 14:15 완료</span></div>
+              </div>
+              <div style="font-size:12px; margin-top:8px; padding:8px; background:#EFF6FF; border-radius:6px; color:var(--primary);">
+                TXID: <span style="font-family:monospace;">0x9a1b...e3f2</span>
+                <span style="cursor:pointer; margin-left:6px;">&#128203;</span>
+                <span style="margin-left:6px; text-decoration:underline; cursor:pointer;">익스플로러 ↗</span>
+                <div style="color:var(--text-secondary); margin-top:4px;">블록체인 확인 중 — 1 confirm 대기</div>
               </div>
               <div class="workflow-actions">
                 <button class="btn btn-outline btn-sm" onclick="openModal('modal-withdrawal-detail')">상세 보기</button>
