@@ -40,6 +40,23 @@
     .admin-badge { background: #F97316; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px; }
     .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
     .topbar-email { color: rgba(255,255,255,0.6); font-size: 12px; }
+    .role-badge-topbar {
+      display: inline-flex; align-items: center;
+      font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 4px;
+    }
+    .role-badge-master    { background: #F97316; color: #fff; }
+    .role-badge-general   { background: #3B82F6; color: #fff; }
+    .role-badge-coldwallet { background: #10B981; color: #fff; }
+    .role-badge-aml-officer { background: #8B5CF6; color: #fff; }
+    .role-badge-aml-manager { background: #EF4444; color: #fff; }
+
+    .role-switcher {
+      padding: 4px 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 6px; color: rgba(255,255,255,0.85); font-size: 11px; font-family: inherit;
+      cursor: pointer; outline: none;
+    }
+    .role-switcher option { background: #1E293B; color: #fff; }
+
     .btn-portal {
       padding: 6px 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
       border-radius: 6px; color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 500;
@@ -92,6 +109,7 @@
     .stat-green { color: var(--success); }
     .stat-orange { color: #F97316; }
     .stat-red { color: var(--danger); }
+    .stat-gray { color: var(--text-secondary); }
 
     /* ── Buttons ── */
     .btn {
@@ -117,6 +135,11 @@
     .badge-info { background: #EFF6FF; color: #3B82F6; }
     .badge-orange { background: #FFF7ED; color: #F97316; }
     .badge-gray { background: #F1F5F9; color: var(--text-secondary); }
+    .badge-master { background: #FFF7ED; color: #F97316; }
+    .badge-general { background: #EFF6FF; color: #3B82F6; }
+    .badge-coldwallet { background: #ECFDF5; color: #10B981; }
+    .badge-aml-officer { background: #F5F3FF; color: #8B5CF6; }
+    .badge-aml-manager { background: #FEF2F2; color: #EF4444; }
 
     /* ── Page header ── */
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
@@ -153,6 +176,8 @@
     tbody tr:hover td { background: #F8FAFC; }
     tr.row-danger td { background: #FEF9F9; }
     tr.row-danger:hover td { background: #FEF2F2; }
+    tr.row-warn td { background: #FFFBEB; }
+    tr.row-warn:hover td { background: #FEF3C7; }
 
     /* ── Alert ── */
     .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
@@ -172,6 +197,79 @@
     .param-value { font-weight: 700; color: var(--text-primary); }
     .input-number { width: 80px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-family: inherit; text-align: right; }
 
+    /* ── Form elements ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block; }
+    .form-hint { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+    .form-control-readonly { background: #F8FAFC; color: var(--text-secondary); cursor: not-allowed; }
+
+    /* ── Info row (modal) ── */
+    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: center; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 12px; color: var(--text-secondary); }
+    .info-value { font-size: 12.5px; font-weight: 600; }
+
+    /* ── Section box in modal ── */
+    .section-box { background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
+    .section-box-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+    /* ── Radio group ── */
+    .radio-group { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .radio-item { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; }
+    .radio-item input[type=radio] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+    .renewal-hint { font-size: 12px; color: var(--primary); font-weight: 600; margin-top: 8px; }
+
+    /* ── Modal infrastructure ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      z-index: 500; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.96);
+      z-index: 600; background: #fff; border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+      width: 90%; max-width: 480px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .modal.open { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
+    .modal-wide { max-width: 560px; }
+    .modal-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-size: 15px; font-weight: 700; }
+    .modal-close { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-secondary); line-height: 1; padding: 2px 6px; border-radius: 4px; }
+    .modal-close:hover { background: #F1F5F9; }
+    .modal-body { padding: 18px 20px; max-height: 65vh; overflow-y: auto; }
+    .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+    /* ── OTP modal ── */
+    .otp-row { display: flex; gap: 8px; justify-content: center; margin: 16px 0; }
+    .otp-box {
+      width: 44px; height: 52px; border: 2px solid var(--border); border-radius: 10px;
+      text-align: center; font-size: 22px; font-weight: 700; font-family: 'Courier New', monospace;
+      color: var(--text-primary); outline: none; transition: border-color 0.15s;
+    }
+    .otp-box:focus { border-color: var(--primary); }
+    .otp-hint { text-align: center; font-size: 12px; color: var(--text-secondary); }
+    .otp-error { color: var(--danger); font-size: 12.5px; text-align: center; margin-top: 6px; display: none; }
+    .otp-lock-msg { color: var(--danger); font-size: 13px; text-align: center; margin-top: 8px; font-weight: 600; display: none; }
+
+    /* ── Toast ── */
+    #toast-container {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+    }
+    .toast {
+      background: #1E293B; color: #fff; padding: 12px 18px; border-radius: 10px;
+      font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      animation: toastIn 0.25s ease; max-width: 340px;
+    }
+    @keyframes toastIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+    /* ── Table note ── */
+    .table-note { font-size: 11.5px; color: var(--text-secondary); padding: 10px 16px; border-top: 1px solid var(--border); }
+
     /* ── Mobile ── */
     @media (max-width: 767px) {
       .sidebar { position: fixed; left: 0; top: 50px; bottom: 0; z-index: 150; transform: translateX(-100%); }
@@ -179,12 +277,19 @@
       .hamburger { display: flex; flex-direction: column; }
       .topbar-email { display: none; }
       .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .role-switcher { display: none; }
     }
   </style>
 </head>
 <body>
 
 <div class="overlay" id="mobileOverlay" onclick="closeMobileSidebar()" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:140;opacity:0;pointer-events:none;transition:opacity 0.2s;"></div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Modal backdrop -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeAllModals()"></div>
 
 <div class="app">
 
@@ -202,6 +307,14 @@
     </div>
     <div class="topbar-right">
       <span class="topbar-email">admin@infiniteblock.io</span>
+      <span id="topbar-role-badge" class="role-badge-topbar role-badge-general">일반 관리자</span>
+      <select class="role-switcher" id="role-switcher" onchange="switchRole(this.value)">
+        <option value="general" selected>일반 관리자</option>
+        <option value="master">마스터 관리자</option>
+        <option value="coldwallet">콜드월렛 담당자</option>
+        <option value="aml_officer">AML 담당자</option>
+        <option value="aml_manager">AML 관리자</option>
+      </select>
       <button class="btn-portal" onclick="window.open('index.html','_blank')">&#8592; 고객 포털</button>
     </div>
   </div>
@@ -216,44 +329,53 @@
       <!-- 고객 관리 -->
       <div class="sidebar-section">
         <div class="sidebar-section-label">고객 관리</div>
-        <div class="nav-item active" onclick="showPage('clients', this)">
+        <div class="nav-item active" id="nav-clients" onclick="showPage('clients', this)">
           <span class="nav-icon">&#127970;</span> 고객사 목록
         </div>
-        <div class="nav-item" onclick="showPage('kyb', this)">
+        <div class="nav-item" id="nav-kyb" onclick="showPage('kyb', this)">
           <span class="nav-icon">&#128272;</span> KYB 관리
         </div>
-        <div class="nav-item" onclick="showPage('accounts', this)">
+        <div class="nav-item" id="nav-accounts" onclick="showPage('accounts', this)">
           <span class="nav-icon">&#128100;</span> 계정 관리
+        </div>
+        <div class="nav-item" id="nav-vasp" onclick="showPage('vasp', this)">
+          <span class="nav-icon">&#127760;</span> Travel Rule VASP
         </div>
       </div>
 
       <!-- 지갑·자산 -->
       <div class="sidebar-section">
         <div class="sidebar-section-label">지갑·자산</div>
-        <div class="nav-item" onclick="showPage('coldwallet', this)">
+        <div class="nav-item" id="nav-coldwallet" onclick="showPage('coldwallet', this)">
           <span class="nav-icon">&#127974;</span> 콜드월렛 관리
         </div>
-        <div class="nav-item" onclick="showPage('whitelist', this)">
+        <div class="nav-item" id="nav-whitelist" onclick="showPage('whitelist', this)">
           <span class="nav-icon">&#9989;</span> Whitelist 승인
         </div>
-        <div class="nav-item" onclick="showPage('transactions', this)">
+        <div class="nav-item" id="nav-transactions" onclick="showPage('transactions', this)">
           <span class="nav-icon">&#128202;</span> 거래 내역
+        </div>
+        <div class="nav-item" id="nav-coins-config" onclick="showPage('coins-config', this)">
+          <span class="nav-icon">&#9881;</span> 지원코인설정
+        </div>
+        <div class="nav-item" id="nav-wl-coins" onclick="showPage('wl-coins', this)">
+          <span class="nav-icon">&#128737;</span> Whitelist 허용코인
         </div>
       </div>
 
       <!-- AML -->
       <div class="sidebar-section">
         <div class="sidebar-section-label">AML</div>
-        <div class="nav-item" onclick="showPage('str', this)">
-          <span class="nav-icon">&#128737;</span> STR / 이상거래
+        <div class="nav-item" id="nav-str" onclick="showPage('str', this)">
+          <span class="nav-icon">&#128683;</span> STR / 이상거래
         </div>
-        <div class="nav-item" onclick="showPage('pep', this)">
+        <div class="nav-item" id="nav-pep" onclick="showPage('pep', this)">
           <span class="nav-icon">&#128683;</span> 내부요주의인물
         </div>
-        <div class="nav-item" onclick="showPage('country', this)">
+        <div class="nav-item" id="nav-country" onclick="showPage('country', this)">
           <span class="nav-icon">&#127757;</span> 국가위험정책
         </div>
-        <div class="nav-item" onclick="showPage('strparam', this)">
+        <div class="nav-item" id="nav-strparam" onclick="showPage('strparam', this)">
           <span class="nav-icon">&#9881;</span> STR 룰 파라미터
         </div>
       </div>
@@ -261,8 +383,11 @@
       <!-- 시스템 -->
       <div class="sidebar-section">
         <div class="sidebar-section-label">시스템</div>
-        <div class="nav-item" onclick="showPage('activitylog', this)">
+        <div class="nav-item" id="nav-activitylog" onclick="showPage('activitylog', this)">
           <span class="nav-icon">&#128203;</span> 활동 로그
+        </div>
+        <div class="nav-item" id="nav-admin-accounts" onclick="showPage('admin-accounts', this)">
+          <span class="nav-icon">&#128272;</span> Admin 계정 관리
         </div>
       </div>
 
@@ -279,25 +404,25 @@
       <div class="page active" id="page-clients">
         <div class="page-header">
           <h1 class="page-title">고객사 목록</h1>
-          <button class="btn btn-primary">+ 고객사 등록</button>
+          <button class="btn btn-primary" id="btn-create-client" onclick="openModal('modal-create-client')">+ 고객사 생성</button>
         </div>
 
-        <div class="stats-row">
+        <div class="stats-row" style="grid-template-columns: repeat(4, 1fr);">
           <div class="stat-card">
             <span class="stat-label">전체</span>
             <span class="stat-value stat-blue">24</span>
           </div>
           <div class="stat-card">
             <span class="stat-label">활성화</span>
-            <span class="stat-value stat-green">19</span>
+            <span class="stat-value stat-green">22</span>
           </div>
           <div class="stat-card">
-            <span class="stat-label">갱신 임박</span>
-            <span class="stat-value stat-orange">3</span>
+            <span class="stat-label">출금 차단</span>
+            <span class="stat-value stat-orange">1</span>
           </div>
           <div class="stat-card">
             <span class="stat-label">비활성화</span>
-            <span class="stat-value stat-red">2</span>
+            <span class="stat-value stat-gray">1</span>
           </div>
         </div>
 
@@ -311,6 +436,7 @@
               <select class="form-control" style="width:140px;">
                 <option>전체 상태</option>
                 <option>활성화</option>
+                <option>출금 차단</option>
                 <option>비활성화</option>
                 <option>대기</option>
               </select>
@@ -329,9 +455,8 @@
                   <th>고객사명</th>
                   <th>사업자번호</th>
                   <th>위험등급</th>
-                  <th>KYB 상태</th>
-                  <th>다음 갱신일</th>
-                  <th>계정상태</th>
+                  <th>KYB 갱신일</th>
+                  <th>상태</th>
                   <th>관리</th>
                 </tr>
               </thead>
@@ -339,47 +464,35 @@
                 <tr>
                   <td style="font-weight:600;">알파투자운용(주)</td>
                   <td style="font-size:12px; color:var(--text-secondary);">123-45-67890</td>
-                  <td><span class="badge badge-success">저위험 Low Risk</span></td>
-                  <td><span class="badge badge-success">KYB 완료</span></td>
+                  <td><span class="badge badge-success">저위험</span></td>
                   <td>
-                    <div style="font-size:12.5px;">2026-12-01</div>
-                    <div style="font-size:11px; color:var(--text-secondary);">D-238</div>
+                    <div style="font-size:12.5px;">2026-05-09</div>
+                    <div style="font-size:11px; color:#F97316; font-weight:600;">D-32</div>
                   </td>
-                  <td><span class="badge badge-success">활성화</span></td>
+                  <td><span class="badge badge-success">&#9679; 활성화</span></td>
                   <td><button class="btn btn-outline btn-xs">상세</button></td>
                 </tr>
-                <tr>
+                <tr class="row-warn">
                   <td style="font-weight:600;">베타캐피탈 유한회사</td>
                   <td style="font-size:12px; color:var(--text-secondary);">234-56-78901</td>
-                  <td><span class="badge badge-warning">중위험 Medium Risk</span></td>
-                  <td><span class="badge badge-success">KYB 완료</span></td>
+                  <td><span class="badge badge-warning">중위험</span></td>
                   <td>
-                    <div style="font-size:12.5px;">2026-05-15</div>
-                    <div style="font-size:11px; color:#F97316; font-weight:600;">D-38</div>
+                    <div style="font-size:12.5px;">2026-04-12</div>
+                    <div style="font-size:11px; color:var(--danger); font-weight:600;">D+5</div>
                   </td>
-                  <td><span class="badge badge-success">활성화</span></td>
+                  <td><span class="badge badge-orange">&#9888; 출금 차단</span></td>
                   <td><button class="btn btn-outline btn-xs">상세</button></td>
                 </tr>
-                <tr class="row-danger">
+                <tr>
                   <td style="font-weight:600;">감마트레이딩(주)</td>
                   <td style="font-size:12px; color:var(--text-secondary);">345-67-89012</td>
-                  <td><span class="badge badge-danger">고위험 High Risk</span></td>
-                  <td><span class="badge badge-danger">KYB 만료 Expired</span></td>
+                  <td><span class="badge badge-success">저위험</span></td>
                   <td>
-                    <div style="font-size:12.5px;">2026-03-20</div>
-                    <div style="font-size:11px; color:var(--danger); font-weight:600;">D+18</div>
+                    <div style="font-size:12.5px;">2027-02-05</div>
+                    <div style="font-size:11px; color:var(--text-secondary);">D-304</div>
                   </td>
-                  <td><span class="badge badge-danger">비활성화</span></td>
-                  <td><button class="btn btn-warning btn-xs">KYB 갱신</button></td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">델타홀딩스 유한회사</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">456-78-90123</td>
-                  <td><span class="badge badge-gray">—</span></td>
-                  <td><span class="badge badge-info">승인 대기 Pending</span></td>
-                  <td><span style="color:var(--text-secondary);">—</span></td>
-                  <td><span class="badge badge-info">대기</span></td>
-                  <td><button class="btn btn-primary btn-xs">KYB 검토</button></td>
+                  <td><span class="badge badge-success">&#9679; 활성화</span></td>
+                  <td><button class="btn btn-outline btn-xs">상세</button></td>
                 </tr>
               </tbody>
             </table>
@@ -437,6 +550,121 @@
                   <td>
                     <button class="btn btn-warning btn-xs">갱신 시작</button>
                   </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 계정 관리 (고객사)
+      ══════════════════════════ -->
+      <div class="page" id="page-accounts">
+        <div class="page-header">
+          <h1 class="page-title">계정 관리 (고객사)</h1>
+          <button class="btn btn-primary">+ 계정 생성</button>
+        </div>
+        <div class="card">
+          <div class="placeholder-info">
+            <p>고객사 소속 계정의 권한, 역할, 접근 수준을 관리합니다.</p>
+          </div>
+          <div class="table-wrap" style="margin-top:16px;">
+            <table>
+              <thead>
+                <tr><th>계정명</th><th>이메일</th><th>고객사</th><th>역할</th><th>상태</th><th>마지막 로그인</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;">NOTAEHAN</td>
+                  <td>notaehan@infiniteblock.io</td>
+                  <td>알파투자운용(주)</td>
+                  <td><span class="badge badge-master">Master</span></td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-20 14:30</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: Travel Rule VASP
+      ══════════════════════════ -->
+      <div class="page" id="page-vasp">
+        <div class="page-header">
+          <h1 class="page-title">Travel Rule VASP 파트너사 관리</h1>
+          <button class="btn btn-primary" id="btn-create-vasp">+ VASP 등록</button>
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>VASP ID</th>
+                  <th>VASP명</th>
+                  <th>국가코드</th>
+                  <th>코드</th>
+                  <th>등록일</th>
+                  <th>상태</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="param-code">BTH</span></td>
+                  <td style="font-weight:600;">빗썸 (Bithumb)</td>
+                  <td><span class="badge badge-info">KR</span></td>
+                  <td style="font-family:monospace; font-size:12px;">KR-BTH</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-01-15</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">UPT</span></td>
+                  <td style="font-weight:600;">업비트 (Upbit)</td>
+                  <td><span class="badge badge-info">KR</span></td>
+                  <td style="font-family:monospace; font-size:12px;">KR-UPT</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-01-15</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">KBT</span></td>
+                  <td style="font-weight:600;">코빗 (Korbit)</td>
+                  <td><span class="badge badge-info">KR</span></td>
+                  <td style="font-family:monospace; font-size:12px;">KR-KBT</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-02-01</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">CBX</span></td>
+                  <td style="font-weight:600;">코인베이스 (Coinbase)</td>
+                  <td><span class="badge badge-gray">US</span></td>
+                  <td style="font-family:monospace; font-size:12px;">US-CBX</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-03-01</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">BNB</span></td>
+                  <td style="font-weight:600;">바이낸스 (Binance)</td>
+                  <td><span class="badge badge-warning">INT</span></td>
+                  <td style="font-family:monospace; font-size:12px;">INT-BNB</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-03-15</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="param-code">OKX</span></td>
+                  <td style="font-weight:600;">OKX</td>
+                  <td><span class="badge badge-warning">INT</span></td>
+                  <td style="font-family:monospace; font-size:12px;">INT-OKX</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2025-04-01</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
                 </tr>
               </tbody>
             </table>
@@ -553,7 +781,7 @@
       </div>
 
       <!-- ══════════════════════════
-           PAGE: 거래 내역 (admin)
+           PAGE: 거래 내역
       ══════════════════════════ -->
       <div class="page" id="page-transactions">
         <div class="page-header">
@@ -594,6 +822,136 @@
                   <td style="text-align:right; font-weight:600;">0.5000</td>
                   <td><span class="badge badge-info">서명 중</span></td>
                   <td style="font-family:monospace; font-size:11px;">0xd4e5f6...a2b1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 지원 코인 설정
+      ══════════════════════════ -->
+      <div class="page" id="page-coins-config">
+        <div class="page-header">
+          <h1 class="page-title">지원 코인 설정</h1>
+        </div>
+        <div class="alert alert-info">
+          &#9432; 코인 추가/삭제는 전체 고객사에 즉시 적용됩니다.
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>코인</th>
+                  <th>네트워크</th>
+                  <th>상태</th>
+                  <th>최소 출금</th>
+                  <th>수수료</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-info">BTC</span></td>
+                  <td>Bitcoin Mainnet</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-family:monospace; font-size:12px;">0.0001 BTC</td>
+                  <td style="font-family:monospace; font-size:12px;">0.00005 BTC</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-info">ETH</span></td>
+                  <td>Ethereum Mainnet</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-family:monospace; font-size:12px;">0.01 ETH</td>
+                  <td style="font-family:monospace; font-size:12px;">0.003 ETH</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-info">USDT</span></td>
+                  <td>Ethereum (ERC-20)</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-family:monospace; font-size:12px;">10 USDT</td>
+                  <td style="font-family:monospace; font-size:12px;">5 USDT</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-info">USDT</span></td>
+                  <td>TRON (TRC-20)</td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-family:monospace; font-size:12px;">10 USDT</td>
+                  <td style="font-family:monospace; font-size:12px;">1 USDT</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-gray">BNB</span></td>
+                  <td>BNB Smart Chain</td>
+                  <td><span class="badge badge-gray">비활성</span></td>
+                  <td style="font-family:monospace; font-size:12px;">0.01 BNB</td>
+                  <td style="font-family:monospace; font-size:12px;">0.001 BNB</td>
+                  <td style="display:flex; gap:6px;">
+                    <button class="btn btn-outline btn-xs">수정</button>
+                    <button class="btn btn-success btn-xs">활성화</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: Whitelist 허용 코인
+      ══════════════════════════ -->
+      <div class="page" id="page-wl-coins">
+        <div class="page-header">
+          <h1 class="page-title">Whitelist 허용 코인</h1>
+        </div>
+        <div class="alert alert-info">
+          &#9432; 고객사별 Whitelist 등록 가능 코인/네트워크를 제어합니다.
+        </div>
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>코인</th>
+                  <th>네트워크</th>
+                  <th>허용 여부</th>
+                  <th>최대 등록 주소수</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-info">BTC</span></td>
+                  <td>Bitcoin Mainnet</td>
+                  <td><span class="badge badge-success">&#10003; 허용</span></td>
+                  <td>5개</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-info">ETH</span></td>
+                  <td>Ethereum Mainnet</td>
+                  <td><span class="badge badge-success">&#10003; 허용</span></td>
+                  <td>10개</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-info">USDT</span></td>
+                  <td>ERC-20</td>
+                  <td><span class="badge badge-success">&#10003; 허용</span></td>
+                  <td>10개</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-info">USDT</span></td>
+                  <td>TRC-20</td>
+                  <td><span class="badge badge-danger">&#10007; 비허용</span></td>
+                  <td>0개</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
                 </tr>
               </tbody>
             </table>
@@ -648,6 +1006,51 @@
                   <td><span class="badge badge-warning">검출</span></td>
                   <td><button class="btn btn-warning btn-xs">처리</button></td>
                 </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 내부요주의인물
+      ══════════════════════════ -->
+      <div class="page" id="page-pep">
+        <div class="page-header">
+          <h1 class="page-title">내부요주의인물 (PEP/Watchlist)</h1>
+          <button class="btn btn-primary">+ 등록</button>
+        </div>
+        <div class="card">
+          <div class="placeholder-info">
+            <p>정치적 주요인물(PEP), 제재 대상자 및 내부 요주의 인물 목록을 관리합니다.</p>
+          </div>
+          <div class="empty-state">
+            <div class="empty-icon">&#128683;</div>
+            <p>등록된 요주의인물이 없습니다</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 국가위험정책
+      ══════════════════════════ -->
+      <div class="page" id="page-country">
+        <div class="page-header">
+          <h1 class="page-title">국가위험정책</h1>
+        </div>
+        <div class="card">
+          <div class="placeholder-info">
+            <p>FATF 고위험·비협력 국가 및 내부 위험 등급별 국가 정책을 관리합니다.</p>
+          </div>
+          <div class="table-wrap" style="margin-top:16px;">
+            <table>
+              <thead>
+                <tr><th>국가코드</th><th>국가명</th><th>위험등급</th><th>FATF 제재</th><th>정책</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>KP</td><td>북한</td><td><span class="badge badge-danger">최고위험</span></td><td><span class="badge badge-danger">&#9888; 블랙리스트</span></td><td>거래 전면 차단</td></tr>
+                <tr><td>IR</td><td>이란</td><td><span class="badge badge-danger">최고위험</span></td><td><span class="badge badge-danger">&#9888; 블랙리스트</span></td><td>거래 전면 차단</td></tr>
+                <tr><td>RU</td><td>러시아</td><td><span class="badge badge-warning">고위험</span></td><td><span class="badge badge-warning">감시대상</span></td><td>강화 심사</td></tr>
               </tbody>
             </table>
           </div>
@@ -726,84 +1129,7 @@
       </div>
 
       <!-- ══════════════════════════
-           PAGE: 계정 관리 (placeholder)
-      ══════════════════════════ -->
-      <div class="page" id="page-accounts">
-        <div class="page-header">
-          <h1 class="page-title">계정 관리</h1>
-          <button class="btn btn-primary">+ 계정 생성</button>
-        </div>
-        <div class="card">
-          <div class="placeholder-info">
-            <p>고객사 소속 계정의 권한, 역할, 접근 수준을 관리합니다.</p>
-          </div>
-          <div class="table-wrap" style="margin-top:16px;">
-            <table>
-              <thead>
-                <tr><th>계정명</th><th>이메일</th><th>고객사</th><th>역할</th><th>상태</th><th>마지막 로그인</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="font-weight:600;">NOTAEHAN</td>
-                  <td>notaehan@infiniteblock.io</td>
-                  <td>알파투자운용(주)</td>
-                  <td><span class="badge badge-info">Admin</span></td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-11-20 14:30</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════
-           PAGE: 내부요주의인물 (placeholder)
-      ══════════════════════════ -->
-      <div class="page" id="page-pep">
-        <div class="page-header">
-          <h1 class="page-title">내부요주의인물 (PEP/Watchlist)</h1>
-          <button class="btn btn-primary">+ 등록</button>
-        </div>
-        <div class="card">
-          <div class="placeholder-info">
-            <p>정치적 주요인물(PEP), 제재 대상자 및 내부 요주의 인물 목록을 관리합니다.</p>
-          </div>
-          <div class="empty-state">
-            <div class="empty-icon">&#128683;</div>
-            <p>등록된 요주의인물이 없습니다</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════
-           PAGE: 국가위험정책 (placeholder)
-      ══════════════════════════ -->
-      <div class="page" id="page-country">
-        <div class="page-header">
-          <h1 class="page-title">국가위험정책</h1>
-        </div>
-        <div class="card">
-          <div class="placeholder-info">
-            <p>FATF 고위험·비협력 국가 및 내부 위험 등급별 국가 정책을 관리합니다.</p>
-          </div>
-          <div class="table-wrap" style="margin-top:16px;">
-            <table>
-              <thead>
-                <tr><th>국가코드</th><th>국가명</th><th>위험등급</th><th>FATF 제재</th><th>정책</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>KP</td><td>북한</td><td><span class="badge badge-danger">최고위험</span></td><td><span class="badge badge-danger">&#9888; 블랙리스트</span></td><td>거래 전면 차단</td></tr>
-                <tr><td>IR</td><td>이란</td><td><span class="badge badge-danger">최고위험</span></td><td><span class="badge badge-danger">&#9888; 블랙리스트</span></td><td>거래 전면 차단</td></tr>
-                <tr><td>RU</td><td>러시아</td><td><span class="badge badge-warning">고위험</span></td><td><span class="badge badge-warning">감시대상</span></td><td>강화 심사</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════
-           PAGE: 활동 로그 (placeholder)
+           PAGE: 활동 로그
       ══════════════════════════ -->
       <div class="page" id="page-activitylog">
         <div class="page-header">
@@ -856,20 +1182,312 @@
         </div>
       </div>
 
+      <!-- ══════════════════════════
+           PAGE: Admin 계정 관리
+      ══════════════════════════ -->
+      <div class="page" id="page-admin-accounts">
+        <div class="page-header">
+          <h1 class="page-title">Admin 계정 관리</h1>
+          <button class="btn btn-primary" onclick="openModal('modal-add-admin')">+ Admin 계정 추가</button>
+        </div>
+
+        <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="stat-card"><span class="stat-label">전체</span><span class="stat-value stat-blue">6</span></div>
+          <div class="stat-card"><span class="stat-label">활성</span><span class="stat-value stat-green">5</span></div>
+          <div class="stat-card"><span class="stat-label">잠금</span><span class="stat-value stat-red">1</span></div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>계정명</th>
+                  <th>이메일</th>
+                  <th>역할</th>
+                  <th>상태</th>
+                  <th>마지막 로그인</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;">이마스터</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">master@infiniteblock.io</td>
+                  <td><span class="badge badge-master">마스터관리자</span></td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-07 09:00</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">김일반</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">general@infiniteblock.io</td>
+                  <td><span class="badge badge-general">일반관리자</span></td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-07 10:30</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">박콜드</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">cold@infiniteblock.io</td>
+                  <td><span class="badge badge-coldwallet">콜드월렛담당자</span></td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-06 15:00</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">최AML</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">aml@infiniteblock.io</td>
+                  <td><span class="badge badge-aml-officer">AML담당자</span></td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-07 08:45</td>
+                  <td><button class="btn btn-outline btn-xs">수정</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;">정AML매니저</td>
+                  <td style="font-size:12px; color:var(--text-secondary);">amlmgr@infiniteblock.io</td>
+                  <td><span class="badge badge-aml-manager">AML관리자</span></td>
+                  <td><span class="badge badge-danger">잠금 &#128274;</span></td>
+                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-05 17:20</td>
+                  <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="btn btn-outline btn-xs">수정</button>
+                    <button class="btn btn-warning btn-xs">잠금해제</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-note">
+            &#9432; 역할 변경 및 계정 삭제는 OTP 인증 필수. 역할 중복 부여 불가.
+          </div>
+        </div>
+      </div>
+
     </div><!-- /main -->
   </div><!-- /body-wrap -->
 </div><!-- /app -->
 
+
+<!-- ════════════════════════════════════
+     MODALS
+════════════════════════════════════ -->
+
+<!-- modal-create-client: 고객사 생성 -->
+<div class="modal" id="modal-create-client">
+  <div class="modal-header">
+    <span class="modal-title">고객사 생성 / Create Client</span>
+    <button class="modal-close" onclick="closeModal('modal-create-client')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- KYB 연동 정보 (읽기 전용) -->
+    <div class="section-box">
+      <div class="section-box-title">KYB 연동 정보 (읽기 전용)</div>
+      <div class="info-row">
+        <span class="info-label">법인명 (국문)</span>
+        <span class="info-value">알파투자운용(주)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">법인명 (영문)</span>
+        <span class="info-value">Alpha Investment Mgmt</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">사업자번호</span>
+        <span class="info-value" style="font-family:monospace;">123-45-67890</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">위험등급</span>
+        <span class="info-value"><span class="badge badge-success">저위험</span></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">KYB 완료일</span>
+        <span class="info-value">2026-04-07</span>
+      </div>
+    </div>
+
+    <!-- KYB 갱신 주기 -->
+    <div class="form-group">
+      <span class="form-label">KYB 갱신 주기</span>
+      <div class="radio-group">
+        <label class="radio-item">
+          <input type="radio" name="renewal" value="1" checked onchange="calcNextRenewal()"> 1년
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="renewal" value="2" onchange="calcNextRenewal()"> 2년
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="renewal" value="3" onchange="calcNextRenewal()"> 3년
+        </label>
+      </div>
+      <div class="renewal-hint" id="renewal-hint">다음 갱신일: 2027-04-07</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-create-client')">취소</button>
+    <button class="btn btn-primary" onclick="submitCreateClient()">고객사 생성 → OTP</button>
+  </div>
+</div>
+
+<!-- modal-create-master: Master 계정 생성 -->
+<div class="modal" id="modal-create-master">
+  <div class="modal-header">
+    <span class="modal-title">Master 계정 생성</span>
+    <button class="modal-close" onclick="closeModal('modal-create-master')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box" style="margin-bottom:14px;">
+      <div class="info-row" style="border-bottom:none; padding:4px 0;">
+        <span class="info-label">고객사</span>
+        <span class="info-value">알파투자운용(주)</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="master-email">Master 이메일 주소 <span style="color:var(--danger);">*</span></label>
+      <input type="email" id="master-email" class="form-control" placeholder="master@company.com" style="width:100%;" />
+      <div class="form-hint">임시 비밀번호가 이 이메일로 발송됩니다</div>
+    </div>
+    <div class="alert alert-warning" style="margin-bottom:0;">
+      &#9888; Master 계정은 고객사당 1명만 가능합니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-create-master')">취소</button>
+    <button class="btn btn-primary" onclick="submitCreateMaster()">계정 생성 → OTP</button>
+  </div>
+</div>
+
+<!-- modal-add-admin: Admin 계정 추가 (placeholder) -->
+<div class="modal" id="modal-add-admin">
+  <div class="modal-header">
+    <span class="modal-title">Admin 계정 추가</span>
+    <button class="modal-close" onclick="closeModal('modal-add-admin')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label class="form-label">계정명 <span style="color:var(--danger);">*</span></label>
+      <input type="text" class="form-control" placeholder="홍길동" style="width:100%;" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">이메일 주소 <span style="color:var(--danger);">*</span></label>
+      <input type="email" class="form-control" placeholder="admin@infiniteblock.io" style="width:100%;" />
+      <div class="form-hint">임시 비밀번호가 이 이메일로 발송됩니다</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">역할 <span style="color:var(--danger);">*</span></label>
+      <select class="form-control" style="width:100%;">
+        <option value="">역할 선택</option>
+        <option value="master">마스터 관리자</option>
+        <option value="general">일반 관리자</option>
+        <option value="coldwallet">콜드월렛 담당자</option>
+        <option value="aml_officer">AML 담당자</option>
+        <option value="aml_manager">AML 관리자</option>
+      </select>
+      <div class="form-hint">역할 중복 부여 불가</div>
+    </div>
+    <div class="alert alert-warning" style="margin-bottom:0;">
+      &#128274; 계정 생성 시 OTP 인증이 필요합니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-add-admin')">취소</button>
+    <button class="btn btn-primary" onclick="openOTPModal('Admin 계정 추가', function(){ closeModal(\'modal-add-admin\'); showToast(\'Admin 계정이 생성되었습니다. 임시 비밀번호가 이메일로 발송되었습니다.\'); })">계정 생성 → OTP</button>
+  </div>
+</div>
+
+<!-- modal-otp: OTP 인증 -->
+<div class="modal" id="modal-otp">
+  <div class="modal-header">
+    <span class="modal-title" id="otp-modal-title">OTP 인증</span>
+    <button class="modal-close" onclick="closeModal('modal-otp')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="text-align:center;">
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:4px;">OTP 앱에서 6자리 코드를 입력하세요</p>
+    <div class="otp-row">
+      <input type="text" class="otp-box" maxlength="1" id="otp-0" oninput="otpMove(this,0)" onkeydown="otpBack(event,this,0)" onpaste="otpPaste(event)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otp-1" oninput="otpMove(this,1)" onkeydown="otpBack(event,this,1)" onpaste="otpPaste(event)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otp-2" oninput="otpMove(this,2)" onkeydown="otpBack(event,this,2)" onpaste="otpPaste(event)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otp-3" oninput="otpMove(this,3)" onkeydown="otpBack(event,this,3)" onpaste="otpPaste(event)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otp-4" oninput="otpMove(this,4)" onkeydown="otpBack(event,this,4)" onpaste="otpPaste(event)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otp-5" oninput="otpMove(this,5)" onkeydown="otpBack(event,this,5)" onpaste="otpPaste(event)" inputmode="numeric" />
+    </div>
+    <div class="otp-hint">남은 시도: <span id="otp-attempts-left">5</span>회</div>
+    <div class="otp-error" id="otp-error">코드가 올바르지 않습니다. 다시 시도해주세요.</div>
+    <div class="otp-lock-msg" id="otp-lock-msg">&#128274; 5회 실패로 잠금되었습니다. 관리자에게 문의하세요.</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-otp')">취소</button>
+    <button class="btn btn-primary" id="otp-confirm-btn" onclick="confirmOTP()">확인</button>
+  </div>
+</div>
+
+
 <script>
+  /* ════════════════════════════════════
+     ROLE SYSTEM
+  ════════════════════════════════════ */
+  var _ADMIN_ROLE = 'general';
+
+  var ROLE_CONFIG = {
+    master:      { label: '마스터 관리자', cls: 'role-badge-master' },
+    general:     { label: '일반 관리자',   cls: 'role-badge-general' },
+    coldwallet:  { label: '콜드월렛 담당자', cls: 'role-badge-coldwallet' },
+    aml_officer: { label: 'AML 담당자',    cls: 'role-badge-aml-officer' },
+    aml_manager: { label: 'AML 관리자',    cls: 'role-badge-aml-manager' }
+  };
+
+  /* nav items and who can see them (undefined = all roles) */
+  var NAV_ACCESS = {
+    'nav-admin-accounts': ['master'],
+    'nav-vasp':           ['general'],
+    'nav-coins-config':   ['general'],
+    'nav-wl-coins':       ['general']
+  };
+
+  function switchRole(role) {
+    _ADMIN_ROLE = role;
+    applyRoleUI();
+  }
+
+  function applyRoleUI() {
+    // Update topbar badge
+    var badge = document.getElementById('topbar-role-badge');
+    var cfg = ROLE_CONFIG[_ADMIN_ROLE] || ROLE_CONFIG.general;
+    badge.textContent = cfg.label;
+    badge.className = 'role-badge-topbar ' + cfg.cls;
+
+    // Show/hide nav items
+    Object.keys(NAV_ACCESS).forEach(function(navId) {
+      var el = document.getElementById(navId);
+      if (!el) return;
+      var allowed = NAV_ACCESS[navId];
+      if (allowed.indexOf(_ADMIN_ROLE) === -1) {
+        el.style.display = 'none';
+      } else {
+        el.style.display = '';
+      }
+    });
+
+    // "고객사 생성" button: general only
+    var btnCreate = document.getElementById('btn-create-client');
+    if (btnCreate) {
+      btnCreate.style.display = (_ADMIN_ROLE === 'general') ? '' : 'none';
+    }
+
+    // VASP 등록 button: general only
+    var btnVasp = document.getElementById('btn-create-vasp');
+    if (btnVasp) {
+      btnVasp.style.display = (_ADMIN_ROLE === 'general') ? '' : 'none';
+    }
+  }
+
   /* ════════════════════════════════════
      PAGE NAVIGATION
   ════════════════════════════════════ */
   function showPage(pageId, navEl) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById('page-' + pageId);
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    var target = document.getElementById('page-' + pageId);
     if (target) target.classList.add('active');
 
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
     if (navEl) navEl.classList.add('active');
 
     closeMobileSidebar();
@@ -879,9 +1497,9 @@
      MOBILE SIDEBAR
   ════════════════════════════════════ */
   function toggleMobileSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('mobileOverlay');
-    const isOpen = sidebar.classList.toggle('mobile-open');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('mobileOverlay');
+    var isOpen = sidebar.classList.toggle('mobile-open');
     overlay.style.opacity = isOpen ? '1' : '0';
     overlay.style.pointerEvents = isOpen ? 'all' : 'none';
   }
@@ -889,11 +1507,192 @@
   function closeMobileSidebar() {
     if (window.innerWidth < 768) {
       document.getElementById('sidebar').classList.remove('mobile-open');
-      const overlay = document.getElementById('mobileOverlay');
+      var overlay = document.getElementById('mobileOverlay');
       overlay.style.opacity = '0';
       overlay.style.pointerEvents = 'none';
     }
   }
+
+  /* ════════════════════════════════════
+     MODAL INFRASTRUCTURE
+  ════════════════════════════════════ */
+  function openModal(id) {
+    var modal = document.getElementById(id);
+    if (!modal) return;
+    var backdrop = document.getElementById('modal-backdrop');
+    backdrop.classList.add('open');
+    modal.classList.add('open');
+  }
+
+  function closeModal(id) {
+    var modal = document.getElementById(id);
+    if (modal) modal.classList.remove('open');
+    // close backdrop if no modals open
+    var anyOpen = document.querySelector('.modal.open');
+    if (!anyOpen) {
+      document.getElementById('modal-backdrop').classList.remove('open');
+    }
+  }
+
+  function closeAllModals() {
+    document.querySelectorAll('.modal.open').forEach(function(m) {
+      m.classList.remove('open');
+    });
+    document.getElementById('modal-backdrop').classList.remove('open');
+  }
+
+  /* ════════════════════════════════════
+     OTP MODAL
+  ════════════════════════════════════ */
+  var _otpCallback = null;
+  var _otpAttempts = 0;
+  var _otpMaxAttempts = 5;
+  var _OTP_DEMO_CODE = '123456'; // demo: any code accepted
+
+  function openOTPModal(title, cb) {
+    _otpCallback = cb;
+    _otpAttempts = 0;
+    // reset UI
+    for (var i = 0; i < 6; i++) {
+      var box = document.getElementById('otp-' + i);
+      if (box) { box.value = ''; box.disabled = false; box.style.borderColor = ''; }
+    }
+    document.getElementById('otp-error').style.display = 'none';
+    document.getElementById('otp-lock-msg').style.display = 'none';
+    document.getElementById('otp-confirm-btn').disabled = false;
+    document.getElementById('otp-attempts-left').textContent = _otpMaxAttempts;
+    if (title) document.getElementById('otp-modal-title').textContent = 'OTP 인증 — ' + title;
+    openModal('modal-otp');
+    setTimeout(function() {
+      var first = document.getElementById('otp-0');
+      if (first) first.focus();
+    }, 200);
+  }
+
+  function confirmOTP() {
+    var code = '';
+    for (var i = 0; i < 6; i++) {
+      code += (document.getElementById('otp-' + i).value || '');
+    }
+    if (code.length < 6) {
+      document.getElementById('otp-error').textContent = '6자리 코드를 모두 입력해주세요.';
+      document.getElementById('otp-error').style.display = 'block';
+      return;
+    }
+
+    // Demo: accept any 6-digit code
+    _otpAttempts++;
+    var remaining = _otpMaxAttempts - _otpAttempts;
+    document.getElementById('otp-attempts-left').textContent = Math.max(0, remaining);
+
+    if (code === _OTP_DEMO_CODE || true) { // accept any for demo
+      closeModal('modal-otp');
+      if (typeof _otpCallback === 'function') {
+        var cb = _otpCallback;
+        _otpCallback = null;
+        cb();
+      }
+      return;
+    }
+
+    // Wrong code
+    document.getElementById('otp-error').style.display = 'block';
+    if (_otpAttempts >= _otpMaxAttempts) {
+      // Lock
+      for (var j = 0; j < 6; j++) {
+        var b = document.getElementById('otp-' + j);
+        if (b) b.disabled = true;
+      }
+      document.getElementById('otp-confirm-btn').disabled = true;
+      document.getElementById('otp-error').style.display = 'none';
+      document.getElementById('otp-lock-msg').style.display = 'block';
+    }
+  }
+
+  function otpMove(el, idx) {
+    el.value = el.value.replace(/[^0-9]/g, '');
+    if (el.value && idx < 5) {
+      document.getElementById('otp-' + (idx + 1)).focus();
+    }
+  }
+
+  function otpBack(e, el, idx) {
+    if (e.key === 'Backspace' && !el.value && idx > 0) {
+      document.getElementById('otp-' + (idx - 1)).focus();
+    }
+    if (e.key === 'Enter') confirmOTP();
+  }
+
+  function otpPaste(e) {
+    e.preventDefault();
+    var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+    for (var i = 0; i < pasted.length; i++) {
+      var box = document.getElementById('otp-' + i);
+      if (box) box.value = pasted[i];
+    }
+    var last = Math.min(pasted.length, 5);
+    var focusBox = document.getElementById('otp-' + last);
+    if (focusBox) focusBox.focus();
+  }
+
+  /* ════════════════════════════════════
+     TOAST
+  ════════════════════════════════════ */
+  function showToast(msg, duration) {
+    duration = duration || 3000;
+    var container = document.getElementById('toast-container');
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(function() {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s';
+      setTimeout(function() { container.removeChild(toast); }, 350);
+    }, duration);
+  }
+
+  /* ════════════════════════════════════
+     CLIENT CREATION FLOW
+  ════════════════════════════════════ */
+  function calcNextRenewal() {
+    var selected = document.querySelector('input[name="renewal"]:checked');
+    var years = selected ? parseInt(selected.value) : 1;
+    var today = new Date('2026-04-07'); // using current date from context
+    today.setFullYear(today.getFullYear() + years);
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var dd = String(today.getDate()).padStart(2, '0');
+    var hint = document.getElementById('renewal-hint');
+    if (hint) hint.textContent = '다음 갱신일: ' + yyyy + '-' + mm + '-' + dd;
+  }
+
+  function submitCreateClient() {
+    openOTPModal('고객사 생성', function() {
+      closeModal('modal-create-client');
+      openModal('modal-create-master');
+    });
+  }
+
+  function submitCreateMaster() {
+    var emailEl = document.getElementById('master-email');
+    if (!emailEl || !emailEl.value.trim()) {
+      emailEl.focus();
+      return;
+    }
+    openOTPModal('Master 계정 생성', function() {
+      closeModal('modal-create-master');
+      showToast('Master 계정이 생성되었습니다. 임시 비밀번호가 이메일로 발송되었습니다.');
+    });
+  }
+
+  /* ════════════════════════════════════
+     INIT
+  ════════════════════════════════════ */
+  (function init() {
+    calcNextRenewal();
+    applyRoleUI();
+  })();
 </script>
 </body>
 </html>
