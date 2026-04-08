@@ -601,6 +601,69 @@
             </table>
           </div>
         </div>
+
+        <!-- ── KYB 상태 이력 로그 패널 ── -->
+        <div class="card" style="padding:0; margin-top:20px;">
+          <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <span style="font-size:14px; font-weight:700;">KYB 상태 이력 로그</span>
+            <button class="btn btn-outline btn-sm" onclick="openKYBLogCSVModal()">&#8595; CSV 다운로드</button>
+          </div>
+          <div style="padding:10px 16px; border-bottom:1px solid var(--border);">
+            <div class="toolbar" style="margin-bottom:0; flex-wrap:wrap;">
+              <select class="form-control" id="kyb-log-filter-corp" style="width:150px;" onchange="renderKYBLog()">
+                <option value="">전체 고객사</option>
+                <option>알파투자운용(주)</option>
+                <option>베타캐피탈 유한회사</option>
+                <option>감마트레이딩(주)</option>
+                <option>델타홀딩스 유한회사</option>
+                <option>엡실론자산운용(주)</option>
+                <option>제타캐피탈(주)</option>
+                <option>오메가자산운용(주)</option>
+              </select>
+              <select class="form-control" id="kyb-log-filter-event" style="width:150px;" onchange="renderKYBLog()">
+                <option value="">전체 이벤트</option>
+                <option value="신규 등록">신규 등록</option>
+                <option value="임시 저장">임시 저장</option>
+                <option value="작성 완료">작성 완료</option>
+                <option value="WLF 결재 승인">WLF 결재 승인</option>
+                <option value="KYB 완료">KYB 완료</option>
+                <option value="반려">반려</option>
+                <option value="KYB 만료">KYB 만료</option>
+                <option value="재작성 시작">재작성 시작</option>
+                <option value="갱신 완료">갱신 완료</option>
+              </select>
+              <select class="form-control" id="kyb-log-filter-date" style="width:120px;" onchange="renderKYBLog()">
+                <option value="">전체 날짜</option>
+                <option value="today">오늘</option>
+                <option value="7d">최근 7일</option>
+                <option value="30d">최근 30일</option>
+              </select>
+              <select class="form-control" id="kyb-log-filter-officer" style="width:120px;" onchange="renderKYBLog()">
+                <option value="">전체 담당자</option>
+                <option value="김담당">김담당</option>
+                <option value="이담당">이담당</option>
+                <option value="박담당">박담당</option>
+                <option value="최담당">최담당</option>
+                <option value="시스템">시스템</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:160px;">일시</th>
+                  <th style="width:140px;">고객사</th>
+                  <th>상태 변경</th>
+                  <th style="width:120px;">담당자</th>
+                  <th style="width:200px;">비고</th>
+                </tr>
+              </thead>
+              <tbody id="kyb-log-tbody"></tbody>
+            </table>
+          </div>
+          <div id="kyb-log-empty" style="display:none; padding:32px; text-align:center; color:var(--text-secondary); font-size:13px;">조회된 이력이 없습니다.</div>
+        </div>
       </div>
 
       <!-- ══════════════════════════
@@ -2092,6 +2155,89 @@
 </div>
 
 <!-- ══════════════════════════════════════
+     MODALS: KYB 상태 이력 로그 (섹션 4-3)
+══════════════════════════════════════ -->
+
+<!-- 상태 변경 상세 팝업 -->
+<div class="modal" id="modal-kyb-log-detail" style="max-width:500px;">
+  <div class="modal-header">
+    <span class="modal-title">KYB 상태 변경 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-kyb-log-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="display:grid; gap:12px;">
+    <!-- 일시 / 결과 -->
+    <div style="display:grid; grid-template-columns:90px 1fr; gap:7px 12px; font-size:13px; align-items:center;">
+      <span style="color:var(--text-secondary);">일시</span>
+      <span id="kld-datetime" style="font-weight:600; font-size:12px;"></span>
+      <span style="color:var(--text-secondary);">결과</span>
+      <span id="kld-result"></span>
+    </div>
+    <hr style="border:none; border-top:1px solid var(--border); margin:0;" />
+    <!-- 고객사 / 이벤트 -->
+    <div style="display:grid; grid-template-columns:90px 1fr; gap:7px 12px; font-size:13px; align-items:center;">
+      <span style="color:var(--text-secondary);">고객사</span>
+      <span id="kld-corp" style="font-weight:600;"></span>
+      <span style="color:var(--text-secondary);">이벤트</span>
+      <span id="kld-event"></span>
+    </div>
+    <!-- 상태 변경 -->
+    <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:12px;">
+      <div style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">상태 변경</div>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <span id="kld-from-badge"></span>
+        <span style="color:var(--text-secondary); font-size:16px;">→</span>
+        <span id="kld-to-badge"></span>
+      </div>
+    </div>
+    <!-- 처리 주체 / 추가 정보 -->
+    <div style="display:grid; grid-template-columns:90px 1fr; gap:7px 12px; font-size:13px; align-items:start;">
+      <span style="color:var(--text-secondary);">처리 주체</span>
+      <span id="kld-actor"></span>
+      <span id="kld-extra-label" style="color:var(--text-secondary); display:none;"></span>
+      <span id="kld-extra-value" style="display:none;"></span>
+    </div>
+    <!-- 반려 사유 (반려 이벤트만) -->
+    <div id="kld-reject-wrap" style="display:none;">
+      <div style="font-size:12px; font-weight:700; color:#EF4444; margin-bottom:6px;">반려 사유</div>
+      <div id="kld-reject-reason" style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:11px 13px; font-size:13px; line-height:1.65;"></div>
+    </div>
+    <!-- 연계 처리 (만료/완료 이벤트) -->
+    <div id="kld-linked-wrap" style="display:none;">
+      <div style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">연계 처리</div>
+      <div id="kld-linked-items" style="display:flex; flex-direction:column; gap:5px; font-size:12px;"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-kyb-log-detail')">닫기</button>
+  </div>
+</div>
+
+<!-- CSV 다운로드 모달 -->
+<div class="modal" id="modal-kyb-log-csv" style="max-width:400px;">
+  <div class="modal-header">
+    <span class="modal-title">KYB 이력 로그 CSV 다운로드</span>
+    <button class="modal-close" onclick="closeModal('modal-kyb-log-csv')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="display:grid; gap:12px;">
+    <div style="background:#FFF7ED; border-radius:8px; padding:10px 12px; font-size:12px; color:#92400E;">
+      &#9888; 다운로드 파일에는 담당자 이름·이메일 전체 정보가 포함됩니다.
+    </div>
+    <div>
+      <label style="font-size:12px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:5px;">다운로드 사유 <span style="color:#EF4444;">*</span></label>
+      <textarea id="kyb-log-csv-reason" class="form-control" rows="3" placeholder="다운로드 사유를 입력하세요 (필수)" style="width:100%; resize:vertical;"></textarea>
+    </div>
+    <div>
+      <label style="font-size:12px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:5px;">OTP <span style="color:#EF4444;">*</span></label>
+      <input type="text" id="kyb-log-csv-otp" class="form-control" placeholder="OTP 입력" style="width:100%;" inputmode="numeric" maxlength="6" />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-kyb-log-csv')">취소</button>
+    <button class="btn btn-primary" onclick="confirmKYBLogCSV()">다운로드</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
      MODALS: 활동 로그 (섹션 8)
 ══════════════════════════════════════ -->
 
@@ -3009,7 +3155,7 @@
     }
 
     // Re-render KYB table to update action buttons per role
-    if (document.getElementById('kyb-tbody')) renderKYBTable();
+    if (document.getElementById('kyb-tbody')) { renderKYBTable(); renderKYBLog(); }
 
     // Re-init transactions page if visible
     if (document.getElementById('page-transactions') &&
@@ -5632,6 +5778,149 @@
       closeModal('modal-create-master');
       showToast('Master 계정이 생성되었습니다. 임시 비밀번호가 이메일로 발송되었습니다.');
     });
+  }
+
+  /* ════════════════════════════════════
+     SECTION 4-3: KYB 상태 이력 로그
+  ════════════════════════════════════ */
+
+  var _KYB_LOG_DATA = [
+    { idx:0,  datetime:'2026-04-08 09:00:00', corp:'감마트레이딩(주)',     event:'재작성 시작',    fromStatus:'expired',   toStatus:'draft',     actorMask:'이**', actorFull:'이담당 (AML 담당자)', actorRole:'aml_officer', isSystem:false, note:'재작성 시작',           rejectReason:null, extraLabel:null, extraValue:null, linked:null },
+    { idx:1,  datetime:'2026-04-08 08:30:00', corp:'엡실론자산운용(주)',   event:'작성 완료',      fromStatus:'draft',     toStatus:'submitted', actorMask:'이**', actorFull:'이담당 (AML 담당자)', actorRole:'aml_officer', isSystem:false, note:'OTP 인증 완료',          rejectReason:null, extraLabel:null, extraValue:null, linked:null },
+    { idx:2,  datetime:'2026-04-06 11:00:00', corp:'엡실론자산운용(주)',   event:'신규 등록',      fromStatus:null,        toStatus:'draft',     actorMask:'이**', actorFull:'이담당 (AML 담당자)', actorRole:'aml_officer', isSystem:false, note:'KYB 최초 등록',          rejectReason:null, extraLabel:null, extraValue:null, linked:null },
+    { idx:3,  datetime:'2026-04-01 00:00:00', corp:'감마트레이딩(주)',     event:'KYB 만료',       fromStatus:'done',      toStatus:'expired',   actorMask:'시스템', actorFull:'시스템 (자동)',      actorRole:'system',      isSystem:true,  note:'만료일 도달 (자동)',      rejectReason:null, extraLabel:'만료일', extraValue:'2026-04-01', linked:['고객사 출금 차단: ✅ 자동 적용','AML 담당자 알림: ✅ 발송 완료','고객사 Master 알림: ✅ 발송 완료'] },
+    { idx:4,  datetime:'2026-03-28 14:30:00', corp:'델타홀딩스 유한회사', event:'KYB 완료',        fromStatus:'wlf',       toStatus:'done',      actorMask:'시스템', actorFull:'시스템 (OCTA 자동)', actorRole:'system',      isSystem:true,  note:'OCTA 검증 완료',         rejectReason:null, extraLabel:'위험등급', extraValue:'저위험 · 만료: 2027-03-28', linked:null },
+    { idx:5,  datetime:'2026-03-28 11:00:00', corp:'델타홀딩스 유한회사', event:'WLF 결재 승인',   fromStatus:'submitted', toStatus:'wlf',       actorMask:'최**', actorFull:'최담당 (AML 관리자)', actorRole:'aml_manager', isSystem:false, note:'WLF 결재 승인',          rejectReason:null, extraLabel:null, extraValue:null, linked:null },
+    { idx:6,  datetime:'2026-03-28 09:00:00', corp:'델타홀딩스 유한회사', event:'작성 완료',       fromStatus:'draft',     toStatus:'submitted', actorMask:'최**', actorFull:'최담당 (AML 담당자)', actorRole:'aml_officer', isSystem:false, note:'—',                     rejectReason:null, extraLabel:null, extraValue:null, linked:null },
+    { idx:7,  datetime:'2026-03-20 15:00:00', corp:'엡실론자산운용(주)',   event:'반려',           fromStatus:'submitted', toStatus:'rejected',  actorMask:'박**', actorFull:'박담당 (AML 관리자)', actorRole:'aml_manager', isSystem:false, note:'사유: 서류 미비',        rejectReason:'실소유자 정보가 법인등기부등본과 일치하지 않습니다. 확인 후 재제출해주세요.', extraLabel:null, extraValue:null, linked:null },
+    { idx:8,  datetime:'2026-03-15 10:00:00', corp:'오메가자산운용(주)',   event:'KYB 만료',       fromStatus:'done',      toStatus:'expired',   actorMask:'시스템', actorFull:'시스템 (자동)',      actorRole:'system',      isSystem:true,  note:'만료일 도달 (자동)',     rejectReason:null, extraLabel:'만료일', extraValue:'2026-03-15', linked:['고객사 출금 차단: ✅ 자동 적용','AML 담당자 알림: ✅ 발송 완료','고객사 Master 알림: ✅ 발송 완료'] },
+    { idx:9,  datetime:'2026-03-10 09:00:00', corp:'오메가자산운용(주)',   event:'KYB 완료',       fromStatus:'wlf',       toStatus:'done',      actorMask:'시스템', actorFull:'시스템 (OCTA 자동)', actorRole:'system',      isSystem:true,  note:'OCTA 검증 완료',         rejectReason:null, extraLabel:'위험등급', extraValue:'저위험 · 만료: 2026-03-15', linked:null },
+    { idx:10, datetime:'2026-03-01 09:00:00', corp:'알파투자운용(주)',     event:'신규 등록',      fromStatus:null,        toStatus:'draft',     actorMask:'김**', actorFull:'김담당 (AML 담당자)', actorRole:'aml_officer', isSystem:false, note:'KYB 최초 등록',           rejectReason:null, extraLabel:null, extraValue:null, linked:null },
+  ];
+
+  function _kybStatusBadge(status) {
+    if (!status) return '<span style="color:var(--text-secondary); font-size:12px;">(신규)</span>';
+    var cfg = KYB_STATUS_CFG[status] || {};
+    return '<span class="badge ' + (cfg.badgeCls || 'badge-gray') + '">' + (cfg.label || status) + '</span>';
+  }
+
+  function renderKYBLog() {
+    var corpFilter   = (document.getElementById('kyb-log-filter-corp')    || {}).value || '';
+    var eventFilter  = (document.getElementById('kyb-log-filter-event')   || {}).value || '';
+    var dateFilter   = (document.getElementById('kyb-log-filter-date')    || {}).value || '';
+    var officerFilter= (document.getElementById('kyb-log-filter-officer') || {}).value || '';
+    var today = new Date('2026-04-08');
+
+    var rows = _KYB_LOG_DATA.filter(function(r) {
+      if (corpFilter && r.corp !== corpFilter) return false;
+      if (eventFilter && r.event !== eventFilter) return false;
+      if (officerFilter && r.actorMask.replace('**','담당') !== officerFilter && r.actorMask !== officerFilter) {
+        var match = (officerFilter === '시스템' && r.isSystem) ||
+                    (officerFilter === '김담당' && r.actorFull.indexOf('김') === 0) ||
+                    (officerFilter === '이담당' && r.actorFull.indexOf('이') === 0) ||
+                    (officerFilter === '박담당' && r.actorFull.indexOf('박') === 0) ||
+                    (officerFilter === '최담당' && r.actorFull.indexOf('최') === 0);
+        if (!match) return false;
+      }
+      if (dateFilter) {
+        var dt = new Date(r.datetime.substring(0,10));
+        var diffDays = Math.floor((today - dt) / (1000 * 60 * 60 * 24));
+        if (dateFilter === 'today' && diffDays > 0) return false;
+        if (dateFilter === '7d'    && diffDays > 7)  return false;
+        if (dateFilter === '30d'   && diffDays > 30) return false;
+      }
+      return true;
+    });
+
+    var tbody = document.getElementById('kyb-log-tbody');
+    var emptyDiv = document.getElementById('kyb-log-empty');
+    if (!tbody) return;
+    if (rows.length === 0) {
+      tbody.innerHTML = '';
+      if (emptyDiv) emptyDiv.style.display = '';
+      return;
+    }
+    if (emptyDiv) emptyDiv.style.display = 'none';
+
+    tbody.innerHTML = rows.map(function(r) {
+      var actorCell = r.isSystem
+        ? '<span style="color:var(--text-secondary); font-size:12px;">시스템</span>'
+        : '<span class="mask-wrap" style="font-size:12px; cursor:default;">' + escHtml(r.actorMask)
+          + '<span class="mask-tip">' + escHtml(r.actorFull) + '</span></span>';
+      var fromBadge = _kybStatusBadge(r.fromStatus);
+      var toBadge   = _kybStatusBadge(r.toStatus);
+      var changeCell = fromBadge + ' <span style="color:var(--text-secondary); margin:0 4px;">→</span> ' + toBadge;
+      return '<tr style="cursor:pointer;" onclick="openKYBLogDetail(' + r.idx + ')">'
+        + '<td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">' + escHtml(r.datetime) + '</td>'
+        + '<td style="font-size:12px; font-weight:600; cursor:pointer; color:var(--primary);" onclick="event.stopPropagation(); kybLogFilterCorp(\'' + escHtml(r.corp) + '\')">' + escHtml(r.corp) + '</td>'
+        + '<td>' + changeCell + '</td>'
+        + '<td>' + actorCell + '</td>'
+        + '<td style="font-size:12px; color:var(--text-secondary);">' + escHtml(r.note) + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function kybLogFilterCorp(corp) {
+    var sel = document.getElementById('kyb-log-filter-corp');
+    if (sel) { sel.value = corp; renderKYBLog(); }
+  }
+
+  function openKYBLogDetail(idx) {
+    var r = _KYB_LOG_DATA[idx]; if (!r) return;
+    document.getElementById('kld-datetime').textContent = r.datetime;
+    document.getElementById('kld-result').innerHTML = '<span class="badge badge-success">✅ 처리 완료</span>';
+    document.getElementById('kld-corp').textContent = r.corp;
+    document.getElementById('kld-event').textContent = r.event;
+    document.getElementById('kld-from-badge').innerHTML = _kybStatusBadge(r.fromStatus);
+    document.getElementById('kld-to-badge').innerHTML   = _kybStatusBadge(r.toStatus);
+    // 처리 주체
+    document.getElementById('kld-actor').innerHTML = r.isSystem
+      ? '<span style="color:var(--text-secondary);">시스템 (만료일 자동 처리)</span>'
+      : '<span class="mask-wrap">' + escHtml(r.actorMask) + '<span class="mask-tip">' + escHtml(r.actorFull) + '</span></span>';
+    // 추가 정보
+    var extraLabel = document.getElementById('kld-extra-label');
+    var extraValue = document.getElementById('kld-extra-value');
+    if (r.extraLabel) {
+      extraLabel.textContent = r.extraLabel; extraLabel.style.display = '';
+      extraValue.textContent = r.extraValue; extraValue.style.display = '';
+    } else {
+      extraLabel.style.display = 'none'; extraValue.style.display = 'none';
+    }
+    // 반려 사유
+    var rejWrap = document.getElementById('kld-reject-wrap');
+    if (r.rejectReason) {
+      document.getElementById('kld-reject-reason').textContent = r.rejectReason;
+      rejWrap.style.display = '';
+    } else {
+      rejWrap.style.display = 'none';
+    }
+    // 연계 처리
+    var linkWrap = document.getElementById('kld-linked-wrap');
+    if (r.linked && r.linked.length) {
+      document.getElementById('kld-linked-items').innerHTML = r.linked.map(function(l) {
+        return '<div style="color:#065F46;">· ' + escHtml(l) + '</div>';
+      }).join('');
+      linkWrap.style.display = '';
+    } else {
+      linkWrap.style.display = 'none';
+    }
+    openModal('modal-kyb-log-detail');
+  }
+
+  function openKYBLogCSVModal() {
+    var r = document.getElementById('kyb-log-csv-reason');
+    var o = document.getElementById('kyb-log-csv-otp');
+    if (r) r.value = ''; if (o) o.value = '';
+    openModal('modal-kyb-log-csv');
+  }
+
+  function confirmKYBLogCSV() {
+    var reason = document.getElementById('kyb-log-csv-reason').value.trim();
+    var otp    = document.getElementById('kyb-log-csv-otp').value.trim();
+    if (!reason) { showToast('다운로드 사유를 입력하세요.'); return; }
+    if (!otp)    { showToast('OTP를 입력하세요.'); return; }
+    closeModal('modal-kyb-log-csv');
+    showToast('KYB 이력 로그 CSV 다운로드가 시작되었습니다.');
   }
 
   /* ════════════════════════════════════
