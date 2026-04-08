@@ -2490,6 +2490,10 @@
                 </div>
                 <span class="badge badge-success">&#9679; 활성화</span>
               </div>
+              <div class="wallet-info-row"><span class="wallet-info-label">코인</span><span style="font-weight:600;" id="detailCoin">BTC / Bitcoin</span></div>
+              <div class="wallet-info-row"><span class="wallet-info-label">주소</span>
+                <span style="font-family:monospace; font-size:12px;">bc1q...3f8e <span onclick="copyAddress()" style="cursor:pointer; color:var(--primary);">&#128203;</span></span>
+              </div>
               <div class="wallet-info-row"><span class="wallet-info-label">총 자산 (KRW)</span><span style="font-size:18px; font-weight:700;">₩0</span></div>
               <div class="wallet-info-row">
                 <span class="wallet-info-label">서명 정책</span>
@@ -2504,13 +2508,7 @@
               </div>
               <div class="wallet-info-row" style="border-bottom:none;"><span class="wallet-info-label">요청자</span><span>김철수</span></div>
               <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
-                <!-- 입금 주소: 코인 선택 드롭다운 -->
-                <div id="detail-deposit-wrap">
-                  <button class="btn btn-success btn-full" id="detail-deposit-btn" onclick="toggleDetailDepositCoinPicker()">&#8600; 입금 주소</button>
-                  <div id="detail-deposit-picker" style="display:none; margin-top:6px; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:#fff;">
-                    <div id="detail-deposit-coin-list"></div>
-                  </div>
-                </div>
+                <button class="btn btn-success btn-full" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금 주소</button>
                 <button class="btn btn-warning btn-full" onclick="openWithdrawal('BTC 보관 지갑 #1')">&#8599; 출금 신청</button>
                 <button class="btn btn-outline btn-full" onclick="openSO('so-add-coin')">+ 코인 추가 <span style="font-size:10px; color:var(--text-secondary);">(Master)</span></button>
               </div>
@@ -4321,47 +4319,6 @@
     document.getElementById('qrAddress').textContent = address;
     openModal('modal-deposit-qr');
   }
-
-  /* ── 지갑 상세 입금 주소 코인 선택 드롭다운 ── */
-  function toggleDetailDepositCoinPicker() {
-    const picker = document.getElementById('detail-deposit-picker');
-    if (!picker) return;
-    const isOpen = picker.style.display !== 'none';
-    if (isOpen) { picker.style.display = 'none'; return; }
-
-    // 활성 코인만 목록으로
-    const activeCoins = _COIN_DATA.filter(c => c.status === 'active');
-    if (activeCoins.length === 0) {
-      showToast('활성화된 코인이 없습니다. 먼저 코인을 추가해주세요.');
-      return;
-    }
-
-    const _COIN_COLORS_LOCAL = { BTC:'#F7931A', ETH:'#627EEA', USDT:'#26A17B', BNB:'#F3BA2F', TRX:'#EB0029', SOL:'#9945FF', XRP:'#346AA9' };
-    const _COIN_SYMBOLS_LOCAL = { BTC:'B', ETH:'E', USDT:'U', BNB:'B', TRX:'T', SOL:'S', XRP:'X' };
-
-    document.getElementById('detail-deposit-coin-list').innerHTML = activeCoins.map((c, i) => {
-      const color = _COIN_COLORS_LOCAL[c.coin] || '#94A3B8';
-      const sym   = _COIN_SYMBOLS_LOCAL[c.coin] || c.coin[0];
-      const border = i < activeCoins.length - 1 ? 'border-bottom:1px solid var(--border);' : '';
-      return `<div style="display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; ${border}"
-        onmouseenter="this.style.background='#F8FAFC'" onmouseleave="this.style.background=''"
-        onclick="selectDetailDepositCoin('${c.coin}','${c.network}','${c.addr}')">
-        <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px; flex-shrink:0;">${sym}</div>
-        <div style="flex:1; min-width:0;">
-          <div style="font-weight:700; font-size:13px;">${c.coin}</div>
-          <div style="font-size:11px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.network}</div>
-        </div>
-        <span style="font-family:monospace; font-size:11px; color:var(--text-secondary);">${c.addr}</span>
-      </div>`;
-    }).join('');
-
-    picker.style.display = '';
-  }
-
-  function selectDetailDepositCoin(coin, network, address) {
-    document.getElementById('detail-deposit-picker').style.display = 'none';
-    openDepositQR(coin, network, address);
-  }
   function copyAddress() {
     const addr = document.getElementById('qrAddress').textContent;
     navigator.clipboard && navigator.clipboard.writeText(addr);
@@ -5822,14 +5779,8 @@
     menu.style.display = open ? 'block' : 'none';
     _wlMenuOpen = open ? menu : null;
   }
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function() {
     if (_wlMenuOpen) { _wlMenuOpen.style.display = 'none'; _wlMenuOpen = null; }
-    // 입금 주소 코인 피커 바깥 클릭 시 닫기
-    const picker = document.getElementById('detail-deposit-picker');
-    const wrap   = document.getElementById('detail-deposit-wrap');
-    if (picker && wrap && picker.style.display !== 'none' && !wrap.contains(e.target)) {
-      picker.style.display = 'none';
-    }
   });
 
   // ── Open apply slideover ──
