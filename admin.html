@@ -794,27 +794,17 @@
         <div class="admin-tab-panel active" id="cw-panel-walletreq">
           <div class="stats-row" style="grid-template-columns:repeat(4,1fr); margin-bottom:16px;">
             <div class="stat-card"><span class="stat-label">생성 대기</span><span class="stat-value stat-orange" id="cw-stat-pending">0</span></div>
-            <div class="stat-card"><span class="stat-label">생성 완료</span><span class="stat-value stat-green" id="cw-stat-done">0</span></div>
-            <div class="stat-card"><span class="stat-label">삭제 대기</span><span class="stat-value stat-orange" id="wd-stat-pending">0</span></div>
-            <div class="stat-card"><span class="stat-label">삭제 완료</span><span class="stat-value stat-green" id="wd-stat-done">0</span></div>
+            <div class="stat-card"><span class="stat-label">삭제 대기</span><span class="stat-value stat-red"    id="wd-stat-pending">0</span></div>
+            <div class="stat-card"><span class="stat-label">처리 완료</span><span class="stat-value stat-green"  id="cw-walletreq-done">0</span></div>
+            <div class="stat-card"><span class="stat-label">전체 지갑</span><span class="stat-value"             id="cw-walletreq-total">0</span></div>
           </div>
-          <!-- 생성 요청 -->
-          <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding:0 2px;">지갑 생성 요청</div>
-          <div class="card" style="padding:0; margin-bottom:16px;">
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>고객사</th><th>지갑명</th><th>코인</th><th>네트워크</th><th>용도 메모</th><th>요청일시</th><th>상태</th><th>처리</th></tr></thead>
-                <tbody id="cw-create-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-          <!-- 삭제 요청 -->
-          <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding:0 2px;">지갑 삭제 요청</div>
           <div class="card" style="padding:0;">
             <div class="table-wrap">
               <table>
-                <thead><tr><th>고객사</th><th>지갑명</th><th>코인</th><th>잔액</th><th>요청일시</th><th>상태</th><th>처리</th></tr></thead>
-                <tbody id="cw-delete-tbody"></tbody>
+                <thead>
+                  <tr><th>고객사</th><th>지갑명</th><th>코인</th><th>요청 유형</th><th>요청일시</th><th>상태</th><th>처리</th></tr>
+                </thead>
+                <tbody id="cw-walletreq-tbody"></tbody>
               </table>
             </div>
           </div>
@@ -4113,35 +4103,73 @@
 
   /* ── 6-1: 지갑 생성 요청 render ── */
   function renderCWRequests() {
-    var pending = _CW_REQUESTS.filter(function(r){ return r.status === 'pending'; });
-    var done    = _CW_REQUESTS.filter(function(r){ return r.status === 'done'; });
-    var sp = document.getElementById('cw-stat-pending'); if (sp) sp.textContent = pending.length;
-    var sd = document.getElementById('cw-stat-done');    if (sd) sd.textContent = done.length;
-    // walletreq badge
-    var badge = document.getElementById('cw-walletreq-badge');
-    if (badge) { badge.textContent = pending.length; badge.style.display = pending.length ? '' : 'none'; }
+    // ── Stats ──
+    var createPending = _CW_REQUESTS.filter(function(r){ return r.status === 'pending'; }).length;
+    var deletePending = _WALLET_DEL_ADMIN.filter(function(r){ return r.status === 'pending'; }).length;
+    var createDone    = _CW_REQUESTS.filter(function(r){ return r.status === 'done'; }).length;
+    var deleteDone    = _WALLET_DEL_ADMIN.filter(function(r){ return r.status === 'done'; }).length;
+    var totalWallets  = _CW_ALL_WALLETS.filter(function(w){ return w.status !== 'deleted'; }).length;
 
-    var tbody = document.getElementById('cw-create-tbody');
+    var sp = document.getElementById('cw-stat-pending');   if (sp) sp.textContent = createPending;
+    var dp = document.getElementById('wd-stat-pending');   if (dp) dp.textContent = deletePending;
+    var dn = document.getElementById('cw-walletreq-done'); if (dn) dn.textContent = createDone + deleteDone;
+    var tt = document.getElementById('cw-walletreq-total');if (tt) tt.textContent = totalWallets;
+
+    // 탭 배지
+    var totalPending = createPending + deletePending;
+    var badge = document.getElementById('cw-walletreq-badge');
+    if (badge) { badge.textContent = totalPending; badge.style.display = totalPending ? '' : 'none'; }
+
+    // ── Unified table ──
+    var tbody = document.getElementById('cw-walletreq-tbody');
     if (!tbody) return;
-    tbody.innerHTML = '';
+
+    // Build combined list: creation requests first, then deletion requests
+    var rows = [];
     _CW_REQUESTS.forEach(function(r) {
-      var statusBadge = r.status === 'pending'
-        ? '<span class="badge badge-warning">처리 대기</span>'
-        : '<span class="badge badge-success">주소 등록 완료</span>';
-      var actionBtn = r.status === 'pending'
-        ? '<button class="btn btn-primary btn-xs" onclick="openCWAddrRegister(' + r.idx + ')">주소 등록</button>'
-        : '<button class="btn btn-outline btn-xs" onclick="openCWAddrRegister(' + r.idx + ')">상세</button>';
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + r.corp + '</td>'
+      rows.push({ type: 'create', data: r });
+    });
+    _WALLET_DEL_ADMIN.forEach(function(r) {
+      rows.push({ type: 'delete', data: r });
+    });
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-secondary);">요청 내역이 없습니다.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = rows.map(function(row) {
+      var r = row.data;
+      var typeBadge = row.type === 'create'
+        ? '<span class="badge" style="background:#FFFBEB; color:#D97706;">🟡 생성</span>'
+        : '<span class="badge" style="background:#FEF2F2; color:#DC2626;">🔴 삭제</span>';
+
+      var statusBadge;
+      if      (r.status === 'pending')  statusBadge = '<span class="badge badge-warning">⏳ 대기</span>';
+      else if (r.status === 'done')     statusBadge = '<span class="badge badge-success">✓ 완료</span>';
+      else if (r.status === 'rejected') statusBadge = '<span class="badge badge-danger">✕ 반려</span>';
+      else                              statusBadge = '<span class="badge badge-gray">' + r.status + '</span>';
+
+      var actionBtn = '<button class="btn btn-' + (r.status === 'pending' ? 'primary' : 'outline') + ' btn-xs" onclick="openWalletReqDetail(\'' + row.type + '\',' + r.idx + ')">' + (r.status === 'pending' ? '처리' : '상세') + '</button>';
+
+      return '<tr>'
+        + '<td>' + r.corp + '</td>'
         + '<td style="font-weight:600;">' + r.walletName + '</td>'
         + '<td><span class="badge badge-info">' + r.coin + '</span></td>'
-        + '<td style="font-size:12px; color:var(--text-secondary);">' + r.network + '</td>'
-        + '<td style="font-size:12px; color:var(--text-secondary);">' + (r.memo || '—') + '</td>'
+        + '<td>' + typeBadge + '</td>'
         + '<td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">' + r.requestedAt + '</td>'
         + '<td>' + statusBadge + '</td>'
-        + '<td>' + actionBtn + '</td>';
-      tbody.appendChild(tr);
-    });
+        + '<td>' + actionBtn + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function openWalletReqDetail(type, idx) {
+    if (type === 'create') {
+      openCWAddrRegister(idx);
+    } else {
+      openWDAdminDetail(idx);
+    }
   }
 
   /* ── 6-2: 콜드월렛 주소 등록 SO ── */
@@ -4255,44 +4283,8 @@
     });
   }
 
-  /* ── 6-4: 지갑 삭제 요청 render ── */
-  function renderWalletDelAdmin() {
-    var pending  = _WALLET_DEL_ADMIN.filter(function(r){ return r.status === 'pending'; });
-    var done     = _WALLET_DEL_ADMIN.filter(function(r){ return r.status === 'done'; });
-    var rejected = _WALLET_DEL_ADMIN.filter(function(r){ return r.status === 'rejected'; });
-    var sp = document.getElementById('wd-stat-pending');  if (sp) sp.textContent = pending.length;
-    var sd = document.getElementById('wd-stat-done');     if (sd) sd.textContent = done.length;
-    var sr = document.getElementById('wd-stat-rejected'); if (sr) sr.textContent = rejected.length;
-
-    var tbody = document.getElementById('cw-delete-tbody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    _WALLET_DEL_ADMIN.forEach(function(r) {
-      var statusBadge, actionBtn;
-      if (r.status === 'pending') {
-        statusBadge = '<span class="badge badge-warning">처리 대기</span>';
-        actionBtn   = '<button class="btn btn-primary btn-xs" onclick="openWDAdminDetail(' + r.idx + ')">처리</button>';
-      } else if (r.status === 'done') {
-        statusBadge = '<span class="badge badge-success">삭제 완료</span>';
-        actionBtn   = '<span style="font-size:11px; color:var(--text-secondary);">' + (r.deletedAt || '—') + '</span>';
-      } else {
-        statusBadge = '<span class="badge badge-danger">반려</span>';
-        actionBtn   = '<button class="btn btn-outline btn-xs" onclick="openWDAdminDetail(' + r.idx + ')">사유 보기</button>';
-      }
-      var balanceTxt = r.balance === '0.00000000'
-        ? '<span style="color:var(--text-secondary);">0.00</span>'
-        : '<span style="color:var(--danger); font-weight:600;">' + r.balance + '</span>';
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + r.corp + '</td>'
-        + '<td style="font-weight:600;">' + r.walletName + '</td>'
-        + '<td><span class="badge badge-info">' + r.coin + '</span></td>'
-        + '<td style="font-family:monospace; font-size:12px;">' + balanceTxt + '</td>'
-        + '<td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">' + r.requestedAt + '</td>'
-        + '<td>' + statusBadge + '</td>'
-        + '<td>' + actionBtn + '</td>';
-      tbody.appendChild(tr);
-    });
-  }
+  /* ── 6-4: 지갑 삭제 요청 render (renderCWRequests로 통합됨) ── */
+  function renderWalletDelAdmin() { renderCWRequests(); }
 
   function openWDAdminDetail(idx) {
     _wdAdminActiveIdx = idx;
@@ -4342,7 +4334,7 @@
     openOTPModal('지갑 삭제 확인', function() {
       r.status    = 'done';
       r.deletedAt = '2026-04-07 ' + new Date().toTimeString().slice(0,5);
-      renderWalletDelAdmin();
+      renderCWRequests();
       showToast(r.corp + ' · ' + r.walletName + ' 지갑이 삭제되었습니다.', 4000);
     });
   }
@@ -4366,7 +4358,7 @@
       r.status     = 'rejected';
       r.reason     = reason;
       r.rejectedAt = '2026-04-07 ' + new Date().toTimeString().slice(0,5);
-      renderWalletDelAdmin();
+      renderCWRequests();
       showToast(r.walletName + ' 삭제 요청이 반려되었습니다. Master에게 이메일이 발송되었습니다.', 4000);
     });
   }
@@ -4601,7 +4593,7 @@
     renderWLApprovalTable();
     renderCWRequests();
     renderSignRequests();
-    renderWalletDelAdmin();
+    renderCWRequests();
     renderCoinAddRequests();
     renderCWAllWallets();
   })();
