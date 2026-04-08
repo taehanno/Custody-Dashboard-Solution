@@ -1008,7 +1008,7 @@
 
         <!-- 콜드월렛 담당자 안내 -->
         <div id="tx-cw-notice" style="display:none;" class="alert alert-info">
-          &#128274; 콜드월렛 담당자는 <strong>TXID 미입력 출금건에 한해 TXID 입력</strong>만 가능합니다.
+          &#128274; 콜드월렛 담당자는 <strong>처리 중 출금건에 한해 TXID 입력</strong>만 가능합니다.
         </div>
 
         <!-- 통계 카드 -->
@@ -4611,9 +4611,9 @@
     { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'Ethereum (ERC-20)', amount:'10,000.00', status:'processing',  txid:null, addr:'0xE5F6...A7B8', datetime:'2026-04-08 10:15', wdNo:'WD-2026-0045' },
     // 출금 — 출금중 (브로드캐스트 완료, TXID 있음)
     { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.2000',    status:'broadcasting',txid:'9b8a7c...6d5e', addr:'bc1qhx4...z9y', datetime:'2026-04-08 08:00', wdNo:'WD-2026-0042' },
-    // 출금 — TXID 미입력 (콜드월렛 담당자 처리 대상)
-    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',    status:'notxid',      txid:null, addr:'0xC9D0...E1F2', datetime:'2026-04-04 15:00', wdNo:'WD-2026-0041' },
-    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.0300',    status:'notxid',      txid:null, addr:'bc1qmn2...j5k', datetime:'2026-04-07 08:30', wdNo:'WD-2026-0043' },
+    // 출금 — 처리중 (TXID 입력 대기)
+    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',    status:'processing',  txid:null, addr:'0xC9D0...E1F2', datetime:'2026-04-04 15:00', wdNo:'WD-2026-0041' },
+    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.0300',    status:'processing',  txid:null, addr:'bc1qmn2...j5k', datetime:'2026-04-07 08:30', wdNo:'WD-2026-0043' },
     // 출금 — 거절
     { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'100,000.00',status:'rejected',    txid:null, addr:'TLx9wP...V2Q3', datetime:'2026-04-02 11:00', wdNo:'WD-2026-0030', rejectedReason:'화이트리스트 미등록 주소' },
   ];
@@ -4628,7 +4628,6 @@
     signing:      { label:'⏳ 서명대기', cls:'badge-warning',  type:'withdrawal' },
     processing:   { label:'🔄 처리중',   cls:'badge-purple',   type:'withdrawal' },
     broadcasting: { label:'↗ 출금중',    cls:'badge-info',     type:'withdrawal' },
-    notxid:       { label:'TXID 미입력', cls:'badge-gray',     type:'withdrawal' },
   };
 
   // hold sub-status 배지
@@ -4702,8 +4701,8 @@
       // tab filter
       if (_TX_TAB === 'deposit'    && r.type !== 'deposit')    return false;
       if (_TX_TAB === 'withdrawal' && r.type !== 'withdrawal') return false;
-      // coldwallet: only show notxid withdrawals
-      if (isCW && !(r.type === 'withdrawal' && r.status === 'notxid')) return false;
+      // coldwallet: only show processing withdrawals (TXID 입력 대기)
+      if (isCW && !(r.type === 'withdrawal' && r.status === 'processing')) return false;
       // dropdown filters
       if (coin    && r.coin   !== coin)   return false;
       if (corp    && r.corp   !== corp)   return false;
@@ -4723,16 +4722,16 @@
     if (actionCol) actionCol.style.display = showAction ? '' : 'none';
 
     // Badges on tabs
-    var notxidCount = _TX_DATA.filter(function(r){ return r.type==='withdrawal' && r.status==='notxid'; }).length;
+    var processingCount = _TX_DATA.filter(function(r){ return r.type==='withdrawal' && r.status==='processing'; }).length;
     var ntBadge = document.getElementById('tx-notxid-badge');
-    if (ntBadge) { ntBadge.textContent = notxidCount; ntBadge.style.display = notxidCount ? '' : 'none'; }
+    if (ntBadge) { ntBadge.textContent = processingCount; ntBadge.style.display = processingCount ? '' : 'none'; }
 
     var holdPendingCount = _TX_DATA.filter(function(r){ return r.status==='hold' && r.holdSubStatus==='pending'; }).length;
     var hBadge = document.getElementById('tx-hold-badge');
     if (hBadge) { hBadge.textContent = holdPendingCount; hBadge.style.display = holdPendingCount ? '' : 'none'; }
 
     if (!list.length) {
-      var msg = isCW ? 'TXID 미입력 출금건이 없습니다.' : '조회 결과가 없습니다.';
+      var msg = isCW ? '처리 중인 출금건이 없습니다.' : '조회 결과가 없습니다.';
       tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-secondary); padding:32px;">' + msg + '</td></tr>';
       return;
     }
@@ -4752,7 +4751,7 @@
         : '<span style="color:var(--text-secondary);">—</span>';
       var actionCell = '';
       if (showAction) {
-        if (r.status === 'notxid') {
+        if (r.type === 'withdrawal' && r.status === 'processing') {
           actionCell = '<button class="btn btn-primary btn-xs" onclick="openTxTXIDModal(' + dataIdx + ')">TXID 입력</button>';
         } else if (r.type === 'withdrawal') {
           actionCell = '<button class="btn btn-outline btn-xs" onclick="openWithdrawalDetailAdmin(' + dataIdx + ')">상세</button>';
@@ -4994,7 +4993,7 @@
   }
 
   function openTxTXIDModal(dataIdx) {
-    var r = _TX_DATA[dataIdx]; if (!r || r.status !== 'notxid') return;
+    var r = _TX_DATA[dataIdx]; if (!r || r.status !== 'processing') return;
     var cfg = _TX_STATUS_CFG[r.status] || { label: r.status, cls:'badge-gray' };
     document.getElementById('txid-withdrawal-no').textContent = r.wdNo || '—';
     document.getElementById('txid-corp').textContent          = r.corp;
@@ -5039,10 +5038,10 @@
     var navBadge = document.getElementById('nav-tx-hold-badge');
     if (navBadge) { navBadge.textContent = holdCount; navBadge.style.display = holdCount ? '' : 'none'; }
 
-    // TXID 미입력 배지
-    var notxidCount = _TX_DATA.filter(function(r){ return r.type==='withdrawal' && r.status==='notxid'; }).length;
+    // 처리중 출금 배지
+    var processingCount = _TX_DATA.filter(function(r){ return r.type==='withdrawal' && r.status==='processing'; }).length;
     var ntBadge = document.getElementById('tx-notxid-badge');
-    if (ntBadge) { ntBadge.textContent = notxidCount; ntBadge.style.display = notxidCount ? '' : 'none'; }
+    if (ntBadge) { ntBadge.textContent = processingCount; ntBadge.style.display = processingCount ? '' : 'none'; }
   }
 
   /* ════════════════════════════════════
@@ -5251,7 +5250,7 @@
   /* ── 6-3 출금 서명 data ── */
   var _SIGN_REQUESTS = [
     { idx:0, corp:'알파투자운용(주)', wdNo:'WD-2026-0042', coin:'USDT', amount:'5,000.00 USDT', addr:'TRX9a...3f8e', requestedAt:'2026-04-05 09:30', status:'pending', txid:null },
-    { idx:1, corp:'베타캐피탈 유한회사', wdNo:'WD-2026-0041', coin:'ETH', amount:'1.5000 ETH', addr:'0x4d4b...C3E69', requestedAt:'2026-04-04 15:00', status:'notxid', txid:null },
+    { idx:1, corp:'베타캐피탈 유한회사', wdNo:'WD-2026-0041', coin:'ETH', amount:'1.5000 ETH', addr:'0x4d4b...C3E69', requestedAt:'2026-04-04 15:00', status:'processing', txid:null },
     { idx:2, corp:'감마트레이딩(주)', wdNo:'WD-2026-0039', coin:'BTC', amount:'0.5000 BTC', addr:'bc1q...3f8e', requestedAt:'2026-04-02 11:00', status:'done', txid:'0xa1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0' },
     { idx:3, corp:'알파투자운용(주)', wdNo:'WD-2026-0038', coin:'USDT', amount:'10,000.00 USDT', addr:'TRX9b...7a2c', requestedAt:'2026-04-01 08:45', status:'done', txid:'0xb2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0a1' },
   ];
@@ -5412,10 +5411,10 @@
   /* ── 6-3: 출금 서명 render ── */
   function renderSignRequests() {
     var pending = _SIGN_REQUESTS.filter(function(r){ return r.status === 'pending'; });
-    var notxid  = _SIGN_REQUESTS.filter(function(r){ return r.status === 'notxid'; });
+    var processing = _SIGN_REQUESTS.filter(function(r){ return r.status === 'processing'; });
     var done    = _SIGN_REQUESTS.filter(function(r){ return r.status === 'done'; });
     var sp = document.getElementById('sign-stat-pending'); if (sp) sp.textContent = pending.length;
-    var sn = document.getElementById('sign-stat-notxid2'); if (sn) sn.textContent = notxid.length;
+    var sn = document.getElementById('sign-stat-notxid2'); if (sn) sn.textContent = processing.length;
     var sd = document.getElementById('sign-stat-done');    if (sd) sd.textContent = done.length;
 
     var tbody = document.getElementById('cw-sign-tbody');
@@ -5426,9 +5425,9 @@
       if (r.status === 'pending') {
         statusBadge = '<span class="badge badge-warning">서명 대기</span>';
         actionBtn   = '<button class="btn btn-primary btn-xs" onclick="openTXIDInput(' + r.idx + ')">TXID 입력</button>';
-      } else if (r.status === 'notxid') {
-        statusBadge = '<span class="badge badge-info">TXID 미입력</span>';
-        actionBtn   = '<button class="btn btn-warning btn-xs" onclick="openTXIDInput(' + r.idx + ')">TXID 입력</button>';
+      } else if (r.status === 'processing') {
+        statusBadge = '<span class="badge badge-purple">🔄 처리중</span>';
+        actionBtn   = '<button class="btn btn-primary btn-xs" onclick="openTXIDInput(' + r.idx + ')">TXID 입력</button>';
       } else {
         statusBadge = '<span class="badge badge-success">완료</span>';
         actionBtn   = '<span style="font-size:11px; font-family:monospace; color:var(--text-secondary);">' + (r.txid ? r.txid.substring(0,16) + '...' : '—') + '</span>';
@@ -5451,7 +5450,7 @@
     _signActiveIdx   = idx;
     _txTXIDDataIdx   = null;
     var r = _SIGN_REQUESTS[idx];
-    var statusHtml = '<span class="badge badge-gray">TXID 미입력</span>';
+    var statusHtml = '<span class="badge badge-purple">🔄 처리중</span>';
     document.getElementById('txid-withdrawal-no').textContent  = r.wdNo;
     document.getElementById('txid-corp').textContent           = r.corp;
     document.getElementById('txid-coin').textContent           = r.coin;
