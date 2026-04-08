@@ -1501,10 +1501,11 @@
           <h1 class="page-title">Admin 계정 관리 / Admin Account Management</h1>
           <button class="btn btn-primary btn-sm" onclick="openAdminAddSO()">+ Admin 계정 추가</button>
         </div>
-        <div class="stats-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom:16px;">
+        <div class="stats-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom:16px;">
           <div class="stat-card"><span class="stat-label">전체</span><span class="stat-value stat-blue" id="admin-stat-total">0명</span></div>
-          <div class="stat-card"><span class="stat-label">활성화</span><span class="stat-value stat-green" id="admin-stat-active">0명</span></div>
-          <div class="stat-card"><span class="stat-label">비활성화</span><span class="stat-value stat-red" id="admin-stat-inactive">0명</span></div>
+          <div class="stat-card"><span class="stat-label">활성</span><span class="stat-value stat-green" id="admin-stat-active">0명</span></div>
+          <div class="stat-card"><span class="stat-label">잠금</span><span class="stat-value stat-red" id="admin-stat-locked">0명</span></div>
+          <div class="stat-card"><span class="stat-label">비활성화</span><span class="stat-value" id="admin-stat-inactive" style="color:var(--text-secondary);">0명</span></div>
         </div>
         <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center; flex-wrap:wrap;">
           <input type="text" class="form-control" id="admin-search" placeholder="이름/이메일 검색" style="width:220px;" oninput="renderAdminAccountsTable()">
@@ -1516,10 +1517,12 @@
             <option value="aml_officer">AML담당자</option>
             <option value="aml_manager">AML관리자</option>
           </select>
-          <select class="form-control" id="admin-status-filter" onchange="renderAdminAccountsTable()" style="width:140px;">
+          <select class="form-control" id="admin-status-filter" onchange="renderAdminAccountsTable()" style="width:150px;">
             <option value="">전체 상태 ▾</option>
-            <option value="active">활성화</option>
-            <option value="inactive">비활성화</option>
+            <option value="active">● 활성</option>
+            <option value="pw_locked">🔒 PW 잠금</option>
+            <option value="otp_locked">🔒 OTP 잠금</option>
+            <option value="inactive">○ 비활성화</option>
           </select>
         </div>
         <div class="card" style="padding:0;">
@@ -1806,7 +1809,7 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     ADMIN EDIT Slide-over (9-3)
+     ADMIN EDIT Slide-over (9-4)
 ══════════════════════════════════════ -->
 <div class="slideover-backdrop" id="admin-edit-so-backdrop" onclick="closeAdminEditSO()"></div>
 <div class="slideover" id="admin-edit-so" style="max-width:500px;">
@@ -1818,6 +1821,8 @@
     <button class="modal-close" onclick="closeAdminEditSO()">&#10005;</button>
   </div>
   <div class="so-body">
+    <!-- 잠금 상태 알림 배너 -->
+    <div id="ae-lock-banner" style="display:none; border-radius:8px; padding:10px 12px; font-size:12px; margin-bottom:14px;"></div>
     <div class="form-group">
       <label class="form-label">이름</label>
       <input type="text" class="form-control" id="ae-name" style="width:100%;">
@@ -1856,33 +1861,13 @@
           <option value="aml_manager">AML 관리자</option>
         </select>
       </div>
+      <div id="ae-role-disabled-msg" style="display:none; font-size:11px; color:var(--danger); margin-top:4px;"></div>
       <div id="ae-role-reason-wrap" style="display:none;">
         <div class="alert alert-warning" style="font-size:11px; padding:8px 10px; margin-bottom:8px;">&#9888; 역할 변경 시 사유 입력 필수</div>
         <label class="form-label">* 변경 사유 (최대 200자)</label>
         <textarea class="form-control" id="ae-role-reason" rows="2" maxlength="200" style="width:100%; resize:vertical;" placeholder="역할 변경 사유를 입력하세요" oninput="validateAdminEditForm()"></textarea>
         <div id="ae-role-reason-err" style="font-size:11px; color:var(--danger); margin-top:4px; display:none;">변경 사유를 입력하세요.</div>
       </div>
-    </div>
-    <!-- 계정 상태 -->
-    <div id="ae-status-section" style="border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px;">
-      <div style="font-size:12px; font-weight:600; margin-bottom:10px;">계정 상태</div>
-      <div style="display:flex; gap:20px;">
-        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
-          <input type="radio" name="ae-status" value="active" id="ae-status-active"> ● 활성화
-        </label>
-        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
-          <input type="radio" name="ae-status" value="inactive" id="ae-status-inactive"> ○ 비활성화
-        </label>
-      </div>
-    </div>
-    <!-- 보안 초기화 -->
-    <div style="border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:16px;">
-      <div style="font-size:12px; font-weight:600; margin-bottom:10px;">보안 초기화</div>
-      <div style="display:flex; gap:10px;">
-        <button class="btn btn-outline btn-sm" onclick="adminPWReset()">PW 재설정</button>
-        <button class="btn btn-outline btn-sm" onclick="adminOTPReset()">OTP 재설정</button>
-      </div>
-      <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">각 클릭 시 OTP 인증 후 즉시 처리됩니다.</div>
     </div>
     <!-- OTP -->
     <div style="border-top:1px solid var(--border); padding-top:16px; margin-bottom:8px;">
@@ -1908,7 +1893,104 @@
   </div>
 </div>
 
-<!-- Admin 계정 삭제 모달 (9-4) -->
+<!-- PW 잠금 해제 모달 (9-5) -->
+<div class="modal" id="admin-pw-unlock-modal" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">&#128274; PW 잠금 해제 / Unlock Password</span>
+    <button class="modal-close" onclick="closeModal('admin-pw-unlock-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="font-size:13px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">대상</span><span id="pwu-target-name"></span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">이메일</span><span id="pwu-target-email" style="font-family:monospace;"></span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">잠금 원인</span><span id="pwu-lock-reason" style="color:var(--danger);"></span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0;"><span style="color:var(--text-secondary);">잠금 시각</span><span id="pwu-lock-at" style="font-family:monospace; font-size:12px;"></span></div>
+    </div>
+    <div class="alert alert-info" style="font-size:12px; margin-bottom:16px;">
+      &#9432; 잠금 해제 즉시 새 임시 PW가 해당 이메일로 발송됩니다. 기존 비밀번호는 즉시 만료됩니다.
+    </div>
+    <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">OTP 인증</div>
+    <div class="otp-row" style="justify-content:flex-start;">
+      <input type="text" class="otp-box" maxlength="1" id="pwu-otp-0" oninput="soOtpMove('pwu-otp',this,0)" onkeydown="soOtpBack('pwu-otp',event,this,0)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="pwu-otp-1" oninput="soOtpMove('pwu-otp',this,1)" onkeydown="soOtpBack('pwu-otp',event,this,1)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="pwu-otp-2" oninput="soOtpMove('pwu-otp',this,2)" onkeydown="soOtpBack('pwu-otp',event,this,2)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="pwu-otp-3" oninput="soOtpMove('pwu-otp',this,3)" onkeydown="soOtpBack('pwu-otp',event,this,3)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="pwu-otp-4" oninput="soOtpMove('pwu-otp',this,4)" onkeydown="soOtpBack('pwu-otp',event,this,4)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="pwu-otp-5" oninput="soOtpMove('pwu-otp',this,5)" onkeydown="soOtpBack('pwu-otp',event,this,5)" inputmode="numeric" />
+    </div>
+    <div id="pwu-otp-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('admin-pw-unlock-modal')">취소</button>
+    <button class="btn btn-primary" onclick="submitPWUnlock()">PW 잠금 해제</button>
+  </div>
+</div>
+
+<!-- OTP 잠금 해제 모달 (9-6) -->
+<div class="modal" id="admin-otp-unlock-modal" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">&#128274; OTP 잠금 해제 / Unlock OTP</span>
+    <button class="modal-close" onclick="closeModal('admin-otp-unlock-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="font-size:13px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">대상</span><span id="otpu-target-name"></span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">이메일</span><span id="otpu-target-email" style="font-family:monospace;"></span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">잠금 원인</span><span id="otpu-lock-reason" style="color:var(--danger);"></span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0;"><span style="color:var(--text-secondary);">잠금 시각</span><span id="otpu-lock-at" style="font-family:monospace; font-size:12px;"></span></div>
+    </div>
+    <div class="alert alert-info" style="font-size:12px; margin-bottom:16px;">
+      &#9432; 잠금 해제 즉시 OTP 등록이 초기화됩니다. 해당 이메일로 OTP 재등록 안내가 발송됩니다.
+    </div>
+    <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">OTP 인증</div>
+    <div class="otp-row" style="justify-content:flex-start;">
+      <input type="text" class="otp-box" maxlength="1" id="otpu-otp-0" oninput="soOtpMove('otpu-otp',this,0)" onkeydown="soOtpBack('otpu-otp',event,this,0)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otpu-otp-1" oninput="soOtpMove('otpu-otp',this,1)" onkeydown="soOtpBack('otpu-otp',event,this,1)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otpu-otp-2" oninput="soOtpMove('otpu-otp',this,2)" onkeydown="soOtpBack('otpu-otp',event,this,2)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otpu-otp-3" oninput="soOtpMove('otpu-otp',this,3)" onkeydown="soOtpBack('otpu-otp',event,this,3)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otpu-otp-4" oninput="soOtpMove('otpu-otp',this,4)" onkeydown="soOtpBack('otpu-otp',event,this,4)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="otpu-otp-5" oninput="soOtpMove('otpu-otp',this,5)" onkeydown="soOtpBack('otpu-otp',event,this,5)" inputmode="numeric" />
+    </div>
+    <div id="otpu-otp-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('admin-otp-unlock-modal')">취소</button>
+    <button class="btn btn-primary" onclick="submitOTPUnlock()">OTP 잠금 해제</button>
+  </div>
+</div>
+
+<!-- Admin 비활성화 모달 (9-7) -->
+<div class="modal" id="admin-deact-modal" style="max-width:420px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--warning);">Admin 계정 비활성화</span>
+    <button class="modal-close" onclick="closeModal('admin-deact-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="font-size:13px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">대상</span><span id="adeact-target-name"></span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0;"><span style="color:var(--text-secondary);">이메일</span><span id="adeact-target-email" style="font-family:monospace;"></span></div>
+    </div>
+    <div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:10px; font-size:12px; color:#92400E; margin-bottom:14px;">
+      &#9888; 비활성화 즉시 해당 계정의 로그인이 차단됩니다. 수동으로 활성화할 수 있습니다.
+    </div>
+    <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">OTP 인증</div>
+    <div class="otp-row" style="justify-content:flex-start;">
+      <input type="text" class="otp-box" maxlength="1" id="adeact-otp-0" oninput="soOtpMove('adeact-otp',this,0)" onkeydown="soOtpBack('adeact-otp',event,this,0)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adeact-otp-1" oninput="soOtpMove('adeact-otp',this,1)" onkeydown="soOtpBack('adeact-otp',event,this,1)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adeact-otp-2" oninput="soOtpMove('adeact-otp',this,2)" onkeydown="soOtpBack('adeact-otp',event,this,2)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adeact-otp-3" oninput="soOtpMove('adeact-otp',this,3)" onkeydown="soOtpBack('adeact-otp',event,this,3)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adeact-otp-4" oninput="soOtpMove('adeact-otp',this,4)" onkeydown="soOtpBack('adeact-otp',event,this,4)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adeact-otp-5" oninput="soOtpMove('adeact-otp',this,5)" onkeydown="soOtpBack('adeact-otp',event,this,5)" inputmode="numeric" />
+    </div>
+    <div id="adeact-otp-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('admin-deact-modal')">취소</button>
+    <button class="btn btn-warning" onclick="submitAdminDeact()">비활성화 확인</button>
+  </div>
+</div>
+
+<!-- Admin 계정 삭제 모달 (9-8) -->
 <div class="modal" id="admin-delete-modal" style="max-width:440px;">
   <div class="modal-header">
     <span class="modal-title">Admin 계정 삭제</span>
@@ -1920,7 +2002,7 @@
       <div style="display:flex; justify-content:space-between; padding:6px 0;"><span style="color:var(--text-secondary);">이메일</span><span id="adel-target-email" style="font-family:monospace;"></span></div>
     </div>
     <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px; font-size:12px; color:#991B1B; margin-bottom:14px;">
-      &#9888; 삭제 즉시 해당 계정의 접근이 차단되고 복구할 수 없습니다.
+      &#9888; 삭제 즉시 해당 계정의 접근이 영구 차단됩니다. 복구 불가.
     </div>
     <div class="form-group">
       <label class="form-label">* 삭제 사유 (필수, 최대 200자)</label>
@@ -7105,15 +7187,17 @@
      ADMIN ACCOUNTS — DATA & LOGIC (9)
   ════════════════════════════════════ */
   var _ADMIN_ACCOUNTS = [
-    { id:1, name:'홍길동',   emailFull:'hong@infiniteblock.io',  emailMask:'ho***@infiniteblock.io',  role:'master',      dept:'운영팀', position:'팀장', phone:'010-1234-5678', status:'active',   lastLogin:'2026-04-08 10:20' },
-    { id:2, name:'김철수',   emailFull:'kim@infiniteblock.io',   emailMask:'ki***@infiniteblock.io',  role:'general',     dept:'운영팀', position:'대리', phone:'010-2345-6789', status:'active',   lastLogin:'2026-04-08 09:15' },
-    { id:3, name:'이영희',   emailFull:'lee@infiniteblock.io',   emailMask:'le***@infiniteblock.io',  role:'coldwallet',  dept:'보안팀', position:'팀원', phone:'010-3456-7890', status:'active',   lastLogin:'2026-04-07 14:30' },
-    { id:4, name:'박민준',   emailFull:'park@infiniteblock.io',  emailMask:'pa***@infiniteblock.io',  role:'aml_officer', dept:'AML팀',  position:'주임', phone:'010-4567-8901', status:'inactive', lastLogin:'2026-04-01 11:00' },
-    { id:5, name:'최지원',   emailFull:'choi@infiniteblock.io',  emailMask:'ch***@infiniteblock.io',  role:'aml_manager', dept:'AML팀',  position:'팀장', phone:'010-5678-9012', status:'active',   lastLogin:'2026-04-08 08:45' }
+    { id:1, name:'홍길동', emailFull:'hong@infiniteblock.io', emailMask:'ho***@infiniteblock.io', role:'master',      dept:'운영팀', position:'팀장', phone:'010-1234-5678', status:'active',     lastLogin:'2026-04-08 10:20', lockAt:null,                lockReason:null },
+    { id:2, name:'김철수', emailFull:'kim@infiniteblock.io',  emailMask:'ki***@infiniteblock.io', role:'general',     dept:'운영팀', position:'대리', phone:'010-2345-6789', status:'active',     lastLogin:'2026-04-08 09:15', lockAt:null,                lockReason:null },
+    { id:3, name:'이영희', emailFull:'lee@infiniteblock.io',  emailMask:'le***@infiniteblock.io', role:'coldwallet',  dept:'보안팀', position:'팀원', phone:'010-3456-7890', status:'pw_locked',  lastLogin:'2026-04-07 14:30', lockAt:'2026-04-07 14:30:22', lockReason:'비밀번호 5회 연속 오류' },
+    { id:4, name:'박민준', emailFull:'park@infiniteblock.io', emailMask:'pa***@infiniteblock.io', role:'aml_officer', dept:'AML팀',  position:'주임', phone:'010-4567-8901', status:'otp_locked', lastLogin:'2026-04-06 09:00', lockAt:'2026-04-06 09:00:11', lockReason:'OTP 5회 연속 오류' },
+    { id:5, name:'최지원', emailFull:'choi@infiniteblock.io', emailMask:'ch***@infiniteblock.io', role:'aml_manager', dept:'AML팀',  position:'팀장', phone:'010-5678-9012', status:'inactive',   lastLogin:'2026-04-01 11:00', lockAt:null,                lockReason:null }
   ];
   var _ADMIN_NEXT_ID  = 6;
   var _ADMIN_EDIT_ID  = null;
   var _ADMIN_DEL_ID   = null;
+  var _ADMIN_LOCK_ID  = null;  // for unlock modals
+  var _ADMIN_DEACT_ID = null;  // for deactivate modal
 
   var _ADMIN_ROLE_CFG = {
     master:      { label:'마스터관리자', color:'#7C3AED', bg:'#F5F3FF' },
@@ -7128,16 +7212,23 @@
     return '<span style="display:inline-block; padding:2px 9px; border-radius:4px; font-size:11px; font-weight:600; background:'+cfg.bg+'; color:'+cfg.color+';">'+cfg.label+'</span>';
   }
 
+  function _adminStatusBadge(a) {
+    if (a.status === 'active')     return '<span class="badge badge-success">&#9679; 활성</span>';
+    if (a.status === 'pw_locked')  return '<span class="badge badge-danger">&#128274; PW 잠금</span>';
+    if (a.status === 'otp_locked') return '<span class="badge badge-danger">&#128274; OTP 잠금</span>';
+    return '<span class="badge badge-gray">&#9675; 비활성화</span>';
+  }
+
   function renderAdminAccountsStats() {
-    var total    = _ADMIN_ACCOUNTS.length;
-    var active   = _ADMIN_ACCOUNTS.filter(function(a){ return a.status === 'active'; }).length;
-    var inactive = _ADMIN_ACCOUNTS.filter(function(a){ return a.status === 'inactive'; }).length;
-    var elT = document.getElementById('admin-stat-total');
-    var elA = document.getElementById('admin-stat-active');
-    var elI = document.getElementById('admin-stat-inactive');
-    if (elT) elT.textContent = total + '명';
-    if (elA) elA.textContent = active + '명';
-    if (elI) elI.textContent = inactive + '명';
+    var total  = _ADMIN_ACCOUNTS.length;
+    var active = _ADMIN_ACCOUNTS.filter(function(a){ return a.status === 'active'; }).length;
+    var locked = _ADMIN_ACCOUNTS.filter(function(a){ return a.status === 'pw_locked' || a.status === 'otp_locked'; }).length;
+    var inact  = _ADMIN_ACCOUNTS.filter(function(a){ return a.status === 'inactive'; }).length;
+    var el = function(id, v){ var e = document.getElementById(id); if(e) e.textContent = v; };
+    el('admin-stat-total',    total  + '명');
+    el('admin-stat-active',   active + '명');
+    el('admin-stat-locked',   locked + '명');
+    el('admin-stat-inactive', inact  + '명');
   }
 
   function renderAdminAccountsTable() {
@@ -7165,13 +7256,14 @@
     if (empty) empty.style.display = 'none';
 
     tbody.innerHTML = filtered.map(function(a) {
-      var statusBadge = a.status === 'active'
-        ? '<span class="badge badge-success">&#9679; 활성</span>'
-        : '<span class="badge badge-gray">&#9675; 비활성</span>';
       var deptPos = [a.dept, a.position].filter(Boolean).join('/') || '—';
       var mgmt = '<button class="btn btn-outline btn-xs" onclick="openAdminEditSO('+a.id+')">수정</button>';
       if (a.status === 'active') {
-        mgmt += ' <button class="btn btn-outline btn-xs" style="color:var(--warning); border-color:var(--warning);" onclick="quickAdminDeactivate('+a.id+')">비활성화</button>';
+        mgmt += ' <button class="btn btn-outline btn-xs" style="color:var(--warning); border-color:var(--warning);" onclick="openAdminDeactModal('+a.id+')">비활성화</button>';
+      } else if (a.status === 'pw_locked') {
+        mgmt += ' <button class="btn btn-danger btn-xs" onclick="openPWUnlockModal('+a.id+')">PW 잠금 해제</button>';
+      } else if (a.status === 'otp_locked') {
+        mgmt += ' <button class="btn btn-danger btn-xs" onclick="openOTPUnlockModal('+a.id+')">OTP 잠금 해제</button>';
       } else {
         mgmt += ' <button class="btn btn-success btn-xs" onclick="quickAdminActivate('+a.id+')">활성화</button>';
       }
@@ -7180,7 +7272,7 @@
         + '<td style="font-size:12px; font-family:monospace; color:var(--text-secondary);">'+a.emailMask+'</td>'
         + '<td>'+_adminRoleBadge(a.role)+'</td>'
         + '<td style="font-size:12px; color:var(--text-secondary);">'+deptPos+'</td>'
-        + '<td style="text-align:center;">'+statusBadge+'</td>'
+        + '<td style="text-align:center;">'+_adminStatusBadge(a)+'</td>'
         + '<td style="font-size:12px; color:var(--text-secondary);">'+a.lastLogin+'</td>'
         + '<td style="white-space:nowrap;">'+mgmt+'</td>'
         + '</tr>';
@@ -7241,10 +7333,10 @@
     var roleEl   = document.querySelector('input[name="aa-role"]:checked');
     var role     = roleEl ? roleEl.value : 'general';
     var mask     = email.charAt(0) + email.charAt(1) + '***@' + email.split('@')[1];
-    _ADMIN_ACCOUNTS.push({ id:_ADMIN_NEXT_ID++, name:name, emailFull:email, emailMask:mask, role:role, dept:dept, position:position, phone:phone, status:'active', lastLogin:'—' });
+    _ADMIN_ACCOUNTS.push({ id:_ADMIN_NEXT_ID++, name:name, emailFull:email, emailMask:mask, role:role, dept:dept, position:position, phone:phone, status:'active', lastLogin:'—', lockAt:null, lockReason:null });
     closeAdminAddSO();
     renderAdminAccountsTable();
-    addActLog('[Admin 계정 생성] ' + mask + ' / ' + (_ADMIN_ROLE_CFG[role]||{label:role}).label);
+    addActLog('[계정 생성] ' + mask + ' / ' + (_ADMIN_ROLE_CFG[role]||{label:role}).label);
     showToast('Admin 계정이 생성되었습니다. 임시 PW가 이메일로 발송됩니다.');
   }
 
@@ -7269,11 +7361,33 @@
     document.getElementById('ae-submit-btn').disabled = false;
     for (var i = 0; i < 6; i++) { var el = document.getElementById('ae-otp-'+i); if(el) el.value = ''; }
 
-    // status radios — inactive account: role change locked
-    document.getElementById('ae-status-active').checked   = a.status === 'active';
-    document.getElementById('ae-status-inactive').checked = a.status === 'inactive';
+    // lock banner
+    var lockBanner = document.getElementById('ae-lock-banner');
     var roleSelect = document.getElementById('ae-role-select');
-    roleSelect.disabled = a.status === 'inactive';
+    var roleDisMsg = document.getElementById('ae-role-disabled-msg');
+    if (a.status === 'pw_locked') {
+      lockBanner.style.cssText = 'display:block; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 12px; font-size:12px; color:#991B1B; margin-bottom:14px;';
+      lockBanner.innerHTML = '&#128274; <strong>PW 잠금</strong> — ' + a.lockReason + '<br><span style="color:#B91C1C;">' + (a.lockAt||'') + '</span><br><button class="btn btn-danger btn-xs" style="margin-top:8px;" onclick="openPWUnlockModal('+id+')">PW 잠금 해제</button>';
+      roleSelect.disabled = true;
+      roleDisMsg.textContent = '먼저 잠금을 해제해주세요.';
+      roleDisMsg.style.display = '';
+    } else if (a.status === 'otp_locked') {
+      lockBanner.style.cssText = 'display:block; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 12px; font-size:12px; color:#991B1B; margin-bottom:14px;';
+      lockBanner.innerHTML = '&#128274; <strong>OTP 잠금</strong> — ' + a.lockReason + '<br><span style="color:#B91C1C;">' + (a.lockAt||'') + '</span><br><button class="btn btn-danger btn-xs" style="margin-top:8px;" onclick="openOTPUnlockModal('+id+')">OTP 잠금 해제</button>';
+      roleSelect.disabled = true;
+      roleDisMsg.textContent = '먼저 잠금을 해제해주세요.';
+      roleDisMsg.style.display = '';
+    } else if (a.status === 'inactive') {
+      lockBanner.style.cssText = 'display:block; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:10px 12px; font-size:12px; color:#475569; margin-bottom:14px;';
+      lockBanner.innerHTML = '○ <strong>비활성화</strong> 상태입니다. 역할 변경은 활성화 후 가능합니다.';
+      roleSelect.disabled = true;
+      roleDisMsg.textContent = '비활성화 계정은 역할 변경이 불가합니다.';
+      roleDisMsg.style.display = '';
+    } else {
+      lockBanner.style.display = 'none';
+      roleSelect.disabled = false;
+      roleDisMsg.style.display = 'none';
+    }
 
     // delete button: disabled if last master
     var deleteBtn  = document.getElementById('ae-delete-btn');
@@ -7297,9 +7411,8 @@
 
   function validateAdminEditForm() {
     var roleSelect = document.getElementById('ae-role-select');
-    var roleReason = document.getElementById('ae-role-reason-wrap');
-    var hasRoleChange = roleSelect.value !== '';
-    roleReason.style.display = hasRoleChange ? '' : 'none';
+    var hasRoleChange = !roleSelect.disabled && roleSelect.value !== '';
+    document.getElementById('ae-role-reason-wrap').style.display = hasRoleChange ? '' : 'none';
     var reasonOk = !hasRoleChange || document.getElementById('ae-role-reason').value.trim().length > 0;
     document.getElementById('ae-submit-btn').disabled = hasRoleChange && !reasonOk;
   }
@@ -7313,22 +7426,17 @@
     var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_EDIT_ID; });
     if (!a) return;
 
-    var newRole    = document.getElementById('ae-role-select').value || null;
-    var reason     = document.getElementById('ae-role-reason').value.trim();
-    var newStatus  = document.querySelector('input[name="ae-status"]:checked');
-    var statusVal  = newStatus ? newStatus.value : a.status;
+    var roleSelect = document.getElementById('ae-role-select');
+    var newRole  = (!roleSelect.disabled && roleSelect.value) ? roleSelect.value : null;
+    var reason   = document.getElementById('ae-role-reason').value.trim();
 
-    if (newRole && !reason) {
-      document.getElementById('ae-role-reason-err').style.display = '';
-      return;
-    }
+    if (newRole && !reason) { document.getElementById('ae-role-reason-err').style.display = ''; return; }
 
     var oldRole = a.role;
     a.name     = document.getElementById('ae-name').value.trim() || a.name;
     a.dept     = document.getElementById('ae-dept').value.trim();
     a.position = document.getElementById('ae-position').value.trim();
     a.phone    = document.getElementById('ae-phone').value.trim();
-    a.status   = statusVal;
     if (newRole) a.role = newRole;
 
     closeAdminEditSO();
@@ -7345,7 +7453,7 @@
     }
   }
 
-  /* ── Quick activate / deactivate from table ── */
+  /* ── Activate (from table) ── */
   function quickAdminActivate(id) {
     var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === id; });
     if (!a) return;
@@ -7356,33 +7464,92 @@
       showToast(a.name + ' 계정이 활성화되었습니다.');
     });
   }
-  function quickAdminDeactivate(id) {
+
+  /* ── Deactivate Modal (9-7) ── */
+  function openAdminDeactModal(id) {
     var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === id; });
     if (!a) return;
-    openOTPModal('계정 비활성화 — ' + a.name, function() {
-      a.status = 'inactive';
-      renderAdminAccountsTable();
-      addActLog('[Admin 계정 비활성화] ' + a.emailMask);
-      showToast(a.name + ' 계정이 비활성화되었습니다.');
-    });
+    _ADMIN_DEACT_ID = id;
+    var roleLabel = (_ADMIN_ROLE_CFG[a.role]||{label:a.role}).label;
+    document.getElementById('adeact-target-name').textContent  = a.name + ' (' + roleLabel + ')';
+    document.getElementById('adeact-target-email').textContent = a.emailMask;
+    document.getElementById('adeact-otp-err').style.display = 'none';
+    for (var i = 0; i < 6; i++) { var el = document.getElementById('adeact-otp-'+i); if(el) el.value = ''; }
+    openModal('admin-deact-modal');
+  }
+  function submitAdminDeact() {
+    var otp = soOtpValue('adeact-otp');
+    var otpErr = document.getElementById('adeact-otp-err');
+    if (otp.length < 6) { otpErr.textContent = 'OTP 6자리를 입력하세요.'; otpErr.style.display = ''; return; }
+    otpErr.style.display = 'none';
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_DEACT_ID; });
+    if (!a) return;
+    a.status = 'inactive';
+    _ADMIN_DEACT_ID = null;
+    closeModal('admin-deact-modal');
+    renderAdminAccountsTable();
+    addActLog('[Admin 계정 비활성화] ' + a.emailMask);
+    showToast(a.name + ' 계정이 비활성화되었습니다.');
   }
 
-  /* ── PW / OTP reset from edit SO ── */
-  function adminPWReset() {
-    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_EDIT_ID; });
+  /* ── PW Unlock Modal (9-5) ── */
+  function openPWUnlockModal(id) {
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === id; });
     if (!a) return;
-    openOTPModal('PW 재설정 — ' + a.name, function() {
-      addActLog('[Admin PW 재설정] ' + a.emailMask);
-      showToast('임시 PW가 생성되어 이메일로 발송되었습니다. 기존 PW는 만료됩니다.');
-    });
+    _ADMIN_LOCK_ID = id;
+    var roleLabel = (_ADMIN_ROLE_CFG[a.role]||{label:a.role}).label;
+    document.getElementById('pwu-target-name').textContent  = a.name + ' (' + roleLabel + ')';
+    document.getElementById('pwu-target-email').textContent = a.emailMask;
+    document.getElementById('pwu-lock-reason').textContent  = a.lockReason || '—';
+    document.getElementById('pwu-lock-at').textContent      = a.lockAt || '—';
+    document.getElementById('pwu-otp-err').style.display = 'none';
+    for (var i = 0; i < 6; i++) { var el = document.getElementById('pwu-otp-'+i); if(el) el.value = ''; }
+    openModal('admin-pw-unlock-modal');
   }
-  function adminOTPReset() {
-    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_EDIT_ID; });
+  function submitPWUnlock() {
+    var otp = soOtpValue('pwu-otp');
+    var otpErr = document.getElementById('pwu-otp-err');
+    if (otp.length < 6) { otpErr.textContent = 'OTP 6자리를 입력하세요.'; otpErr.style.display = ''; return; }
+    otpErr.style.display = 'none';
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_LOCK_ID; });
     if (!a) return;
-    openOTPModal('OTP 재설정 — ' + a.name, function() {
-      addActLog('[Admin OTP 재설정] ' + a.emailMask);
-      showToast('OTP가 초기화되었습니다. 재등록 안내 이메일이 발송됩니다.');
-    });
+    a.status = 'active'; a.lockAt = null; a.lockReason = null;
+    _ADMIN_LOCK_ID = null;
+    closeModal('admin-pw-unlock-modal');
+    closeAdminEditSO();
+    renderAdminAccountsTable();
+    addActLog('[PW 잠금 해제] ' + a.emailMask + ' / ' + new Date().toISOString().replace('T',' ').slice(0,19));
+    showToast('PW 잠금이 해제되었습니다. 새 임시 PW가 이메일로 발송됩니다.');
+  }
+
+  /* ── OTP Unlock Modal (9-6) ── */
+  function openOTPUnlockModal(id) {
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === id; });
+    if (!a) return;
+    _ADMIN_LOCK_ID = id;
+    var roleLabel = (_ADMIN_ROLE_CFG[a.role]||{label:a.role}).label;
+    document.getElementById('otpu-target-name').textContent  = a.name + ' (' + roleLabel + ')';
+    document.getElementById('otpu-target-email').textContent = a.emailMask;
+    document.getElementById('otpu-lock-reason').textContent  = a.lockReason || '—';
+    document.getElementById('otpu-lock-at').textContent      = a.lockAt || '—';
+    document.getElementById('otpu-otp-err').style.display = 'none';
+    for (var i = 0; i < 6; i++) { var el = document.getElementById('otpu-otp-'+i); if(el) el.value = ''; }
+    openModal('admin-otp-unlock-modal');
+  }
+  function submitOTPUnlock() {
+    var otp = soOtpValue('otpu-otp');
+    var otpErr = document.getElementById('otpu-otp-err');
+    if (otp.length < 6) { otpErr.textContent = 'OTP 6자리를 입력하세요.'; otpErr.style.display = ''; return; }
+    otpErr.style.display = 'none';
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_LOCK_ID; });
+    if (!a) return;
+    a.status = 'active'; a.lockAt = null; a.lockReason = null;
+    _ADMIN_LOCK_ID = null;
+    closeModal('admin-otp-unlock-modal');
+    closeAdminEditSO();
+    renderAdminAccountsTable();
+    addActLog('[OTP 잠금 해제] ' + a.emailMask + ' / ' + new Date().toISOString().replace('T',' ').slice(0,19));
+    showToast('OTP 잠금이 해제되었습니다. OTP 재등록 안내 이메일이 발송됩니다.');
   }
 
   /* ── Admin Delete ── */
