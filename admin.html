@@ -135,6 +135,7 @@
     .badge-info { background: #EFF6FF; color: #3B82F6; }
     .badge-orange { background: #FFF7ED; color: #F97316; }
     .badge-gray { background: #F1F5F9; color: var(--text-secondary); }
+    .badge-purple { background: #EDE9FE; color: #7C3AED; }
     .badge-master { background: #FFF7ED; color: #F97316; }
     .badge-general { background: #EFF6FF; color: #3B82F6; }
     .badge-coldwallet { background: #ECFDF5; color: #10B981; }
@@ -891,12 +892,35 @@
       <div class="page" id="page-transactions">
         <div class="page-header">
           <h1 class="page-title">거래 내역</h1>
-          <button class="btn btn-outline btn-sm">&#8595; Export</button>
         </div>
 
         <!-- 콜드월렛 담당자 안내 -->
-        <div id="tx-cw-notice" style="display:none;" class="alert alert-info" style="margin-bottom:14px;">
+        <div id="tx-cw-notice" style="display:none;" class="alert alert-info">
           &#128274; 콜드월렛 담당자는 <strong>TXID 미입력 출금건에 한해 TXID 입력</strong>만 가능합니다.
+        </div>
+
+        <!-- 통계 카드 -->
+        <div id="tx-stats-bar" class="stats-row" style="grid-template-columns:repeat(4,1fr); margin-bottom:16px;">
+          <div class="stat-card" style="border-left:4px solid var(--success);">
+            <span class="stat-label">총 입금</span>
+            <span class="stat-value stat-green" id="tx-stat-deposit">0</span>
+            <span style="font-size:11px; color:var(--text-secondary);" id="tx-stat-deposit-sub">0건</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid var(--danger);">
+            <span class="stat-label">총 출금</span>
+            <span class="stat-value stat-red" id="tx-stat-withdrawal">0</span>
+            <span style="font-size:11px; color:var(--text-secondary);" id="tx-stat-withdrawal-sub">0건</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #7C3AED;">
+            <span class="stat-label">처리 중</span>
+            <span class="stat-value" style="color:#7C3AED;" id="tx-stat-processing">0</span>
+            <span style="font-size:11px; color:var(--text-secondary);">출금</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #F59E0B;">
+            <span class="stat-label">보류 중</span>
+            <span class="stat-value stat-orange" id="tx-stat-hold">0</span>
+            <span style="font-size:11px; color:var(--text-secondary);">입금</span>
+          </div>
         </div>
 
         <!-- Tabs -->
@@ -909,46 +933,85 @@
         <!-- 공통 필터 + 테이블 -->
         <div class="card" style="padding:0;">
           <div id="tx-panel-filters" style="padding:12px 16px; border-bottom:1px solid var(--border);">
-            <div class="toolbar" style="margin-bottom:0; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
               <div class="search-wrap">
                 <span class="search-icon">&#128269;</span>
-                <input type="text" id="tx-search" class="form-control" placeholder="고객사 / TXID 검색" style="width:220px; padding-left:30px;" oninput="renderTxTable()" />
+                <input type="text" id="tx-search" class="form-control" placeholder="고객사 / TXID 검색" style="width:200px; padding-left:30px;" oninput="renderTxTable()" />
               </div>
-              <select class="form-control" id="tx-filter-coin" style="width:120px;" onchange="renderTxTable()">
+              <select class="form-control" id="tx-filter-corp" style="width:150px;" onchange="renderTxTable()">
+                <option value="">전체 고객사</option>
+                <option>알파투자운용(주)</option>
+                <option>베타캐피탈 유한회사</option>
+                <option>감마트레이딩(주)</option>
+                <option>델타홀딩스 유한회사</option>
+              </select>
+              <select class="form-control" id="tx-filter-coin" style="width:110px;" onchange="renderTxTable()">
                 <option value="">전체 코인</option>
                 <option value="BTC">BTC</option>
                 <option value="ETH">ETH</option>
                 <option value="USDT">USDT</option>
                 <option value="XRP">XRP</option>
               </select>
-              <select class="form-control" id="tx-filter-corp" style="width:160px;" onchange="renderTxTable()">
-                <option value="">전체 고객사</option>
-                <option>알파투자운용(주)</option>
-                <option>베타캐피탈 유한회사</option>
-                <option>감마트레이딩(주)</option>
+              <select class="form-control" id="tx-filter-type" style="width:100px;" onchange="renderTxTable()">
+                <option value="">전체 유형</option>
+                <option value="deposit">입금</option>
+                <option value="withdrawal">출금</option>
               </select>
+              <select class="form-control" id="tx-filter-status" style="width:120px;" onchange="renderTxTable()">
+                <option value="">전체 상태</option>
+                <option value="done">완료</option>
+                <option value="hold">보류</option>
+                <option value="signing">서명대기</option>
+                <option value="processing">처리중</option>
+                <option value="broadcasting">출금중</option>
+                <option value="rejected">거절</option>
+              </select>
+              <input type="date" id="tx-filter-from" class="form-control" style="width:130px;" onchange="renderTxTable()" title="시작일" />
+              <input type="date" id="tx-filter-to"   class="form-control" style="width:130px;" onchange="renderTxTable()" title="종료일" />
+              <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="alert('CSV 다운로드 (미구현)')">&#8595; CSV</button>
             </div>
           </div>
+
           <!-- 보류 처리 섹션 (입금 탭 + 일반/마스터 역할만 표시) -->
           <div id="tx-hold-section" style="display:none; padding:14px 16px; border-bottom:1px solid var(--border); background:#FFFBEB;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
               <span style="font-size:12px; font-weight:700; color:#92400E;">&#9888; 보류 입금 처리</span>
               <span id="tx-hold-count" class="badge badge-warning"></span>
               <span style="font-size:11px; color:#92400E;">AML 임계값 초과 또는 이상 패턴 감지 건 — 검토 후 처리하세요.</span>
+              <span style="flex:1;"></span>
+              <button class="btn btn-success btn-xs" onclick="holdBulkAction('approve')">&#10003; 일괄 승인</button>
+              <button class="btn btn-danger  btn-xs" onclick="holdBulkAction('reject')">&#10005; 일괄 거절</button>
+            </div>
+            <!-- 보류 서브탭 -->
+            <div class="admin-tabs" id="tx-hold-subtabs" style="margin-bottom:8px; border-bottom:none;">
+              <div class="admin-tab active" id="tx-hold-sub-pending"  onclick="switchHoldSubtab('pending')">보류중</div>
+              <div class="admin-tab"        id="tx-hold-sub-approved" onclick="switchHoldSubtab('approved')">승인완료</div>
+              <div class="admin-tab"        id="tx-hold-sub-rejected" onclick="switchHoldSubtab('rejected')">거절됨</div>
+              <div class="admin-tab"        id="tx-hold-sub-all"      onclick="switchHoldSubtab('all')">전체</div>
             </div>
             <div class="table-wrap" style="margin:0;">
               <table>
                 <thead>
-                  <tr><th>일시</th><th>고객사</th><th>코인</th><th style="text-align:right;">수량</th><th>보류 사유</th><th>TXID</th><th>처리</th></tr>
+                  <tr>
+                    <th style="width:32px;"><input type="checkbox" id="tx-hold-select-all" onchange="toggleHoldSelectAll(this.checked)" /></th>
+                    <th>일시</th><th>고객사</th><th>코인 / 네트워크</th>
+                    <th style="text-align:right;">수량</th><th>보류 사유</th><th>상태</th><th>처리</th>
+                  </tr>
                 </thead>
                 <tbody id="tx-hold-tbody"></tbody>
               </table>
             </div>
           </div>
+
+          <!-- 메인 테이블 -->
           <div class="table-wrap" id="tx-panel-table">
             <table>
               <thead>
-                <tr><th>일시</th><th>고객사</th><th>유형</th><th>코인 / 네트워크</th><th style="text-align:right;">수량</th><th>상태</th><th>TXID</th><th id="tx-col-action" style="display:none;">처리</th></tr>
+                <tr>
+                  <th>일시</th><th>고객사</th><th>유형</th><th>코인 / 네트워크</th>
+                  <th style="text-align:right;">수량</th><th>수신/발신 주소</th><th>상태</th><th>TXID</th>
+                  <th id="tx-col-action" style="display:none;">상세/처리</th>
+                </tr>
               </thead>
               <tbody id="tx-tbody"></tbody>
             </table>
@@ -2055,6 +2118,154 @@
 </div>
 
 <!-- ══════════════════════════════════════
+     MODAL: 입금 상세 (7-5)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-deposit-detail">
+  <div class="modal-header">
+    <span class="modal-title">입금 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-deposit-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="section-box-title">입금 정보</div>
+      <div class="info-row"><span class="info-label">상태</span><span class="info-value" id="dd-status"></span></div>
+      <div class="info-row"><span class="info-label">일시</span><span class="info-value" id="dd-datetime"></span></div>
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="dd-corp"></span></div>
+      <div class="info-row"><span class="info-label">코인 / 네트워크</span><span class="info-value" id="dd-coin"></span></div>
+      <div class="info-row"><span class="info-label">수량</span><span class="info-value" id="dd-amount" style="font-weight:700; color:var(--success);"></span></div>
+      <div class="info-row"><span class="info-label">송신 주소</span><span class="info-value" id="dd-addr" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row"><span class="info-label">TXID</span><span class="info-value" id="dd-txid" style="font-family:monospace; font-size:12px;"></span></div>
+    </div>
+    <!-- 보류 사유 (보류 상태에서만 표시) -->
+    <div id="dd-hold-section" style="display:none;" class="section-box">
+      <div class="section-box-title" style="color:#92400E;">&#9888; 보류 사유</div>
+      <p id="dd-hold-reason" style="margin:0; font-size:13px; color:#92400E;"></p>
+    </div>
+    <!-- 거절 사유 (거절 상태에서만 표시) -->
+    <div id="dd-reject-section" style="display:none;" class="section-box">
+      <div class="section-box-title" style="color:var(--danger);">거절 사유</div>
+      <p id="dd-reject-reason" style="margin:0; font-size:13px; color:var(--danger);"></p>
+    </div>
+  </div>
+  <div class="modal-footer" id="dd-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-deposit-detail')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 출금 상세 (7-7)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-withdrawal-detail-admin">
+  <div class="modal-header">
+    <span class="modal-title">출금 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-withdrawal-detail-admin')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="section-box-title">출금 정보</div>
+      <div class="info-row"><span class="info-label">상태</span><span class="info-value" id="wd-status"></span></div>
+      <div class="info-row"><span class="info-label">출금번호</span><span class="info-value" id="wd-no" style="font-family:monospace;"></span></div>
+      <div class="info-row"><span class="info-label">일시</span><span class="info-value" id="wd-datetime"></span></div>
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="wd-corp"></span></div>
+      <div class="info-row"><span class="info-label">코인 / 네트워크</span><span class="info-value" id="wd-coin"></span></div>
+      <div class="info-row"><span class="info-label">수량</span><span class="info-value" id="wd-amount" style="font-weight:700; color:var(--danger);"></span></div>
+      <div class="info-row"><span class="info-label">수신 주소</span><span class="info-value" id="wd-addr" style="font-family:monospace; font-size:12px;"></span></div>
+    </div>
+    <!-- 서명 대기 상태 -->
+    <div id="wd-signing-section" style="display:none;" class="section-box">
+      <div class="section-box-title">서명 현황</div>
+      <div class="info-row"><span class="info-label">요청 서명</span><span class="info-value" id="wd-sign-required">—</span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">완료 서명</span><span class="info-value" id="wd-sign-done">—</span></div>
+    </div>
+    <!-- TXID 섹션 (출금중/완료) -->
+    <div id="wd-txid-section" style="display:none;" class="section-box">
+      <div class="section-box-title">TXID</div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">TXID</span><span class="info-value" id="wd-txid" style="font-family:monospace; font-size:12px;"></span></div>
+    </div>
+    <!-- 완료 타임라인 -->
+    <div id="wd-timeline-section" style="display:none;" class="section-box">
+      <div class="section-box-title">처리 타임라인</div>
+      <div id="wd-timeline" style="font-size:12px; color:var(--text-secondary); line-height:2;"></div>
+    </div>
+    <!-- 거절 사유 -->
+    <div id="wd-reject-section" style="display:none;" class="section-box">
+      <div class="section-box-title" style="color:var(--danger);">거절 사유</div>
+      <p id="wd-reject-reason" style="margin:0; font-size:13px; color:var(--danger);"></p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-withdrawal-detail-admin')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 보류 입금 승인 (7-6)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-hold-approve">
+  <div class="modal-header">
+    <span class="modal-title">보류 입금 승인</span>
+    <button class="modal-close" onclick="closeModal('modal-hold-approve')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="section-box-title">승인 대상</div>
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="ha-corp"></span></div>
+      <div class="info-row"><span class="info-label">코인</span><span class="info-value" id="ha-coin"></span></div>
+      <div class="info-row"><span class="info-label">수량</span><span class="info-value" id="ha-amount" style="font-weight:700; color:var(--success);"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">보류 사유</span><span class="info-value" id="ha-reason" style="color:#92400E;"></span></div>
+    </div>
+    <div class="section-box">
+      <div class="section-box-title">OTP 인증</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="text" id="ha-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
+        <button class="btn btn-outline btn-sm">OTP 발송</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-hold-approve')">취소</button>
+    <button class="btn btn-success" onclick="confirmHoldApprove()">승인 확정</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 보류 입금 거절 (7-6)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-hold-reject">
+  <div class="modal-header">
+    <span class="modal-title">보류 입금 거절</span>
+    <button class="modal-close" onclick="closeModal('modal-hold-reject')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="section-box-title">거절 대상</div>
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="hr-corp"></span></div>
+      <div class="info-row"><span class="info-label">코인</span><span class="info-value" id="hr-coin"></span></div>
+      <div class="info-row"><span class="info-label">수량</span><span class="info-value" id="hr-amount" style="font-weight:700; color:var(--danger);"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">보류 사유</span><span class="info-value" id="hr-reason" style="color:#92400E;"></span></div>
+    </div>
+    <div class="section-box">
+      <div class="section-box-title">거절 사유 <span style="color:var(--danger);">*</span></div>
+      <textarea id="hr-reject-reason" class="form-control" rows="3" maxlength="500" placeholder="거절 사유를 입력하세요 (최대 500자)" style="resize:vertical;" oninput="document.getElementById('hr-reject-len').textContent=this.value.length;"></textarea>
+      <div style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:4px;">
+        <span id="hr-reject-len">0</span>/500
+      </div>
+    </div>
+    <div class="section-box">
+      <div class="section-box-title">OTP 인증</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="text" id="hr-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
+        <button class="btn btn-outline btn-sm">OTP 발송</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-hold-reject')">취소</button>
+    <button class="btn btn-danger" onclick="confirmHoldReject()">거절 확정</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
      SLIDE-OVER: 콜드월렛 주소 등록 (6-2)
 ══════════════════════════════════════ -->
 <div class="slideover-backdrop" id="cw-addr-backdrop" onclick="closeCWAddrSO()"></div>
@@ -2103,7 +2314,8 @@
       <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="txid-corp"></span></div>
       <div class="info-row"><span class="info-label">코인</span><span class="info-value" id="txid-coin"></span></div>
       <div class="info-row"><span class="info-label">수량</span><span class="info-value" id="txid-amount"></span></div>
-      <div class="info-row" style="border-bottom:none;"><span class="info-label">수신 주소</span><span class="info-value" id="txid-addr" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row"><span class="info-label">수신 주소</span><span class="info-value" id="txid-addr" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">현재 상태</span><span class="info-value" id="txid-current-status"></span></div>
     </div>
     <div class="form-group" style="margin-bottom:0;">
       <label class="form-label">TXID <span style="color:var(--danger);">*</span></label>
@@ -3662,37 +3874,60 @@
   }
 
   /* ════════════════════════════════════
-     거래 내역 (섹션 — 전체 역할)
+     거래 내역 (섹션 7)
   ════════════════════════════════════ */
   var _TX_TAB = 'all';
+  var _TX_HOLD_SUBTAB = 'pending'; // pending / approved / rejected / all
+  var _txHoldActiveIdx = null;     // hold record being approved/rejected
 
   var _TX_DATA = [
     // 입금 — 완료
-    { type:'deposit',    corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'1,000.00', status:'done',   txid:'0xa1b2c3...f9e8', datetime:'2026-04-07 14:32' },
-    { type:'deposit',    corp:'베타캐피탈 유한회사',  coin:'BTC',  network:'Bitcoin',           amount:'0.0500',   status:'done',   txid:'4a3b2c...1d0e', datetime:'2026-04-06 09:15' },
-    { type:'deposit',    corp:'감마트레이딩(주)',      coin:'ETH',  network:'Ethereum',          amount:'2.0000',   status:'done',   txid:'0xd4e5f6...a2b1', datetime:'2026-04-05 11:20' },
-    // 입금 — 보류
-    { type:'deposit',    corp:'알파투자운용(주)',     coin:'USDT', network:'Ethereum (ERC-20)', amount:'50,000.00', status:'hold',  txid:'0xf1e2d3...b4c5', datetime:'2026-04-07 16:44', holdReason:'단일 입금 임계값 초과 (₩65,000,000)' },
-    { type:'deposit',    corp:'델타홀딩스 유한회사', coin:'XRP',  network:'XRP Ledger',        amount:'200,000',  status:'hold',  txid:'A3B4C5...D6E7', datetime:'2026-04-06 22:10', holdReason:'신규 송신 주소 — AML 검토 필요' },
+    { type:'deposit',    corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'1,000.00',  status:'done',        txid:'0xa1b2c3...f9e8', addr:'TRx8vQm2...K9P1', datetime:'2026-04-07 14:32' },
+    { type:'deposit',    corp:'베타캐피탈 유한회사',  coin:'BTC',  network:'Bitcoin',           amount:'0.0500',    status:'done',        txid:'4a3b2c...1d0e',   addr:'bc1qxy2...wlh',   datetime:'2026-04-06 09:15' },
+    { type:'deposit',    corp:'감마트레이딩(주)',      coin:'ETH',  network:'Ethereum',          amount:'2.0000',    status:'done',        txid:'0xd4e5f6...a2b1', addr:'0x9F3e...7C1B',   datetime:'2026-04-05 11:20' },
+    // 입금 — 확인중
+    { type:'deposit',    corp:'베타캐피탈 유한회사',  coin:'BTC',  network:'Bitcoin',           amount:'0.1200',    status:'pending',     txid:'7d8e9f...a0b1',   addr:'bc1qzp9...n3m',   datetime:'2026-04-08 11:05' },
+    // 입금 — 보류 (holdSubStatus: pending/approved/rejected)
+    { type:'deposit',    corp:'알파투자운용(주)',     coin:'USDT', network:'Ethereum (ERC-20)', amount:'50,000.00', status:'hold',        txid:'0xf1e2d3...b4c5', addr:'0x2A4F...8D9E',   datetime:'2026-04-07 16:44', holdReason:'단일 입금 임계값 초과 (₩65,000,000)', holdSubStatus:'pending' },
+    { type:'deposit',    corp:'델타홀딩스 유한회사', coin:'XRP',  network:'XRP Ledger',        amount:'200,000',   status:'hold',        txid:'A3B4C5...D6E7',   addr:'rHb9Cj...P2E1',   datetime:'2026-04-06 22:10', holdReason:'신규 송신 주소 — AML 검토 필요', holdSubStatus:'pending' },
+    { type:'deposit',    corp:'감마트레이딩(주)',     coin:'ETH',  network:'Ethereum',          amount:'10.0000',   status:'hold',        txid:'0xc7d8e9...f0a1', addr:'0x5B1C...3F2A',   datetime:'2026-04-05 18:30', holdReason:'동일 주소 반복 입금 (24h 3회)', holdSubStatus:'approved', resolvedAt:'2026-04-06 09:00' },
+    { type:'deposit',    corp:'베타캐피탈 유한회사', coin:'USDT', network:'TRON (TRC-20)',     amount:'30,000.00', status:'hold',        txid:'TRy3xZ...M8K2',   addr:'TJa4wN...B7L9',   datetime:'2026-04-04 20:15', holdReason:'출처 불명 주소 — OFAC 스크리닝 필요', holdSubStatus:'rejected', rejectedReason:'OFAC 지정 주소 확인됨', resolvedAt:'2026-04-05 10:30' },
+    // 입금 — 거절
+    { type:'deposit',    corp:'알파투자운용(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.0100',    status:'rejected',    txid:'5e6f7a...8b9c',   addr:'bc1qnm3...p4r',   datetime:'2026-04-03 14:00', rejectedReason:'허용되지 않는 코인 네트워크 (BTC Segwit)' },
     // 출금 — 완료
-    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'5,000.00', status:'done',   txid:'0x9a1b...e3f2', datetime:'2026-04-07 10:42' },
-    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.5000',   status:'done',   txid:'3c4d5e...f6a7', datetime:'2026-04-05 15:00' },
-    // 출금 — 진행 중
-    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',   status:'signing',  txid:null, datetime:'2026-04-08 09:00' },
-    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'Ethereum (ERC-20)', amount:'10,000.00',status:'processing',txid:null, datetime:'2026-04-08 10:15' },
+    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'5,000.00',  status:'done',        txid:'0x9a1b...e3f2', addr:'TKx7vM...W3R1', datetime:'2026-04-07 10:42', wdNo:'WD-2026-0038', completedAt:'2026-04-07 10:55' },
+    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.5000',    status:'done',        txid:'3c4d5e...f6a7', addr:'bc1qrt5...k2m', datetime:'2026-04-05 15:00', wdNo:'WD-2026-0035', completedAt:'2026-04-05 15:18' },
+    // 출금 — 서명대기
+    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',    status:'signing',     txid:null, addr:'0xA1B2...C3D4', datetime:'2026-04-08 09:00', wdNo:'WD-2026-0044', signRequired:2, signDone:1 },
+    // 출금 — 처리중
+    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'Ethereum (ERC-20)', amount:'10,000.00', status:'processing',  txid:null, addr:'0xE5F6...A7B8', datetime:'2026-04-08 10:15', wdNo:'WD-2026-0045' },
+    // 출금 — 출금중 (브로드캐스트 완료, TXID 있음)
+    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.2000',    status:'broadcasting',txid:'9b8a7c...6d5e', addr:'bc1qhx4...z9y', datetime:'2026-04-08 08:00', wdNo:'WD-2026-0042' },
     // 출금 — TXID 미입력 (콜드월렛 담당자 처리 대상)
-    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',   status:'notxid', txid:null, datetime:'2026-04-04 15:00', wdNo:'WD-2026-0041' },
-    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.0300',   status:'notxid', txid:null, datetime:'2026-04-07 08:30', wdNo:'WD-2026-0043' },
+    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',    status:'notxid',      txid:null, addr:'0xC9D0...E1F2', datetime:'2026-04-04 15:00', wdNo:'WD-2026-0041' },
+    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.0300',    status:'notxid',      txid:null, addr:'bc1qmn2...j5k', datetime:'2026-04-07 08:30', wdNo:'WD-2026-0043' },
+    // 출금 — 거절
+    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'100,000.00',status:'rejected',    txid:null, addr:'TLx9wP...V2Q3', datetime:'2026-04-02 11:00', wdNo:'WD-2026-0030', rejectedReason:'화이트리스트 미등록 주소' },
   ];
 
-  var _TX_HOLD_DATA = _TX_DATA.filter(function(r){ return r.status === 'hold'; });
-
   var _TX_STATUS_CFG = {
-    done:       { label:'완료',      cls:'badge-success' },
-    hold:       { label:'보류',      cls:'badge-warning' },
-    signing:    { label:'서명 중',   cls:'badge-warning' },
-    processing: { label:'처리 중',   cls:'badge-purple'  },
-    notxid:     { label:'TXID 미입력', cls:'badge-info'  },
+    // 입금 상태
+    pending:      { label:'⏳ 확인중',   cls:'badge-warning',  type:'deposit'    },
+    done:         { label:'● 완료',      cls:'badge-success',  type:'both'       },
+    hold:         { label:'⚠ 보류',      cls:'badge-warning',  type:'deposit'    },
+    rejected:     { label:'✕ 거절',      cls:'badge-danger',   type:'both'       },
+    // 출금 상태
+    signing:      { label:'⏳ 서명대기', cls:'badge-warning',  type:'withdrawal' },
+    processing:   { label:'🔄 처리중',   cls:'badge-purple',   type:'withdrawal' },
+    broadcasting: { label:'↗ 출금중',    cls:'badge-info',     type:'withdrawal' },
+    notxid:       { label:'TXID 미입력', cls:'badge-gray',     type:'withdrawal' },
+  };
+
+  // hold sub-status 배지
+  var _TX_HOLD_SUBSTATUS_CFG = {
+    pending:  { label:'보류중',   cls:'badge-warning' },
+    approved: { label:'승인완료', cls:'badge-success' },
+    rejected: { label:'거절됨',   cls:'badge-danger'  },
   };
 
   function switchTxTab(tab) {
@@ -3700,6 +3935,14 @@
     document.querySelectorAll('#tx-tabs .admin-tab').forEach(function(t){ t.classList.remove('active'); });
     var tabEl = document.getElementById('tx-tab-' + tab);
     if (tabEl) tabEl.classList.add('active');
+
+    // 유형 필터 동기화
+    var typeFilter = document.getElementById('tx-filter-type');
+    if (typeFilter) {
+      if (tab === 'deposit')    typeFilter.value = 'deposit';
+      else if (tab === 'withdrawal') typeFilter.value = 'withdrawal';
+      else typeFilter.value = '';
+    }
 
     // 보류 처리 섹션: 입금 탭 + 일반/마스터만
     var canHold = (_ADMIN_ROLE === 'general' || _ADMIN_ROLE === 'master');
@@ -3710,63 +3953,114 @@
     if (tab === 'deposit' && canHold) renderTxHoldTable();
   }
 
+  function switchHoldSubtab(sub) {
+    _TX_HOLD_SUBTAB = sub;
+    document.querySelectorAll('#tx-hold-subtabs .admin-tab').forEach(function(t){ t.classList.remove('active'); });
+    var el = document.getElementById('tx-hold-sub-' + sub);
+    if (el) el.classList.add('active');
+    renderTxHoldTable();
+  }
+
+  function renderTxStats() {
+    var depCount  = _TX_DATA.filter(function(r){ return r.type==='deposit'; }).length;
+    var wdCount   = _TX_DATA.filter(function(r){ return r.type==='withdrawal'; }).length;
+    var procCount = _TX_DATA.filter(function(r){ return r.type==='withdrawal' && (r.status==='signing'||r.status==='processing'||r.status==='broadcasting'); }).length;
+    var holdCount = _TX_DATA.filter(function(r){ return r.status==='hold' && r.holdSubStatus==='pending'; }).length;
+
+    var el;
+    el = document.getElementById('tx-stat-deposit');      if (el) el.textContent = depCount;
+    el = document.getElementById('tx-stat-deposit-sub');  if (el) el.textContent = depCount + '건';
+    el = document.getElementById('tx-stat-withdrawal');   if (el) el.textContent = wdCount;
+    el = document.getElementById('tx-stat-withdrawal-sub'); if (el) el.textContent = wdCount + '건';
+    el = document.getElementById('tx-stat-processing');   if (el) el.textContent = procCount;
+    el = document.getElementById('tx-stat-hold');         if (el) el.textContent = holdCount;
+  }
+
   function renderTxTable() {
     var tbody = document.getElementById('tx-tbody');
     if (!tbody) return;
-    var q    = (document.getElementById('tx-search')      ||{}).value.toLowerCase()||'';
-    var coin = (document.getElementById('tx-filter-coin') ||{}).value||'';
-    var corp = (document.getElementById('tx-filter-corp') ||{}).value||'';
+    var q          = (document.getElementById('tx-search')        ||{}).value.toLowerCase()||'';
+    var coin       = (document.getElementById('tx-filter-coin')   ||{}).value||'';
+    var corp       = (document.getElementById('tx-filter-corp')   ||{}).value||'';
+    var typeF      = (document.getElementById('tx-filter-type')   ||{}).value||'';
+    var statusF    = (document.getElementById('tx-filter-status') ||{}).value||'';
+    var fromDate   = (document.getElementById('tx-filter-from')   ||{}).value||'';
+    var toDate     = (document.getElementById('tx-filter-to')     ||{}).value||'';
 
     var isCW = _ADMIN_ROLE === 'coldwallet';
     var list = _TX_DATA.filter(function(r){
-      if (r.status === 'hold') return false; // hold items go to hold tab only
+      // hold records appear only in hold section, not main table
+      if (r.status === 'hold') return false;
+      // tab filter
       if (_TX_TAB === 'deposit'    && r.type !== 'deposit')    return false;
       if (_TX_TAB === 'withdrawal' && r.type !== 'withdrawal') return false;
       // coldwallet: only show notxid withdrawals
       if (isCW && !(r.type === 'withdrawal' && r.status === 'notxid')) return false;
-      if (coin && r.coin !== coin) return false;
-      if (corp && r.corp !== corp) return false;
+      // dropdown filters
+      if (coin    && r.coin   !== coin)   return false;
+      if (corp    && r.corp   !== corp)   return false;
+      if (typeF   && r.type   !== typeF)  return false;
+      if (statusF && r.status !== statusF) return false;
+      // date range
+      if (fromDate && r.datetime.slice(0,10) < fromDate) return false;
+      if (toDate   && r.datetime.slice(0,10) > toDate)   return false;
+      // search
       if (q && !r.corp.toLowerCase().includes(q) && !(r.txid||'').toLowerCase().includes(q)) return false;
       return true;
     });
 
-    // Action column visible only for coldwallet (TXID input) or general/master
+    // Action column
     var showAction = isCW || _ADMIN_ROLE === 'general' || _ADMIN_ROLE === 'master';
     var actionCol = document.getElementById('tx-col-action');
     if (actionCol) actionCol.style.display = showAction ? '' : 'none';
 
-    // TXID 미입력 badge on 출금 tab
+    // Badges on tabs
     var notxidCount = _TX_DATA.filter(function(r){ return r.type==='withdrawal' && r.status==='notxid'; }).length;
-    var badge = document.getElementById('tx-notxid-badge');
-    if (badge) { badge.textContent = notxidCount; badge.style.display = notxidCount ? '' : 'none'; }
+    var ntBadge = document.getElementById('tx-notxid-badge');
+    if (ntBadge) { ntBadge.textContent = notxidCount; ntBadge.style.display = notxidCount ? '' : 'none'; }
+
+    var holdPendingCount = _TX_DATA.filter(function(r){ return r.status==='hold' && r.holdSubStatus==='pending'; }).length;
+    var hBadge = document.getElementById('tx-hold-badge');
+    if (hBadge) { hBadge.textContent = holdPendingCount; hBadge.style.display = holdPendingCount ? '' : 'none'; }
 
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-secondary); padding:32px;">' + (isCW ? 'TXID 미입력 출금건이 없습니다.' : '조회 결과가 없습니다.') + '</td></tr>';
+      var msg = isCW ? 'TXID 미입력 출금건이 없습니다.' : '조회 결과가 없습니다.';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-secondary); padding:32px;">' + msg + '</td></tr>';
       return;
     }
 
-    tbody.innerHTML = list.map(function(r, i) {
+    // Find actual index in _TX_DATA for click handlers
+    tbody.innerHTML = list.map(function(r) {
+      var dataIdx = _TX_DATA.indexOf(r);
       var cfg = _TX_STATUS_CFG[r.status] || { label: r.status, cls: 'badge-gray' };
       var typeBadge = r.type === 'deposit'
         ? '<span class="badge badge-info">입금</span>'
-        : '<span class="badge" style="background:#EDE9FE; color:#7C3AED;">출금</span>';
+        : '<span class="badge badge-purple">출금</span>';
       var txidCell = r.txid
-        ? '<span style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">' + r.txid + '</span>'
+        ? '<span style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;" title="' + r.txid + '">' + r.txid + '</span>'
+        : '<span style="color:var(--text-secondary);">—</span>';
+      var addrCell = r.addr
+        ? '<span style="font-family:monospace; font-size:11px; color:var(--text-secondary);" title="' + r.addr + '">' + r.addr + '</span>'
         : '<span style="color:var(--text-secondary);">—</span>';
       var actionCell = '';
       if (showAction) {
         if (r.status === 'notxid') {
-          actionCell = '<button class="btn btn-primary btn-xs" onclick="openTxTXIDModal(' + i + ')">TXID 입력</button>';
+          actionCell = '<button class="btn btn-primary btn-xs" onclick="openTxTXIDModal(' + dataIdx + ')">TXID 입력</button>';
+        } else if (r.type === 'withdrawal') {
+          actionCell = '<button class="btn btn-outline btn-xs" onclick="openWithdrawalDetailAdmin(' + dataIdx + ')">상세</button>';
         } else {
-          actionCell = '<button class="btn btn-outline btn-xs">상세</button>';
+          actionCell = '<button class="btn btn-outline btn-xs" onclick="openDepositDetailAdmin(' + dataIdx + ')">상세</button>';
         }
       }
+      var amtColor = r.type === 'deposit' ? 'color:var(--success);' : 'color:var(--danger);';
+      var amtSign  = r.type === 'deposit' ? '+' : '-';
       return '<tr>'
         + '<td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">' + r.datetime + '</td>'
         + '<td style="font-weight:600;">' + r.corp + '</td>'
         + '<td>' + typeBadge + '</td>'
         + '<td style="font-size:12px;">' + r.coin + ' / ' + r.network + '</td>'
-        + '<td style="text-align:right; font-weight:600;">' + r.amount + '</td>'
+        + '<td style="text-align:right; font-weight:600; ' + amtColor + '">' + amtSign + r.amount + '</td>'
+        + '<td>' + addrCell + '</td>'
         + '<td><span class="badge ' + cfg.cls + '">' + cfg.label + '</span></td>'
         + '<td>' + txidCell + '</td>'
         + (showAction ? '<td>' + actionCell + '</td>' : '')
@@ -3777,63 +4071,245 @@
   function renderTxHoldTable() {
     var tbody = document.getElementById('tx-hold-tbody');
     if (!tbody) return;
-    var holdList = _TX_DATA.filter(function(r){ return r.status === 'hold'; });
 
+    var allHold = _TX_DATA.filter(function(r){ return r.status === 'hold'; });
+    var holdList = allHold.filter(function(r){
+      if (_TX_HOLD_SUBTAB === 'all') return true;
+      return r.holdSubStatus === _TX_HOLD_SUBTAB;
+    });
+
+    // Update hold badge (pending only)
+    var pendingCount = allHold.filter(function(r){ return r.holdSubStatus === 'pending'; }).length;
     var holdBadge = document.getElementById('tx-hold-badge');
-    if (holdBadge) { holdBadge.textContent = holdList.length; holdBadge.style.display = holdList.length ? '' : 'none'; }
+    if (holdBadge) { holdBadge.textContent = pendingCount; holdBadge.style.display = pendingCount ? '' : 'none'; }
+    var holdCount = document.getElementById('tx-hold-count');
+    if (holdCount) holdCount.textContent = pendingCount + '건 대기';
+
+    // Clear select-all checkbox
+    var selAll = document.getElementById('tx-hold-select-all');
+    if (selAll) selAll.checked = false;
 
     if (!holdList.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-secondary); padding:32px;">보류 처리 대기 건이 없습니다.</td></tr>';
+      var msgs = { pending:'보류 처리 대기 건이 없습니다.', approved:'승인 완료된 건이 없습니다.', rejected:'거절된 건이 없습니다.', all:'보류 입금 내역이 없습니다.' };
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-secondary); padding:24px;">' + (msgs[_TX_HOLD_SUBTAB]||'') + '</td></tr>';
       return;
     }
-    tbody.innerHTML = holdList.map(function(r, i) {
-      var txid = r.txid ? '<span style="font-family:monospace; font-size:11px;">' + r.txid + '</span>' : '—';
+
+    tbody.innerHTML = holdList.map(function(r) {
+      var dataIdx = _TX_DATA.indexOf(r);
+      var subCfg  = _TX_HOLD_SUBSTATUS_CFG[r.holdSubStatus] || { label: r.holdSubStatus, cls:'badge-gray' };
+      var isPending = r.holdSubStatus === 'pending';
+      var actionBtns = isPending
+        ? '<button class="btn btn-success btn-xs" onclick="openHoldApproveModal(' + dataIdx + ')">승인</button>'
+          + ' <button class="btn btn-danger btn-xs" onclick="openHoldRejectModal(' + dataIdx + ')">거절</button>'
+        : '<button class="btn btn-outline btn-xs" onclick="openDepositDetailAdmin(' + dataIdx + ')">상세</button>';
       return '<tr>'
+        + '<td style="width:32px;"><input type="checkbox" class="tx-hold-cb" data-idx="' + dataIdx + '" ' + (isPending ? '' : 'disabled') + '/></td>'
         + '<td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">' + r.datetime + '</td>'
         + '<td style="font-weight:600;">' + r.corp + '</td>'
-        + '<td><span class="badge badge-info">' + r.coin + '</span></td>'
+        + '<td style="font-size:12px;">' + r.coin + ' / ' + r.network + '</td>'
         + '<td style="text-align:right; font-weight:600; color:var(--success);">+' + r.amount + '</td>'
         + '<td style="font-size:12px; color:#92400E;">' + (r.holdReason||'—') + '</td>'
-        + '<td>' + txid + '</td>'
-        + '<td style="display:flex; gap:6px;">'
-        +   '<button class="btn btn-success btn-xs" onclick="confirmTxHold(' + i + ',\'approve\')">승인</button>'
-        +   '<button class="btn btn-danger btn-xs"  onclick="confirmTxHold(' + i + ',\'reject\')">거절</button>'
-        + '</td>'
+        + '<td><span class="badge ' + subCfg.cls + '">' + subCfg.label + '</span></td>'
+        + '<td style="white-space:nowrap;">' + actionBtns + '</td>'
         + '</tr>';
     }).join('');
   }
 
-  function openTxTXIDModal(listIdx) {
-    var isCW = _ADMIN_ROLE === 'coldwallet';
-    var q    = (document.getElementById('tx-search')      ||{}).value.toLowerCase()||'';
-    var coin = (document.getElementById('tx-filter-coin') ||{}).value||'';
-    var list = _TX_DATA.filter(function(r){
-      if (r.status !== 'notxid') return false;
-      if (isCW && r.type !== 'withdrawal') return false;
-      if (coin && r.coin !== coin) return false;
-      return true;
-    });
-    var r = list[listIdx]; if (!r) return;
-    // Reuse existing TXID modal
+  function toggleHoldSelectAll(checked) {
+    document.querySelectorAll('.tx-hold-cb:not([disabled])').forEach(function(cb){ cb.checked = checked; });
+  }
+
+  function holdBulkAction(action) {
+    var checked = document.querySelectorAll('.tx-hold-cb:checked');
+    if (!checked.length) { showToast('처리할 항목을 선택하세요.'); return; }
+    var label = action === 'approve' ? '일괄 승인 (' + checked.length + '건)' : '일괄 거절 (' + checked.length + '건)';
+    if (action === 'reject') {
+      // For bulk reject we just do OTP for simplicity; individual reject uses the modal
+      openOTPModal(label, function() {
+        checked.forEach(function(cb){
+          var idx = parseInt(cb.getAttribute('data-idx'));
+          if (_TX_DATA[idx]) { _TX_DATA[idx].holdSubStatus = 'rejected'; _TX_DATA[idx].rejectedReason = '일괄 거절'; _TX_DATA[idx].resolvedAt = new Date().toISOString().slice(0,16).replace('T',' '); }
+        });
+        renderTxHoldTable(); renderTxTable(); renderTxStats();
+        showToast(checked.length + '건 보류 입금이 거절되었습니다.');
+      });
+    } else {
+      openOTPModal(label, function() {
+        checked.forEach(function(cb){
+          var idx = parseInt(cb.getAttribute('data-idx'));
+          if (_TX_DATA[idx]) { _TX_DATA[idx].holdSubStatus = 'approved'; _TX_DATA[idx].resolvedAt = new Date().toISOString().slice(0,16).replace('T',' '); }
+        });
+        renderTxHoldTable(); renderTxTable(); renderTxStats();
+        showToast(checked.length + '건 보류 입금이 승인되었습니다.');
+      });
+    }
+  }
+
+  function openHoldApproveModal(dataIdx) {
+    _txHoldActiveIdx = dataIdx;
+    var r = _TX_DATA[dataIdx]; if (!r) return;
+    document.getElementById('ha-corp').textContent   = r.corp;
+    document.getElementById('ha-coin').textContent   = r.coin + ' / ' + r.network;
+    document.getElementById('ha-amount').textContent = '+' + r.amount + ' ' + r.coin;
+    document.getElementById('ha-reason').textContent = r.holdReason || '—';
+    document.getElementById('ha-otp').value          = '';
+    openModal('modal-hold-approve');
+  }
+
+  function confirmHoldApprove() {
+    var otp = document.getElementById('ha-otp').value.trim();
+    if (otp.length !== 6) { showToast('OTP 6자리를 입력하세요.'); return; }
+    var r = _TX_DATA[_txHoldActiveIdx]; if (!r) return;
+    r.holdSubStatus = 'approved';
+    r.resolvedAt    = new Date().toISOString().slice(0,16).replace('T',' ');
+    closeModal('modal-hold-approve');
+    renderTxHoldTable(); renderTxTable(); renderTxStats();
+    showToast(r.corp + ' 보류 입금이 승인되었습니다.');
+  }
+
+  function openHoldRejectModal(dataIdx) {
+    _txHoldActiveIdx = dataIdx;
+    var r = _TX_DATA[dataIdx]; if (!r) return;
+    document.getElementById('hr-corp').textContent   = r.corp;
+    document.getElementById('hr-coin').textContent   = r.coin + ' / ' + r.network;
+    document.getElementById('hr-amount').textContent = '+' + r.amount + ' ' + r.coin;
+    document.getElementById('hr-reason').textContent = r.holdReason || '—';
+    document.getElementById('hr-reject-reason').value = '';
+    document.getElementById('hr-reject-len').textContent = '0';
+    document.getElementById('hr-otp').value          = '';
+    openModal('modal-hold-reject');
+  }
+
+  function confirmHoldReject() {
+    var reason = document.getElementById('hr-reject-reason').value.trim();
+    if (!reason) { showToast('거절 사유를 입력하세요.'); return; }
+    var otp = document.getElementById('hr-otp').value.trim();
+    if (otp.length !== 6) { showToast('OTP 6자리를 입력하세요.'); return; }
+    var r = _TX_DATA[_txHoldActiveIdx]; if (!r) return;
+    r.holdSubStatus  = 'rejected';
+    r.rejectedReason = reason;
+    r.resolvedAt     = new Date().toISOString().slice(0,16).replace('T',' ');
+    closeModal('modal-hold-reject');
+    renderTxHoldTable(); renderTxTable(); renderTxStats();
+    showToast(r.corp + ' 보류 입금이 거절되었습니다.');
+  }
+
+  function openDepositDetailAdmin(dataIdx) {
+    var r = _TX_DATA[dataIdx]; if (!r) return;
+    var cfg = _TX_STATUS_CFG[r.status] || { label: r.status, cls:'badge-gray' };
+    var holdCfg = r.holdSubStatus ? _TX_HOLD_SUBSTATUS_CFG[r.holdSubStatus] : null;
+    var statusHtml = '<span class="badge ' + cfg.cls + '">' + cfg.label + '</span>';
+    if (holdCfg) statusHtml += ' <span class="badge ' + holdCfg.cls + '">' + holdCfg.label + '</span>';
+
+    document.getElementById('dd-status').innerHTML   = statusHtml;
+    document.getElementById('dd-datetime').textContent = r.datetime;
+    document.getElementById('dd-corp').textContent    = r.corp;
+    document.getElementById('dd-coin').textContent    = r.coin + ' / ' + r.network;
+    document.getElementById('dd-amount').textContent  = '+' + r.amount + ' ' + r.coin;
+    document.getElementById('dd-addr').textContent    = r.addr || '—';
+    document.getElementById('dd-txid').textContent    = r.txid || '—';
+
+    // hold section
+    var holdSec = document.getElementById('dd-hold-section');
+    if (holdSec) {
+      holdSec.style.display = (r.status === 'hold' && r.holdSubStatus === 'pending') ? '' : 'none';
+      document.getElementById('dd-hold-reason').textContent = r.holdReason || '—';
+    }
+    // reject section
+    var rejSec = document.getElementById('dd-reject-section');
+    if (rejSec) {
+      rejSec.style.display = (r.status === 'rejected' || (r.status === 'hold' && r.holdSubStatus === 'rejected')) ? '' : 'none';
+      document.getElementById('dd-reject-reason').textContent = r.rejectedReason || '—';
+    }
+
+    // footer buttons
+    var footer = document.getElementById('dd-footer');
+    var isHoldPending = r.status === 'hold' && r.holdSubStatus === 'pending';
+    var canAct = _ADMIN_ROLE === 'general' || _ADMIN_ROLE === 'master';
+    if (footer && isHoldPending && canAct) {
+      footer.innerHTML = '<button class="btn btn-outline" onclick="closeModal(\'modal-deposit-detail\')">닫기</button>'
+        + '<button class="btn btn-danger" onclick="closeModal(\'modal-deposit-detail\'); openHoldRejectModal(' + dataIdx + ')">거절</button>'
+        + '<button class="btn btn-success" onclick="closeModal(\'modal-deposit-detail\'); openHoldApproveModal(' + dataIdx + ')">승인</button>';
+    } else {
+      footer.innerHTML = '<button class="btn btn-outline" onclick="closeModal(\'modal-deposit-detail\')">닫기</button>';
+    }
+
+    openModal('modal-deposit-detail');
+  }
+
+  function openWithdrawalDetailAdmin(dataIdx) {
+    var r = _TX_DATA[dataIdx]; if (!r) return;
+    var cfg = _TX_STATUS_CFG[r.status] || { label: r.status, cls:'badge-gray' };
+
+    document.getElementById('wd-status').innerHTML    = '<span class="badge ' + cfg.cls + '">' + cfg.label + '</span>';
+    document.getElementById('wd-no').textContent      = r.wdNo || '—';
+    document.getElementById('wd-datetime').textContent = r.datetime;
+    document.getElementById('wd-corp').textContent    = r.corp;
+    document.getElementById('wd-coin').textContent    = r.coin + ' / ' + r.network;
+    document.getElementById('wd-amount').textContent  = '-' + r.amount + ' ' + r.coin;
+    document.getElementById('wd-addr').textContent    = r.addr || '—';
+
+    // signing section
+    var signSec = document.getElementById('wd-signing-section');
+    signSec.style.display = (r.status === 'signing') ? '' : 'none';
+    if (r.status === 'signing') {
+      document.getElementById('wd-sign-required').textContent = (r.signRequired||2) + '명';
+      document.getElementById('wd-sign-done').textContent     = (r.signDone||0) + '명';
+    }
+
+    // txid section
+    var txidSec = document.getElementById('wd-txid-section');
+    txidSec.style.display = (r.status === 'broadcasting' || r.status === 'done') ? '' : 'none';
+    if (r.txid) document.getElementById('wd-txid').textContent = r.txid;
+
+    // timeline section
+    var tlSec = document.getElementById('wd-timeline-section');
+    tlSec.style.display = (r.status === 'done') ? '' : 'none';
+    if (r.status === 'done') {
+      document.getElementById('wd-timeline').innerHTML = [
+        '📋 출금 요청: ' + r.datetime,
+        '✅ 서명 완료: ' + r.datetime.slice(0,10) + ' (추정)',
+        '↗ 브로드캐스트: ' + r.datetime.slice(0,10) + ' (추정)',
+        '● 최종 완료: ' + (r.completedAt || r.datetime),
+      ].map(function(s){ return '<div>' + s + '</div>'; }).join('');
+    }
+
+    // reject section
+    var rejSec = document.getElementById('wd-reject-section');
+    rejSec.style.display = (r.status === 'rejected') ? '' : 'none';
+    if (r.status === 'rejected') {
+      document.getElementById('wd-reject-reason').textContent = r.rejectedReason || '—';
+    }
+
+    openModal('modal-withdrawal-detail-admin');
+  }
+
+  function openTxTXIDModal(dataIdx) {
+    var r = _TX_DATA[dataIdx]; if (!r || r.status !== 'notxid') return;
+    var cfg = _TX_STATUS_CFG[r.status] || { label: r.status, cls:'badge-gray' };
     document.getElementById('txid-withdrawal-no').textContent = r.wdNo || '—';
     document.getElementById('txid-corp').textContent          = r.corp;
     document.getElementById('txid-coin').textContent          = r.coin + ' / ' + r.network;
     document.getElementById('txid-amount').textContent        = r.amount + ' ' + r.coin;
-    document.getElementById('txid-addr').textContent          = '—';
+    document.getElementById('txid-addr').textContent          = r.addr || '—';
+    document.getElementById('txid-current-status').innerHTML  = '<span class="badge ' + cfg.cls + '">' + cfg.label + '</span>';
     document.getElementById('txid-input').value               = '';
+    // store for confirmTXID
+    _signActiveIdx = null;
+    _txTXIDDataIdx = dataIdx;
     openModal('modal-txid-input');
   }
 
+  var _txTXIDDataIdx = null;
+
   function confirmTxHold(idx, action) {
-    var holdList = _TX_DATA.filter(function(r){ return r.status === 'hold'; });
+    // legacy alias — redirect to new modal
+    var holdList = _TX_DATA.filter(function(r){ return r.status === 'hold' && r.holdSubStatus === 'pending'; });
     var r = holdList[idx]; if (!r) return;
-    var label = action === 'approve' ? '보류 입금 승인' : '보류 입금 거절';
-    openOTPModal(label, function() {
-      r.status = action === 'approve' ? 'done' : 'rejected';
-      renderTxHoldTable();
-      renderTxTable();
-      showToast(r.corp + ' 보류 입금이 ' + (action === 'approve' ? '승인' : '거절') + '되었습니다.');
-    });
+    var dataIdx = _TX_DATA.indexOf(r);
+    if (action === 'approve') openHoldApproveModal(dataIdx);
+    else openHoldRejectModal(dataIdx);
   }
 
   function initTxPage() {
@@ -3841,13 +4317,17 @@
     var cwNotice = document.getElementById('tx-cw-notice');
     if (cwNotice) cwNotice.style.display = isCW ? '' : 'none';
 
+    // stats bar hidden for coldwallet
+    var statsBar = document.getElementById('tx-stats-bar');
+    if (statsBar) statsBar.style.display = isCW ? 'none' : '';
+
+    renderTxStats();
+
     // CW defaults to 출금 tab; others to 입출금 전체
     switchTxTab(isCW ? 'withdrawal' : 'all');
 
-    // 보류 배지 — 입금 탭 + 사이드바
-    var holdCount = _TX_DATA.filter(function(r){ return r.status === 'hold'; }).length;
-    var tabBadge = document.getElementById('tx-hold-badge');
-    if (tabBadge) { tabBadge.textContent = holdCount; tabBadge.style.display = holdCount ? '' : 'none'; }
+    // 보류 배지 — 사이드바
+    var holdCount = _TX_DATA.filter(function(r){ return r.status==='hold' && r.holdSubStatus==='pending'; }).length;
     var navBadge = document.getElementById('nav-tx-hold-badge');
     if (navBadge) { navBadge.textContent = holdCount; navBadge.style.display = holdCount ? '' : 'none'; }
 
@@ -4260,14 +4740,17 @@
 
   /* ── 6-3: TXID 입력 modal ── */
   function openTXIDInput(idx) {
-    _signActiveIdx = idx;
+    _signActiveIdx   = idx;
+    _txTXIDDataIdx   = null;
     var r = _SIGN_REQUESTS[idx];
-    document.getElementById('txid-withdrawal-no').textContent = r.wdNo;
-    document.getElementById('txid-corp').textContent          = r.corp;
-    document.getElementById('txid-coin').textContent          = r.coin;
-    document.getElementById('txid-amount').textContent        = r.amount;
-    document.getElementById('txid-addr').textContent          = r.addr;
-    document.getElementById('txid-input').value               = r.txid || '';
+    var statusHtml = '<span class="badge badge-gray">TXID 미입력</span>';
+    document.getElementById('txid-withdrawal-no').textContent  = r.wdNo;
+    document.getElementById('txid-corp').textContent           = r.corp;
+    document.getElementById('txid-coin').textContent           = r.coin;
+    document.getElementById('txid-amount').textContent         = r.amount;
+    document.getElementById('txid-addr').textContent           = r.addr;
+    document.getElementById('txid-current-status').innerHTML   = statusHtml;
+    document.getElementById('txid-input').value                = r.txid || '';
     openModal('modal-txid-input');
   }
   function confirmTXID() {
@@ -4275,6 +4758,14 @@
     if (!val) { showToast('TXID를 입력해주세요.'); return; }
     closeModal('modal-txid-input');
     openOTPModal('TXID 입력 확인', function() {
+      // 거래내역 탭에서 호출된 경우
+      if (_txTXIDDataIdx !== null) {
+        var rd = _TX_DATA[_txTXIDDataIdx];
+        if (rd) { rd.txid = val; rd.status = 'done'; renderTxTable(); renderTxStats(); showToast((rd.wdNo||'') + ' TXID가 등록되었습니다.', 4000); }
+        _txTXIDDataIdx = null;
+        return;
+      }
+      // 콜드월렛 서명 탭에서 호출된 경우
       var r = _SIGN_REQUESTS[_signActiveIdx];
       r.txid   = val;
       r.status = 'done';
