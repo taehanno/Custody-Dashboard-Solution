@@ -143,6 +143,19 @@
     .badge-aml-officer { background: #F5F3FF; color: #8B5CF6; }
     .badge-aml-manager { background: #FEF2F2; color: #EF4444; }
 
+    /* ── Masking tooltip ── */
+    .mask-wrap { position: relative; display: inline-block; cursor: default; }
+    .mask-wrap .mask-tip {
+      visibility: hidden; opacity: 0;
+      background: #1E293B; color: #F8FAFC;
+      font-size: 11px; padding: 5px 9px; border-radius: 5px;
+      position: absolute; left: 50%; transform: translateX(-50%);
+      bottom: calc(100% + 5px); white-space: nowrap;
+      transition: opacity 0.15s ease 0.2s;
+      pointer-events: none; z-index: 9000;
+    }
+    .mask-wrap:hover .mask-tip { visibility: visible; opacity: 1; }
+
     /* ── Page header ── */
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
     .page-title { font-size: 18px; font-weight: 700; }
@@ -1360,51 +1373,71 @@
       <div class="page" id="page-activitylog">
         <div class="page-header">
           <h1 class="page-title">활동 로그</h1>
-          <button class="btn btn-outline btn-sm">&#8595; Export</button>
+          <button class="btn btn-outline btn-sm" onclick="openActLogCSVModal()">&#8595; CSV 다운로드</button>
         </div>
-        <div class="card" style="padding:0;">
-          <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
-            <div class="toolbar" style="margin-bottom:0;">
-              <div class="search-wrap">
-                <span class="search-icon">&#128269;</span>
-                <input type="text" class="form-control" placeholder="관리자 / 액션 검색" style="width:220px; padding-left:30px;" />
-              </div>
-              <select class="form-control" style="width:140px;"><option>전체 액션</option><option>로그인</option><option>승인</option><option>거절</option><option>수정</option></select>
+        <!-- Filter bar -->
+        <div class="card" style="padding:14px 16px; margin-bottom:14px;">
+          <div class="toolbar" style="margin-bottom:8px; flex-wrap:wrap;">
+            <span style="font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;">날짜</span>
+            <input type="date" class="form-control" id="actlog-date-from" style="width:140px;" onchange="renderActLog()" />
+            <span style="font-size:12px; color:var(--text-secondary);">~</span>
+            <input type="date" class="form-control" id="actlog-date-to" style="width:140px;" onchange="renderActLog()" />
+            <select class="form-control" id="actlog-filter-role" style="width:130px;" onchange="renderActLog()">
+              <option value="">전체 역할</option>
+              <option value="master">Master</option>
+              <option value="general">일반 관리자</option>
+              <option value="aml_officer">AML 담당자</option>
+              <option value="aml_manager">AML 관리자</option>
+              <option value="coldwallet">콜드월렛 담당</option>
+            </select>
+            <select class="form-control" id="actlog-filter-cat" style="width:160px;" onchange="renderActLog()">
+              <option value="">전체 구분</option>
+              <option value="Whitelist">Whitelist</option>
+              <option value="KYB결재">KYB결재</option>
+              <option value="KYB상태이력">KYB상태이력</option>
+              <option value="고객사관리">고객사관리</option>
+              <option value="계정관리">계정관리</option>
+              <option value="콜드월렛">콜드월렛</option>
+              <option value="보류입금">보류입금</option>
+              <option value="VASP관리">VASP관리</option>
+              <option value="지원코인">지원코인</option>
+              <option value="이상거래">이상거래</option>
+              <option value="내부요주의인물">내부요주의인물</option>
+              <option value="국가위험정책">국가위험정책</option>
+              <option value="STR룰파라미터">STR룰파라미터</option>
+              <option value="로그인보안">로그인보안</option>
+            </select>
+            <select class="form-control" id="actlog-filter-result" style="width:110px;" onchange="renderActLog()">
+              <option value="">전체 결과</option>
+              <option value="success">성공</option>
+              <option value="fail">실패</option>
+            </select>
+            <div class="search-wrap">
+              <span class="search-icon">&#128269;</span>
+              <input type="text" class="form-control" id="actlog-search-corp" placeholder="고객사명 검색" style="width:160px;" oninput="renderActLog()" />
             </div>
           </div>
+        </div>
+        <!-- Table -->
+        <div class="card" style="padding:0;">
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>일시</th><th>관리자</th><th>액션</th><th>대상</th><th>IP</th><th>결과</th></tr>
+                <tr>
+                  <th>일시</th>
+                  <th>처리자</th>
+                  <th>역할</th>
+                  <th>대상 고객사</th>
+                  <th>구분</th>
+                  <th>내용</th>
+                  <th>결과</th>
+                </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 15:10:05</td>
-                  <td>admin@infiniteblock.io</td>
-                  <td><span class="badge badge-success">승인</span></td>
-                  <td style="font-size:12px;">Whitelist — TRX9a...3f8e (알파투자운용)</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">192.168.1.100</td>
-                  <td><span class="badge badge-success">성공</span></td>
-                </tr>
-                <tr>
-                  <td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 09:05:22</td>
-                  <td>admin@infiniteblock.io</td>
-                  <td><span class="badge badge-info">로그인</span></td>
-                  <td style="font-size:12px;">Admin Console</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">192.168.1.100</td>
-                  <td><span class="badge badge-success">성공</span></td>
-                </tr>
-                <tr>
-                  <td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">2025-11-19 17:30:44</td>
-                  <td>admin@infiniteblock.io</td>
-                  <td><span class="badge badge-danger">수정</span></td>
-                  <td style="font-size:12px;">STR 룰 RM01 임계값 10,000 → 15,000</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">192.168.1.100</td>
-                  <td><span class="badge badge-success">성공</span></td>
-                </tr>
+              <tbody id="actlog-tbody">
               </tbody>
             </table>
           </div>
+          <div id="actlog-empty" style="display:none; padding:40px; text-align:center; color:var(--text-secondary); font-size:13px;">조회된 로그가 없습니다.</div>
         </div>
       </div>
 
@@ -2055,6 +2088,72 @@
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-kyb-restart')">취소</button>
     <button class="btn btn-warning" onclick="confirmKYBRestart()">재작성 시작</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODALS: 활동 로그 (섹션 8)
+══════════════════════════════════════ -->
+
+<!-- 8-1: 상세 팝업 -->
+<div class="modal" id="modal-actlog-detail" style="max-width:520px;">
+  <div class="modal-header">
+    <span class="modal-title">활동 로그 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-actlog-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="display:grid; gap:12px;">
+    <div style="display:grid; grid-template-columns:110px 1fr; gap:8px 12px; font-size:13px; align-items:start;">
+      <span style="color:var(--text-secondary); padding-top:1px;">일시</span>
+      <span id="ald-datetime" style="font-weight:600;"></span>
+      <span style="color:var(--text-secondary); padding-top:1px;">처리자</span>
+      <span id="ald-actor" style="font-weight:600;"></span>
+      <span style="color:var(--text-secondary); padding-top:1px;">역할</span>
+      <span id="ald-role"></span>
+      <span style="color:var(--text-secondary); padding-top:1px;">대상 고객사</span>
+      <span id="ald-corp"></span>
+      <span style="color:var(--text-secondary); padding-top:1px;">구분</span>
+      <span id="ald-cat"></span>
+      <span style="color:var(--text-secondary); padding-top:1px;">내용</span>
+      <span id="ald-action" style="line-height:1.5;"></span>
+      <span style="color:var(--text-secondary); padding-top:1px;">결과</span>
+      <span id="ald-result"></span>
+      <span style="color:var(--text-secondary); padding-top:1px;">IP 주소</span>
+      <span id="ald-ip" style="font-family:monospace; font-size:12px;"></span>
+      <span style="color:var(--text-secondary); padding-top:1px;">브라우저</span>
+      <span id="ald-ua" style="font-size:12px; color:var(--text-secondary);"></span>
+    </div>
+    <div id="ald-error-wrap" style="display:none; background:#FEF2F2; border-radius:8px; padding:10px 12px;">
+      <div style="font-size:11.5px; font-weight:700; color:#EF4444; margin-bottom:4px;">오류 코드</div>
+      <div id="ald-error-code" style="font-size:12px; font-family:monospace; color:#EF4444;"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-actlog-detail')">닫기</button>
+  </div>
+</div>
+
+<!-- 8-2: CSV 다운로드 -->
+<div class="modal" id="modal-actlog-csv" style="max-width:400px;">
+  <div class="modal-header">
+    <span class="modal-title">활동 로그 CSV 다운로드</span>
+    <button class="modal-close" onclick="closeModal('modal-actlog-csv')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="display:grid; gap:12px;">
+    <div style="background:#FFF7ED; border-radius:8px; padding:10px 12px; font-size:12px; color:#92400E;">
+      &#9888; 다운로드 파일에는 마스킹 없이 처리자 이름·이메일이 포함됩니다.<br>ISMS 보안 정책에 따라 사유와 OTP를 입력하세요.
+    </div>
+    <div>
+      <label style="font-size:12px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:5px;">다운로드 사유 <span style="color:#EF4444;">*</span></label>
+      <textarea id="actlog-csv-reason" class="form-control" rows="3" placeholder="다운로드 사유를 입력하세요 (필수)" style="width:100%; resize:vertical;"></textarea>
+    </div>
+    <div>
+      <label style="font-size:12px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:5px;">OTP <span style="color:#EF4444;">*</span></label>
+      <input type="text" id="actlog-csv-otp" class="form-control" placeholder="OTP 입력" style="width:100%;" inputmode="numeric" maxlength="6" />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-actlog-csv')">취소</button>
+    <button class="btn btn-primary" onclick="confirmActLogCSV()">다운로드</button>
   </div>
 </div>
 
@@ -2931,6 +3030,7 @@
     if (navEl) navEl.classList.add('active');
 
     if (pageId === 'transactions') initTxPage();
+    if (pageId === 'activitylog') renderActLog();
 
     closeMobileSidebar();
   }
@@ -5532,6 +5632,148 @@
       closeModal('modal-create-master');
       showToast('Master 계정이 생성되었습니다. 임시 비밀번호가 이메일로 발송되었습니다.');
     });
+  }
+
+  /* ════════════════════════════════════
+     SECTION 8: 활동 로그
+  ════════════════════════════════════ */
+
+  var _ACTLOG_DATA = [
+    { idx:0, datetime:'2026-04-08 14:32:05', actorName:'홍길동', actorEmail:'hong@infiniteblock.io', actorMask:'홍○동', role:'master', corp:'알파투자운용(주)', cat:'Whitelist', action:'Whitelist 주소 승인 — 0x9A8b…7C6d (USDT/TRC-20)', result:'success', ip:'192.168.10.10', ua:'Chrome 124 / macOS', errCode:null },
+    { idx:1, datetime:'2026-04-08 13:10:22', actorName:'김철수', actorEmail:'kim@infiniteblock.io', actorMask:'김○수', role:'general', corp:'베타자산운용(주)', cat:'KYB결재', action:'KYB 결재 승인 — 베타자산운용(주) (저위험)', result:'success', ip:'10.0.0.5', ua:'Firefox 125 / Windows 11', errCode:null },
+    { idx:2, datetime:'2026-04-08 11:55:38', actorName:'이담당', actorEmail:'lee@infiniteblock.io', actorMask:'이○당', role:'aml_officer', corp:'감마펀드(주)', cat:'KYB상태이력', action:'KYB 상태 변경 — draft → submitted (감마펀드)', result:'success', ip:'10.0.0.8', ua:'Chrome 124 / Windows 10', errCode:null },
+    { idx:3, datetime:'2026-04-08 10:40:11', actorName:'박담당', actorEmail:'park@infiniteblock.io', actorMask:'박○당', role:'aml_manager', corp:'델타인베스트(주)', cat:'KYB결재', action:'KYB 결재 거절 — 델타인베스트(주) / 사유: 서류 미비', result:'success', ip:'10.0.0.12', ua:'Safari 17 / macOS', errCode:null },
+    { idx:4, datetime:'2026-04-08 09:15:00', actorName:'홍길동', actorEmail:'hong@infiniteblock.io', actorMask:'홍○동', role:'master', corp:'-', cat:'로그인보안', action:'Admin Console 로그인 성공', result:'success', ip:'192.168.10.10', ua:'Chrome 124 / macOS', errCode:null },
+    { idx:5, datetime:'2026-04-07 17:22:44', actorName:'최콜드', actorEmail:'choi@infiniteblock.io', actorMask:'최○드', role:'coldwallet', corp:'-', cat:'콜드월렛', action:'출금 TXID 등록 — 0xABCDEF…1234 (BTC 0.5 / 알파투자운용)', result:'success', ip:'192.168.20.5', ua:'Chrome 124 / Windows 11', errCode:null },
+    { idx:6, datetime:'2026-04-07 16:05:30', actorName:'김철수', actorEmail:'kim@infiniteblock.io', actorMask:'김○수', role:'general', corp:'에프자산운용(주)', cat:'고객사관리', action:'고객사 정보 수정 — 에프자산운용(주) 이메일 변경', result:'success', ip:'10.0.0.5', ua:'Firefox 125 / Windows 11', errCode:null },
+    { idx:7, datetime:'2026-04-07 15:30:10', actorName:'이담당', actorEmail:'lee@infiniteblock.io', actorMask:'이○당', role:'aml_officer', corp:'-', cat:'이상거래', action:'이상거래 룰 RM01 임계값 수정 — 10,000 → 15,000 USDT', result:'success', ip:'10.0.0.8', ua:'Chrome 124 / Windows 10', errCode:null },
+    { idx:8, datetime:'2026-04-07 14:00:55', actorName:'박담당', actorEmail:'park@infiniteblock.io', actorMask:'박○당', role:'aml_manager', corp:'-', cat:'STR룰파라미터', action:'STR 룰 파라미터 수정 — 보고 임계금액 5,000만 원 → 3,000만 원', result:'success', ip:'10.0.0.12', ua:'Safari 17 / macOS', errCode:null },
+    { idx:9, datetime:'2026-04-07 12:45:00', actorName:'홍길동', actorEmail:'hong@infiniteblock.io', actorMask:'홍○동', role:'master', corp:'-', cat:'계정관리', action:'Admin 계정 생성 — aml_officer 역할 / lee@infiniteblock.io', result:'success', ip:'192.168.10.10', ua:'Chrome 124 / macOS', errCode:null },
+    { idx:10, datetime:'2026-04-07 11:20:33', actorName:'김철수', actorEmail:'kim@infiniteblock.io', actorMask:'김○수', role:'general', corp:'-', cat:'VASP관리', action:'VASP 등록 요청 — 바이낸스(BNB) 신규 추가', result:'fail', ip:'10.0.0.5', ua:'Firefox 125 / Windows 11', errCode:'VASP_DUP_001: 동일 VASP 이미 등록됨' },
+    { idx:11, datetime:'2026-04-07 10:10:20', actorName:'이담당', actorEmail:'lee@infiniteblock.io', actorMask:'이○당', role:'aml_officer', corp:'제타캐피탈(주)', cat:'내부요주의인물', action:'내부 요주의인물 등록 — 홍XX (제타캐피탈 관계자)', result:'success', ip:'10.0.0.8', ua:'Chrome 124 / Windows 10', errCode:null },
+    { idx:12, datetime:'2026-04-06 16:50:05', actorName:'박담당', actorEmail:'park@infiniteblock.io', actorMask:'박○당', role:'aml_manager', corp:'-', cat:'국가위험정책', action:'국가위험 정책 수정 — RU 감시대상 → 고위험 상향', result:'success', ip:'10.0.0.12', ua:'Safari 17 / macOS', errCode:null },
+    { idx:13, datetime:'2026-04-06 15:30:40', actorName:'최콜드', actorEmail:'choi@infiniteblock.io', actorMask:'최○드', role:'coldwallet', corp:'-', cat:'보류입금', action:'보류 입금 승인 — DEP#2234 (USDT 1,000 / 알파투자운용)', result:'success', ip:'192.168.20.5', ua:'Chrome 124 / Windows 11', errCode:null },
+    { idx:14, datetime:'2026-04-06 14:00:15', actorName:'홍길동', actorEmail:'hong@infiniteblock.io', actorMask:'홍○동', role:'master', corp:'-', cat:'지원코인', action:'지원코인 추가 요청 승인 — SOL (Solana Mainnet)', result:'success', ip:'192.168.10.10', ua:'Chrome 124 / macOS', errCode:null },
+    { idx:15, datetime:'2026-04-06 09:05:55', actorName:'김철수', actorEmail:'kim@infiniteblock.io', actorMask:'김○수', role:'general', corp:'-', cat:'로그인보안', action:'Admin Console 로그인 실패 — OTP 불일치 (3회 시도)', result:'fail', ip:'10.0.0.5', ua:'Firefox 125 / Windows 11', errCode:'AUTH_OTP_003: OTP 입력 횟수 초과' },
+    { idx:16, datetime:'2026-04-05 17:45:22', actorName:'이담당', actorEmail:'lee@infiniteblock.io', actorMask:'이○당', role:'aml_officer', corp:'오메가자산운용(주)', cat:'KYB상태이력', action:'KYB 만료 처리 — 오메가자산운용(주) 유효기간 초과', result:'success', ip:'10.0.0.8', ua:'Chrome 124 / Windows 10', errCode:null },
+  ];
+
+  var _ACTLOG_DETAIL_IDX = null;
+
+  var _ACTLOG_ROLE_LABELS = {
+    master: 'Master', general: '일반 관리자',
+    aml_officer: 'AML 담당자', aml_manager: 'AML 관리자',
+    coldwallet: '콜드월렛 담당'
+  };
+
+  var _ACTLOG_ROLE_BADGE = {
+    master: 'badge-master', general: 'badge-general',
+    aml_officer: 'badge-aml-officer', aml_manager: 'badge-aml-manager',
+    coldwallet: 'badge-coldwallet'
+  };
+
+  function renderActLog() {
+    var fromVal = document.getElementById('actlog-date-from') ? document.getElementById('actlog-date-from').value : '';
+    var toVal = document.getElementById('actlog-date-to') ? document.getElementById('actlog-date-to').value : '';
+    var roleFilter = document.getElementById('actlog-filter-role') ? document.getElementById('actlog-filter-role').value : '';
+    var catFilter = document.getElementById('actlog-filter-cat') ? document.getElementById('actlog-filter-cat').value : '';
+    var resultFilter = document.getElementById('actlog-filter-result') ? document.getElementById('actlog-filter-result').value : '';
+    var corpSearch = document.getElementById('actlog-search-corp') ? document.getElementById('actlog-search-corp').value.trim().toLowerCase() : '';
+
+    // Role-based scope: coldwallet / aml_officer / aml_manager → 본인 로그만
+    var selfOnly = (_ADMIN_ROLE === 'coldwallet' || _ADMIN_ROLE === 'aml_officer' || _ADMIN_ROLE === 'aml_manager');
+
+    // Map role → actorEmail for self-only matching (simulated)
+    var selfEmailMap = {
+      coldwallet: 'choi@infiniteblock.io',
+      aml_officer: 'lee@infiniteblock.io',
+      aml_manager: 'park@infiniteblock.io'
+    };
+
+    var rows = _ACTLOG_DATA.filter(function(r) {
+      if (selfOnly && r.actorEmail !== selfEmailMap[_ADMIN_ROLE]) return false;
+      if (fromVal && r.datetime.substring(0,10) < fromVal) return false;
+      if (toVal && r.datetime.substring(0,10) > toVal) return false;
+      if (roleFilter && r.role !== roleFilter) return false;
+      if (catFilter && r.cat !== catFilter) return false;
+      if (resultFilter && r.result !== resultFilter) return false;
+      if (corpSearch && r.corp.toLowerCase().indexOf(corpSearch) === -1) return false;
+      return true;
+    });
+
+    var tbody = document.getElementById('actlog-tbody');
+    var emptyDiv = document.getElementById('actlog-empty');
+    if (!tbody) return;
+
+    if (rows.length === 0) {
+      tbody.innerHTML = '';
+      if (emptyDiv) emptyDiv.style.display = '';
+      return;
+    }
+    if (emptyDiv) emptyDiv.style.display = 'none';
+
+    tbody.innerHTML = rows.map(function(r) {
+      var resultBadge = r.result === 'success'
+        ? '<span class="badge badge-success">성공</span>'
+        : '<span class="badge badge-danger">실패</span>';
+      var roleBadge = '<span class="badge ' + (_ACTLOG_ROLE_BADGE[r.role] || 'badge-gray') + '">' + (_ACTLOG_ROLE_LABELS[r.role] || r.role) + '</span>';
+      var actorCell = '<span class="mask-wrap">' + escHtml(r.actorMask) + '<span class="mask-tip">' + escHtml(r.actorName) + ' (' + escHtml(r.actorEmail) + ')</span></span>';
+      return '<tr style="cursor:pointer;" onclick="openActLogDetail(' + r.idx + ')">'
+        + '<td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">' + escHtml(r.datetime) + '</td>'
+        + '<td style="font-size:13px;">' + actorCell + '</td>'
+        + '<td>' + roleBadge + '</td>'
+        + '<td style="font-size:12px;">' + escHtml(r.corp) + '</td>'
+        + '<td><span class="badge badge-gray">' + escHtml(r.cat) + '</span></td>'
+        + '<td style="font-size:12px; max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escHtml(r.action) + '</td>'
+        + '<td>' + resultBadge + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function openActLogDetail(idx) {
+    var r = _ACTLOG_DATA[idx]; if (!r) return;
+    _ACTLOG_DETAIL_IDX = idx;
+    document.getElementById('ald-datetime').textContent = r.datetime;
+    document.getElementById('ald-actor').textContent = r.actorName + ' (' + r.actorEmail + ')';
+    document.getElementById('ald-role').innerHTML = '<span class="badge ' + (_ACTLOG_ROLE_BADGE[r.role] || 'badge-gray') + '">' + (_ACTLOG_ROLE_LABELS[r.role] || r.role) + '</span>';
+    document.getElementById('ald-corp').textContent = r.corp;
+    document.getElementById('ald-cat').innerHTML = '<span class="badge badge-gray">' + escHtml(r.cat) + '</span>';
+    document.getElementById('ald-action').textContent = r.action;
+    document.getElementById('ald-result').innerHTML = r.result === 'success'
+      ? '<span class="badge badge-success">성공</span>'
+      : '<span class="badge badge-danger">실패</span>';
+    document.getElementById('ald-ip').textContent = r.ip;
+    document.getElementById('ald-ua').textContent = r.ua;
+    var errWrap = document.getElementById('ald-error-wrap');
+    if (r.errCode) {
+      errWrap.style.display = '';
+      document.getElementById('ald-error-code').textContent = r.errCode;
+    } else {
+      errWrap.style.display = 'none';
+    }
+    openModal('modal-actlog-detail');
+  }
+
+  function openActLogCSVModal() {
+    var reason = document.getElementById('actlog-csv-reason');
+    var otp = document.getElementById('actlog-csv-otp');
+    if (reason) reason.value = '';
+    if (otp) otp.value = '';
+    openModal('modal-actlog-csv');
+  }
+
+  function confirmActLogCSV() {
+    var reason = document.getElementById('actlog-csv-reason').value.trim();
+    var otp = document.getElementById('actlog-csv-otp').value.trim();
+    if (!reason) { showToast('다운로드 사유를 입력하세요.'); return; }
+    if (!otp) { showToast('OTP를 입력하세요.'); return; }
+    closeModal('modal-actlog-csv');
+    showToast('활동 로그 CSV 다운로드가 시작되었습니다. (마스킹 없는 전체 정보 포함)');
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   /* ════════════════════════════════════
