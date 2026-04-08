@@ -123,6 +123,7 @@
     .btn-success { background: var(--success); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-warning { background: #F97316; color: #fff; }
+    .btn-warning { background: #F97316; color: #fff; }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
     .btn-sm { padding: 5px 11px; font-size: 12px; }
     .btn-xs { padding: 3px 9px; font-size: 11px; border-radius: 6px; }
@@ -266,6 +267,7 @@
     .badge-kyb-wlf       { background: #FFFBEB; color: #F59E0B; }
     .badge-kyb-done      { background: #ECFDF5; color: #10B981; }
     .badge-kyb-rejected  { background: #FEF2F2; color: #EF4444; }
+    .badge-kyb-expired   { background: #FFF7ED; color: #F97316; }
 
     /* Account status */
     .badge-locked-pw  { background: #FEF2F2; color: #EF4444; }
@@ -535,28 +537,37 @@
           <h1 class="page-title">KYB 관리</h1>
           <button class="btn btn-primary" id="btn-new-kyb" onclick="openNewKYB()">+ 신규 KYB 등록</button>
         </div>
-        <!-- 4-3 Stats -->
-        <div class="stats-row" style="grid-template-columns:repeat(5,1fr);">
-          <div class="stat-card"><span class="stat-label">입력 중</span><span class="stat-value stat-gray" id="kyb-stat-draft">0</span></div>
-          <div class="stat-card"><span class="stat-label">작성 완료</span><span class="stat-value stat-blue" id="kyb-stat-submitted">0</span></div>
-          <div class="stat-card"><span class="stat-label">WLF 검사 중</span><span class="stat-value" style="color:#F59E0B;" id="kyb-stat-wlf">0</span></div>
-          <div class="stat-card"><span class="stat-label">KYB 완료</span><span class="stat-value stat-green" id="kyb-stat-done">0</span></div>
-          <div class="stat-card"><span class="stat-label">반려</span><span class="stat-value stat-red" id="kyb-stat-rejected">0</span></div>
+        <!-- 4-3 Stats 6종 -->
+        <div class="stats-row" style="grid-template-columns:repeat(6,1fr);">
+          <div class="stat-card"><span class="stat-label">✏️ 입력 중</span><span class="stat-value stat-gray" id="kyb-stat-draft">0</span></div>
+          <div class="stat-card"><span class="stat-label">📋 작성 완료</span><span class="stat-value stat-blue" id="kyb-stat-submitted">0</span></div>
+          <div class="stat-card"><span class="stat-label">⏳ WLF 검사 중</span><span class="stat-value" style="color:#F59E0B;" id="kyb-stat-wlf">0</span></div>
+          <div class="stat-card"><span class="stat-label">✅ KYB 완료</span><span class="stat-value stat-green" id="kyb-stat-done">0</span></div>
+          <div class="stat-card"><span class="stat-label">✕ 반려</span><span class="stat-value stat-red" id="kyb-stat-rejected">0</span></div>
+          <div class="stat-card" style="border-left:3px solid #F97316;"><span class="stat-label">⚠ KYB 만료</span><span class="stat-value stat-orange" id="kyb-stat-expired">0</span></div>
         </div>
         <div class="card" style="padding:0;">
-          <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
-            <div class="toolbar" style="margin-bottom:0;">
+          <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
+            <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
               <div class="search-wrap">
                 <span class="search-icon">&#128269;</span>
-                <input type="text" id="kyb-search" class="form-control" placeholder="법인명 / 사업자번호 검색" style="width:230px; padding-left:30px;" oninput="renderKYBTable()" />
+                <input type="text" id="kyb-search" class="form-control" placeholder="법인명 / 사업자번호 검색" style="width:220px; padding-left:30px;" oninput="renderKYBTable()" />
               </div>
-              <select class="form-control" id="kyb-filter-status" style="width:150px;" onchange="renderKYBTable()">
+              <select class="form-control" id="kyb-filter-status" style="width:140px;" onchange="renderKYBTable()">
                 <option value="">전체 상태</option>
                 <option value="draft">입력 중</option>
                 <option value="submitted">작성 완료</option>
                 <option value="wlf">WLF 검사 중</option>
                 <option value="done">KYB 완료</option>
                 <option value="rejected">반려</option>
+                <option value="expired">KYB 만료</option>
+              </select>
+              <select class="form-control" id="kyb-filter-officer" style="width:120px;" onchange="renderKYBTable()">
+                <option value="">전체 담당자</option>
+                <option>김담당</option>
+                <option>이담당</option>
+                <option>박담당</option>
+                <option>최담당</option>
               </select>
             </div>
           </div>
@@ -568,6 +579,7 @@
                   <th>사업자번호</th>
                   <th>KYB 상태</th>
                   <th>위험등급</th>
+                  <th>만료일</th>
                   <th>담당자</th>
                   <th>액션</th>
                 </tr>
@@ -1958,6 +1970,7 @@
     <button class="btn btn-danger" id="kyb-btn-reject" onclick="kybReject()" style="display:none;">반려</button>
     <button class="btn btn-success" id="kyb-btn-approve-wlf" onclick="kybApproveWLF()" style="display:none;">WLF 결재 승인</button>
     <button class="btn btn-success" id="kyb-btn-create-client" onclick="kybCreateClient()" style="display:none;">고객사 생성 →</button>
+    <button class="btn btn-warning" id="kyb-btn-restart" onclick="openKYBRestart()" style="display:none;">재작성 시작</button>
   </div>
 </div>
 
@@ -2017,6 +2030,31 @@
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-kyb-reject')">취소</button>
     <button class="btn btn-danger" onclick="confirmKybReject()">반려 → OTP</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: KYB 재작성 시작 (4-4-2)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-kyb-restart">
+  <div class="modal-header">
+    <span class="modal-title">KYB 갱신 재작성 시작</span>
+    <button class="modal-close" onclick="closeModal('modal-kyb-restart')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="kybr-corp"></span></div>
+      <div class="info-row"><span class="info-label">KYB 상태</span><span class="info-value"><span class="badge badge-kyb-expired">⚠ KYB 만료</span></span></div>
+      <div class="info-row"><span class="info-label">만료일</span><span class="info-value" id="kybr-expiry" style="color:#EF4444; font-weight:600;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">이전 위험등급</span><span class="info-value" id="kybr-risk"></span></div>
+    </div>
+    <div class="alert alert-info">
+      &#9432; 재작성 시작 시 기존 KYB 데이터가 유지된 채로 편집 모드로 전환됩니다. 작성 완료 후 AML 관리자 결재가 필요합니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-kyb-restart')">취소</button>
+    <button class="btn btn-warning" onclick="confirmKYBRestart()">재작성 시작</button>
   </div>
 </div>
 
@@ -2806,20 +2844,25 @@
     wlf:       { label:'⏳ WLF 검사 중', badgeCls:'badge-kyb-wlf',        statKey:'kyb-stat-wlf'       },
     done:      { label:'✅ KYB 완료',    badgeCls:'badge-kyb-done',       statKey:'kyb-stat-done'      },
     rejected:  { label:'✕ 반려',         badgeCls:'badge-kyb-rejected',   statKey:'kyb-stat-rejected'  },
+    expired:   { label:'⚠ KYB 만료',    badgeCls:'badge-kyb-expired',    statKey:'kyb-stat-expired'   },
   };
 
   var _KYB_DATA = [
-    { idx:0, corpName:'알파투자운용(주)',     corpNameEn:'Alpha Investment Mgmt', bizNo:'123-45-67890',
-      status:'done',     riskGrade:'low',  officer:'김담당', startedAt:'2025-10-01', completedAt:'2025-10-15', requiredDone:true },
-    { idx:1, corpName:'베타캐피탈 유한회사', corpNameEn:'Beta Capital Ltd',        bizNo:'234-56-78901',
-      status:'wlf',      riskGrade:null,   officer:'이담당', startedAt:'2025-11-01', completedAt:null,         requiredDone:true },
-    { idx:2, corpName:'감마트레이딩(주)',     corpNameEn:'Gamma Trading Corp',      bizNo:'345-67-89012',
-      status:'draft',    riskGrade:null,   officer:'박담당', startedAt:'2025-11-20', completedAt:null,         requiredDone:false },
-    { idx:3, corpName:'델타홀딩스 유한회사', corpNameEn:'Delta Holdings Ltd',       bizNo:'456-78-90123',
-      status:'rejected', riskGrade:null, officer:'김담당', startedAt:'2025-09-01', completedAt:null, requiredDone:true,
+    { idx:0, corpName:'알파투자운용(주)',     corpNameEn:'Alpha Investment Mgmt',  bizNo:'123-45-67890',
+      status:'done',      riskGrade:'low',  officer:'김담당', startedAt:'2025-10-01', completedAt:'2025-10-15', expiredAt:null, requiredDone:true },
+    { idx:1, corpName:'베타캐피탈 유한회사', corpNameEn:'Beta Capital Ltd',         bizNo:'234-56-78901',
+      status:'wlf',       riskGrade:null,   officer:'이담당', startedAt:'2025-11-01', completedAt:null,         expiredAt:null, requiredDone:true },
+    { idx:2, corpName:'감마트레이딩(주)',     corpNameEn:'Gamma Trading Corp',       bizNo:'345-67-89012',
+      status:'draft',     riskGrade:null,   officer:'박담당', startedAt:'2025-11-20', completedAt:null,         expiredAt:null, requiredDone:false },
+    { idx:3, corpName:'델타홀딩스 유한회사', corpNameEn:'Delta Holdings Ltd',        bizNo:'456-78-90123',
+      status:'rejected',  riskGrade:null,   officer:'김담당', startedAt:'2025-09-01', completedAt:null,         expiredAt:null, requiredDone:true,
       rejectedReason:'대표자 신원 서류가 불완전합니다. 여권 사본 및 인감증명서 최신본 제출 후 재신청해주세요.' },
-    { idx:4, corpName:'엡실론자산운용(주)', corpNameEn:'Epsilon Asset Mgmt',        bizNo:'567-89-01234',
-      status:'submitted', riskGrade:null, officer:'이담당', startedAt:'2026-04-06', completedAt:null, requiredDone:true },
+    { idx:4, corpName:'엡실론자산운용(주)',   corpNameEn:'Epsilon Asset Mgmt',       bizNo:'567-89-01234',
+      status:'submitted', riskGrade:null,   officer:'이담당', startedAt:'2026-04-06', completedAt:null,         expiredAt:null, requiredDone:true },
+    { idx:5, corpName:'제타캐피탈(주)',       corpNameEn:'Zeta Capital Corp',        bizNo:'678-90-12345',
+      status:'expired',   riskGrade:'mid',  officer:'이담당', startedAt:'2025-04-01', completedAt:'2025-04-02', expiredAt:'2026-04-01', requiredDone:true },
+    { idx:6, corpName:'오메가자산운용(주)',   corpNameEn:'Omega Asset Mgmt',         bizNo:'789-01-23456',
+      status:'expired',   riskGrade:'low',  officer:'박담당', startedAt:'2025-03-01', completedAt:'2025-03-15', expiredAt:'2026-03-15', requiredDone:true },
   ];
   var _kybDetailIdx = null;
 
@@ -3178,74 +3221,95 @@
   /* ════════════════════════════════════
      섹션 4: KYB 관리
   ════════════════════════════════════ */
+  // D+N 계산 (만료 경과일)
+  function kybDaysExpired(expiredAt) {
+    if (!expiredAt) return null;
+    var today = new Date('2026-04-08');
+    var exp   = new Date(expiredAt);
+    return Math.floor((today - exp) / (1000 * 60 * 60 * 24));
+  }
+
   function renderKYBTable() {
     var tbody = document.getElementById('kyb-tbody');
     if (!tbody) return;
-    var q = (document.getElementById('kyb-search')        || {}).value || '';
-    var fs= (document.getElementById('kyb-filter-status') || {}).value || '';
+    var q  = (document.getElementById('kyb-search')          || {}).value || '';
+    var fs = (document.getElementById('kyb-filter-status')   || {}).value || '';
+    var fo = (document.getElementById('kyb-filter-officer')  || {}).value || '';
     q = q.toLowerCase();
 
     var list = _KYB_DATA.filter(function(k) {
-      var matchQ = !q || k.corpName.toLowerCase().includes(q) || k.bizNo.includes(q);
+      var matchQ = !q  || k.corpName.toLowerCase().includes(q) || k.bizNo.includes(q);
       var matchS = !fs || k.status === fs;
-      return matchQ && matchS;
+      var matchO = !fo || k.officer === fo;
+      return matchQ && matchS && matchO;
     });
 
-    // Update stats
-    ['draft','submitted','wlf','done','rejected'].forEach(function(s) {
+    // 만료 건을 목록 최상단에 고정 (만료 경과일 오래된 순)
+    list.sort(function(a, b) {
+      if (a.status === 'expired' && b.status !== 'expired') return -1;
+      if (a.status !== 'expired' && b.status === 'expired') return  1;
+      if (a.status === 'expired' && b.status === 'expired') {
+        return new Date(a.expiredAt) - new Date(b.expiredAt); // 더 오래된 만료가 위
+      }
+      return 0;
+    });
+
+    // Update stats (6종)
+    ['draft','submitted','wlf','done','rejected','expired'].forEach(function(s) {
       var el = document.getElementById('kyb-stat-' + s);
       if (el) el.textContent = _KYB_DATA.filter(function(k){ return k.status === s; }).length;
     });
 
-    if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:32px;">검색 결과가 없습니다.</td></tr>';
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:32px;">검색 결과가 없습니다.</td></tr>';
       return;
     }
 
     tbody.innerHTML = list.map(function(k) {
       var cfg = KYB_STATUS_CFG[k.status] || {};
       var statusBadge = '<span class="badge ' + (cfg.badgeCls||'badge-gray') + '">' + (cfg.label||k.status) + '</span>';
-      var riskBadge = k.riskGrade ? (_RISK_BADGE[k.riskGrade] || '<span class="badge badge-gray">'+k.riskGrade+'</span>') : '<span class="badge badge-gray">—</span>';
+      var riskBadge   = k.riskGrade ? (_RISK_BADGE[k.riskGrade] || '<span class="badge badge-gray">'+k.riskGrade+'</span>') : '<span style="color:var(--text-secondary);">—</span>';
 
-      // 4-5 Button policy per status + role
-      var actions = '';
-      if (k.status === 'draft') {
-        if (_ADMIN_ROLE === 'aml_officer') {
-          actions = '<button class="btn btn-primary btn-xs" onclick="openKYBDetail('+k.idx+')">이어쓰기</button>';
-        } else {
-          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
-        }
-      } else if (k.status === 'submitted') {
-        if (_ADMIN_ROLE === 'aml_manager') {
-          actions = '<button class="btn btn-primary btn-xs" onclick="openKYBDetail('+k.idx+')">WLF 결재 승인</button>';
-        } else {
-          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
-        }
-      } else if (k.status === 'wlf') {
-        actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
-      } else if (k.status === 'done') {
-        if (['general','master'].indexOf(_ADMIN_ROLE) !== -1) {
-          actions = '<button class="btn btn-success btn-xs" onclick="openKYBDetail('+k.idx+')">고객사 생성</button>';
-        } else {
-          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
-        }
-      } else if (k.status === 'rejected') {
-        if (_ADMIN_ROLE === 'aml_officer') {
-          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">재작성</button>';
-        } else {
-          actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
-        }
+      // 만료일 컬럼
+      var expiryCell = '—';
+      if (k.status === 'done' && k.completedAt) {
+        // 완료 건은 만료일 = 완료 + 1년 (간략 표시)
+        expiryCell = '<span style="color:var(--text-secondary); font-size:12px;">1년 후</span>';
+      }
+      if (k.status === 'expired' && k.expiredAt) {
+        var days = kybDaysExpired(k.expiredAt);
+        expiryCell = '<span style="color:#EF4444; font-weight:700; font-size:12px;">'
+          + k.expiredAt + '</span>'
+          + ' <span style="color:#EF4444; font-size:11px; font-weight:600;">(D+' + days + ')</span>';
       }
 
-      var rowCls = k.status === 'rejected' ? ' class="row-danger"' : '';
-      return '<tr' + rowCls + '>' +
-        '<td style="font-weight:600;">' + k.corpName + '</td>' +
-        '<td style="font-family:monospace;font-size:12px;color:var(--text-secondary);">' + k.bizNo + '</td>' +
-        '<td>' + statusBadge + '</td>' +
-        '<td>' + riskBadge + '</td>' +
-        '<td>' + k.officer + '</td>' +
-        '<td>' + actions + '</td>' +
-        '</tr>';
+      // 4-5 Button policy
+      var actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+      if (k.status === 'draft' && _ADMIN_ROLE === 'aml_officer') {
+        actions = '<button class="btn btn-primary btn-xs" onclick="openKYBDetail('+k.idx+')">이어쓰기</button>';
+      } else if (k.status === 'submitted' && _ADMIN_ROLE === 'aml_manager') {
+        actions = '<button class="btn btn-primary btn-xs" onclick="openKYBDetail('+k.idx+')">결재</button>';
+      } else if (k.status === 'done' && ['general','master'].indexOf(_ADMIN_ROLE) !== -1) {
+        actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+      } else if (k.status === 'rejected' && _ADMIN_ROLE === 'aml_officer') {
+        actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">재작성</button>';
+      } else if (k.status === 'expired' && _ADMIN_ROLE === 'aml_officer') {
+        actions = '<button class="btn btn-warning btn-xs" onclick="openKYBRestartModal('+k.idx+')">재작성 시작</button>';
+      }
+
+      var isExpired = k.status === 'expired';
+      var rowStyle  = isExpired
+        ? ' style="background:#FFF7ED;"'
+        : (k.status === 'rejected' ? ' class="row-danger"' : '');
+      return '<tr' + rowStyle + '>'
+        + '<td style="font-weight:600;">' + k.corpName + '</td>'
+        + '<td style="font-family:monospace;font-size:12px;color:var(--text-secondary);">' + k.bizNo + '</td>'
+        + '<td>' + statusBadge + '</td>'
+        + '<td>' + riskBadge + '</td>'
+        + '<td>' + expiryCell + '</td>'
+        + '<td>' + k.officer + '</td>'
+        + '<td style="white-space:nowrap;">' + actions + '</td>'
+        + '</tr>';
     }).join('');
   }
 
@@ -3266,12 +3330,14 @@
     var showReject       = k.status === 'submitted' && _ADMIN_ROLE === 'aml_manager';
     var showWLFApprove   = k.status === 'submitted' && _ADMIN_ROLE === 'aml_manager';
     var showCreateClient = k.status === 'done'      && ['general','master'].indexOf(_ADMIN_ROLE) !== -1;
+    var showRestart      = k.status === 'expired'   && _ADMIN_ROLE === 'aml_officer';
 
     document.getElementById('kyb-btn-submit').style.display        = showSubmit       ? '' : 'none';
     document.getElementById('kyb-btn-rewrite').style.display       = showRewrite      ? '' : 'none';
     document.getElementById('kyb-btn-reject').style.display        = showReject       ? '' : 'none';
     document.getElementById('kyb-btn-approve-wlf').style.display   = showWLFApprove   ? '' : 'none';
     document.getElementById('kyb-btn-create-client').style.display = showCreateClient ? '' : 'none';
+    document.getElementById('kyb-btn-restart').style.display       = showRestart      ? '' : 'none';
 
     // Edit lock hint
     var saveBtn = document.getElementById('kyb-btn-save');
@@ -3294,6 +3360,16 @@
       note.id = noteId;
       note.style.cssText = 'margin-top:8px; padding:10px 12px; background:#FEF2F2; border-radius:6px; font-size:12px; color:#991B1B;';
       note.innerHTML = '<strong>반려 사유:</strong> ' + (k.rejectedReason || '—');
+      statusBar.after(note);
+    } else if (k.status === 'expired') {
+      var days = kybDaysExpired(k.expiredAt);
+      var note = document.createElement('div');
+      note.id = noteId;
+      note.style.cssText = 'margin-top:8px; padding:10px 12px; background:#FFF7ED; border-radius:6px; font-size:12px; color:#92400E;';
+      note.innerHTML = '⚠ KYB 만료 건입니다. 내용 검토 후 작성 완료해주세요.<br>'
+        + '<strong>만료일:</strong> ' + (k.expiredAt||'—') + (days !== null ? ' <span style="color:#EF4444;">(D+' + days + ' 경과)</span>' : '')
+        + ' &nbsp;|&nbsp; <strong>이전 위험등급:</strong> ' + (k.riskGrade ? ({low:'저위험',mid:'중위험',high:'고위험'}[k.riskGrade]||k.riskGrade) : '—')
+        + '<br><span style="color:#92400E;">고객사 출금이 자동 차단 중입니다. KYB 갱신 완료 시 자동 해제됩니다.</span>';
       statusBar.after(note);
     }
 
@@ -3491,6 +3567,37 @@
     renderKYBTable();
     openKYBDetail(k.idx);
     showToast('재작성 모드로 전환되었습니다. 내용을 수정 후 다시 제출해주세요.');
+  }
+
+  /* ── 4-4-2: 재작성 시작 (KYB 만료 → 입력 중) ── */
+  function openKYBRestartModal(idx) {
+    var k = _KYB_DATA[idx]; if (!k) return;
+    _kybDetailIdx = idx;
+    var days = kybDaysExpired(k.expiredAt);
+    document.getElementById('kybr-corp').textContent  = k.corpName;
+    document.getElementById('kybr-expiry').textContent = (k.expiredAt || '—') + (days !== null ? ' (D+' + days + ')' : '');
+    var riskMap = { low:'저위험', mid:'중위험', high:'고위험' };
+    document.getElementById('kybr-risk').innerHTML = k.riskGrade
+      ? ('<span class="badge ' + (_RISK_BADGE[k.riskGrade] ? '' : 'badge-gray') + '">' + (riskMap[k.riskGrade]||k.riskGrade) + '</span>')
+      : '—';
+    openModal('modal-kyb-restart');
+  }
+
+  function openKYBRestart() {
+    // called from slide-over footer button
+    var k = _KYB_DATA[_kybDetailIdx]; if (!k) return;
+    openKYBRestartModal(k.idx);
+  }
+
+  function confirmKYBRestart() {
+    var k = _KYB_DATA[_kybDetailIdx]; if (!k) return;
+    closeModal('modal-kyb-restart');
+    k.status = 'draft';
+    k.expiredAt = null;
+    renderKYBTable();
+    closeKYBDetail();
+    openKYBDetail(k.idx);
+    showToast(k.corpName + ' KYB 재작성이 시작되었습니다. 기존 데이터를 검토 후 작성 완료해주세요.');
   }
 
   function kybApproveWLF() {
