@@ -390,9 +390,6 @@
         <div class="nav-item" id="nav-accounts" onclick="showPage('accounts', this)">
           <span class="nav-icon">&#128100;</span> 계정 관리
         </div>
-        <div class="nav-item" id="nav-vasp" onclick="showPage('vasp', this)">
-          <span class="nav-icon">&#127760;</span> Travel Rule VASP
-        </div>
       </div>
 
       <!-- 지갑·자산 -->
@@ -406,12 +403,21 @@
         </div>
         <div class="nav-item" id="nav-transactions" onclick="showPage('transactions', this)">
           <span class="nav-icon">&#128202;</span> 거래 내역
+          <span id="nav-tx-hold-badge" class="nav-badge" style="display:none;"></span>
         </div>
+      </div>
+
+      <!-- 설정 -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">설정</div>
         <div class="nav-item" id="nav-coins-config" onclick="showPage('coins-config', this)">
-          <span class="nav-icon">&#9881;</span> 지원코인설정
+          <span class="nav-icon">&#9881;</span> 지원 코인/네트워크
         </div>
         <div class="nav-item" id="nav-wl-coins" onclick="showPage('wl-coins', this)">
-          <span class="nav-icon">&#128737;</span> Whitelist 허용코인
+          <span class="nav-icon">&#128737;</span> Whitelist 허용 코인
+        </div>
+        <div class="nav-item" id="nav-vasp" onclick="showPage('vasp', this)">
+          <span class="nav-icon">&#127760;</span> Travel Rule VASP
         </div>
       </div>
 
@@ -422,7 +428,7 @@
           <span class="nav-icon">&#128683;</span> STR / 이상거래
         </div>
         <div class="nav-item" id="nav-pep" onclick="showPage('pep', this)">
-          <span class="nav-icon">&#128683;</span> 내부요주의인물
+          <span class="nav-icon">&#128100;</span> 내부요주의인물
         </div>
         <div class="nav-item" id="nav-country" onclick="showPage('country', this)">
           <span class="nav-icon">&#127757;</span> 국가위험정책
@@ -435,11 +441,11 @@
       <!-- 시스템 -->
       <div class="sidebar-section">
         <div class="sidebar-section-label">시스템</div>
-        <div class="nav-item" id="nav-activitylog" onclick="showPage('activitylog', this)">
-          <span class="nav-icon">&#128203;</span> 활동 로그
-        </div>
         <div class="nav-item" id="nav-admin-accounts" onclick="showPage('admin-accounts', this)">
           <span class="nav-icon">&#128272;</span> Admin 계정 관리
+        </div>
+        <div class="nav-item" id="nav-activitylog" onclick="showPage('activitylog', this)">
+          <span class="nav-icon">&#128203;</span> 활동 로그
         </div>
       </div>
 
@@ -779,20 +785,22 @@
 
         <!-- Tabs -->
         <div class="admin-tabs" id="cw-tabs">
-          <div class="admin-tab active" id="cw-tab-create"     onclick="switchCWTab('create')">지갑 생성 요청</div>
-          <div class="admin-tab" id="cw-tab-sign"              onclick="switchCWTab('sign')">출금 서명</div>
-          <div class="admin-tab" id="cw-tab-delete"            onclick="switchCWTab('delete')">지갑 삭제 요청</div>
+          <div class="admin-tab active" id="cw-tab-walletreq"  onclick="switchCWTab('walletreq')">지갑 요청 <span id="cw-walletreq-badge" class="nav-badge" style="display:none;"></span></div>
           <div class="admin-tab" id="cw-tab-coin"              onclick="switchCWTab('coin')">코인 추가 요청</div>
           <div class="admin-tab" id="cw-tab-allwallets"        onclick="switchCWTab('allwallets')">전체 지갑 목록</div>
         </div>
 
-        <!-- 6-1: 지갑 생성 요청 -->
-        <div class="admin-tab-panel active" id="cw-panel-create">
-          <div class="stats-row" style="grid-template-columns:repeat(2,1fr); margin-bottom:16px;">
-            <div class="stat-card"><span class="stat-label">처리 대기</span><span class="stat-value stat-orange" id="cw-stat-pending">0</span></div>
-            <div class="stat-card"><span class="stat-label">주소 등록 완료</span><span class="stat-value stat-green" id="cw-stat-done">0</span></div>
+        <!-- 지갑 요청 (생성 + 삭제 통합) -->
+        <div class="admin-tab-panel active" id="cw-panel-walletreq">
+          <div class="stats-row" style="grid-template-columns:repeat(4,1fr); margin-bottom:16px;">
+            <div class="stat-card"><span class="stat-label">생성 대기</span><span class="stat-value stat-orange" id="cw-stat-pending">0</span></div>
+            <div class="stat-card"><span class="stat-label">생성 완료</span><span class="stat-value stat-green" id="cw-stat-done">0</span></div>
+            <div class="stat-card"><span class="stat-label">삭제 대기</span><span class="stat-value stat-orange" id="wd-stat-pending">0</span></div>
+            <div class="stat-card"><span class="stat-label">삭제 완료</span><span class="stat-value stat-green" id="wd-stat-done">0</span></div>
           </div>
-          <div class="card" style="padding:0;">
+          <!-- 생성 요청 -->
+          <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding:0 2px;">지갑 생성 요청</div>
+          <div class="card" style="padding:0; margin-bottom:16px;">
             <div class="table-wrap">
               <table>
                 <thead><tr><th>고객사</th><th>지갑명</th><th>코인</th><th>네트워크</th><th>용도 메모</th><th>요청일시</th><th>상태</th><th>처리</th></tr></thead>
@@ -800,32 +808,8 @@
               </table>
             </div>
           </div>
-        </div>
-
-        <!-- 6-3: 출금 서명 -->
-        <div class="admin-tab-panel" id="cw-panel-sign">
-          <div class="stats-row" style="grid-template-columns:repeat(3,1fr); margin-bottom:16px;">
-            <div class="stat-card"><span class="stat-label">서명 대기</span><span class="stat-value stat-orange" id="sign-stat-pending">0</span></div>
-            <div class="stat-card"><span class="stat-label">TXID 미입력</span><span class="stat-value stat-blue" id="sign-stat-notxid2">0</span></div>
-            <div class="stat-card"><span class="stat-label">완료</span><span class="stat-value stat-green" id="sign-stat-done">0</span></div>
-          </div>
-          <div class="card" style="padding:0;">
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>고객사</th><th>출금번호</th><th>코인</th><th>수량</th><th>수신 주소</th><th>요청일시</th><th>상태</th><th>처리</th></tr></thead>
-                <tbody id="cw-sign-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 6-4: 지갑 삭제 요청 -->
-        <div class="admin-tab-panel" id="cw-panel-delete">
-          <div class="stats-row" style="grid-template-columns:repeat(3,1fr); margin-bottom:16px;">
-            <div class="stat-card"><span class="stat-label">처리 대기</span><span class="stat-value stat-orange" id="wd-stat-pending">0</span></div>
-            <div class="stat-card"><span class="stat-label">삭제 완료</span><span class="stat-value stat-green" id="wd-stat-done">0</span></div>
-            <div class="stat-card"><span class="stat-label">반려</span><span class="stat-value stat-red" id="wd-stat-rejected">0</span></div>
-          </div>
+          <!-- 삭제 요청 -->
+          <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding:0 2px;">지갑 삭제 요청</div>
           <div class="card" style="padding:0;">
             <div class="table-wrap">
               <table>
@@ -927,13 +911,12 @@
 
         <!-- Tabs -->
         <div class="admin-tabs" id="tx-tabs">
-          <div class="admin-tab active" id="tx-tab-all"        onclick="switchTxTab('all')">전체</div>
-          <div class="admin-tab"        id="tx-tab-deposit"    onclick="switchTxTab('deposit')">입금</div>
+          <div class="admin-tab active" id="tx-tab-all"        onclick="switchTxTab('all')">입출금 전체</div>
+          <div class="admin-tab"        id="tx-tab-deposit"    onclick="switchTxTab('deposit')">입금 <span id="tx-hold-badge" style="background:var(--danger); color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; margin-left:4px; display:none;"></span></div>
           <div class="admin-tab"        id="tx-tab-withdrawal" onclick="switchTxTab('withdrawal')">출금 <span id="tx-notxid-badge" style="background:#3B82F6; color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; margin-left:4px; display:none;"></span></div>
-          <div class="admin-tab"        id="tx-tab-hold"       onclick="switchTxTab('hold')">보류 처리 <span id="tx-hold-badge" style="background:var(--danger); color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; margin-left:4px; display:none;"></span></div>
         </div>
 
-        <!-- 전체 / 입금 / 출금 공통 필터 -->
+        <!-- 공통 필터 + 테이블 -->
         <div class="card" style="padding:0;">
           <div id="tx-panel-filters" style="padding:12px 16px; border-bottom:1px solid var(--border);">
             <div class="toolbar" style="margin-bottom:0; flex-wrap:wrap; gap:8px;">
@@ -956,23 +939,14 @@
               </select>
             </div>
           </div>
-          <div class="table-wrap" id="tx-panel-table">
-            <table>
-              <thead>
-                <tr><th>일시</th><th>고객사</th><th>유형</th><th>코인 / 네트워크</th><th style="text-align:right;">수량</th><th>상태</th><th>TXID</th><th id="tx-col-action" style="display:none;">처리</th></tr>
-              </thead>
-              <tbody id="tx-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- 보류 처리 패널 -->
-        <div id="tx-panel-hold" style="display:none;">
-          <div class="alert alert-warning" style="margin-bottom:14px;">
-            &#9888; 아래 입금 건은 AML 임계값 초과 또는 이상 패턴 감지로 <strong>자동 보류</strong>된 건입니다. 검토 후 처리해주세요.
-          </div>
-          <div class="card" style="padding:0;">
-            <div class="table-wrap">
+          <!-- 보류 처리 섹션 (입금 탭 + 일반/마스터 역할만 표시) -->
+          <div id="tx-hold-section" style="display:none; padding:14px 16px; border-bottom:1px solid var(--border); background:#FFFBEB;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <span style="font-size:12px; font-weight:700; color:#92400E;">&#9888; 보류 입금 처리</span>
+              <span id="tx-hold-count" class="badge badge-warning"></span>
+              <span style="font-size:11px; color:#92400E;">AML 임계값 초과 또는 이상 패턴 감지 건 — 검토 후 처리하세요.</span>
+            </div>
+            <div class="table-wrap" style="margin:0;">
               <table>
                 <thead>
                   <tr><th>일시</th><th>고객사</th><th>코인</th><th style="text-align:right;">수량</th><th>보류 사유</th><th>TXID</th><th>처리</th></tr>
@@ -980,6 +954,14 @@
                 <tbody id="tx-hold-tbody"></tbody>
               </table>
             </div>
+          </div>
+          <div class="table-wrap" id="tx-panel-table">
+            <table>
+              <thead>
+                <tr><th>일시</th><th>고객사</th><th>유형</th><th>코인 / 네트워크</th><th style="text-align:right;">수량</th><th>상태</th><th>TXID</th><th id="tx-col-action" style="display:none;">처리</th></tr>
+              </thead>
+              <tbody id="tx-tbody"></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -3729,15 +3711,13 @@
     var tabEl = document.getElementById('tx-tab-' + tab);
     if (tabEl) tabEl.classList.add('active');
 
-    var isHold = tab === 'hold';
-    var filterPanel = document.getElementById('tx-panel-filters');
-    var tablePanel  = document.getElementById('tx-panel-table');
-    var holdPanel   = document.getElementById('tx-panel-hold');
-    if (filterPanel) filterPanel.closest('.card').style.display = isHold ? 'none' : '';
-    if (holdPanel)   holdPanel.style.display = isHold ? '' : 'none';
+    // 보류 처리 섹션: 입금 탭 + 일반/마스터만
+    var canHold = (_ADMIN_ROLE === 'general' || _ADMIN_ROLE === 'master');
+    var holdSection = document.getElementById('tx-hold-section');
+    if (holdSection) holdSection.style.display = (tab === 'deposit' && canHold) ? '' : 'none';
 
-    if (!isHold) renderTxTable();
-    else renderTxHoldTable();
+    renderTxTable();
+    if (tab === 'deposit' && canHold) renderTxHoldTable();
   }
 
   function renderTxTable() {
@@ -3867,24 +3847,24 @@
   }
 
   function initTxPage() {
-    // Show/hide hold tab and CW notice based on role
     var isCW = _ADMIN_ROLE === 'coldwallet';
-    var holdTab = document.getElementById('tx-tab-hold');
-    if (holdTab) holdTab.style.display = isCW ? 'none' : '';
     var cwNotice = document.getElementById('tx-cw-notice');
     if (cwNotice) cwNotice.style.display = isCW ? '' : 'none';
 
-    // CW defaults to 출금 tab
-    if (isCW) {
-      switchTxTab('withdrawal');
-    } else {
-      switchTxTab('all');
-    }
+    // CW defaults to 출금 tab; others to 입출금 전체
+    switchTxTab(isCW ? 'withdrawal' : 'all');
 
-    // Hold badge
+    // 보류 배지 — 입금 탭 + 사이드바
     var holdCount = _TX_DATA.filter(function(r){ return r.status === 'hold'; }).length;
-    var holdBadge = document.getElementById('tx-hold-badge');
-    if (holdBadge) { holdBadge.textContent = holdCount; holdBadge.style.display = holdCount ? '' : 'none'; }
+    var tabBadge = document.getElementById('tx-hold-badge');
+    if (tabBadge) { tabBadge.textContent = holdCount; tabBadge.style.display = holdCount ? '' : 'none'; }
+    var navBadge = document.getElementById('nav-tx-hold-badge');
+    if (navBadge) { navBadge.textContent = holdCount; navBadge.style.display = holdCount ? '' : 'none'; }
+
+    // TXID 미입력 배지
+    var notxidCount = _TX_DATA.filter(function(r){ return r.type==='withdrawal' && r.status==='notxid'; }).length;
+    var ntBadge = document.getElementById('tx-notxid-badge');
+    if (ntBadge) { ntBadge.textContent = notxidCount; ntBadge.style.display = notxidCount ? '' : 'none'; }
   }
 
   /* ════════════════════════════════════
@@ -4122,9 +4102,11 @@
 
   /* ── Tab Switch ── */
   function switchCWTab(tab) {
-    ['create','sign','delete','coin','allwallets'].forEach(function(t) {
-      document.getElementById('cw-tab-' + t).classList.toggle('active', t === tab);
-      document.getElementById('cw-panel-' + t).classList.toggle('active', t === tab);
+    ['walletreq','coin','allwallets'].forEach(function(t) {
+      var tabEl   = document.getElementById('cw-tab-'   + t);
+      var panelEl = document.getElementById('cw-panel-' + t);
+      if (tabEl)   tabEl.classList.toggle('active', t === tab);
+      if (panelEl) panelEl.classList.toggle('active', t === tab);
     });
     closeCWDropdown();
   }
@@ -4133,10 +4115,11 @@
   function renderCWRequests() {
     var pending = _CW_REQUESTS.filter(function(r){ return r.status === 'pending'; });
     var done    = _CW_REQUESTS.filter(function(r){ return r.status === 'done'; });
-    var notxid  = _SIGN_REQUESTS.filter(function(r){ return r.status === 'notxid'; });
     var sp = document.getElementById('cw-stat-pending'); if (sp) sp.textContent = pending.length;
     var sd = document.getElementById('cw-stat-done');    if (sd) sd.textContent = done.length;
-    var sn = document.getElementById('sign-stat-notxid'); if (sn) sn.textContent = notxid.length;
+    // walletreq badge
+    var badge = document.getElementById('cw-walletreq-badge');
+    if (badge) { badge.textContent = pending.length; badge.style.display = pending.length ? '' : 'none'; }
 
     var tbody = document.getElementById('cw-create-tbody');
     if (!tbody) return;
