@@ -95,6 +95,42 @@
     .btn-xs { padding: 3px 10px; font-size: 11px; border-radius: 6px; }
     .btn-full { width: 100%; }
 
+    /* ── Role-based disabled button + tooltip ── */
+    .btn-role-disabled {
+      background: #E2E8F0 !important; color: #94A3B8 !important;
+      border: 1px solid #CBD5E1 !important; cursor: not-allowed !important;
+      opacity: 0.7 !important; pointer-events: none !important;
+    }
+    /* role-tip-wrap must allow pointer events for tooltip hover */
+    .role-tip-wrap { pointer-events: auto !important; }
+    .role-tip-wrap { position: relative; display: inline-flex; }
+    .role-tip-wrap.full-width { width: 100%; }
+    .role-tip-wrap.full-width .btn { width: 100%; }
+    .role-tip-wrap .role-tip {
+      visibility: hidden; opacity: 0;
+      background: #1E293B; color: #F8FAFC;
+      font-size: 11px; padding: 5px 9px; border-radius: 5px;
+      position: absolute; left: 50%; transform: translateX(-50%);
+      bottom: calc(100% + 6px); white-space: normal; max-width: 200px;
+      text-align: center; line-height: 1.4;
+      transition: opacity 0.15s ease 0.15s;
+      pointer-events: none; z-index: 9000;
+    }
+    .role-tip-wrap:hover .role-tip { visibility: visible; opacity: 1; }
+
+    /* ── Role switcher in sidebar ── */
+    .role-switcher-wrap { margin: 6px 0 0 0; }
+    .role-switcher {
+      width: 100%; padding: 4px 8px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08);
+      color: #E2E8F0; font-size: 11px; font-weight: 600; cursor: pointer;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23E2E8F0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
+      padding-right: 24px;
+    }
+    .role-switcher:focus { outline: none; border-color: rgba(255,255,255,0.35); }
+
     /* ── Badges ── */
     .badge { display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; padding: 2px 9px; font-size: 12px; font-weight: 500; }
     .badge-success { background: #ECFDF5; color: #10B981; }
@@ -2173,10 +2209,16 @@
     <div class="sidebar-account">
       <div class="account-row">
         <div class="account-avatar">I</div>
-        <div>
+        <div style="flex:1; min-width:0;">
           <div class="account-name">Infiniteblock02</div>
-          <div class="account-sub">Master Account</div>
+          <div class="account-sub" id="sidebar-role-label">Master Account</div>
         </div>
+      </div>
+      <div class="role-switcher-wrap">
+        <select class="role-switcher" id="role-switcher" onchange="switchRole(this.value)">
+          <option value="master">👑 Master</option>
+          <option value="general">👤 일반 계정</option>
+        </select>
       </div>
     </div>
     <nav class="sidebar-nav">
@@ -2322,7 +2364,10 @@
       <div class="page" id="page-wallet">
         <div class="page-header">
           <h1 class="page-title">Wallet</h1>
-          <button class="btn btn-primary" onclick="openModal('modal-coldwallet')">+ 지갑 추가</button>
+          <span class="role-tip-wrap" id="wrap-add-wallet">
+            <button class="btn btn-primary" id="btn-add-wallet" onclick="openModal('modal-coldwallet')">+ 지갑 추가</button>
+            <span class="role-tip">Master 계정만 사용 가능합니다.</span>
+          </span>
         </div>
         <div class="wallet-summary">
           <span class="wallet-summary-item">총 지갑 <strong>2개</strong></span>
@@ -2508,9 +2553,12 @@
               </div>
               <div class="wallet-info-row" style="border-bottom:none;"><span class="wallet-info-label">요청자</span><span>김철수</span></div>
               <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
-                <button class="btn btn-success btn-full" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금 주소</button>
-                <button class="btn btn-warning btn-full" onclick="openWithdrawal('BTC 보관 지갑 #1')">&#8599; 출금 신청</button>
-                <button class="btn btn-outline btn-full" onclick="openSO('so-add-coin')">+ 코인 추가 <span style="font-size:10px; color:var(--text-secondary);">(Master)</span></button>
+                <button class="btn btn-success btn-full" id="btn-detail-deposit" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금 주소</button>
+                <button class="btn btn-warning btn-full" id="btn-detail-withdraw" onclick="openWithdrawal('BTC 보관 지갑 #1')">&#8599; 출금 신청</button>
+                <span class="role-tip-wrap full-width" id="wrap-detail-add-coin">
+                  <button class="btn btn-outline btn-full" id="btn-detail-add-coin" onclick="openSO('so-add-coin')">+ 코인 추가 <span style="font-size:10px; color:var(--text-secondary);">(Master)</span></button>
+                  <span class="role-tip">Master 계정만 사용 가능합니다.</span>
+                </span>
               </div>
             </div>
           </div>
@@ -2527,7 +2575,10 @@
               <!-- Coins Tab -->
               <div id="detail-coins">
                 <div style="padding:12px 20px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border);">
-                  <button class="btn btn-primary btn-sm" onclick="openAddCoin()">+ 코인 추가</button>
+                  <span class="role-tip-wrap" id="wrap-coins-tab-add">
+                    <button class="btn btn-primary btn-sm" id="btn-coins-tab-add" onclick="openAddCoin()">+ 코인 추가</button>
+                    <span class="role-tip">Master 계정만 사용 가능합니다.</span>
+                  </span>
                 </div>
                 <!-- Active coins table -->
                 <div class="table-wrap" id="coins-active-wrap">
@@ -3585,6 +3636,115 @@
   /* ── Wallet delete feature (4-3) ── */
   var _IS_MASTER = true; // demo: logged-in user is Master
 
+  /* ── Role switch ── */
+  function switchRole(val) {
+    _IS_MASTER = (val === 'master');
+    const label = document.getElementById('sidebar-role-label');
+    if (label) label.textContent = _IS_MASTER ? 'Master Account' : '일반 계정';
+    applyRoleUI();
+    // re-render dynamic tables
+    renderCoinsTab();
+    renderWLTable();
+    renderAccountTable();
+  }
+
+  function _setRoleBtn(id, isMaster, tipMsg, originalClass) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    if (isMaster) {
+      btn.className = originalClass;
+      btn.disabled = false;
+      btn.style.cursor = '';
+      btn.style.pointerEvents = '';
+    } else {
+      btn.className = 'btn btn-role-disabled ' + (originalClass.includes('btn-full') ? 'btn-full' : '') + (originalClass.includes('btn-sm') ? ' btn-sm' : '');
+      btn.disabled = true;
+      btn.style.cursor = 'not-allowed';
+      btn.style.pointerEvents = 'none';
+    }
+  }
+
+  function applyRoleUI() {
+    const m = _IS_MASTER;
+
+    // 지갑 추가
+    _setRoleBtn('btn-add-wallet', m, '', 'btn btn-primary');
+    if (!m) {
+      const w = document.getElementById('wrap-add-wallet');
+      if (w) w.style.pointerEvents = 'auto'; // allow hover for tooltip
+    }
+
+    // 지갑 카드 삭제 버튼 — del-btn-wrap 처리는 기존 _updateWalletDeleteBadge에서 함
+    // 편집 연필 아이콘: Master만 표시
+    ['wrap-wallet1','wrap-wallet2'].forEach(wid => {
+      const wrap = document.getElementById(wid);
+      if (!wrap) return;
+      const pencil = wrap.querySelector('.edit-pencil-btn');
+      if (pencil) pencil.style.display = m ? '' : 'none';
+    });
+    // 지갑 상세 편집 아이콘
+    const detailWrap = document.getElementById('wrap-detail');
+    if (detailWrap) {
+      const pencil = detailWrap.querySelector('.edit-pencil-btn');
+      if (pencil) pencil.style.display = m ? '' : 'none';
+    }
+    // 지갑 카드 삭제 버튼 role 비활성
+    ['wallet1','wallet2'].forEach(wid => {
+      const btn = document.getElementById('delbtn-' + wid);
+      if (!btn) return;
+      const state = _WALLET_DEL_STATE[wid];
+      if (!m) {
+        btn.className = 'btn btn-role-disabled btn-sm';
+        btn.disabled = true;
+        // wrap tip
+        const wrap = document.getElementById('del-wrap-' + wid);
+        if (wrap && !wrap.querySelector('.role-tip')) {
+          wrap.style.position = 'relative';
+          wrap.style.display = 'inline-block';
+          const tip = document.createElement('span');
+          tip.className = 'role-tip';
+          tip.textContent = 'Master 계정만 사용 가능합니다.';
+          wrap.appendChild(tip);
+          wrap.classList.add('role-tip-wrap');
+        }
+      } else {
+        // restore — only if not in pending state
+        if (state !== 'pending') {
+          btn.className = 'btn btn-outline btn-sm wallet-delete-btn';
+          btn.disabled = false;
+          btn.style.color = 'var(--danger)';
+          btn.style.borderColor = 'rgba(239,68,68,0.3)';
+        }
+        const wrap = document.getElementById('del-wrap-' + wid);
+        if (wrap) {
+          const tip = wrap.querySelector('.role-tip');
+          if (tip) tip.remove();
+          wrap.classList.remove('role-tip-wrap');
+        }
+      }
+    });
+
+    // 지갑 상세 카드 — 코인 추가
+    _setRoleBtn('btn-detail-add-coin', m, '', 'btn btn-outline btn-full');
+
+    // Coins 탭 — + 코인 추가
+    _setRoleBtn('btn-coins-tab-add', m, '', 'btn btn-primary btn-sm');
+
+    // Whitelist 신청 — renderWLTable에서 처리됨
+
+    // Strategy Engine 버튼들
+    const strBtns = document.querySelectorAll('#strategy-create-btn, .strategy-edit-btn');
+    strBtns.forEach(btn => {
+      if (!m) {
+        btn.classList.add('btn-role-disabled');
+        btn.disabled = true;
+      } else {
+        btn.classList.remove('btn-role-disabled');
+        btn.disabled = false;
+      }
+    });
+  }
+
   const _WALLET_DATA = [
     { id:'wallet1', name:'BTC 보관 지갑 #1', coin:'BTC', network:'Bitcoin Mainnet',  addr:'bc1q4d4b...xy9f',  fullAddr:'bc1q4d4b9ePQjLwz3MmK7rTs8xy9f',  balance:'0.00000000', balanceKRW:'₩0' },
     { id:'wallet2', name:'ETH 보관 지갑',    coin:'ETH', network:'Ethereum Mainnet', addr:'0x4d4b...C3E69', fullAddr:'0x4d4bA1f3E2c7B9d0F5a6C3E69', balance:'0.00000000', balanceKRW:'₩0' },
@@ -3688,8 +3848,10 @@
               <div style="font-size:11px; color:var(--text-secondary);">${c.network}</div>
             </div>
             <span class="badge badge-warning">&#9203; 처리 중</span>
-            <button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:rgba(239,68,68,0.3); flex-shrink:0;"
-              onclick="event.stopPropagation(); cancelCoinRequest(${c.idx})">취소</button>
+            ${_IS_MASTER
+              ? `<button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:rgba(239,68,68,0.3); flex-shrink:0;" onclick="event.stopPropagation(); cancelCoinRequest(${c.idx})">취소</button>`
+              : `<span class="role-tip-wrap"><button class="btn btn-role-disabled btn-xs" style="flex-shrink:0;" disabled>취소</button><span class="role-tip">Master 계정만 사용 가능합니다.</span></span>`
+            }
           </div>`;
       }).join('');
     }
@@ -5674,6 +5836,7 @@
     renderActivityLog();
     renderWalletDeleteDashboard();
     _updateTodoBadges();
+    applyRoleUI();
   });
 
   /* ════════════════════════════════════
@@ -5746,14 +5909,20 @@
     tbody.innerHTML = rows.map(w => {
       const shortAddr = w.addr.length > 16 ? w.addr.slice(0,8) + '...' + w.addr.slice(-6) : w.addr;
       const scopeStr  = w.scope.join(' / ');
-      const canAct    = _IS_MASTER && (w.status === 'active' || w.status === 'inactive');
-      const menuBtns  = canAct ? `
+      const showMenu  = (w.status === 'active' || w.status === 'inactive');
+      const menuBtns  = showMenu ? `
         <div class="wl-more-wrap">
           <button class="btn btn-outline btn-xs" onclick="toggleWLMenu(event,${w.idx})">&#8943;</button>
           <div class="wl-more-menu" id="wl-menu-${w.idx}" style="display:none;">
-            ${w.status === 'active' ? `<div class="wl-menu-item" onclick="wlDeactivate(${w.idx})">비활성화</div>` : ''}
-            ${w.status === 'inactive' ? `<div class="wl-menu-item" onclick="wlActivate(${w.idx})">활성화</div>` : ''}
-            <div class="wl-menu-item danger" onclick="wlDeleteCheck(${w.idx})">삭제</div>
+            ${w.status === 'active' ? (_IS_MASTER
+              ? `<div class="wl-menu-item" onclick="wlDeactivate(${w.idx})">비활성화</div>`
+              : `<div class="wl-menu-item" style="color:#94A3B8; cursor:not-allowed;" title="Master 계정만 사용 가능합니다.">비활성화</div>`) : ''}
+            ${w.status === 'inactive' ? (_IS_MASTER
+              ? `<div class="wl-menu-item" onclick="wlActivate(${w.idx})">활성화</div>`
+              : `<div class="wl-menu-item" style="color:#94A3B8; cursor:not-allowed;" title="Master 계정만 사용 가능합니다.">활성화</div>`) : ''}
+            ${_IS_MASTER
+              ? `<div class="wl-menu-item danger" onclick="wlDeleteCheck(${w.idx})">삭제</div>`
+              : `<div class="wl-menu-item" style="color:#94A3B8; cursor:not-allowed;" title="Master 계정만 사용 가능합니다.">삭제</div>`}
           </div>
         </div>` : '';
       return `
