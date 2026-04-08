@@ -2105,7 +2105,6 @@
       <div class="section-box-title">OTP 인증</div>
       <div style="display:flex; gap:8px; align-items:center;">
         <input type="text" id="wla-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
-        <button class="btn btn-outline btn-sm">OTP 발송</button>
       </div>
     </div>
   </div>
@@ -2145,7 +2144,6 @@
       <div class="section-box-title">OTP 인증</div>
       <div style="display:flex; gap:8px; align-items:center;">
         <input type="text" id="wlr-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
-        <button class="btn btn-outline btn-sm">OTP 발송</button>
       </div>
     </div>
   </div>
@@ -2169,7 +2167,6 @@
       <div class="section-box-title">OTP 인증</div>
       <div style="display:flex; gap:8px; align-items:center;">
         <input type="text" id="wlba-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
-        <button class="btn btn-outline btn-sm">OTP 발송</button>
       </div>
     </div>
   </div>
@@ -2198,7 +2195,6 @@
       <div class="section-box-title">OTP 인증</div>
       <div style="display:flex; gap:8px; align-items:center;">
         <input type="text" id="wlbr-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
-        <button class="btn btn-outline btn-sm">OTP 발송</button>
       </div>
     </div>
   </div>
@@ -2244,8 +2240,7 @@
         <div class="section-box-title">OTP 인증</div>
         <div style="display:flex; gap:8px; align-items:center;">
           <input type="text" id="wld-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
-          <button class="btn btn-outline btn-sm">OTP 발송</button>
-        </div>
+          </div>
       </div>
     </div>
   </div>
@@ -2291,7 +2286,6 @@
       <div class="section-box-title">OTP 인증</div>
       <div style="display:flex; gap:8px; align-items:center;">
         <input type="text" id="wlra-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
-        <button class="btn btn-outline btn-sm">OTP 발송</button>
       </div>
     </div>
   </div>
@@ -2402,7 +2396,6 @@
       <div class="section-box-title">OTP 인증</div>
       <div style="display:flex; gap:8px; align-items:center;">
         <input type="text" id="ha-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
-        <button class="btn btn-outline btn-sm">OTP 발송</button>
       </div>
     </div>
   </div>
@@ -2439,7 +2432,6 @@
       <div class="section-box-title">OTP 인증</div>
       <div style="display:flex; gap:8px; align-items:center;">
         <input type="text" id="hr-otp" class="form-control" maxlength="6" placeholder="6자리 OTP" style="width:140px; letter-spacing:3px; text-align:center;" />
-        <button class="btn btn-outline btn-sm">OTP 발송</button>
       </div>
     </div>
   </div>
@@ -3795,7 +3787,7 @@
   }
   function confirmWLApprove() {
     var otp = document.getElementById('wla-otp').value.trim();
-    if (otp.length !== 6) { showToast('OTP 6자리를 입력하세요.'); return; }
+    if (!otp) { showToast('OTP를 입력하세요.'); return; }
     var now = new Date().toISOString().slice(0,16).replace('T',' ');
     _WL_APPR_DATA[_wlActionIdx].status      = 'approved';
     _WL_APPR_DATA[_wlActionIdx].processedAt = now;
@@ -3824,7 +3816,7 @@
     var reason = (document.getElementById('wlr-reason') || {}).value || '';
     if (!reason.trim()) { showToast('거절 사유를 입력해주세요.'); return; }
     var otp = document.getElementById('wlr-otp').value.trim();
-    if (otp.length !== 6) { showToast('OTP 6자리를 입력하세요.'); return; }
+    if (!otp) { showToast('OTP를 입력하세요.'); return; }
     var now = new Date().toISOString().slice(0,16).replace('T',' ');
     _WL_APPR_DATA[_wlActionIdx].status       = 'rejected';
     _WL_APPR_DATA[_wlActionIdx].processedAt  = now;
@@ -3852,7 +3844,7 @@
   }
   function confirmWLBulkApprove() {
     var otp = document.getElementById('wlba-otp').value.trim();
-    if (otp.length !== 6) { showToast('OTP 6자리를 입력하세요.'); return; }
+    if (!otp) { showToast('OTP를 입력하세요.'); return; }
     var now = new Date().toISOString().slice(0,16).replace('T',' ');
     _wlBulkIdxs.forEach(function(idx) {
       _WL_APPR_DATA[idx].status      = 'approved';
@@ -3878,7 +3870,7 @@
     var reason = (document.getElementById('wlbr-reason') || {}).value || '';
     if (!reason.trim()) { showToast('거절 사유를 입력해주세요.'); return; }
     var otp = document.getElementById('wlbr-otp').value.trim();
-    if (otp.length !== 6) { showToast('OTP 6자리를 입력하세요.'); return; }
+    if (!otp) { showToast('OTP를 입력하세요.'); return; }
     var now = new Date().toISOString().slice(0,16).replace('T',' ');
     _wlBulkIdxs.forEach(function(idx) {
       _WL_APPR_DATA[idx].status       = 'rejected';
@@ -3917,7 +3909,7 @@
     var reason = (document.getElementById('wld-reason') || {}).value || '';
     if (!reason.trim()) { showToast('비활성화 사유를 입력해주세요.'); return; }
     var otp = document.getElementById('wld-otp').value.trim();
-    if (otp.length !== 6) { showToast('OTP 6자리를 입력하세요.'); return; }
+    if (!otp) { showToast('OTP를 입력하세요.'); return; }
     var now = new Date().toISOString().slice(0,16).replace('T',' ');
     _WL_APPR_DATA[_wlActionIdx].status     = 'inactive';
     _WL_APPR_DATA[_wlActionIdx].deactAt    = now;
@@ -3950,7 +3942,7 @@
     var reason = (document.getElementById('wlra-reason') || {}).value || '';
     if (!reason.trim()) { showToast('활성화 복구 사유를 입력해주세요.'); return; }
     var otp = document.getElementById('wlra-otp').value.trim();
-    if (otp.length !== 6) { showToast('OTP 6자리를 입력하세요.'); return; }
+    if (!otp) { showToast('OTP를 입력하세요.'); return; }
     var now = new Date().toISOString().slice(0,16).replace('T',' ');
     _WL_APPR_DATA[_wlActionIdx].status      = 'approved';
     _WL_APPR_DATA[_wlActionIdx].processedAt = now;
