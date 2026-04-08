@@ -3325,16 +3325,30 @@
     aml_manager: { label: 'AML 관리자',    cls: 'role-badge-aml-manager' }
   };
 
-  /* nav items and who can see them (undefined = all roles can see) */
+  /* nav items and who can see them (항목 미포함 = 전 역할 접근 가능)
+     Section 1-1 역할별 메뉴 접근 권한 기준                        */
   var NAV_ACCESS = {
+    // ── 고객 관리
+    'nav-clients':        ['master', 'general', 'aml_officer', 'aml_manager'],  // coldwallet 제외
+    'nav-kyb':            ['master', 'aml_officer', 'aml_manager'],
+    'nav-accounts':       ['master', 'general'],
+    // ── 지갑·자산
+    'nav-coldwallet':     ['master', 'coldwallet'],
+    'nav-whitelist':      ['master', 'general'],
+    // nav-transactions: 전 역할 접근 (VIEW/처리 범위는 renderTxTable 에서 분기)
+    // ── 설정
+    'nav-coins-config':   ['master', 'general'],
+    'nav-wl-coins':       ['master', 'general'],
+    'nav-vasp':           ['master', 'general'],
+    'nav-client-ip':      ['master', 'general'],
+    // ── AML
+    'nav-str':            ['master', 'aml_officer', 'aml_manager'],
+    'nav-pep':            ['master', 'aml_officer', 'aml_manager'],
+    'nav-country':        ['master', 'aml_officer', 'aml_manager'],
+    'nav-strparam':       ['master', 'aml_officer', 'aml_manager'],
+    // ── 시스템
     'nav-admin-accounts': ['master'],
-    'nav-vasp':           ['general', 'master'],
-    'nav-coins-config':   ['general', 'master'],
-    'nav-wl-coins':       ['general', 'master'],
-    'nav-client-ip':      ['general', 'master'],
-    'nav-kyb':            ['aml_officer', 'aml_manager', 'general', 'master'],
-    'nav-accounts':       ['general', 'master'],
-    'nav-coldwallet':     ['coldwallet'],
+    // nav-activitylog: 전 역할 접근 (범위는 renderActLog 에서 분기)
   };
 
   /* ════════════════════════════════════
