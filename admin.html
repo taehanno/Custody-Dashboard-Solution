@@ -435,6 +435,9 @@
         <div class="nav-item" id="nav-vasp" onclick="showPage('vasp', this)">
           <span class="nav-icon">&#127760;</span> Travel Rule VASP
         </div>
+        <div class="nav-item" id="nav-client-ip" onclick="showPage('client-ip', this)">
+          <span class="nav-icon">&#128274;</span> 고객사 IP 관리
+        </div>
       </div>
 
       <!-- AML -->
@@ -796,6 +799,73 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════
+           PAGE: 고객사 IP 관리 (섹션 15)
+      ══════════════════════════ -->
+      <div class="page" id="page-client-ip">
+        <div class="page-header">
+          <h1 class="page-title">고객사 IP 관리 <span style="font-size:13px; font-weight:400; color:var(--text-secondary);">/ Client IP Management</span></h1>
+        </div>
+        <div class="alert alert-info">
+          &#9432; 허용 IP를 등록한 고객사는 등록된 IP에서만 포털 로그인이 허용됩니다. IP 미등록 고객사는 <strong>전체 IP 허용</strong> 상태입니다.
+        </div>
+        <!-- Stats -->
+        <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="stat-card" style="border-left:4px solid #3B82F6;">
+            <span class="stat-label">전체</span>
+            <span class="stat-value stat-blue" id="cip-stat-total">0</span>
+            <span style="font-size:11px; color:var(--text-secondary);">고객사</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #10B981;">
+            <span class="stat-label">IP 등록됨</span>
+            <span class="stat-value" style="color:#10B981;" id="cip-stat-registered">0</span>
+            <span style="font-size:11px; color:var(--text-secondary);">고객사</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #94A3B8;">
+            <span class="stat-label">IP 미등록</span>
+            <span class="stat-value stat-gray" id="cip-stat-none">0</span>
+            <span style="font-size:11px; color:var(--text-secondary);">전체 IP 허용</span>
+          </div>
+        </div>
+        <!-- Filter + Table -->
+        <div class="card" style="padding:0;">
+          <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+            <div class="toolbar" style="margin-bottom:0;">
+              <div class="search-wrap">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" id="cip-search" class="form-control" placeholder="고객사명 검색" style="width:200px; padding-left:30px;" oninput="renderClientIPTable()" />
+              </div>
+              <select class="form-control" id="cip-filter-ip" style="width:150px;" onchange="renderClientIPTable()">
+                <option value="">IP 등록 여부</option>
+                <option value="registered">IP 등록됨</option>
+                <option value="none">IP 미등록</option>
+              </select>
+              <select class="form-control" id="cip-filter-status" style="width:120px;" onchange="renderClientIPTable()">
+                <option value="">전체 상태</option>
+                <option value="active">활성</option>
+                <option value="inactive">비활성</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>고객사명</th>
+                  <th>상태</th>
+                  <th>등록 IP 수</th>
+                  <th>등록된 IP 목록</th>
+                  <th>최종 수정일</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="cip-tbody"></tbody>
+            </table>
+          </div>
+          <div id="cip-empty" style="display:none; padding:40px; text-align:center; color:var(--text-secondary); font-size:13px;">조회 결과가 없습니다.</div>
         </div>
       </div>
 
@@ -1469,6 +1539,7 @@
               <option value="국가위험정책">국가위험정책</option>
               <option value="STR룰파라미터">STR룰파라미터</option>
               <option value="로그인보안">로그인보안</option>
+              <option value="고객사IP관리">고객사 IP 관리</option>
             </select>
             <select class="form-control" id="actlog-filter-result" style="width:110px;" onchange="renderActLog()">
               <option value="">전체 결과</option>
@@ -3011,6 +3082,198 @@
 <!-- [···] 더보기 드롭다운 -->
 <div id="cw-wallet-dropdown" style="display:none; position:fixed; background:#fff; border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.12); z-index:600; min-width:140px; padding:4px 0;"></div>
 
+<!-- ══════════════════════════════════════
+     MODAL: 고객사 IP 관리 상세 (15-3)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-client-ip-detail" style="max-width:640px;">
+  <div class="modal-header">
+    <span class="modal-title">고객사 IP 관리 / <span id="cip-detail-corp"></span></span>
+    <button class="modal-close" onclick="closeModal('modal-client-ip-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- Summary bar -->
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; padding:10px 14px; background:var(--bg-secondary); border-radius:8px; border:1px solid var(--border);">
+      <span style="font-size:12px; color:var(--text-secondary);">현재 상태:</span>
+      <span id="cip-detail-status-badge"></span>
+      <span style="font-size:12px; color:var(--text-secondary); margin-left:8px;">등록 IP:</span>
+      <span id="cip-detail-ip-count" style="font-weight:700; font-size:13px;"></span>
+      <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="openIPHistory()">&#128336; 변경 이력</button>
+    </div>
+    <div id="cip-detail-info-box" class="alert alert-info" style="margin-bottom:12px;">
+      &#9432; 등록된 IP에서만 포털 로그인이 허용됩니다.
+    </div>
+    <!-- IP Table -->
+    <div class="card" style="padding:0; margin-bottom:0;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>IP 주소</th>
+              <th>메모</th>
+              <th>등록일시</th>
+              <th id="cip-detail-action-col">관리</th>
+            </tr>
+          </thead>
+          <tbody id="cip-detail-tbody"></tbody>
+        </table>
+      </div>
+      <div id="cip-detail-empty" style="display:none; padding:24px; text-align:center; color:var(--text-secondary); font-size:13px;">
+        등록된 IP가 없습니다. (전체 IP 허용 상태)
+      </div>
+    </div>
+    <div class="alert alert-warning" style="margin-top:14px; margin-bottom:0;">
+      &#9888; IP 추가·수정·삭제 시 해당 고객사에 로그인 중인 모든 계정이 즉시 자동 로그아웃 처리됩니다.
+    </div>
+  </div>
+  <div class="modal-footer" style="justify-content:space-between;">
+    <button class="btn btn-primary" id="cip-detail-add-btn" onclick="openIPAddModal()">+ IP 주소 추가</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-client-ip-detail')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: IP 주소 추가 (15-4)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-ip-add" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">IP 주소 추가 / Add IP Address</span>
+    <button class="modal-close" onclick="closeModal('modal-ip-add')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="section-box-title">고객사 정보</div>
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="ip-add-corp"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">현재 등록</span><span class="info-value" id="ip-add-count"></span></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">IP 주소 <span style="color:var(--danger);">*</span></label>
+      <input type="text" id="ip-add-input" class="form-control" placeholder="예: 123.456.78.90" style="width:100%; font-family:monospace;" oninput="validateIPAddForm()" />
+      <div class="form-hint" id="ip-add-error" style="color:var(--danger); display:none;"></div>
+      <div class="form-hint" id="ip-add-hint">IPv4 단일 주소 형식으로 입력하세요.</div>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">메모 <span style="color:var(--text-secondary); font-weight:400;">(선택, 최대 50자)</span></label>
+      <input type="text" id="ip-add-memo" class="form-control" placeholder="예: 본사 사무실 / 재택 VPN" maxlength="50" style="width:100%;" />
+    </div>
+    <div class="alert alert-warning" style="margin-top:14px; margin-bottom:0;">
+      &#9888; IP 추가 즉시 해당 고객사에 로그인 중인 모든 계정이 자동 로그아웃 처리됩니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-ip-add')">취소</button>
+    <button class="btn btn-primary" id="ip-add-confirm-btn" onclick="confirmIPAdd()" disabled>추가 확인 → OTP</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: IP 주소 수정 (15-5)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-ip-edit" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">IP 주소 수정 / Edit IP Address</span>
+    <button class="modal-close" onclick="closeModal('modal-ip-edit')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="section-box-title">고객사 정보</div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">고객사</span><span class="info-value" id="ip-edit-corp"></span></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">IP 주소 <span style="color:var(--danger);">*</span></label>
+      <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">현재: <span id="ip-edit-current-ip" style="font-family:monospace;"></span></div>
+      <input type="text" id="ip-edit-input" class="form-control" style="width:100%; font-family:monospace;" oninput="validateIPEditForm()" />
+      <div class="form-hint" id="ip-edit-error" style="color:var(--danger); display:none;"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">메모 <span style="color:var(--text-secondary); font-weight:400;">(선택, 최대 50자)</span></label>
+      <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">현재: <span id="ip-edit-current-memo"></span></div>
+      <input type="text" id="ip-edit-memo" class="form-control" maxlength="50" style="width:100%;" />
+    </div>
+    <div class="alert alert-warning" style="margin-top:14px; margin-bottom:0;">
+      &#9888; IP 수정 즉시 해당 고객사에 로그인 중인 모든 계정이 자동 로그아웃 처리됩니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-ip-edit')">취소</button>
+    <button class="btn btn-primary" id="ip-edit-confirm-btn" onclick="confirmIPEdit()">수정 확인 → OTP</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: IP 주소 삭제 (15-6)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-ip-delete" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">IP 주소 삭제 / Delete IP Address</span>
+    <button class="modal-close" onclick="closeModal('modal-ip-delete')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="section-box-title">삭제 대상</div>
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="ip-del-corp"></span></div>
+      <div class="info-row"><span class="info-label">삭제 대상</span><span class="info-value" id="ip-del-target" style="font-family:monospace; font-weight:600;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">삭제 후 잔여 IP</span><span class="info-value" id="ip-del-remain"></span></div>
+    </div>
+    <div id="ip-del-zero-notice" style="display:none;" class="alert alert-info">
+      &#9432; 잔여 IP가 0개가 되면 <strong>전체 IP 허용</strong> 상태로 전환됩니다.
+    </div>
+    <div class="alert alert-warning">
+      &#9888; IP 삭제 즉시 해당 고객사에 로그인 중인 모든 계정이 자동 로그아웃 처리됩니다.
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">삭제 사유 <span style="color:var(--danger);">*</span> <span style="color:var(--text-secondary); font-weight:400;">(최대 100자)</span></label>
+      <input type="text" id="ip-del-reason" class="form-control" maxlength="100" style="width:100%;" oninput="validateIPDelForm()" placeholder="삭제 사유를 입력하세요" />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-ip-delete')">취소</button>
+    <button class="btn btn-danger" id="ip-del-confirm-btn" onclick="confirmIPDelete()" disabled>삭제 확인 → OTP</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDEOVER: IP 변경 이력 (15-9)
+══════════════════════════════════════ -->
+<div class="slideover-backdrop" id="ip-history-backdrop" onclick="closeIPHistory()"></div>
+<div class="slideover" id="ip-history-so" style="width:min(700px,100%);">
+  <div class="so-header">
+    <div>
+      <div class="so-title">IP 변경 이력 / <span id="ip-history-corp"></span></div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">IP 추가·수정·삭제 전체 이력</div>
+    </div>
+    <button class="modal-close" onclick="closeIPHistory()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <select class="form-control" id="ip-history-filter-event" style="width:140px;" onchange="renderIPHistory()">
+        <option value="">이벤트 유형</option>
+        <option value="추가">추가</option>
+        <option value="수정">수정</option>
+        <option value="삭제">삭제</option>
+      </select>
+    </div>
+    <div class="card" style="padding:0;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>변경일시</th>
+              <th>이벤트</th>
+              <th>대상 IP</th>
+              <th>메모</th>
+              <th>처리자</th>
+              <th>사유</th>
+            </tr>
+          </thead>
+          <tbody id="ip-history-tbody"></tbody>
+        </table>
+      </div>
+      <div id="ip-history-empty" style="display:none; padding:32px; text-align:center; color:var(--text-secondary); font-size:13px;">변경 이력이 없습니다.</div>
+    </div>
+  </div>
+</div>
+
 <!-- modal-otp: OTP 인증 -->
 <div class="modal" id="modal-otp">
   <div class="modal-header">
@@ -3058,6 +3321,7 @@
     'nav-vasp':           ['general', 'master'],
     'nav-coins-config':   ['general', 'master'],
     'nav-wl-coins':       ['general', 'master'],
+    'nav-client-ip':      ['general', 'master'],
     'nav-kyb':            ['aml_officer', 'aml_manager', 'general', 'master'],
     'nav-accounts':       ['general', 'master'],
     'nav-coldwallet':     ['coldwallet'],
@@ -5944,6 +6208,10 @@
     { idx:14, datetime:'2026-04-06 14:00:15', actorName:'홍길동', actorEmail:'hong@infiniteblock.io', actorMask:'홍○동', role:'master', corp:'-', cat:'지원코인', action:'지원코인 추가 요청 승인 — SOL (Solana Mainnet)', result:'success', ip:'192.168.10.10', ua:'Chrome 124 / macOS', errCode:null },
     { idx:15, datetime:'2026-04-06 09:05:55', actorName:'김철수', actorEmail:'kim@infiniteblock.io', actorMask:'김○수', role:'general', corp:'-', cat:'로그인보안', action:'Admin Console 로그인 실패 — OTP 불일치 (3회 시도)', result:'fail', ip:'10.0.0.5', ua:'Firefox 125 / Windows 11', errCode:'AUTH_OTP_003: OTP 입력 횟수 초과' },
     { idx:16, datetime:'2026-04-05 17:45:22', actorName:'이담당', actorEmail:'lee@infiniteblock.io', actorMask:'이○당', role:'aml_officer', corp:'오메가자산운용(주)', cat:'KYB상태이력', action:'KYB 만료 처리 — 오메가자산운용(주) 유효기간 초과', result:'success', ip:'10.0.0.8', ua:'Chrome 124 / Windows 10', errCode:null },
+    { idx:17, datetime:'2026-04-07 14:30:00', actorName:'김철수', actorEmail:'kim@infiniteblock.io', actorMask:'김○수', role:'general', corp:'알파투자운용(주)', cat:'고객사IP관리', action:'[IP 추가] 알파투자운용(주) / 192.168.10.100 / 세션 만료 처리', result:'success', ip:'10.0.0.5', ua:'Firefox 125 / Windows 11', errCode:null },
+    { idx:18, datetime:'2026-04-05 10:00:00', actorName:'김철수', actorEmail:'kim@infiniteblock.io', actorMask:'김○수', role:'general', corp:'알파투자운용(주)', cat:'고객사IP관리', action:'[IP 추가] 알파투자운용(주) / 1.2.3.4 (본사 사무실) / 세션 만료 처리', result:'success', ip:'10.0.0.5', ua:'Firefox 125 / Windows 11', errCode:null },
+    { idx:19, datetime:'2026-03-01 09:00:00', actorName:'김철수', actorEmail:'kim@infiniteblock.io', actorMask:'김○수', role:'general', corp:'알파투자운용(주)', cat:'고객사IP관리', action:'[IP 삭제] 알파투자운용(주) / 222.111.33.44 / 사유: VPN 교체 / 세션 만료 처리', result:'success', ip:'10.0.0.5', ua:'Firefox 125 / Windows 11', errCode:null },
+    { idx:20, datetime:'2026-04-04 11:20:00', actorName:'김철수', actorEmail:'kim@infiniteblock.io', actorMask:'김○수', role:'general', corp:'베타캐피탈 유한회사', cat:'고객사IP관리', action:'[IP 접근 차단] 베타캐피탈 유한회사 / 시도 IP: 123.456.99.00 / ki***@beta.com', result:'fail', ip:'123.456.99.00', ua:'Chrome 124 / Windows 10', errCode:'IP_BLOCK_001: 미등록 IP 접근 차단' },
   ];
 
   var _ACTLOG_DETAIL_IDX = null;
@@ -6065,6 +6333,422 @@
   }
 
   /* ════════════════════════════════════
+     DATA: 고객사 IP 관리 (섹션 15)
+  ════════════════════════════════════ */
+  var _CLIENT_IP_DATA = [
+    { idx:0, corp:'알파투자운용(주)', status:'active',
+      ips:[
+        { id:0, ip:'1.2.3.4',         memo:'본사 사무실',   createdAt:'2026-04-05 10:00:00' },
+        { id:1, ip:'5.6.7.8',         memo:'재택근무 VPN', createdAt:'2026-04-05 10:01:00' },
+        { id:2, ip:'192.168.10.100',  memo:'',             createdAt:'2026-04-07 14:30:00' },
+      ], lastModified:'2026-04-07' },
+    { idx:1, corp:'베타캐피탈 유한회사', status:'active',
+      ips:[
+        { id:0, ip:'192.168.1.10', memo:'사무실', createdAt:'2026-04-05 09:00:00' },
+      ], lastModified:'2026-04-05' },
+    { idx:2, corp:'감마트레이딩(주)', status:'active',
+      ips:[], lastModified:null },
+    { idx:3, corp:'델타홀딩스 유한회사', status:'inactive',
+      ips:[
+        { id:0, ip:'10.0.0.1', memo:'', createdAt:'2026-04-01 14:00:00' },
+        { id:1, ip:'10.0.0.2', memo:'', createdAt:'2026-04-01 14:01:00' },
+      ], lastModified:'2026-04-01' },
+  ];
+
+  var _IP_HISTORY_DATA = {
+    '알파투자운용(주)': [
+      { datetime:'2026-04-07 14:30', event:'추가', ip:'192.168.10.100', ipTo:null, memo:'',         actor:'김○수', actorFull:'김철수', reason:'' },
+      { datetime:'2026-04-05 10:01', event:'추가', ip:'5.6.7.8',        ipTo:null, memo:'재택 VPN', actor:'김○수', actorFull:'김철수', reason:'' },
+      { datetime:'2026-04-05 10:00', event:'추가', ip:'1.2.3.4',        ipTo:null, memo:'본사 사무실',actor:'김○수', actorFull:'김철수', reason:'' },
+      { datetime:'2026-03-01 09:00', event:'삭제', ip:'222.111.33.44',  ipTo:null, memo:'구 VPN',   actor:'김○수', actorFull:'김철수', reason:'VPN 교체' },
+      { datetime:'2026-02-10 14:00', event:'수정', ip:'5.6.7.9',        ipTo:'5.6.7.8', memo:'',   actor:'김○수', actorFull:'김철수', reason:'IP 변경' },
+    ],
+    '베타캐피탈 유한회사': [
+      { datetime:'2026-04-05 09:00', event:'추가', ip:'192.168.1.10', ipTo:null, memo:'사무실', actor:'김○수', actorFull:'김철수', reason:'' },
+    ],
+    '델타홀딩스 유한회사': [
+      { datetime:'2026-04-01 14:01', event:'추가', ip:'10.0.0.2', ipTo:null, memo:'', actor:'김○수', actorFull:'김철수', reason:'' },
+      { datetime:'2026-04-01 14:00', event:'추가', ip:'10.0.0.1', ipTo:null, memo:'', actor:'김○수', actorFull:'김철수', reason:'' },
+    ],
+  };
+
+  var _cipDetailIdx = null;
+  var _ipEditId = null;
+  var _ipDeleteId = null;
+  var _ipNextId = 100;
+
+  /* ── IPv4 유효성 검사 ── */
+  function isValidIPv4(val) {
+    var parts = val.trim().split('.');
+    if (parts.length !== 4) return false;
+    for (var i = 0; i < 4; i++) {
+      var n = parseInt(parts[i], 10);
+      if (isNaN(n) || n < 0 || n > 255 || String(n) !== parts[i]) return false;
+    }
+    return true;
+  }
+
+  /* ── 메인 테이블 렌더링 ── */
+  function renderClientIPTable() {
+    var q      = (document.getElementById('cip-search')        || {}).value || '';
+    var ipFilt = (document.getElementById('cip-filter-ip')     || {}).value || '';
+    var stFilt = (document.getElementById('cip-filter-status') || {}).value || '';
+    q = q.trim().toLowerCase();
+
+    var total = _CLIENT_IP_DATA.length;
+    var registered = _CLIENT_IP_DATA.filter(function(r){ return r.ips.length > 0; }).length;
+    var none = total - registered;
+
+    var el = document.getElementById('cip-stat-total');      if (el) el.textContent = total;
+    el = document.getElementById('cip-stat-registered');     if (el) el.textContent = registered;
+    el = document.getElementById('cip-stat-none');           if (el) el.textContent = none;
+
+    var list = _CLIENT_IP_DATA.filter(function(r) {
+      if (q && r.corp.toLowerCase().indexOf(q) === -1) return false;
+      if (ipFilt === 'registered' && r.ips.length === 0) return false;
+      if (ipFilt === 'none'       && r.ips.length > 0)  return false;
+      if (stFilt && r.status !== stFilt)                 return false;
+      return true;
+    });
+
+    var tbody = document.getElementById('cip-tbody');
+    var empty = document.getElementById('cip-empty');
+    if (!tbody) return;
+
+    var isMaster  = (_ADMIN_ROLE === 'master');
+    var isGeneral = (_ADMIN_ROLE === 'general');
+    var canManage = isMaster || isGeneral;
+
+    if (!list.length) {
+      tbody.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    tbody.innerHTML = list.map(function(r) {
+      var statusBadge = r.status === 'active'
+        ? '<span class="badge badge-success">&#9679; 활성</span>'
+        : '<span class="badge badge-gray">&#9675; 비활성</span>';
+
+      var ipCountCell, ipListCell;
+      if (r.ips.length === 0) {
+        ipCountCell = '<span style="color:var(--text-secondary);">—</span>';
+        ipListCell  = '<span style="color:var(--text-secondary); font-size:12px;">(미등록 — 전체 IP 허용)</span>';
+      } else {
+        ipCountCell = '<span class="badge badge-success">' + r.ips.length + '개</span>';
+        var shown = r.ips.slice(0,2).map(function(e){ return escHtml(e.ip); }).join(', ');
+        if (r.ips.length > 2) shown += ' <span style="color:var(--text-secondary); font-size:11px;">외 ' + (r.ips.length-2) + '개</span>';
+        ipListCell = '<span style="font-family:monospace; font-size:12px;">' + shown + '</span>';
+      }
+
+      var modifiedCell = r.lastModified
+        ? '<span style="font-size:12px; color:var(--text-secondary);">' + escHtml(r.lastModified) + '</span>'
+        : '<span style="color:var(--text-secondary);">—</span>';
+
+      var actionCell = canManage
+        ? '<button class="btn btn-outline btn-xs" onclick="openClientIPDetail(' + r.idx + ')">관리</button>'
+        : '<button class="btn btn-outline btn-xs" onclick="openClientIPDetail(' + r.idx + ')">조회</button>';
+
+      return '<tr>'
+        + '<td style="font-weight:600;">' + escHtml(r.corp) + '</td>'
+        + '<td>' + statusBadge + '</td>'
+        + '<td>' + ipCountCell + '</td>'
+        + '<td>' + ipListCell + '</td>'
+        + '<td>' + modifiedCell + '</td>'
+        + '<td>' + actionCell + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  /* ── 상세 팝업 열기 ── */
+  function openClientIPDetail(corpIdx) {
+    var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === corpIdx; })[0];
+    if (!r) return;
+    _cipDetailIdx = corpIdx;
+
+    document.getElementById('cip-detail-corp').textContent = r.corp;
+
+    var statusBadge = r.status === 'active'
+      ? '<span class="badge badge-success">&#9679; 활성화</span>'
+      : '<span class="badge badge-gray">&#9675; 비활성화</span>';
+    document.getElementById('cip-detail-status-badge').innerHTML = statusBadge;
+    document.getElementById('cip-detail-ip-count').textContent = r.ips.length + '개';
+
+    var infoBox = document.getElementById('cip-detail-info-box');
+    if (infoBox) infoBox.style.display = r.ips.length > 0 ? '' : 'none';
+
+    var isMaster  = (_ADMIN_ROLE === 'master');
+    var isGeneral = (_ADMIN_ROLE === 'general');
+    var canManage = (isMaster || isGeneral) && r.status === 'active';
+
+    var actionCol = document.getElementById('cip-detail-action-col');
+    if (actionCol) actionCol.style.display = canManage ? '' : 'none';
+
+    var addBtn = document.getElementById('cip-detail-add-btn');
+    if (addBtn) {
+      addBtn.style.display = canManage ? '' : 'none';
+    }
+
+    renderClientIPDetailTable(corpIdx, canManage);
+
+    openModal('modal-client-ip-detail');
+  }
+
+  function renderClientIPDetailTable(corpIdx, canManage) {
+    var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === corpIdx; })[0];
+    if (!r) return;
+
+    var tbody = document.getElementById('cip-detail-tbody');
+    var empty = document.getElementById('cip-detail-empty');
+    if (!tbody) return;
+
+    if (!r.ips.length) {
+      tbody.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    tbody.innerHTML = r.ips.map(function(e, i) {
+      var memoCell = e.memo
+        ? escHtml(e.memo)
+        : '<span style="color:var(--text-secondary);">—</span>';
+      var manageCell = canManage
+        ? '<button class="btn btn-outline btn-xs" onclick="openIPEditModal(' + corpIdx + ',' + e.id + ')" style="margin-right:4px;">수정</button>'
+          + '<button class="btn btn-danger btn-xs" onclick="openIPDeleteModal(' + corpIdx + ',' + e.id + ')">삭제</button>'
+        : '';
+      return '<tr>'
+        + '<td style="text-align:center; color:var(--text-secondary);">' + (i+1) + '</td>'
+        + '<td><span style="font-family:monospace; font-size:12px; font-weight:600; color:var(--primary);">' + escHtml(e.ip) + '</span></td>'
+        + '<td style="font-size:12px;">' + memoCell + '</td>'
+        + '<td style="font-size:11px; color:var(--text-secondary);">' + escHtml(e.createdAt) + '</td>'
+        + (canManage ? '<td>' + manageCell + '</td>' : '')
+        + '</tr>';
+    }).join('');
+  }
+
+  /* ── IP 추가 모달 ── */
+  function openIPAddModal() {
+    if (_cipDetailIdx === null) return;
+    var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === _cipDetailIdx; })[0];
+    if (!r) return;
+    document.getElementById('ip-add-corp').textContent  = r.corp;
+    document.getElementById('ip-add-count').textContent = r.ips.length + '개';
+    document.getElementById('ip-add-input').value = '';
+    document.getElementById('ip-add-memo').value  = '';
+    document.getElementById('ip-add-error').style.display = 'none';
+    document.getElementById('ip-add-confirm-btn').disabled = true;
+    openModal('modal-ip-add');
+  }
+
+  function validateIPAddForm() {
+    var val = document.getElementById('ip-add-input').value.trim();
+    var errEl = document.getElementById('ip-add-error');
+    var btn   = document.getElementById('ip-add-confirm-btn');
+    if (!val) { errEl.style.display = 'none'; btn.disabled = true; return; }
+    var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === _cipDetailIdx; })[0];
+    if (!isValidIPv4(val)) {
+      errEl.textContent = '올바른 IP 주소 형식을 입력하세요. (예: 123.456.78.90)';
+      errEl.style.display = '';
+      btn.disabled = true;
+    } else if (r && r.ips.some(function(e){ return e.ip === val; })) {
+      errEl.textContent = '이미 등록된 IP 주소입니다.';
+      errEl.style.display = '';
+      btn.disabled = true;
+    } else {
+      errEl.style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  function confirmIPAdd() {
+    var val  = document.getElementById('ip-add-input').value.trim();
+    var memo = document.getElementById('ip-add-memo').value.trim();
+    closeModal('modal-ip-add');
+    openOTPModal('IP 주소 추가', function() {
+      var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === _cipDetailIdx; })[0];
+      if (!r) return;
+      var now = new Date();
+      var pad = function(n){ return String(n).padStart(2,'0'); };
+      var dt  = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate())
+              + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+      r.ips.push({ id:_ipNextId++, ip:val, memo:memo, createdAt:dt });
+      r.lastModified = dt.slice(0,10);
+      if (!_IP_HISTORY_DATA[r.corp]) _IP_HISTORY_DATA[r.corp] = [];
+      _IP_HISTORY_DATA[r.corp].unshift({ datetime:dt.slice(0,16), event:'추가', ip:val, ipTo:null, memo:memo, actor:'김○수', actorFull:'김철수', reason:'' });
+      document.getElementById('cip-detail-ip-count').textContent = r.ips.length + '개';
+      var infoBox = document.getElementById('cip-detail-info-box');
+      if (infoBox) infoBox.style.display = '';
+      renderClientIPDetailTable(_cipDetailIdx, true);
+      renderClientIPTable();
+      showToast('[IP 추가] ' + r.corp + ' / ' + val + ' — 세션 만료 처리 완료');
+    });
+  }
+
+  /* ── IP 수정 모달 ── */
+  function openIPEditModal(corpIdx, ipId) {
+    var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === corpIdx; })[0];
+    if (!r) return;
+    var entry = r.ips.filter(function(e){ return e.id === ipId; })[0];
+    if (!entry) return;
+    _cipDetailIdx = corpIdx;
+    _ipEditId     = ipId;
+    document.getElementById('ip-edit-corp').textContent        = r.corp;
+    document.getElementById('ip-edit-current-ip').textContent  = entry.ip;
+    document.getElementById('ip-edit-current-memo').textContent = entry.memo || '—';
+    document.getElementById('ip-edit-input').value = entry.ip;
+    document.getElementById('ip-edit-memo').value  = entry.memo;
+    document.getElementById('ip-edit-error').style.display = 'none';
+    openModal('modal-ip-edit');
+  }
+
+  function validateIPEditForm() {
+    var val = document.getElementById('ip-edit-input').value.trim();
+    var errEl = document.getElementById('ip-edit-error');
+    var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === _cipDetailIdx; })[0];
+    if (!isValidIPv4(val)) {
+      errEl.textContent = '올바른 IP 주소 형식을 입력하세요. (예: 123.456.78.90)';
+      errEl.style.display = '';
+    } else if (r && r.ips.some(function(e){ return e.ip === val && e.id !== _ipEditId; })) {
+      errEl.textContent = '이미 등록된 IP 주소입니다.';
+      errEl.style.display = '';
+    } else {
+      errEl.style.display = 'none';
+    }
+  }
+
+  function confirmIPEdit() {
+    var errEl = document.getElementById('ip-edit-error');
+    if (errEl && errEl.style.display !== 'none') return;
+    var newIp   = document.getElementById('ip-edit-input').value.trim();
+    var newMemo = document.getElementById('ip-edit-memo').value.trim();
+    closeModal('modal-ip-edit');
+    openOTPModal('IP 주소 수정', function() {
+      var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === _cipDetailIdx; })[0];
+      if (!r) return;
+      var entry = r.ips.filter(function(e){ return e.id === _ipEditId; })[0];
+      if (!entry) return;
+      var oldIp = entry.ip;
+      var now   = new Date();
+      var pad = function(n){ return String(n).padStart(2,'0'); };
+      var dt  = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate())
+              + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+      entry.ip   = newIp;
+      entry.memo = newMemo;
+      r.lastModified = dt.slice(0,10);
+      if (!_IP_HISTORY_DATA[r.corp]) _IP_HISTORY_DATA[r.corp] = [];
+      _IP_HISTORY_DATA[r.corp].unshift({ datetime:dt.slice(0,16), event:'수정', ip:oldIp, ipTo:newIp, memo:newMemo, actor:'김○수', actorFull:'김철수', reason:'IP 수정' });
+      renderClientIPDetailTable(_cipDetailIdx, true);
+      renderClientIPTable();
+      showToast('[IP 수정] ' + r.corp + ' / ' + oldIp + ' → ' + newIp + ' — 세션 만료 처리 완료');
+    });
+  }
+
+  /* ── IP 삭제 모달 ── */
+  function openIPDeleteModal(corpIdx, ipId) {
+    var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === corpIdx; })[0];
+    if (!r) return;
+    var entry = r.ips.filter(function(e){ return e.id === ipId; })[0];
+    if (!entry) return;
+    _cipDetailIdx = corpIdx;
+    _ipDeleteId   = ipId;
+    var remain = r.ips.length - 1;
+    document.getElementById('ip-del-corp').textContent    = r.corp;
+    document.getElementById('ip-del-target').textContent  = entry.ip + (entry.memo ? ' (' + entry.memo + ')' : '');
+    document.getElementById('ip-del-remain').textContent  = remain + '개';
+    document.getElementById('ip-del-reason').value        = '';
+    document.getElementById('ip-del-confirm-btn').disabled = true;
+    var zeroNotice = document.getElementById('ip-del-zero-notice');
+    if (zeroNotice) zeroNotice.style.display = remain === 0 ? '' : 'none';
+    openModal('modal-ip-delete');
+  }
+
+  function validateIPDelForm() {
+    var val = document.getElementById('ip-del-reason').value.trim();
+    document.getElementById('ip-del-confirm-btn').disabled = !val;
+  }
+
+  function confirmIPDelete() {
+    var reason = document.getElementById('ip-del-reason').value.trim();
+    if (!reason) return;
+    closeModal('modal-ip-delete');
+    openOTPModal('IP 주소 삭제', function() {
+      var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === _cipDetailIdx; })[0];
+      if (!r) return;
+      var entry = r.ips.filter(function(e){ return e.id === _ipDeleteId; })[0];
+      if (!entry) return;
+      var delIp = entry.ip;
+      var now   = new Date();
+      var pad = function(n){ return String(n).padStart(2,'0'); };
+      var dt  = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate())
+              + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+      r.ips = r.ips.filter(function(e){ return e.id !== _ipDeleteId; });
+      r.lastModified = r.ips.length > 0 ? dt.slice(0,10) : null;
+      if (!_IP_HISTORY_DATA[r.corp]) _IP_HISTORY_DATA[r.corp] = [];
+      _IP_HISTORY_DATA[r.corp].unshift({ datetime:dt.slice(0,16), event:'삭제', ip:delIp, ipTo:null, memo:entry.memo, actor:'김○수', actorFull:'김철수', reason:reason });
+      document.getElementById('cip-detail-ip-count').textContent = r.ips.length + '개';
+      var infoBox = document.getElementById('cip-detail-info-box');
+      if (infoBox) infoBox.style.display = r.ips.length > 0 ? '' : 'none';
+      renderClientIPDetailTable(_cipDetailIdx, true);
+      renderClientIPTable();
+      showToast('[IP 삭제] ' + r.corp + ' / ' + delIp + ' — 세션 만료 처리 완료');
+    });
+  }
+
+  /* ── IP 변경 이력 슬라이드오버 ── */
+  function openIPHistory() {
+    if (_cipDetailIdx === null) return;
+    var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === _cipDetailIdx; })[0];
+    if (!r) return;
+    document.getElementById('ip-history-corp').textContent = r.corp;
+    var filterEl = document.getElementById('ip-history-filter-event');
+    if (filterEl) filterEl.value = '';
+    renderIPHistory();
+    document.getElementById('ip-history-backdrop').classList.add('open');
+    document.getElementById('ip-history-so').classList.add('open');
+  }
+
+  function closeIPHistory() {
+    document.getElementById('ip-history-backdrop').classList.remove('open');
+    document.getElementById('ip-history-so').classList.remove('open');
+  }
+
+  function renderIPHistory() {
+    if (_cipDetailIdx === null) return;
+    var r = _CLIENT_IP_DATA.filter(function(x){ return x.idx === _cipDetailIdx; })[0];
+    if (!r) return;
+    var evtFilter = (document.getElementById('ip-history-filter-event') || {}).value || '';
+    var history = (_IP_HISTORY_DATA[r.corp] || []).filter(function(h) {
+      return !evtFilter || h.event === evtFilter;
+    });
+    var tbody = document.getElementById('ip-history-tbody');
+    var empty = document.getElementById('ip-history-empty');
+    if (!tbody) return;
+    if (!history.length) {
+      tbody.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+    var evtBadge = { '추가':'badge-success', '수정':'badge-warning', '삭제':'badge-danger' };
+    tbody.innerHTML = history.map(function(h) {
+      var ipCell = h.event === '수정' && h.ipTo
+        ? '<span style="font-family:monospace; font-size:11px;">' + escHtml(h.ip) + ' → ' + escHtml(h.ipTo) + '</span>'
+        : '<span style="font-family:monospace; font-size:11px;">' + escHtml(h.ip) + '</span>';
+      var actorCell = '<span title="' + escHtml(h.actorFull) + '" style="cursor:default; border-bottom:1px dashed var(--border);">' + escHtml(h.actor) + '</span>';
+      return '<tr>'
+        + '<td style="font-size:12px; color:var(--text-secondary); white-space:nowrap;">' + escHtml(h.datetime) + '</td>'
+        + '<td><span class="badge ' + (evtBadge[h.event]||'badge-gray') + '">' + escHtml(h.event) + '</span></td>'
+        + '<td>' + ipCell + '</td>'
+        + '<td style="font-size:12px;">' + (h.memo ? escHtml(h.memo) : '<span style="color:var(--text-secondary);">—</span>') + '</td>'
+        + '<td style="font-size:12px;">' + actorCell + '</td>'
+        + '<td style="font-size:12px;">' + (h.reason ? escHtml(h.reason) : '<span style="color:var(--text-secondary);">—</span>') + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  /* ════════════════════════════════════
      INIT
   ════════════════════════════════════ */
   (function init() {
@@ -6079,6 +6763,7 @@
     renderCWRequests();
     renderCoinAddRequests();
     renderCWAllWallets();
+    renderClientIPTable();
   })();
 </script>
 </body>
