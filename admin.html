@@ -483,7 +483,7 @@
           <h1 class="page-title">고객사 목록</h1>
         </div>
 
-        <!-- 2-9: 온보딩 상태 흐름 -->
+        <!-- 2-5: 고객사 상태 전환 흐름 -->
         <div style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:var(--text-secondary); margin-bottom:16px; flex-wrap:wrap;">
           <span style="background:#EFF6FF; color:#3B82F6; border-radius:5px; padding:3px 9px; font-weight:600;">⏳ 생성 대기</span>
           <span>→</span>
@@ -491,17 +491,17 @@
           <span>→</span>
           <span style="background:#ECFDF5; color:#10B981; border-radius:5px; padding:3px 9px; font-weight:600;">● 활성화</span>
           <span style="margin-left:8px; color:#CBD5E1;">|</span>
-          <span style="background:#FFF7ED; color:#F97316; border-radius:5px; padding:3px 9px; font-weight:600; margin-left:8px;">⚠ 출금 차단</span>
-          <span style="background:#F1F5F9; color:#64748B; border-radius:5px; padding:3px 9px; font-weight:600;">● 비활성화</span>
+          <span style="background:#FFF7ED; color:#F97316; border-radius:5px; padding:3px 9px; font-weight:600; margin-left:8px;">⚠ KYB 만료</span>
+          <span style="background:#F1F5F9; color:#64748B; border-radius:5px; padding:3px 9px; font-weight:600;">○ 비활성화</span>
         </div>
 
         <!-- 2-3 Stats -->
         <div class="stats-row" style="grid-template-columns: repeat(5, 1fr);">
           <div class="stat-card"><span class="stat-label">전체</span><span class="stat-value stat-blue" id="cs-stat-total">0</span></div>
-          <div class="stat-card"><span class="stat-label">⏳ 생성 대기</span><span class="stat-value" id="cs-stat-pending" style="color:#3B82F6;">0</span></div>
           <div class="stat-card"><span class="stat-label">활성화</span><span class="stat-value stat-green" id="cs-stat-active">0</span></div>
-          <div class="stat-card"><span class="stat-label">출금 차단</span><span class="stat-value stat-orange" id="cs-stat-blocked">0</span></div>
+          <div class="stat-card" style="border-left:3px solid #F97316;"><span class="stat-label">⚠ KYB 만료</span><span class="stat-value stat-orange" id="cs-stat-expired">0</span></div>
           <div class="stat-card"><span class="stat-label">비활성화</span><span class="stat-value stat-gray" id="cs-stat-inactive">0</span></div>
+          <div class="stat-card"><span class="stat-label">⏳ 생성 대기</span><span class="stat-value" id="cs-stat-pending" style="color:#3B82F6;">0</span></div>
         </div>
 
         <div class="card" style="padding:0;">
@@ -513,11 +513,11 @@
               </div>
               <select class="form-control" id="cs-filter-status" style="width:150px;" onchange="renderClientsTable()">
                 <option value="">전체 상태</option>
+                <option value="active">활성화</option>
+                <option value="expired">⚠ KYB 만료</option>
+                <option value="inactive">비활성화</option>
                 <option value="kyb_done">생성 대기</option>
                 <option value="master_pending">Master 미생성</option>
-                <option value="active">활성화</option>
-                <option value="blocked">출금 차단</option>
-                <option value="inactive">비활성화</option>
               </select>
               <select class="form-control" id="cs-filter-risk" style="width:130px;" onchange="renderClientsTable()">
                 <option value="">전체 위험등급</option>
@@ -1740,6 +1740,16 @@
     <button class="modal-close" onclick="closeModal('modal-client-detail')">&#10005;</button>
   </div>
   <div class="modal-body">
+    <!-- 2-4: 상태별 안내 배너 -->
+    <div id="cd-banner-expired" style="display:none; background:#FFF7ED; border:1px solid #FDBA74; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
+      <div style="font-size:13px; font-weight:700; color:#C2410C; margin-bottom:4px;">⚠ KYB 만료 — 출금이 차단되어 있습니다.</div>
+      <div style="font-size:12px; color:#9A3412; margin-bottom:6px;">KYB 갱신이 완료되면 출금이 자동 재개됩니다. 입금은 조건 충족 시 정상 처리됩니다.</div>
+      <button class="btn btn-sm" style="background:#F97316; color:#fff; border:none; cursor:pointer;" onclick="showPage('kyb', document.getElementById('nav-kyb')); closeModal('modal-client-detail');">KYB 갱신 →</button>
+    </div>
+    <div id="cd-banner-inactive" style="display:none; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
+      <div style="font-size:13px; font-weight:700; color:#475569; margin-bottom:4px;">○ 비활성화 — 고객사 포털 접근이 차단되어 있습니다.</div>
+      <div style="font-size:12px; color:#64748B;">로그인 및 출금이 불가합니다. 입금은 조건 충족 시 Admin에서 확인 후 처리됩니다.</div>
+    </div>
     <!-- 기본 정보 -->
     <div class="section-box">
       <div class="section-box-title">고객사 정보</div>
@@ -4579,7 +4589,7 @@
       status:'active',         masterEmail:'ki***@alpha.com',  masterStatus:'active',  masterFirstLogin:'2025-11-01 09:00' },
     { idx:1, name:'베타캐피탈 유한회사', nameEn:'Beta Capital Ltd',         bizNo:'234-56-78901',
       riskGrade:'mid',  kybCompletedAt:'2024-04-01', nextKYB:'2026-04-12', dDay:5,   kybOfficer:'이담당',
-      status:'blocked',        masterEmail:'pa***@beta.com',   masterStatus:'active',  masterFirstLogin:'2025-04-10 14:30' },
+      status:'expired',        masterEmail:'pa***@beta.com',   masterStatus:'active',  masterFirstLogin:'2025-04-10 14:30' },
     { idx:2, name:'감마트레이딩(주)',     nameEn:'Gamma Trading Corp',      bizNo:'345-67-89012',
       riskGrade:'low',  kybCompletedAt:'2025-02-01', nextKYB:'2027-02-05', dDay:-304, kybOfficer:'박담당',
       status:'active',         masterEmail:'ch***@gamma.com',  masterStatus:'active',  masterFirstLogin:'2025-02-10 10:00' },
@@ -4598,8 +4608,8 @@
     kyb_done:       { badge:'<span class="badge" style="background:#EFF6FF;color:#3B82F6;">&#9203; 생성 대기</span>' },
     master_pending: { badge:'<span class="badge" style="background:#F5F3FF;color:#8B5CF6;">&#9203; Master 미생성</span>' },
     active:         { badge:'<span class="badge badge-success">&#9679; 활성화</span>' },
-    blocked:        { badge:'<span class="badge badge-orange">&#9888; 출금 차단</span>' },
-    inactive:       { badge:'<span class="badge badge-gray">&#9679; 비활성화</span>' },
+    expired:        { badge:'<span class="badge badge-orange">&#9888; KYB 만료</span>' },
+    inactive:       { badge:'<span class="badge badge-gray">&#9675; 비활성화</span>' },
   };
 
   /* ── 2-3: Render clients table ── */
@@ -4621,10 +4631,10 @@
     // Update stats
     var all = _CLIENTS_DATA;
     document.getElementById('cs-stat-total').textContent   = all.length;
-    document.getElementById('cs-stat-pending').textContent = all.filter(function(c){ return c.status==='kyb_done'||c.status==='master_pending'; }).length;
     document.getElementById('cs-stat-active').textContent  = all.filter(function(c){ return c.status==='active'; }).length;
-    document.getElementById('cs-stat-blocked').textContent = all.filter(function(c){ return c.status==='blocked'; }).length;
+    document.getElementById('cs-stat-expired').textContent = all.filter(function(c){ return c.status==='expired'; }).length;
     document.getElementById('cs-stat-inactive').textContent= all.filter(function(c){ return c.status==='inactive'; }).length;
+    document.getElementById('cs-stat-pending').textContent = all.filter(function(c){ return c.status==='kyb_done'||c.status==='master_pending'; }).length;
 
     if (list.length === 0) {
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:32px;">검색 결과가 없습니다.</td></tr>';
@@ -4637,14 +4647,16 @@
 
       var kybCell = '—';
       if (c.nextKYB) {
-        var dDayColor = c.dDay > 0 ? 'var(--danger)' : c.dDay > -40 ? '#F97316' : 'var(--text-secondary)';
-        var dDayLabel = c.dDay > 0 ? 'D+' + c.dDay : 'D' + c.dDay;
+        var dDayColor = c.dDay >= 0 ? 'var(--danger)' : c.dDay > -40 ? '#F97316' : 'var(--text-secondary)';
+        var dDayLabel = c.dDay > 0 ? 'D+' + c.dDay : c.dDay === 0 ? 'D+0 (만료)' : 'D' + c.dDay;
         kybCell = '<div style="font-size:12.5px;">' + c.nextKYB + '</div><div style="font-size:11px; font-weight:600; color:' + dDayColor + ';">' + dDayLabel + '</div>';
       } else if (c.status === 'kyb_done' || c.status === 'master_pending') {
         kybCell = '<span style="font-size:11.5px; color:var(--text-secondary);">미설정</span>';
       }
 
-      var rowCls = (c.dDay !== null && c.dDay > 0) ? ' class="row-warn"' : (c.dDay !== null && c.dDay > -40 ? '' : '');
+      var rowCls = c.status === 'expired'
+        ? ' class="row-warn"'
+        : (c.dDay !== null && c.dDay > -40 && c.dDay <= 0 ? ' style="background:#FFFBEB;"' : '');
 
       // Action buttons
       var actionBtns = '<button class="btn btn-outline btn-xs" onclick="openClientDetail(' + c.idx + ')">상세</button>';
@@ -4711,10 +4723,17 @@
     document.getElementById('cd-status-badge').innerHTML = (_CS_STATUS_CFG[c.status] || {}).badge || c.status;
     document.getElementById('cd-kyb-next').textContent   = c.nextKYB || '—';
 
+    // 상태별 안내 배너
+    var bannerExpired  = document.getElementById('cd-banner-expired');
+    var bannerInactive = document.getElementById('cd-banner-inactive');
+    if (bannerExpired)  bannerExpired.style.display  = c.status === 'expired'  ? '' : 'none';
+    if (bannerInactive) bannerInactive.style.display = c.status === 'inactive' ? '' : 'none';
+
     var ddEl = document.getElementById('cd-dday');
     if (c.dDay !== null) {
-      var col = c.dDay > 0 ? 'var(--danger)' : c.dDay > -40 ? '#F97316' : 'var(--text-secondary)';
-      ddEl.innerHTML = '<span style="font-weight:600; color:' + col + ';">' + (c.dDay > 0 ? 'D+' : 'D') + c.dDay + '</span>';
+      var col = c.dDay >= 0 ? 'var(--danger)' : c.dDay > -40 ? '#F97316' : 'var(--text-secondary)';
+      var lbl = c.dDay > 0 ? 'D+' + c.dDay : c.dDay === 0 ? 'D+0 (만료)' : 'D' + c.dDay;
+      ddEl.innerHTML = '<span style="font-weight:600; color:' + col + ';">' + lbl + '</span>';
     } else { ddEl.textContent = '—'; }
 
     var hasMaster = !!c.masterEmail;
