@@ -1498,79 +1498,49 @@
       ══════════════════════════ -->
       <div class="page" id="page-admin-accounts">
         <div class="page-header">
-          <h1 class="page-title">Admin 계정 관리</h1>
-          <button class="btn btn-primary" onclick="openModal('modal-add-admin')">+ Admin 계정 추가</button>
+          <h1 class="page-title">Admin 계정 관리 / Admin Account Management</h1>
+          <button class="btn btn-primary btn-sm" onclick="openAdminAddSO()">+ Admin 계정 추가</button>
         </div>
-
-        <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
-          <div class="stat-card"><span class="stat-label">전체</span><span class="stat-value stat-blue">6</span></div>
-          <div class="stat-card"><span class="stat-label">활성</span><span class="stat-value stat-green">5</span></div>
-          <div class="stat-card"><span class="stat-label">잠금</span><span class="stat-value stat-red">1</span></div>
+        <div class="stats-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom:16px;">
+          <div class="stat-card"><span class="stat-label">전체</span><span class="stat-value stat-blue" id="admin-stat-total">0명</span></div>
+          <div class="stat-card"><span class="stat-label">활성화</span><span class="stat-value stat-green" id="admin-stat-active">0명</span></div>
+          <div class="stat-card"><span class="stat-label">비활성화</span><span class="stat-value stat-red" id="admin-stat-inactive">0명</span></div>
         </div>
-
+        <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center; flex-wrap:wrap;">
+          <input type="text" class="form-control" id="admin-search" placeholder="이름/이메일 검색" style="width:220px;" oninput="renderAdminAccountsTable()">
+          <select class="form-control" id="admin-role-filter" onchange="renderAdminAccountsTable()" style="width:150px;">
+            <option value="">전체 역할 ▾</option>
+            <option value="master">마스터관리자</option>
+            <option value="general">일반관리자</option>
+            <option value="coldwallet">콜드월렛</option>
+            <option value="aml_officer">AML담당자</option>
+            <option value="aml_manager">AML관리자</option>
+          </select>
+          <select class="form-control" id="admin-status-filter" onchange="renderAdminAccountsTable()" style="width:140px;">
+            <option value="">전체 상태 ▾</option>
+            <option value="active">활성화</option>
+            <option value="inactive">비활성화</option>
+          </select>
+        </div>
         <div class="card" style="padding:0;">
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>계정명</th>
-                  <th>이메일</th>
+                  <th>이름</th>
+                  <th>이메일(마스킹)</th>
                   <th>역할</th>
-                  <th>상태</th>
+                  <th>소속/직책</th>
+                  <th style="text-align:center;">상태</th>
                   <th>마지막 로그인</th>
                   <th>관리</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td style="font-weight:600;">이마스터</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">master@infiniteblock.io</td>
-                  <td><span class="badge badge-master">마스터관리자</span></td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-07 09:00</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">김일반</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">general@infiniteblock.io</td>
-                  <td><span class="badge badge-general">일반관리자</span></td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-07 10:30</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">박콜드</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">cold@infiniteblock.io</td>
-                  <td><span class="badge badge-coldwallet">콜드월렛담당자</span></td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-06 15:00</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">최AML</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">aml@infiniteblock.io</td>
-                  <td><span class="badge badge-aml-officer">AML담당자</span></td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-07 08:45</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">정AML매니저</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">amlmgr@infiniteblock.io</td>
-                  <td><span class="badge badge-aml-manager">AML관리자</span></td>
-                  <td><span class="badge badge-danger">잠금 &#128274;</span></td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2026-04-05 17:20</td>
-                  <td style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button class="btn btn-outline btn-xs">수정</button>
-                    <button class="btn btn-warning btn-xs">잠금해제</button>
-                  </td>
-                </tr>
+              <tbody id="admin-accounts-tbody">
               </tbody>
             </table>
           </div>
-          <div class="table-note">
-            &#9432; 역할 변경 및 계정 삭제는 OTP 인증 필수. 역할 중복 부여 불가.
-          </div>
+          <div id="admin-accounts-empty" style="display:none; padding:40px; text-align:center; color:var(--text-secondary); font-size:13px;">검색 결과가 없습니다.</div>
         </div>
       </div>
 
@@ -1754,41 +1724,222 @@
   </div>
 </div>
 
-<!-- modal-add-admin: Admin 계정 추가 (placeholder) -->
-<div class="modal" id="modal-add-admin">
+<!-- ══════════════════════════════════════
+     ADMIN ADD Slide-over (9-2)
+══════════════════════════════════════ -->
+<div class="slideover-backdrop" id="admin-add-so-backdrop" onclick="closeAdminAddSO()"></div>
+<div class="slideover" id="admin-add-so" style="max-width:500px;">
+  <div class="so-header">
+    <div><div class="so-title">Admin 계정 추가 / Add Admin Account</div></div>
+    <button class="modal-close" onclick="closeAdminAddSO()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div class="form-group">
+      <label class="form-label">* 이름</label>
+      <input type="text" class="form-control" id="aa-name" placeholder="홍길동" style="width:100%;" oninput="validateAdminAddForm()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">* 이메일</label>
+      <input type="email" class="form-control" id="aa-email" placeholder="admin@infiniteblock.io" style="width:100%;" oninput="validateAdminAddForm()">
+      <div class="form-hint" id="aa-email-err" style="color:var(--danger); display:none;"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* 역할</label>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="aa-role" value="master" onchange="validateAdminAddForm()">
+          <span style="display:inline-block; padding:2px 9px; border-radius:4px; font-size:11px; font-weight:600; background:#F5F3FF; color:#7C3AED;">&#11044; 마스터 관리자</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="aa-role" value="general" checked onchange="validateAdminAddForm()">
+          <span style="display:inline-block; padding:2px 9px; border-radius:4px; font-size:11px; font-weight:600; background:#EFF6FF; color:#2563EB;">&#11044; 일반 관리자</span>
+          <span style="font-size:11px; color:var(--text-secondary);">(기본 선택)</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="aa-role" value="coldwallet" onchange="validateAdminAddForm()">
+          <span style="display:inline-block; padding:2px 9px; border-radius:4px; font-size:11px; font-weight:600; background:#F0F9FF; color:#0EA5E9;">&#11044; 콜드월렛 담당자</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="aa-role" value="aml_officer" onchange="validateAdminAddForm()">
+          <span style="display:inline-block; padding:2px 9px; border-radius:4px; font-size:11px; font-weight:600; background:#FFF7ED; color:#EA580C;">&#11044; AML 담당자</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="aa-role" value="aml_manager" onchange="validateAdminAddForm()">
+          <span style="display:inline-block; padding:2px 9px; border-radius:4px; font-size:11px; font-weight:600; background:#FEF2F2; color:#DC2626;">&#11044; AML 관리자</span>
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* 휴대전화</label>
+      <input type="text" class="form-control" id="aa-phone" placeholder="010-0000-0000" style="width:200px;" oninput="validateAdminAddForm()">
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">소속 (선택)</label>
+        <input type="text" class="form-control" id="aa-dept" placeholder="운영팀" style="width:100%;">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">직책 (선택)</label>
+        <input type="text" class="form-control" id="aa-position" placeholder="대리" style="width:100%;">
+      </div>
+    </div>
+    <div class="alert alert-info" style="font-size:12px; margin-bottom:16px;">
+      &#9432; 입력한 이메일로 임시 PW가 발송됩니다. 계정은 활성화 상태로 생성됩니다.
+    </div>
+    <div style="border-top:1px solid var(--border); padding-top:16px; margin-bottom:8px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">OTP 인증</div>
+      <div class="otp-row" style="justify-content:flex-start;">
+        <input type="text" class="otp-box" maxlength="1" id="aa-otp-0" oninput="soOtpMove('aa-otp',this,0)" onkeydown="soOtpBack('aa-otp',event,this,0)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="aa-otp-1" oninput="soOtpMove('aa-otp',this,1)" onkeydown="soOtpBack('aa-otp',event,this,1)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="aa-otp-2" oninput="soOtpMove('aa-otp',this,2)" onkeydown="soOtpBack('aa-otp',event,this,2)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="aa-otp-3" oninput="soOtpMove('aa-otp',this,3)" onkeydown="soOtpBack('aa-otp',event,this,3)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="aa-otp-4" oninput="soOtpMove('aa-otp',this,4)" onkeydown="soOtpBack('aa-otp',event,this,4)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="aa-otp-5" oninput="soOtpMove('aa-otp',this,5)" onkeydown="soOtpBack('aa-otp',event,this,5)" inputmode="numeric" />
+      </div>
+      <div id="aa-otp-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;"></div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:8px; padding-top:8px;">
+      <button class="btn btn-outline btn-sm" onclick="closeAdminAddSO()">취소</button>
+      <button class="btn btn-primary btn-sm" id="aa-submit-btn" onclick="submitAdminAdd()">계정 생성</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ADMIN EDIT Slide-over (9-3)
+══════════════════════════════════════ -->
+<div class="slideover-backdrop" id="admin-edit-so-backdrop" onclick="closeAdminEditSO()"></div>
+<div class="slideover" id="admin-edit-so" style="max-width:500px;">
+  <div class="so-header">
+    <div>
+      <div class="so-title">Admin 계정 수정</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="ae-subtitle"></div>
+    </div>
+    <button class="modal-close" onclick="closeAdminEditSO()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div class="form-group">
+      <label class="form-label">이름</label>
+      <input type="text" class="form-control" id="ae-name" style="width:100%;">
+    </div>
+    <div class="form-group">
+      <label class="form-label">소속</label>
+      <input type="text" class="form-control" id="ae-dept" style="width:100%;">
+    </div>
+    <div class="form-group">
+      <label class="form-label">직책</label>
+      <input type="text" class="form-control" id="ae-position" style="width:100%;">
+    </div>
+    <div class="form-group">
+      <label class="form-label">휴대전화</label>
+      <input type="text" class="form-control" id="ae-phone" style="width:200px;">
+    </div>
+    <div class="form-group">
+      <label class="form-label">이메일</label>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span id="ae-email-display" style="font-family:monospace; font-size:13px; color:var(--text-secondary);"></span>
+        <span style="font-size:11px; color:var(--text-secondary);">&#128274; 수정 불가</span>
+      </div>
+    </div>
+    <!-- 역할 변경 -->
+    <div style="border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px;">역할 변경</div>
+      <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">현재: <span id="ae-current-role-badge"></span></div>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label class="form-label" style="font-size:11px;">변경</label>
+        <select class="form-control" id="ae-role-select" onchange="validateAdminEditForm()" style="width:100%;">
+          <option value="">변경 없음</option>
+          <option value="master">마스터 관리자</option>
+          <option value="general">일반 관리자</option>
+          <option value="coldwallet">콜드월렛 담당자</option>
+          <option value="aml_officer">AML 담당자</option>
+          <option value="aml_manager">AML 관리자</option>
+        </select>
+      </div>
+      <div id="ae-role-reason-wrap" style="display:none;">
+        <div class="alert alert-warning" style="font-size:11px; padding:8px 10px; margin-bottom:8px;">&#9888; 역할 변경 시 사유 입력 필수</div>
+        <label class="form-label">* 변경 사유 (최대 200자)</label>
+        <textarea class="form-control" id="ae-role-reason" rows="2" maxlength="200" style="width:100%; resize:vertical;" placeholder="역할 변경 사유를 입력하세요" oninput="validateAdminEditForm()"></textarea>
+        <div id="ae-role-reason-err" style="font-size:11px; color:var(--danger); margin-top:4px; display:none;">변경 사유를 입력하세요.</div>
+      </div>
+    </div>
+    <!-- 계정 상태 -->
+    <div id="ae-status-section" style="border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px;">계정 상태</div>
+      <div style="display:flex; gap:20px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="ae-status" value="active" id="ae-status-active"> ● 활성화
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="ae-status" value="inactive" id="ae-status-inactive"> ○ 비활성화
+        </label>
+      </div>
+    </div>
+    <!-- 보안 초기화 -->
+    <div style="border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:16px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px;">보안 초기화</div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-outline btn-sm" onclick="adminPWReset()">PW 재설정</button>
+        <button class="btn btn-outline btn-sm" onclick="adminOTPReset()">OTP 재설정</button>
+      </div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">각 클릭 시 OTP 인증 후 즉시 처리됩니다.</div>
+    </div>
+    <!-- OTP -->
+    <div style="border-top:1px solid var(--border); padding-top:16px; margin-bottom:8px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">OTP 인증</div>
+      <div class="otp-row" style="justify-content:flex-start;">
+        <input type="text" class="otp-box" maxlength="1" id="ae-otp-0" oninput="soOtpMove('ae-otp',this,0)" onkeydown="soOtpBack('ae-otp',event,this,0)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="ae-otp-1" oninput="soOtpMove('ae-otp',this,1)" onkeydown="soOtpBack('ae-otp',event,this,1)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="ae-otp-2" oninput="soOtpMove('ae-otp',this,2)" onkeydown="soOtpBack('ae-otp',event,this,2)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="ae-otp-3" oninput="soOtpMove('ae-otp',this,3)" onkeydown="soOtpBack('ae-otp',event,this,3)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="ae-otp-4" oninput="soOtpMove('ae-otp',this,4)" onkeydown="soOtpBack('ae-otp',event,this,4)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="ae-otp-5" oninput="soOtpMove('ae-otp',this,5)" onkeydown="soOtpBack('ae-otp',event,this,5)" inputmode="numeric" />
+      </div>
+      <div id="ae-otp-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;"></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px;">
+      <button class="btn btn-danger btn-sm" id="ae-delete-btn" onclick="openAdminDelete()">삭제</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="closeAdminEditSO()">취소</button>
+        <button class="btn btn-primary btn-sm" id="ae-submit-btn" onclick="submitAdminEdit()">수정 저장</button>
+      </div>
+    </div>
+    <div id="ae-delete-hint" style="font-size:11px; color:var(--danger); margin-top:8px; display:none;"></div>
+  </div>
+</div>
+
+<!-- Admin 계정 삭제 모달 (9-4) -->
+<div class="modal" id="admin-delete-modal" style="max-width:440px;">
   <div class="modal-header">
-    <span class="modal-title">Admin 계정 추가</span>
-    <button class="modal-close" onclick="closeModal('modal-add-admin')">&#10005;</button>
+    <span class="modal-title">Admin 계정 삭제</span>
+    <button class="modal-close" onclick="closeModal('admin-delete-modal')">&#10005;</button>
   </div>
   <div class="modal-body">
-    <div class="form-group">
-      <label class="form-label">계정명 <span style="color:var(--danger);">*</span></label>
-      <input type="text" class="form-control" placeholder="홍길동" style="width:100%;" />
+    <div style="font-size:13px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">대상</span><span id="adel-target-name"></span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0;"><span style="color:var(--text-secondary);">이메일</span><span id="adel-target-email" style="font-family:monospace;"></span></div>
+    </div>
+    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px; font-size:12px; color:#991B1B; margin-bottom:14px;">
+      &#9888; 삭제 즉시 해당 계정의 접근이 차단되고 복구할 수 없습니다.
     </div>
     <div class="form-group">
-      <label class="form-label">이메일 주소 <span style="color:var(--danger);">*</span></label>
-      <input type="email" class="form-control" placeholder="admin@infiniteblock.io" style="width:100%;" />
-      <div class="form-hint">임시 비밀번호가 이 이메일로 발송됩니다</div>
+      <label class="form-label">* 삭제 사유 (필수, 최대 200자)</label>
+      <textarea class="form-control" id="adel-reason" rows="2" maxlength="200" style="width:100%; resize:vertical;" placeholder="삭제 사유를 입력하세요" oninput="validateAdminDeleteForm()"></textarea>
     </div>
-    <div class="form-group">
-      <label class="form-label">역할 <span style="color:var(--danger);">*</span></label>
-      <select class="form-control" style="width:100%;">
-        <option value="">역할 선택</option>
-        <option value="master">마스터 관리자</option>
-        <option value="general">일반 관리자</option>
-        <option value="coldwallet">콜드월렛 담당자</option>
-        <option value="aml_officer">AML 담당자</option>
-        <option value="aml_manager">AML 관리자</option>
-      </select>
-      <div class="form-hint">역할 중복 부여 불가</div>
+    <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">OTP 인증</div>
+    <div class="otp-row" style="justify-content:flex-start;">
+      <input type="text" class="otp-box" maxlength="1" id="adel-otp-0" oninput="soOtpMove('adel-otp',this,0)" onkeydown="soOtpBack('adel-otp',event,this,0)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adel-otp-1" oninput="soOtpMove('adel-otp',this,1)" onkeydown="soOtpBack('adel-otp',event,this,1)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adel-otp-2" oninput="soOtpMove('adel-otp',this,2)" onkeydown="soOtpBack('adel-otp',event,this,2)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adel-otp-3" oninput="soOtpMove('adel-otp',this,3)" onkeydown="soOtpBack('adel-otp',event,this,3)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adel-otp-4" oninput="soOtpMove('adel-otp',this,4)" onkeydown="soOtpBack('adel-otp',event,this,4)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="adel-otp-5" oninput="soOtpMove('adel-otp',this,5)" onkeydown="soOtpBack('adel-otp',event,this,5)" inputmode="numeric" />
     </div>
-    <div class="alert alert-warning" style="margin-bottom:0;">
-      &#128274; 계정 생성 시 OTP 인증이 필요합니다.
-    </div>
+    <div id="adel-otp-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;"></div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-outline" onclick="closeModal('modal-add-admin')">취소</button>
-    <button class="btn btn-primary" onclick="openOTPModal('Admin 계정 추가', function(){ closeModal(\'modal-add-admin\'); showToast(\'Admin 계정이 생성되었습니다. 임시 비밀번호가 이메일로 발송되었습니다.\'); })">계정 생성 → OTP</button>
+    <button class="btn btn-outline" onclick="closeModal('admin-delete-modal')">취소</button>
+    <button class="btn btn-danger" id="adel-submit-btn" onclick="submitAdminDelete()" disabled>삭제 확인</button>
   </div>
 </div>
 
@@ -6951,6 +7102,330 @@
   }
 
   /* ════════════════════════════════════
+     ADMIN ACCOUNTS — DATA & LOGIC (9)
+  ════════════════════════════════════ */
+  var _ADMIN_ACCOUNTS = [
+    { id:1, name:'홍길동',   emailFull:'hong@infiniteblock.io',  emailMask:'ho***@infiniteblock.io',  role:'master',      dept:'운영팀', position:'팀장', phone:'010-1234-5678', status:'active',   lastLogin:'2026-04-08 10:20' },
+    { id:2, name:'김철수',   emailFull:'kim@infiniteblock.io',   emailMask:'ki***@infiniteblock.io',  role:'general',     dept:'운영팀', position:'대리', phone:'010-2345-6789', status:'active',   lastLogin:'2026-04-08 09:15' },
+    { id:3, name:'이영희',   emailFull:'lee@infiniteblock.io',   emailMask:'le***@infiniteblock.io',  role:'coldwallet',  dept:'보안팀', position:'팀원', phone:'010-3456-7890', status:'active',   lastLogin:'2026-04-07 14:30' },
+    { id:4, name:'박민준',   emailFull:'park@infiniteblock.io',  emailMask:'pa***@infiniteblock.io',  role:'aml_officer', dept:'AML팀',  position:'주임', phone:'010-4567-8901', status:'inactive', lastLogin:'2026-04-01 11:00' },
+    { id:5, name:'최지원',   emailFull:'choi@infiniteblock.io',  emailMask:'ch***@infiniteblock.io',  role:'aml_manager', dept:'AML팀',  position:'팀장', phone:'010-5678-9012', status:'active',   lastLogin:'2026-04-08 08:45' }
+  ];
+  var _ADMIN_NEXT_ID  = 6;
+  var _ADMIN_EDIT_ID  = null;
+  var _ADMIN_DEL_ID   = null;
+
+  var _ADMIN_ROLE_CFG = {
+    master:      { label:'마스터관리자', color:'#7C3AED', bg:'#F5F3FF' },
+    general:     { label:'일반관리자',   color:'#2563EB', bg:'#EFF6FF' },
+    coldwallet:  { label:'콜드월렛',     color:'#0EA5E9', bg:'#F0F9FF' },
+    aml_officer: { label:'AML담당자',    color:'#EA580C', bg:'#FFF7ED' },
+    aml_manager: { label:'AML관리자',    color:'#DC2626', bg:'#FEF2F2' }
+  };
+
+  function _adminRoleBadge(role) {
+    var cfg = _ADMIN_ROLE_CFG[role] || { label: role, color:'#64748B', bg:'#F1F5F9' };
+    return '<span style="display:inline-block; padding:2px 9px; border-radius:4px; font-size:11px; font-weight:600; background:'+cfg.bg+'; color:'+cfg.color+';">'+cfg.label+'</span>';
+  }
+
+  function renderAdminAccountsStats() {
+    var total    = _ADMIN_ACCOUNTS.length;
+    var active   = _ADMIN_ACCOUNTS.filter(function(a){ return a.status === 'active'; }).length;
+    var inactive = _ADMIN_ACCOUNTS.filter(function(a){ return a.status === 'inactive'; }).length;
+    var elT = document.getElementById('admin-stat-total');
+    var elA = document.getElementById('admin-stat-active');
+    var elI = document.getElementById('admin-stat-inactive');
+    if (elT) elT.textContent = total + '명';
+    if (elA) elA.textContent = active + '명';
+    if (elI) elI.textContent = inactive + '명';
+  }
+
+  function renderAdminAccountsTable() {
+    var search  = (document.getElementById('admin-search') || {}).value || '';
+    var roleF   = (document.getElementById('admin-role-filter') || {}).value || '';
+    var statusF = (document.getElementById('admin-status-filter') || {}).value || '';
+    var q = search.trim().toLowerCase();
+
+    var filtered = _ADMIN_ACCOUNTS.filter(function(a) {
+      if (q && a.name.toLowerCase().indexOf(q) === -1 && a.emailMask.toLowerCase().indexOf(q) === -1) return false;
+      if (roleF && a.role !== roleF) return false;
+      if (statusF && a.status !== statusF) return false;
+      return true;
+    });
+
+    var tbody = document.getElementById('admin-accounts-tbody');
+    var empty = document.getElementById('admin-accounts-empty');
+    if (!tbody) return;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    tbody.innerHTML = filtered.map(function(a) {
+      var statusBadge = a.status === 'active'
+        ? '<span class="badge badge-success">&#9679; 활성</span>'
+        : '<span class="badge badge-gray">&#9675; 비활성</span>';
+      var deptPos = [a.dept, a.position].filter(Boolean).join('/') || '—';
+      var mgmt = '<button class="btn btn-outline btn-xs" onclick="openAdminEditSO('+a.id+')">수정</button>';
+      if (a.status === 'active') {
+        mgmt += ' <button class="btn btn-outline btn-xs" style="color:var(--warning); border-color:var(--warning);" onclick="quickAdminDeactivate('+a.id+')">비활성화</button>';
+      } else {
+        mgmt += ' <button class="btn btn-success btn-xs" onclick="quickAdminActivate('+a.id+')">활성화</button>';
+      }
+      return '<tr>'
+        + '<td style="font-weight:500;">'+a.name+'</td>'
+        + '<td style="font-size:12px; font-family:monospace; color:var(--text-secondary);">'+a.emailMask+'</td>'
+        + '<td>'+_adminRoleBadge(a.role)+'</td>'
+        + '<td style="font-size:12px; color:var(--text-secondary);">'+deptPos+'</td>'
+        + '<td style="text-align:center;">'+statusBadge+'</td>'
+        + '<td style="font-size:12px; color:var(--text-secondary);">'+a.lastLogin+'</td>'
+        + '<td style="white-space:nowrap;">'+mgmt+'</td>'
+        + '</tr>';
+    }).join('');
+
+    renderAdminAccountsStats();
+  }
+
+  /* ── Admin Add SO ── */
+  function openAdminAddSO() {
+    ['aa-name','aa-email','aa-phone','aa-dept','aa-position'].forEach(function(id){
+      var el = document.getElementById(id); if(el) el.value = '';
+    });
+    document.getElementById('aa-email-err').style.display = 'none';
+    document.getElementById('aa-otp-err').style.display = 'none';
+    var radios = document.querySelectorAll('input[name="aa-role"]');
+    radios.forEach(function(r){ r.checked = r.value === 'general'; });
+    for (var i = 0; i < 6; i++) { var el = document.getElementById('aa-otp-'+i); if(el) el.value = ''; }
+    document.getElementById('aa-submit-btn').disabled = false;
+    document.getElementById('admin-add-so-backdrop').classList.add('open');
+    document.getElementById('admin-add-so').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ document.getElementById('aa-name').focus(); }, 200);
+  }
+  function closeAdminAddSO() {
+    document.getElementById('admin-add-so-backdrop').classList.remove('open');
+    document.getElementById('admin-add-so').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function validateAdminAddForm() {
+    var name  = document.getElementById('aa-name').value.trim();
+    var email = document.getElementById('aa-email').value.trim();
+    var phone = document.getElementById('aa-phone').value.trim();
+    var emailErr = document.getElementById('aa-email-err');
+    var emailOk = true;
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      emailErr.textContent = '올바른 이메일 형식을 입력하세요.';
+      emailErr.style.display = '';
+      emailOk = false;
+    } else {
+      emailErr.style.display = 'none';
+    }
+    var canSubmit = name.length > 0 && email.length > 0 && phone.length > 0 && emailOk;
+    document.getElementById('aa-submit-btn').disabled = !canSubmit;
+  }
+
+  function submitAdminAdd() {
+    var otp = soOtpValue('aa-otp');
+    var otpErr = document.getElementById('aa-otp-err');
+    if (otp.length < 6) { otpErr.textContent = 'OTP 6자리를 입력하세요.'; otpErr.style.display = ''; return; }
+    otpErr.style.display = 'none';
+    var name     = document.getElementById('aa-name').value.trim();
+    var email    = document.getElementById('aa-email').value.trim();
+    var phone    = document.getElementById('aa-phone').value.trim();
+    var dept     = document.getElementById('aa-dept').value.trim();
+    var position = document.getElementById('aa-position').value.trim();
+    var roleEl   = document.querySelector('input[name="aa-role"]:checked');
+    var role     = roleEl ? roleEl.value : 'general';
+    var mask     = email.charAt(0) + email.charAt(1) + '***@' + email.split('@')[1];
+    _ADMIN_ACCOUNTS.push({ id:_ADMIN_NEXT_ID++, name:name, emailFull:email, emailMask:mask, role:role, dept:dept, position:position, phone:phone, status:'active', lastLogin:'—' });
+    closeAdminAddSO();
+    renderAdminAccountsTable();
+    addActLog('[Admin 계정 생성] ' + mask + ' / ' + (_ADMIN_ROLE_CFG[role]||{label:role}).label);
+    showToast('Admin 계정이 생성되었습니다. 임시 PW가 이메일로 발송됩니다.');
+  }
+
+  /* ── Admin Edit SO ── */
+  function openAdminEditSO(id) {
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === id; });
+    if (!a) return;
+    _ADMIN_EDIT_ID = id;
+
+    document.getElementById('ae-subtitle').textContent = a.emailMask;
+    document.getElementById('ae-name').value      = a.name;
+    document.getElementById('ae-dept').value      = a.dept || '';
+    document.getElementById('ae-position').value  = a.position || '';
+    document.getElementById('ae-phone').value     = a.phone || '';
+    document.getElementById('ae-email-display').textContent = a.emailMask;
+    document.getElementById('ae-current-role-badge').innerHTML = _adminRoleBadge(a.role);
+    document.getElementById('ae-role-select').value = '';
+    document.getElementById('ae-role-reason-wrap').style.display = 'none';
+    document.getElementById('ae-role-reason').value = '';
+    document.getElementById('ae-role-reason-err').style.display = 'none';
+    document.getElementById('ae-otp-err').style.display = 'none';
+    document.getElementById('ae-submit-btn').disabled = false;
+    for (var i = 0; i < 6; i++) { var el = document.getElementById('ae-otp-'+i); if(el) el.value = ''; }
+
+    // status radios — inactive account: role change locked
+    document.getElementById('ae-status-active').checked   = a.status === 'active';
+    document.getElementById('ae-status-inactive').checked = a.status === 'inactive';
+    var roleSelect = document.getElementById('ae-role-select');
+    roleSelect.disabled = a.status === 'inactive';
+
+    // delete button: disabled if last master
+    var deleteBtn  = document.getElementById('ae-delete-btn');
+    var deleteHint = document.getElementById('ae-delete-hint');
+    var isLastMaster = a.role === 'master' && _ADMIN_ACCOUNTS.filter(function(x){ return x.role === 'master'; }).length <= 1;
+    deleteBtn.disabled = isLastMaster;
+    deleteHint.style.display = isLastMaster ? '' : 'none';
+    deleteHint.textContent   = isLastMaster ? '마스터 관리자는 최소 1명 이상 유지해야 합니다.' : '';
+
+    document.getElementById('admin-edit-so-backdrop').classList.add('open');
+    document.getElementById('admin-edit-so').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ document.getElementById('ae-name').focus(); }, 200);
+  }
+  function closeAdminEditSO() {
+    document.getElementById('admin-edit-so-backdrop').classList.remove('open');
+    document.getElementById('admin-edit-so').classList.remove('open');
+    document.body.style.overflow = '';
+    _ADMIN_EDIT_ID = null;
+  }
+
+  function validateAdminEditForm() {
+    var roleSelect = document.getElementById('ae-role-select');
+    var roleReason = document.getElementById('ae-role-reason-wrap');
+    var hasRoleChange = roleSelect.value !== '';
+    roleReason.style.display = hasRoleChange ? '' : 'none';
+    var reasonOk = !hasRoleChange || document.getElementById('ae-role-reason').value.trim().length > 0;
+    document.getElementById('ae-submit-btn').disabled = hasRoleChange && !reasonOk;
+  }
+
+  function submitAdminEdit() {
+    var otp = soOtpValue('ae-otp');
+    var otpErr = document.getElementById('ae-otp-err');
+    if (otp.length < 6) { otpErr.textContent = 'OTP 6자리를 입력하세요.'; otpErr.style.display = ''; return; }
+    otpErr.style.display = 'none';
+
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_EDIT_ID; });
+    if (!a) return;
+
+    var newRole    = document.getElementById('ae-role-select').value || null;
+    var reason     = document.getElementById('ae-role-reason').value.trim();
+    var newStatus  = document.querySelector('input[name="ae-status"]:checked');
+    var statusVal  = newStatus ? newStatus.value : a.status;
+
+    if (newRole && !reason) {
+      document.getElementById('ae-role-reason-err').style.display = '';
+      return;
+    }
+
+    var oldRole = a.role;
+    a.name     = document.getElementById('ae-name').value.trim() || a.name;
+    a.dept     = document.getElementById('ae-dept').value.trim();
+    a.position = document.getElementById('ae-position').value.trim();
+    a.phone    = document.getElementById('ae-phone').value.trim();
+    a.status   = statusVal;
+    if (newRole) a.role = newRole;
+
+    closeAdminEditSO();
+    renderAdminAccountsTable();
+
+    if (newRole) {
+      var oldLabel = (_ADMIN_ROLE_CFG[oldRole]||{label:oldRole}).label;
+      var newLabel = (_ADMIN_ROLE_CFG[newRole]||{label:newRole}).label;
+      addActLog('[역할변경] ' + a.emailMask + ': ' + oldLabel + ' → ' + newLabel + ' / 사유: ' + reason);
+      showToast('역할이 변경되었습니다: ' + oldLabel + ' → ' + newLabel);
+    } else {
+      addActLog('[Admin 계정 수정] ' + a.emailMask);
+      showToast('계정 정보가 수정되었습니다.');
+    }
+  }
+
+  /* ── Quick activate / deactivate from table ── */
+  function quickAdminActivate(id) {
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === id; });
+    if (!a) return;
+    openOTPModal('계정 활성화 — ' + a.name, function() {
+      a.status = 'active';
+      renderAdminAccountsTable();
+      addActLog('[Admin 계정 활성화] ' + a.emailMask);
+      showToast(a.name + ' 계정이 활성화되었습니다.');
+    });
+  }
+  function quickAdminDeactivate(id) {
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === id; });
+    if (!a) return;
+    openOTPModal('계정 비활성화 — ' + a.name, function() {
+      a.status = 'inactive';
+      renderAdminAccountsTable();
+      addActLog('[Admin 계정 비활성화] ' + a.emailMask);
+      showToast(a.name + ' 계정이 비활성화되었습니다.');
+    });
+  }
+
+  /* ── PW / OTP reset from edit SO ── */
+  function adminPWReset() {
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_EDIT_ID; });
+    if (!a) return;
+    openOTPModal('PW 재설정 — ' + a.name, function() {
+      addActLog('[Admin PW 재설정] ' + a.emailMask);
+      showToast('임시 PW가 생성되어 이메일로 발송되었습니다. 기존 PW는 만료됩니다.');
+    });
+  }
+  function adminOTPReset() {
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_EDIT_ID; });
+    if (!a) return;
+    openOTPModal('OTP 재설정 — ' + a.name, function() {
+      addActLog('[Admin OTP 재설정] ' + a.emailMask);
+      showToast('OTP가 초기화되었습니다. 재등록 안내 이메일이 발송됩니다.');
+    });
+  }
+
+  /* ── Admin Delete ── */
+  function openAdminDelete() {
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_EDIT_ID; });
+    if (!a) return;
+    var isLastMaster = a.role === 'master' && _ADMIN_ACCOUNTS.filter(function(x){ return x.role === 'master'; }).length <= 1;
+    if (isLastMaster) { showToast('마스터 관리자는 최소 1명 이상 유지해야 합니다.'); return; }
+    _ADMIN_DEL_ID = _ADMIN_EDIT_ID;
+    var roleLabel = (_ADMIN_ROLE_CFG[a.role]||{label:a.role}).label;
+    document.getElementById('adel-target-name').textContent  = a.name + ' (' + roleLabel + ')';
+    document.getElementById('adel-target-email').textContent = a.emailMask;
+    document.getElementById('adel-reason').value = '';
+    document.getElementById('adel-otp-err').style.display = 'none';
+    document.getElementById('adel-submit-btn').disabled = true;
+    for (var i = 0; i < 6; i++) { var el = document.getElementById('adel-otp-'+i); if(el) el.value = ''; }
+    openModal('admin-delete-modal');
+  }
+
+  function validateAdminDeleteForm() {
+    var reason = document.getElementById('adel-reason').value.trim();
+    document.getElementById('adel-submit-btn').disabled = reason.length === 0;
+  }
+
+  function submitAdminDelete() {
+    var otp = soOtpValue('adel-otp');
+    var otpErr = document.getElementById('adel-otp-err');
+    if (otp.length < 6) { otpErr.textContent = 'OTP 6자리를 입력하세요.'; otpErr.style.display = ''; return; }
+    otpErr.style.display = 'none';
+    var a = _ADMIN_ACCOUNTS.find(function(x){ return x.id === _ADMIN_DEL_ID; });
+    if (!a) return;
+    var mask   = a.emailMask;
+    var reason = document.getElementById('adel-reason').value.trim();
+    _ADMIN_ACCOUNTS = _ADMIN_ACCOUNTS.filter(function(x){ return x.id !== _ADMIN_DEL_ID; });
+    _ADMIN_DEL_ID = null;
+    closeModal('admin-delete-modal');
+    closeAdminEditSO();
+    renderAdminAccountsTable();
+    addActLog('[Admin 계정 삭제] ' + mask + ' / 사유: ' + reason);
+    showToast('Admin 계정이 삭제되었습니다.');
+  }
+
+  /* ════════════════════════════════════
      SUPPORTED COINS — DATA & LOGIC
   ════════════════════════════════════ */
   var _SUPPORTED_COINS = [
@@ -7417,6 +7892,8 @@
     renderCoinAddRequests();
     renderCWAllWallets();
     renderClientIPTable();
+    renderAdminAccountsTable();
+    renderAdminAccountsStats();
     renderSupportedCoinsTable();
     renderSupportedCoinsStats();
   })();
