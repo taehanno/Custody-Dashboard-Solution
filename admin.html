@@ -1730,10 +1730,31 @@
         <div class="form-group"><label class="form-label">업종 <span style="color:var(--danger);">*</span></label>
           <select class="form-control" id="kyb-industry" style="width:100%;" onchange="checkVASPTab()">
             <option value="">선택</option>
-            <option>투자자문업</option>
-            <option>자산운용업</option>
-            <option>가상자산사업자(VASP)</option>
-            <option>기타 금융업</option>
+            <optgroup label="금융투자업">
+              <option>투자자문업</option>
+              <option>투자일임업</option>
+              <option>자산운용업 (집합투자업)</option>
+              <option>증권업 (투자매매·중개)</option>
+              <option>선물업</option>
+              <option>신탁업</option>
+              <option>부동산투자회사 (REITs)</option>
+              <option>벤처캐피탈 / 창업투자업</option>
+            </optgroup>
+            <optgroup label="기타 금융업">
+              <option>은행업</option>
+              <option>보험업</option>
+              <option>여신전문금융업 (카드·캐피탈)</option>
+              <option>핀테크 / 전자금융업</option>
+              <option>가상자산사업자(VASP)</option>
+            </optgroup>
+            <optgroup label="일반 사업">
+              <option>일반 지주회사</option>
+              <option>제조업</option>
+              <option>무역·수출입업</option>
+              <option>IT·소프트웨어업</option>
+              <option>부동산업</option>
+              <option>기타 (직접 입력)</option>
+            </optgroup>
           </select>
         </div>
         <div class="form-group"><label class="form-label">연락처 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-tel" style="width:100%;" placeholder="02-0000-0000" /></div>
@@ -1741,11 +1762,13 @@
       </div>
     </div>
 
-    <!-- Tab ②: 대표자 -->
+    <!-- Tab ②: 대표자 (복수) -->
     <div class="kyb-tab-panel" id="kpanel-1">
+      <div id="kyb-rep-list"></div>
+      <div class="kyb-subsection" style="margin-top:0;">대표자 입력</div>
       <div class="kyb-field-grid">
         <div class="form-group"><label class="form-label">성명 (국문) <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-name-kr" style="width:100%;" placeholder="홍길동" /></div>
-        <div class="form-group"><label class="form-label">성명 (영문) <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-name-en" style="width:100%;" placeholder="Hong Gil-dong" /></div>
+        <div class="form-group"><label class="form-label">성명 (영문)</label><input class="form-control" id="kyb-rep-name-en" style="width:100%;" placeholder="Hong Gil-dong" /></div>
         <div class="form-group"><label class="form-label">생년월일 <span style="color:var(--danger);">*</span></label><input type="date" class="form-control" id="kyb-rep-dob" style="width:100%;" /></div>
         <div class="form-group"><label class="form-label">국적 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-nation" style="width:100%;" placeholder="대한민국" /></div>
         <div class="form-group"><label class="form-label">신분증 종류</label>
@@ -1753,52 +1776,70 @@
             <option>주민등록증</option><option>여권</option><option>운전면허증</option>
           </select>
         </div>
-        <div class="form-group"><label class="form-label">신분증 번호 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-id-no" style="width:100%;" placeholder="000000-0000000" /></div>
-        <div class="form-group kyb-field-full"><label class="form-label">주소 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-rep-addr" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">신분증 번호</label><input class="form-control" id="kyb-rep-id-no" style="width:100%;" placeholder="000000-0000000" /></div>
+        <div class="form-group kyb-field-full"><label class="form-label">주소</label><input class="form-control" id="kyb-rep-addr" style="width:100%;" /></div>
         <div class="form-group"><label class="form-label">직책</label><input class="form-control" id="kyb-rep-title" style="width:100%;" placeholder="대표이사" /></div>
         <div class="form-group"><label class="form-label">지분율 (%)</label><input type="number" class="form-control" id="kyb-rep-share" style="width:100%;" min="0" max="100" placeholder="0" /></div>
       </div>
+      <div style="text-align:right; margin-top:10px;">
+        <button class="btn btn-outline btn-sm" onclick="kybAddEntry('rep')">+ 대표자 추가</button>
+      </div>
     </div>
 
-    <!-- Tab ③: 실소유자 -->
+    <!-- Tab ③: 실소유자 (복수) -->
     <div class="kyb-tab-panel" id="kpanel-2">
       <div class="alert alert-info" style="margin-bottom:14px;">&#8505; 지분율 25% 이상 또는 실질적 지배자를 기재하세요.</div>
+      <div id="kyb-ubo-list"></div>
+      <div class="kyb-subsection" style="margin-top:0;">실소유자 입력</div>
       <div class="kyb-field-grid">
-        <div class="form-group"><label class="form-label">성명 (국문) <span style="color:var(--danger);">*</span></label><input class="form-control" style="width:100%;" placeholder="홍길동" /></div>
-        <div class="form-group"><label class="form-label">생년월일 <span style="color:var(--danger);">*</span></label><input type="date" class="form-control" style="width:100%;" /></div>
-        <div class="form-group"><label class="form-label">국적 <span style="color:var(--danger);">*</span></label><input class="form-control" style="width:100%;" placeholder="대한민국" /></div>
-        <div class="form-group"><label class="form-label">지분율 (%) <span style="color:var(--danger);">*</span></label><input type="number" class="form-control" style="width:100%;" min="25" max="100" /></div>
-        <div class="form-group kyb-field-full"><label class="form-label">주소 <span style="color:var(--danger);">*</span></label><input class="form-control" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">성명 (국문) <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-ubo-name" style="width:100%;" placeholder="홍길동" /></div>
+        <div class="form-group"><label class="form-label">생년월일 <span style="color:var(--danger);">*</span></label><input type="date" class="form-control" id="kyb-ubo-dob" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">국적 <span style="color:var(--danger);">*</span></label><input class="form-control" id="kyb-ubo-nation" style="width:100%;" placeholder="대한민국" /></div>
+        <div class="form-group"><label class="form-label">지분율 (%) <span style="color:var(--danger);">*</span></label><input type="number" class="form-control" id="kyb-ubo-share" style="width:100%;" min="25" max="100" /></div>
+        <div class="form-group kyb-field-full"><label class="form-label">주소</label><input class="form-control" id="kyb-ubo-addr" style="width:100%;" /></div>
         <div class="form-group kyb-field-full"><label class="form-label">PEP 여부</label>
           <div class="radio-group">
-            <label class="radio-item"><input type="radio" name="kyb-pep" value="no" checked> 해당 없음</label>
-            <label class="radio-item"><input type="radio" name="kyb-pep" value="yes"> 정치적 주요인물 (PEP)</label>
+            <label class="radio-item"><input type="radio" name="kyb-ubo-pep" value="no" checked> 해당 없음</label>
+            <label class="radio-item"><input type="radio" name="kyb-ubo-pep" value="yes"> 정치적 주요인물 (PEP)</label>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Tab ④: 등기이사 -->
-    <div class="kyb-tab-panel" id="kpanel-3">
-      <div class="alert alert-info" style="margin-bottom:14px;">&#8505; 선택 항목입니다. 대표자 이외 등기이사가 있는 경우 입력하세요.</div>
-      <div class="kyb-field-grid">
-        <div class="form-group"><label class="form-label">성명 (국문)</label><input class="form-control" style="width:100%;" placeholder="김이사" /></div>
-        <div class="form-group"><label class="form-label">생년월일</label><input type="date" class="form-control" style="width:100%;" /></div>
-        <div class="form-group"><label class="form-label">국적</label><input class="form-control" style="width:100%;" placeholder="대한민국" /></div>
-        <div class="form-group"><label class="form-label">직책</label><input class="form-control" style="width:100%;" placeholder="이사" /></div>
+      <div style="text-align:right; margin-top:10px;">
+        <button class="btn btn-outline btn-sm" onclick="kybAddEntry('ubo')">+ 실소유자 추가</button>
       </div>
     </div>
 
-    <!-- Tab ⑤: 대주주 10%↑ -->
+    <!-- Tab ④: 등기이사 (복수) -->
+    <div class="kyb-tab-panel" id="kpanel-3">
+      <div class="alert alert-info" style="margin-bottom:14px;">&#8505; 대표자 이외 등기이사가 있는 경우 입력하세요.</div>
+      <div id="kyb-dir-list"></div>
+      <div class="kyb-subsection" style="margin-top:0;">등기이사 입력</div>
+      <div class="kyb-field-grid">
+        <div class="form-group"><label class="form-label">성명 (국문)</label><input class="form-control" id="kyb-dir-name" style="width:100%;" placeholder="김이사" /></div>
+        <div class="form-group"><label class="form-label">생년월일</label><input type="date" class="form-control" id="kyb-dir-dob" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">국적</label><input class="form-control" id="kyb-dir-nation" style="width:100%;" placeholder="대한민국" /></div>
+        <div class="form-group"><label class="form-label">직책</label><input class="form-control" id="kyb-dir-title" style="width:100%;" placeholder="이사" /></div>
+      </div>
+      <div style="text-align:right; margin-top:10px;">
+        <button class="btn btn-outline btn-sm" onclick="kybAddEntry('dir')">+ 등기이사 추가</button>
+      </div>
+    </div>
+
+    <!-- Tab ⑤: 대주주 10%↑ (복수) -->
     <div class="kyb-tab-panel" id="kpanel-4">
       <div class="alert alert-info" style="margin-bottom:14px;">&#8505; 지분율 10% 이상 주주를 기재하세요 (실소유자와 중복 기재 가능).</div>
+      <div id="kyb-sh-list"></div>
+      <div class="kyb-subsection" style="margin-top:0;">대주주 입력</div>
       <div class="kyb-field-grid">
-        <div class="form-group"><label class="form-label">성명 / 법인명</label><input class="form-control" style="width:100%;" /></div>
-        <div class="form-group"><label class="form-label">지분율 (%)</label><input type="number" class="form-control" style="width:100%;" min="10" max="100" /></div>
-        <div class="form-group"><label class="form-label">국적 / 설립국</label><input class="form-control" style="width:100%;" placeholder="대한민국" /></div>
+        <div class="form-group"><label class="form-label">성명 / 법인명</label><input class="form-control" id="kyb-sh-name" style="width:100%;" /></div>
+        <div class="form-group"><label class="form-label">지분율 (%)</label><input type="number" class="form-control" id="kyb-sh-share" style="width:100%;" min="10" max="100" /></div>
+        <div class="form-group"><label class="form-label">국적 / 설립국</label><input class="form-control" id="kyb-sh-nation" style="width:100%;" placeholder="대한민국" /></div>
         <div class="form-group"><label class="form-label">법인/개인 구분</label>
-          <select class="form-control" style="width:100%;"><option>개인</option><option>법인</option></select>
+          <select class="form-control" id="kyb-sh-type" style="width:100%;"><option>개인</option><option>법인</option></select>
         </div>
+      </div>
+      <div style="text-align:right; margin-top:10px;">
+        <button class="btn btn-outline btn-sm" onclick="kybAddEntry('sh')">+ 대주주 추가</button>
       </div>
     </div>
 
@@ -2828,7 +2869,7 @@
     document.getElementById('kyb-so-status-badge').innerHTML = '<span class="badge ' + (cfg.badgeCls||'badge-gray') + '">' + (cfg.label||k.status) + '</span>';
 
     // 4-5: Button visibility by status + role
-    var showSubmit       = k.status === 'draft'     && k.requiredDone && _ADMIN_ROLE === 'aml_officer';
+    var showSubmit       = k.status === 'draft'     && _ADMIN_ROLE === 'aml_officer';
     var showRewrite      = k.status === 'rejected'  && _ADMIN_ROLE === 'aml_officer';
     var showReject       = k.status === 'submitted' && _ADMIN_ROLE === 'aml_manager';
     var showWLFApprove   = k.status === 'submitted' && _ADMIN_ROLE === 'aml_manager';
@@ -2883,6 +2924,7 @@
       document.getElementById('kyb-rep-share').value = '51';
     }
 
+    resetKYBEntries();
     switchKYBTab(0);
     openSO('kyb-so');
   }
@@ -2908,6 +2950,116 @@
 
   function kybSave() {
     showToast('저장되었습니다.');
+  }
+
+  /* ── KYB 복수 입력 (대표자 / 실소유자 / 등기이사 / 대주주) ── */
+  var _KYB_ENTRIES = { rep: [], ubo: [], dir: [], sh: [] };
+
+  var _KYB_ENTRY_CFG = {
+    rep: {
+      listId: 'kyb-rep-list', label: '대표자',
+      fields: [
+        { id:'kyb-rep-name-kr', label:'성명(국문)', required:true },
+        { id:'kyb-rep-name-en', label:'성명(영문)' },
+        { id:'kyb-rep-dob',     label:'생년월일',   required:true },
+        { id:'kyb-rep-nation',  label:'국적',       required:true },
+        { id:'kyb-rep-id-type', label:'신분증 종류', type:'select' },
+        { id:'kyb-rep-id-no',   label:'신분증 번호' },
+        { id:'kyb-rep-addr',    label:'주소' },
+        { id:'kyb-rep-title',   label:'직책' },
+        { id:'kyb-rep-share',   label:'지분율(%)' },
+      ]
+    },
+    ubo: {
+      listId: 'kyb-ubo-list', label: '실소유자',
+      fields: [
+        { id:'kyb-ubo-name',   label:'성명(국문)',  required:true },
+        { id:'kyb-ubo-dob',    label:'생년월일',    required:true },
+        { id:'kyb-ubo-nation', label:'국적',        required:true },
+        { id:'kyb-ubo-share',  label:'지분율(%)',   required:true },
+        { id:'kyb-ubo-addr',   label:'주소' },
+      ],
+      extra: function() {
+        var checked = document.querySelector('input[name="kyb-ubo-pep"]:checked');
+        return { pep: checked ? checked.value : 'no' };
+      }
+    },
+    dir: {
+      listId: 'kyb-dir-list', label: '등기이사',
+      fields: [
+        { id:'kyb-dir-name',   label:'성명(국문)', required:true },
+        { id:'kyb-dir-dob',    label:'생년월일' },
+        { id:'kyb-dir-nation', label:'국적' },
+        { id:'kyb-dir-title',  label:'직책' },
+      ]
+    },
+    sh: {
+      listId: 'kyb-sh-list', label: '대주주',
+      fields: [
+        { id:'kyb-sh-name',   label:'성명/법인명', required:true },
+        { id:'kyb-sh-share',  label:'지분율(%)',   required:true },
+        { id:'kyb-sh-nation', label:'국적/설립국' },
+        { id:'kyb-sh-type',   label:'구분', type:'select' },
+      ]
+    },
+  };
+
+  function kybAddEntry(type) {
+    var cfg = _KYB_ENTRY_CFG[type];
+    if (!cfg) return;
+    var entry = {};
+    var missing = [];
+    cfg.fields.forEach(function(f) {
+      var el = document.getElementById(f.id);
+      if (!el) return;
+      var val = el.value.trim();
+      if (f.required && !val) { missing.push(f.label); return; }
+      entry[f.id] = val;
+      entry[f.label] = val;
+    });
+    if (missing.length) { showToast('필수 항목을 입력해주세요: ' + missing.join(', ')); return; }
+    if (cfg.extra) Object.assign(entry, cfg.extra());
+    _KYB_ENTRIES[type].push(entry);
+    renderKYBEntryList(type);
+    // Clear form fields
+    cfg.fields.forEach(function(f) {
+      var el = document.getElementById(f.id);
+      if (el) el.value = '';
+    });
+    showToast(cfg.label + ' 추가되었습니다.');
+  }
+
+  function renderKYBEntryList(type) {
+    var cfg = _KYB_ENTRY_CFG[type];
+    var list = _KYB_ENTRIES[type];
+    var el = document.getElementById(cfg.listId);
+    if (!el) return;
+    if (!list.length) { el.innerHTML = ''; return; }
+    el.innerHTML = list.map(function(entry, i) {
+      var primary = entry[cfg.fields[0].label] || '—';
+      var secondary = '';
+      if (type === 'rep' || type === 'ubo') secondary = (entry['지분율(%)'] ? entry['지분율(%)'] + '%' : '') + (entry['국적'] ? ' · ' + entry['국적'] : '');
+      if (type === 'dir') secondary = (entry['직책'] || '') + (entry['국적'] ? ' · ' + entry['국적'] : '');
+      if (type === 'sh')  secondary = (entry['지분율(%)'] ? entry['지분율(%)'] + '%' : '') + ' · ' + (entry['구분'] || '개인');
+      if (type === 'ubo' && entry.pep === 'yes') secondary += ' · <span style="color:var(--danger); font-weight:600;">PEP</span>';
+      return '<div style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:#F8FAFC; border:1px solid var(--border); border-radius:7px; margin-bottom:8px;">'
+        + '<div style="flex:1;">'
+        + '<span style="font-weight:600; font-size:13px;">' + primary + '</span>'
+        + (secondary ? '<span style="font-size:11px; color:var(--text-secondary); margin-left:8px;">' + secondary + '</span>' : '')
+        + '</div>'
+        + '<button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:var(--danger);" onclick="kybDeleteEntry(\'' + type + '\',' + i + ')">삭제</button>'
+        + '</div>';
+    }).join('');
+  }
+
+  function kybDeleteEntry(type, idx) {
+    _KYB_ENTRIES[type].splice(idx, 1);
+    renderKYBEntryList(type);
+  }
+
+  function resetKYBEntries() {
+    Object.keys(_KYB_ENTRIES).forEach(function(t) { _KYB_ENTRIES[t] = []; });
+    ['rep','ubo','dir','sh'].forEach(function(t) { renderKYBEntryList(t); });
   }
 
   function kybSubmit() {
