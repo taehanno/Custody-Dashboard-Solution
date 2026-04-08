@@ -427,10 +427,7 @@
       <div class="sidebar-section">
         <div class="sidebar-section-label">설정</div>
         <div class="nav-item" id="nav-coins-config" onclick="showPage('coins-config', this)">
-          <span class="nav-icon">&#9881;</span> 지원 코인/네트워크
-        </div>
-        <div class="nav-item" id="nav-wl-coins" onclick="showPage('wl-coins', this)">
-          <span class="nav-icon">&#128737;</span> Whitelist 허용 코인
+          <span class="nav-icon">&#9881;</span> 지원 코인 설정
         </div>
         <div class="nav-item" id="nav-vasp" onclick="showPage('vasp', this)">
           <span class="nav-icon">&#127760;</span> Travel Rule VASP
@@ -1206,128 +1203,49 @@
       ══════════════════════════ -->
       <div class="page" id="page-coins-config">
         <div class="page-header">
-          <h1 class="page-title">지원 코인 설정</h1>
+          <h1 class="page-title">지원 코인 설정 / Supported Coins</h1>
+          <button class="btn btn-primary btn-sm" onclick="openCoinAddSO()">+ 코인 추가</button>
         </div>
-        <div class="alert alert-info">
-          &#9432; 코인 추가/삭제는 전체 고객사에 즉시 적용됩니다.
+        <div class="stats-row" style="margin-bottom:16px;">
+          <div class="stat-card">
+            <span class="stat-label">활성화</span>
+            <span class="stat-value stat-green" id="coins-stat-active">0개</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">비활성화</span>
+            <span class="stat-value" id="coins-stat-inactive" style="color:var(--text-secondary);">0개</span>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center; flex-wrap:wrap;">
+          <input type="text" class="form-control" id="coins-search" placeholder="코인명/심볼 검색" style="width:220px;" oninput="renderSupportedCoinsTable()">
+          <select class="form-control" id="coins-status-filter" onchange="renderSupportedCoinsTable()" style="width:150px;">
+            <option value="">전체 상태 ▾</option>
+            <option value="active">활성화</option>
+            <option value="inactive">비활성화</option>
+          </select>
+        </div>
+        <div class="alert alert-info" style="margin-bottom:14px;">
+          &#9432; 활성화된 코인은 고객 포털 지갑 생성 · 코인 추가 · Whitelist 신청에 자동 노출됩니다. 별도의 Whitelist 허용 코인 설정 없이 활성화 여부만으로 Whitelist 신청 범위가 결정됩니다.
         </div>
         <div class="card" style="padding:0;">
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>코인</th>
-                  <th>네트워크</th>
-                  <th>상태</th>
-                  <th>최소 출금</th>
-                  <th>수수료</th>
+                  <th style="width:44px; text-align:center;">아이콘</th>
+                  <th>코인명</th>
+                  <th>심볼</th>
+                  <th>지원 네트워크</th>
+                  <th style="text-align:center;">소수점</th>
+                  <th style="text-align:center;">상태</th>
                   <th>관리</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td><span class="badge badge-info">BTC</span></td>
-                  <td>Bitcoin Mainnet</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-family:monospace; font-size:12px;">0.0001 BTC</td>
-                  <td style="font-family:monospace; font-size:12px;">0.00005 BTC</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="badge badge-info">ETH</span></td>
-                  <td>Ethereum Mainnet</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-family:monospace; font-size:12px;">0.01 ETH</td>
-                  <td style="font-family:monospace; font-size:12px;">0.003 ETH</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="badge badge-info">USDT</span></td>
-                  <td>Ethereum (ERC-20)</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-family:monospace; font-size:12px;">10 USDT</td>
-                  <td style="font-family:monospace; font-size:12px;">5 USDT</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="badge badge-info">USDT</span></td>
-                  <td>TRON (TRC-20)</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td style="font-family:monospace; font-size:12px;">10 USDT</td>
-                  <td style="font-family:monospace; font-size:12px;">1 USDT</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="badge badge-gray">BNB</span></td>
-                  <td>BNB Smart Chain</td>
-                  <td><span class="badge badge-gray">비활성</span></td>
-                  <td style="font-family:monospace; font-size:12px;">0.01 BNB</td>
-                  <td style="font-family:monospace; font-size:12px;">0.001 BNB</td>
-                  <td style="display:flex; gap:6px;">
-                    <button class="btn btn-outline btn-xs">수정</button>
-                    <button class="btn btn-success btn-xs">활성화</button>
-                  </td>
-                </tr>
+              <tbody id="coins-config-tbody">
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════
-           PAGE: Whitelist 허용 코인
-      ══════════════════════════ -->
-      <div class="page" id="page-wl-coins">
-        <div class="page-header">
-          <h1 class="page-title">Whitelist 허용 코인</h1>
-        </div>
-        <div class="alert alert-info">
-          &#9432; 고객사별 Whitelist 등록 가능 코인/네트워크를 제어합니다.
-        </div>
-        <div class="card" style="padding:0;">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>코인</th>
-                  <th>네트워크</th>
-                  <th>허용 여부</th>
-                  <th>최대 등록 주소수</th>
-                  <th>관리</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="badge badge-info">BTC</span></td>
-                  <td>Bitcoin Mainnet</td>
-                  <td><span class="badge badge-success">&#10003; 허용</span></td>
-                  <td>5개</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="badge badge-info">ETH</span></td>
-                  <td>Ethereum Mainnet</td>
-                  <td><span class="badge badge-success">&#10003; 허용</span></td>
-                  <td>10개</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="badge badge-info">USDT</span></td>
-                  <td>ERC-20</td>
-                  <td><span class="badge badge-success">&#10003; 허용</span></td>
-                  <td>10개</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="badge badge-info">USDT</span></td>
-                  <td>TRC-20</td>
-                  <td><span class="badge badge-danger">&#10007; 비허용</span></td>
-                  <td>0개</td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <div id="coins-config-empty" style="display:none; padding:40px; text-align:center; color:var(--text-secondary); font-size:13px;">검색 결과가 없습니다.</div>
         </div>
       </div>
 
@@ -3284,6 +3202,258 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     COIN ADD Slide-over
+══════════════════════════════════════ -->
+<div class="slideover-backdrop" id="coin-add-so-backdrop" onclick="closeCoinAddSO()"></div>
+<div class="slideover" id="coin-add-so" style="max-width:500px;">
+  <div class="so-header">
+    <div>
+      <div class="so-title">코인 추가 / Add Coin</div>
+    </div>
+    <button class="modal-close" onclick="closeCoinAddSO()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div class="form-group">
+      <label class="form-label">* 코인명 (영문)</label>
+      <input type="text" class="form-control" id="coin-add-name" placeholder="예: Bitcoin" oninput="validateCoinAddForm()" style="width:100%;">
+      <div class="form-hint" id="coin-add-name-err" style="color:var(--danger); display:none;"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* 심볼 (예: BTC, ETH, USDT)</label>
+      <input type="text" class="form-control" id="coin-add-symbol" placeholder="예: BTC" oninput="validateCoinAddForm()" style="width:160px; text-transform:uppercase;">
+      <div class="form-hint" id="coin-add-symbol-err" style="color:var(--danger); display:none;"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">코인 아이콘 업로드 (선택)</label>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div id="coin-add-icon-preview" style="width:36px; height:36px; border-radius:50%; background:#EFF6FF; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--primary); font-weight:700; border:1px solid var(--border);">?</div>
+        <label class="btn btn-outline btn-sm" style="cursor:pointer; margin:0;">
+          파일 선택
+          <input type="file" accept=".png,.svg" id="coin-add-icon-file" style="display:none;" onchange="onCoinAddIconChange(this)">
+        </label>
+        <span style="font-size:11px; color:var(--text-secondary);">PNG/SVG, 최대 100KB</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* 지원 네트워크 (복수 선택 가능)</label>
+      <div id="coin-add-networks" style="display:flex; flex-direction:column; gap:7px; margin-top:4px;">
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="Bitcoin Mainnet" onchange="validateCoinAddForm()"> Bitcoin Mainnet
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="Ethereum Mainnet (ERC20)" onchange="validateCoinAddForm()"> Ethereum Mainnet (ERC20)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="Tron Mainnet (TRC20)" onchange="validateCoinAddForm()"> Tron Mainnet (TRC20)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="BNB Smart Chain (BEP20)" onchange="validateCoinAddForm()"> BNB Smart Chain (BEP20)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="Solana Mainnet" onchange="validateCoinAddForm()"> Solana Mainnet
+        </label>
+        <div id="coin-add-custom-networks"></div>
+        <button class="btn btn-outline btn-xs" style="width:fit-content;" onclick="addCustomNetworkInput('coin-add')">+ 직접 입력</button>
+      </div>
+      <div class="form-hint" id="coin-add-network-err" style="color:var(--danger); display:none;">네트워크를 하나 이상 선택하세요.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* 소수점 자리수</label>
+      <select class="form-control" id="coin-add-decimals" style="width:120px;">
+        <option value="1">1자리</option>
+        <option value="2">2자리</option>
+        <option value="4">4자리</option>
+        <option value="6">6자리</option>
+        <option value="8" selected>8자리</option>
+        <option value="9">9자리</option>
+        <option value="18">18자리</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* 블록체인 익스플로러 URL</label>
+      <input type="text" class="form-control" id="coin-add-explorer" placeholder="https://..." oninput="validateCoinAddForm()" style="width:100%;">
+      <div class="form-hint">&#9432; TXID 링크 생성에 사용됩니다.</div>
+      <div class="form-hint" id="coin-add-explorer-err" style="color:var(--danger); display:none;"></div>
+    </div>
+    <div class="alert alert-info" style="font-size:12px; margin-bottom:16px;">
+      &#9432; 추가 시 비활성화 상태로 등록됩니다. 활성화 후 고객 포털 및 Whitelist에 자동 노출됩니다.
+    </div>
+    <div style="border-top:1px solid var(--border); padding-top:16px; margin-bottom:8px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">OTP 인증</div>
+      <div class="otp-row" style="justify-content:flex-start;">
+        <input type="text" class="otp-box" maxlength="1" id="coin-add-otp-0" oninput="soOtpMove('coin-add-otp',this,0)" onkeydown="soOtpBack('coin-add-otp',event,this,0)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-add-otp-1" oninput="soOtpMove('coin-add-otp',this,1)" onkeydown="soOtpBack('coin-add-otp',event,this,1)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-add-otp-2" oninput="soOtpMove('coin-add-otp',this,2)" onkeydown="soOtpBack('coin-add-otp',event,this,2)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-add-otp-3" oninput="soOtpMove('coin-add-otp',this,3)" onkeydown="soOtpBack('coin-add-otp',event,this,3)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-add-otp-4" oninput="soOtpMove('coin-add-otp',this,4)" onkeydown="soOtpBack('coin-add-otp',event,this,4)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-add-otp-5" oninput="soOtpMove('coin-add-otp',this,5)" onkeydown="soOtpBack('coin-add-otp',event,this,5)" inputmode="numeric" />
+      </div>
+      <div id="coin-add-otp-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;"></div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:8px; padding-top:8px;">
+      <button class="btn btn-outline btn-sm" onclick="closeCoinAddSO()">취소</button>
+      <button class="btn btn-primary btn-sm" id="coin-add-submit-btn" onclick="submitCoinAdd()" disabled>코인 추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     COIN EDIT Slide-over
+══════════════════════════════════════ -->
+<div class="slideover-backdrop" id="coin-edit-so-backdrop" onclick="closeCoinEditSO()"></div>
+<div class="slideover" id="coin-edit-so" style="max-width:500px;">
+  <div class="so-header">
+    <div>
+      <div class="so-title">코인 수정 / Edit Coin</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="coin-edit-so-subtitle"></div>
+    </div>
+    <button class="modal-close" onclick="closeCoinEditSO()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div class="form-group">
+      <label class="form-label">코인명</label>
+      <input type="text" class="form-control" id="coin-edit-name" style="width:100%;" oninput="validateCoinEditForm()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">심볼</label>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <input type="text" class="form-control form-control-readonly" id="coin-edit-symbol" readonly style="width:120px;">
+        <span style="font-size:11px; color:var(--text-secondary);">&#128274; 수정 불가</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">코인 아이콘</label>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div id="coin-edit-icon-preview" style="width:36px; height:36px; border-radius:50%; background:#EFF6FF; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--primary); font-weight:700; border:1px solid var(--border);">?</div>
+        <label class="btn btn-outline btn-sm" style="cursor:pointer; margin:0;">
+          파일 교체
+          <input type="file" accept=".png,.svg" id="coin-edit-icon-file" style="display:none;" onchange="onCoinEditIconChange(this)">
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">지원 네트워크</label>
+      <div id="coin-edit-networks" style="display:flex; flex-direction:column; gap:7px; margin-top:4px;">
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="Bitcoin Mainnet" onchange="validateCoinEditForm()"> Bitcoin Mainnet
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="Ethereum Mainnet (ERC20)" onchange="validateCoinEditForm()"> Ethereum Mainnet (ERC20)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="Tron Mainnet (TRC20)" onchange="validateCoinEditForm()"> Tron Mainnet (TRC20)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="BNB Smart Chain (BEP20)" onchange="validateCoinEditForm()"> BNB Smart Chain (BEP20)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+          <input type="checkbox" value="Solana Mainnet" onchange="validateCoinEditForm()"> Solana Mainnet
+        </label>
+        <div id="coin-edit-custom-networks"></div>
+        <button class="btn btn-outline btn-xs" style="width:fit-content;" onclick="addCustomNetworkInput('coin-edit')">+ 직접 입력</button>
+      </div>
+      <div class="form-hint" id="coin-edit-network-err" style="color:var(--danger); display:none;">네트워크를 하나 이상 선택하세요.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">소수점 자리수</label>
+      <select class="form-control" id="coin-edit-decimals" style="width:120px;">
+        <option value="1">1자리</option>
+        <option value="2">2자리</option>
+        <option value="4">4자리</option>
+        <option value="6">6자리</option>
+        <option value="8">8자리</option>
+        <option value="9">9자리</option>
+        <option value="18">18자리</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">블록체인 익스플로러 URL</label>
+      <input type="text" class="form-control" id="coin-edit-explorer" style="width:100%;" oninput="validateCoinEditForm()">
+      <div class="form-hint" id="coin-edit-explorer-err" style="color:var(--danger); display:none;"></div>
+    </div>
+    <div style="border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:16px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px;">상태 변경</div>
+      <div style="display:flex; gap:20px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="coin-edit-status" value="active" id="coin-edit-status-active"> ● 활성화
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="coin-edit-status" value="inactive" id="coin-edit-status-inactive"> ○ 비활성화
+        </label>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border); padding-top:16px; margin-bottom:8px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">OTP 인증</div>
+      <div class="otp-row" style="justify-content:flex-start;">
+        <input type="text" class="otp-box" maxlength="1" id="coin-edit-otp-0" oninput="soOtpMove('coin-edit-otp',this,0)" onkeydown="soOtpBack('coin-edit-otp',event,this,0)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-edit-otp-1" oninput="soOtpMove('coin-edit-otp',this,1)" onkeydown="soOtpBack('coin-edit-otp',event,this,1)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-edit-otp-2" oninput="soOtpMove('coin-edit-otp',this,2)" onkeydown="soOtpBack('coin-edit-otp',event,this,2)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-edit-otp-3" oninput="soOtpMove('coin-edit-otp',this,3)" onkeydown="soOtpBack('coin-edit-otp',event,this,3)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-edit-otp-4" oninput="soOtpMove('coin-edit-otp',this,4)" onkeydown="soOtpBack('coin-edit-otp',event,this,4)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="coin-edit-otp-5" oninput="soOtpMove('coin-edit-otp',this,5)" onkeydown="soOtpBack('coin-edit-otp',event,this,5)" inputmode="numeric" />
+      </div>
+      <div id="coin-edit-otp-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;"></div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:8px; padding-top:8px;">
+      <button class="btn btn-outline btn-sm" onclick="closeCoinEditSO()">취소</button>
+      <button class="btn btn-primary btn-sm" id="coin-edit-submit-btn" onclick="submitCoinEdit()">수정 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 코인 비활성화 경고 모달 -->
+<div class="modal" id="coin-deact-modal" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title">&#9888; 비활성화 확인</span>
+    <button class="modal-close" onclick="closeModal('coin-deact-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <p id="coin-deact-modal-body" style="font-size:13px; color:var(--text-primary); margin-bottom:12px;"></p>
+    <div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:12px; font-size:12px; color:#92400E;">
+      비활성화 시:<br>
+      · 신규 지갑 생성 / 코인 추가 / Whitelist 신청 불가<br>
+      · 기존 사용 중인 코인 지갑 및 Whitelist 주소에는 영향 없음
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('coin-deact-modal')">취소</button>
+    <button class="btn btn-warning" onclick="confirmCoinDeactivate()">확인 후 비활성화</button>
+  </div>
+</div>
+
+<!-- 코인 삭제 확인 모달 -->
+<div class="modal" id="coin-delete-modal" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">코인 삭제 확인</span>
+    <button class="modal-close" onclick="closeModal('coin-delete-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="font-size:13px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">삭제 대상</span><span id="coin-delete-target"></span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">현재 상태</span><span>○ 비활성화</span></div>
+      <div style="display:flex; justify-content:space-between; padding:6px 0;"><span style="color:var(--text-secondary);">사용 고객사</span><span>0개</span></div>
+    </div>
+    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px; font-size:12px; color:#991B1B; margin-bottom:14px;">
+      &#9888; 삭제 후 복구할 수 없습니다.
+    </div>
+    <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">OTP 인증</div>
+    <div class="otp-row" style="justify-content:flex-start;">
+      <input type="text" class="otp-box" maxlength="1" id="coin-del-otp-0" oninput="soOtpMove('coin-del-otp',this,0)" onkeydown="soOtpBack('coin-del-otp',event,this,0)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="coin-del-otp-1" oninput="soOtpMove('coin-del-otp',this,1)" onkeydown="soOtpBack('coin-del-otp',event,this,1)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="coin-del-otp-2" oninput="soOtpMove('coin-del-otp',this,2)" onkeydown="soOtpBack('coin-del-otp',event,this,2)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="coin-del-otp-3" oninput="soOtpMove('coin-del-otp',this,3)" onkeydown="soOtpBack('coin-del-otp',event,this,3)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="coin-del-otp-4" oninput="soOtpMove('coin-del-otp',this,4)" onkeydown="soOtpBack('coin-del-otp',event,this,4)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="coin-del-otp-5" oninput="soOtpMove('coin-del-otp',this,5)" onkeydown="soOtpBack('coin-del-otp',event,this,5)" inputmode="numeric" />
+    </div>
+    <div id="coin-del-otp-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('coin-delete-modal')">취소</button>
+    <button class="btn btn-danger" onclick="submitCoinDelete()">삭제 확인</button>
+  </div>
+</div>
+
 <!-- modal-otp: OTP 인증 -->
 <div class="modal" id="modal-otp">
   <div class="modal-header">
@@ -3338,7 +3508,6 @@
     // nav-transactions: 전 역할 접근 (VIEW/처리 범위는 renderTxTable 에서 분기)
     // ── 설정
     'nav-coins-config':   ['master', 'general'],
-    'nav-wl-coins':       ['master', 'general'],
     'nav-vasp':           ['master', 'general'],
     'nav-client-ip':      ['master', 'general'],
     // ── AML
@@ -6782,6 +6951,457 @@
   }
 
   /* ════════════════════════════════════
+     SUPPORTED COINS — DATA & LOGIC
+  ════════════════════════════════════ */
+  var _SUPPORTED_COINS = [
+    { id:1, symbol:'BTC', name:'Bitcoin',     icon:'₿', networks:['Bitcoin Mainnet'],                                          decimals:8,  explorerUrl:'https://blockchair.com/bitcoin/transaction/', status:'active',   neverActivated:false },
+    { id:2, symbol:'ETH', name:'Ethereum',    icon:'Ξ', networks:['Ethereum Mainnet (ERC20)'],                                 decimals:18, explorerUrl:'https://etherscan.io/tx/',                    status:'active',   neverActivated:false },
+    { id:3, symbol:'USDT',name:'Tether USD',  icon:'₮', networks:['Ethereum Mainnet (ERC20)','Tron Mainnet (TRC20)','BNB Smart Chain (BEP20)'], decimals:6,  explorerUrl:'https://etherscan.io/tx/', status:'active',   neverActivated:false },
+    { id:4, symbol:'SOL', name:'Solana',      icon:'◎', networks:['Solana Mainnet'],                                           decimals:9,  explorerUrl:'https://solscan.io/tx/',                      status:'inactive', neverActivated:true  }
+  ];
+  var _COIN_EDIT_IDX = null;
+  var _COIN_DEL_IDX  = null;
+  var _COIN_DEACT_IDX = null;
+  var _COIN_NEXT_ID  = 5;
+
+  // mock: 사용 중인 고객사 수 (demo)
+  function _coinUsageCount(symbol) {
+    var map = { BTC:3, ETH:5, USDT:8, SOL:0 };
+    return map[symbol] || 0;
+  }
+
+  function renderSupportedCoinsStats() {
+    var active   = _SUPPORTED_COINS.filter(function(c){ return c.status === 'active'; }).length;
+    var inactive = _SUPPORTED_COINS.filter(function(c){ return c.status === 'inactive'; }).length;
+    var elA = document.getElementById('coins-stat-active');
+    var elI = document.getElementById('coins-stat-inactive');
+    if (elA) elA.textContent = active + '개';
+    if (elI) elI.textContent = inactive + '개';
+  }
+
+  function renderSupportedCoinsTable() {
+    var search  = (document.getElementById('coins-search') || {}).value || '';
+    var stFilter= (document.getElementById('coins-status-filter') || {}).value || '';
+    var q = search.trim().toLowerCase();
+
+    var filtered = _SUPPORTED_COINS.filter(function(c) {
+      if (q && c.name.toLowerCase().indexOf(q) === -1 && c.symbol.toLowerCase().indexOf(q) === -1) return false;
+      if (stFilter && c.status !== stFilter) return false;
+      return true;
+    });
+
+    var tbody = document.getElementById('coins-config-tbody');
+    var empty = document.getElementById('coins-config-empty');
+    if (!tbody) return;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    tbody.innerHTML = filtered.map(function(c) {
+      var statusBadge = c.status === 'active'
+        ? '<span class="badge badge-success">&#9679; 활성화</span>'
+        : '<span class="badge badge-gray">&#9675; 비활성화</span>';
+      var networksHtml = c.networks.map(function(n){ return '<span style="display:inline-block; background:#F1F5F9; border-radius:4px; padding:1px 7px; font-size:11px; margin:1px 2px 1px 0;">'+n+'</span>'; }).join('');
+      var actions = '<button class="btn btn-outline btn-xs" onclick="openCoinEditSO('+c.id+')">수정</button>';
+      if (c.status === 'active') {
+        actions += ' <button class="btn btn-outline btn-xs" style="color:var(--warning); border-color:var(--warning);" onclick="openCoinDeactivate('+c.id+')">비활성화</button>';
+      } else {
+        actions += ' <button class="btn btn-success btn-xs" onclick="activateCoin('+c.id+')">활성화</button>';
+        if (c.neverActivated) {
+          actions += ' <button class="btn btn-danger btn-xs" onclick="openCoinDelete('+c.id+')">삭제</button>';
+        }
+      }
+      return '<tr>'
+        + '<td style="text-align:center; font-size:20px;">'+c.icon+'</td>'
+        + '<td style="font-weight:500;">'+c.name+'</td>'
+        + '<td><span class="badge badge-info">'+c.symbol+'</span></td>'
+        + '<td>'+networksHtml+'</td>'
+        + '<td style="text-align:center; font-size:12px; font-family:monospace;">'+c.decimals+'자리</td>'
+        + '<td style="text-align:center;">'+statusBadge+'</td>'
+        + '<td style="white-space:nowrap;">'+actions+'</td>'
+        + '</tr>';
+    }).join('');
+
+    renderSupportedCoinsStats();
+  }
+
+  /* ── Coin Add Slide-over ── */
+  function openCoinAddSO() {
+    // reset form
+    document.getElementById('coin-add-name').value = '';
+    document.getElementById('coin-add-symbol').value = '';
+    document.getElementById('coin-add-explorer').value = '';
+    document.getElementById('coin-add-decimals').value = '8';
+    document.getElementById('coin-add-icon-preview').textContent = '?';
+    document.getElementById('coin-add-name-err').style.display = 'none';
+    document.getElementById('coin-add-symbol-err').style.display = 'none';
+    document.getElementById('coin-add-network-err').style.display = 'none';
+    document.getElementById('coin-add-explorer-err').style.display = 'none';
+    document.getElementById('coin-add-custom-networks').innerHTML = '';
+    document.getElementById('coin-add-otp-err').style.display = 'none';
+    // uncheck all networks
+    document.querySelectorAll('#coin-add-networks input[type=checkbox]').forEach(function(cb){ cb.checked = false; });
+    // reset otp
+    for (var i = 0; i < 6; i++) { var el = document.getElementById('coin-add-otp-'+i); if(el) el.value = ''; }
+    document.getElementById('coin-add-submit-btn').disabled = true;
+
+    document.getElementById('coin-add-so-backdrop').classList.add('open');
+    document.getElementById('coin-add-so').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ document.getElementById('coin-add-name').focus(); }, 200);
+  }
+  function closeCoinAddSO() {
+    document.getElementById('coin-add-so-backdrop').classList.remove('open');
+    document.getElementById('coin-add-so').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function validateCoinAddForm() {
+    var name    = document.getElementById('coin-add-name').value.trim();
+    var symbol  = document.getElementById('coin-add-symbol').value.trim().toUpperCase();
+    var explorer= document.getElementById('coin-add-explorer').value.trim();
+    var networks= getSelectedNetworks('coin-add');
+    var ok = true;
+
+    // symbol dup check
+    var symErr = document.getElementById('coin-add-symbol-err');
+    if (symbol && _SUPPORTED_COINS.some(function(c){ return c.symbol.toUpperCase() === symbol; })) {
+      symErr.textContent = '이미 등록된 심볼입니다.';
+      symErr.style.display = '';
+      ok = false;
+    } else {
+      symErr.style.display = 'none';
+    }
+
+    // networks
+    var netErr = document.getElementById('coin-add-network-err');
+    if (networks.length === 0) {
+      ok = false;
+    } else {
+      netErr.style.display = 'none';
+    }
+
+    // explorer url
+    var expErr = document.getElementById('coin-add-explorer-err');
+    if (explorer && !explorer.startsWith('http')) {
+      expErr.textContent = '올바른 URL 형식을 입력하세요.';
+      expErr.style.display = '';
+      ok = false;
+    } else {
+      expErr.style.display = 'none';
+    }
+
+    var canSubmit = ok && name.length > 0 && symbol.length > 0 && networks.length > 0 && explorer.length > 0;
+    document.getElementById('coin-add-submit-btn').disabled = !canSubmit;
+  }
+
+  function submitCoinAdd() {
+    var otp = soOtpValue('coin-add-otp');
+    var otpErr = document.getElementById('coin-add-otp-err');
+    if (otp !== '123456' && otp.length === 6) {
+      // demo: accept any 6-digit
+    }
+    if (otp.length < 6) {
+      otpErr.textContent = 'OTP 6자리를 입력하세요.';
+      otpErr.style.display = '';
+      return;
+    }
+    otpErr.style.display = 'none';
+    var name    = document.getElementById('coin-add-name').value.trim();
+    var symbol  = document.getElementById('coin-add-symbol').value.trim().toUpperCase();
+    var decimals= parseInt(document.getElementById('coin-add-decimals').value, 10);
+    var explorer= document.getElementById('coin-add-explorer').value.trim();
+    var networks= getSelectedNetworks('coin-add');
+    var iconText= document.getElementById('coin-add-icon-preview').textContent.trim() || symbol.charAt(0);
+
+    _SUPPORTED_COINS.push({ id:_COIN_NEXT_ID++, symbol:symbol, name:name, icon:iconText.length <= 2 ? iconText : symbol.charAt(0), networks:networks, decimals:decimals, explorerUrl:explorer, status:'inactive', neverActivated:true });
+    closeCoinAddSO();
+    renderSupportedCoinsTable();
+    renderSupportedCoinsStats();
+    addActLog('[코인 추가] ' + symbol + ' / ' + networks.join(', ') + ' / 비활성화 상태로 등록');
+    showToast(symbol + ' 코인이 비활성화 상태로 등록되었습니다.');
+  }
+
+  /* ── Coin Edit Slide-over ── */
+  function openCoinEditSO(id) {
+    var c = _SUPPORTED_COINS.find(function(x){ return x.id === id; });
+    if (!c) return;
+    _COIN_EDIT_IDX = id;
+
+    document.getElementById('coin-edit-so-subtitle').textContent = c.symbol + ' / ' + c.name;
+    document.getElementById('coin-edit-name').value     = c.name;
+    document.getElementById('coin-edit-symbol').value   = c.symbol;
+    document.getElementById('coin-edit-decimals').value = String(c.decimals);
+    document.getElementById('coin-edit-explorer').value = c.explorerUrl;
+    document.getElementById('coin-edit-icon-preview').textContent = c.icon;
+    document.getElementById('coin-edit-network-err').style.display = 'none';
+    document.getElementById('coin-edit-explorer-err').style.display = 'none';
+    document.getElementById('coin-edit-custom-networks').innerHTML = '';
+    document.getElementById('coin-edit-otp-err').style.display = 'none';
+    for (var i = 0; i < 6; i++) { var el = document.getElementById('coin-edit-otp-'+i); if(el) el.value = ''; }
+
+    // set network checkboxes
+    document.querySelectorAll('#coin-edit-networks input[type=checkbox]').forEach(function(cb){
+      cb.checked = c.networks.indexOf(cb.value) !== -1;
+    });
+    // custom networks (not in standard list)
+    var stdNetworks = ['Bitcoin Mainnet','Ethereum Mainnet (ERC20)','Tron Mainnet (TRC20)','BNB Smart Chain (BEP20)','Solana Mainnet'];
+    var customNets = c.networks.filter(function(n){ return stdNetworks.indexOf(n) === -1; });
+    var customDiv = document.getElementById('coin-edit-custom-networks');
+    customNets.forEach(function(n){
+      var div = createCustomNetworkRow('coin-edit', n);
+      customDiv.appendChild(div);
+    });
+
+    // status radio
+    document.getElementById('coin-edit-status-active').checked   = c.status === 'active';
+    document.getElementById('coin-edit-status-inactive').checked = c.status === 'inactive';
+
+    document.getElementById('coin-edit-so-backdrop').classList.add('open');
+    document.getElementById('coin-edit-so').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ document.getElementById('coin-edit-name').focus(); }, 200);
+  }
+  function closeCoinEditSO() {
+    document.getElementById('coin-edit-so-backdrop').classList.remove('open');
+    document.getElementById('coin-edit-so').classList.remove('open');
+    document.body.style.overflow = '';
+    _COIN_EDIT_IDX = null;
+  }
+
+  function validateCoinEditForm() {
+    var explorer = document.getElementById('coin-edit-explorer').value.trim();
+    var expErr   = document.getElementById('coin-edit-explorer-err');
+    if (explorer && !explorer.startsWith('http')) {
+      expErr.textContent = '올바른 URL 형식을 입력하세요.';
+      expErr.style.display = '';
+    } else {
+      expErr.style.display = 'none';
+    }
+  }
+
+  function submitCoinEdit() {
+    var networks = getSelectedNetworks('coin-edit');
+    var netErr   = document.getElementById('coin-edit-network-err');
+    if (networks.length === 0) {
+      netErr.style.display = '';
+      return;
+    }
+    netErr.style.display = 'none';
+
+    var otp    = soOtpValue('coin-edit-otp');
+    var otpErr = document.getElementById('coin-edit-otp-err');
+    if (otp.length < 6) {
+      otpErr.textContent = 'OTP 6자리를 입력하세요.';
+      otpErr.style.display = '';
+      return;
+    }
+    otpErr.style.display = 'none';
+
+    var c = _SUPPORTED_COINS.find(function(x){ return x.id === _COIN_EDIT_IDX; });
+    if (!c) return;
+
+    var newStatus = document.querySelector('input[name="coin-edit-status"]:checked');
+    var newStatusVal = newStatus ? newStatus.value : c.status;
+    var wasActive = c.status === 'active';
+    var goingInactive = wasActive && newStatusVal === 'inactive';
+    var usage = _coinUsageCount(c.symbol);
+
+    var doSave = function() {
+      c.name       = document.getElementById('coin-edit-name').value.trim();
+      c.decimals   = parseInt(document.getElementById('coin-edit-decimals').value, 10);
+      c.explorerUrl= document.getElementById('coin-edit-explorer').value.trim();
+      c.networks   = networks;
+      c.status     = newStatusVal;
+      if (newStatusVal === 'active') c.neverActivated = false;
+      closeCoinEditSO();
+      renderSupportedCoinsTable();
+      renderSupportedCoinsStats();
+      if (goingInactive) {
+        addActLog('[코인 비활성화] ' + c.symbol);
+        showToast(c.symbol + ' 코인이 비활성화되었습니다.');
+      } else if (!wasActive && newStatusVal === 'active') {
+        addActLog('[코인 활성화] ' + c.symbol + ' / ' + networks.join(', '));
+        showToast(c.symbol + ' 코인이 활성화되었습니다. 고객 포털에 즉시 노출됩니다.');
+      } else {
+        addActLog('[코인 수정] ' + c.symbol);
+        showToast(c.symbol + ' 코인 정보가 수정되었습니다.');
+      }
+    };
+
+    if (goingInactive && usage > 0) {
+      // close edit so, show warning modal
+      _COIN_DEACT_IDX = _COIN_EDIT_IDX;
+      closeCoinEditSO();
+      document.getElementById('coin-deact-modal-body').textContent =
+        '현재 ' + usage + '개 고객사가 해당 코인을 사용 중입니다. 비활성화하시겠습니까?';
+      openModal('coin-deact-modal');
+    } else {
+      doSave();
+    }
+  }
+
+  /* ── Activate / Deactivate helpers ── */
+  function activateCoin(id) {
+    var c = _SUPPORTED_COINS.find(function(x){ return x.id === id; });
+    if (!c) return;
+    openOTPModal('코인 활성화 — ' + c.symbol, function() {
+      c.status = 'active';
+      c.neverActivated = false;
+      renderSupportedCoinsTable();
+      renderSupportedCoinsStats();
+      addActLog('[코인 활성화] ' + c.symbol + ' / ' + c.networks.join(', '));
+      showToast(c.symbol + ' 코인이 활성화되었습니다. 고객 포털에 즉시 노출됩니다.');
+    });
+  }
+
+  function openCoinDeactivate(id) {
+    var c = _SUPPORTED_COINS.find(function(x){ return x.id === id; });
+    if (!c) return;
+    var usage = _coinUsageCount(c.symbol);
+    _COIN_DEACT_IDX = id;
+    if (usage > 0) {
+      document.getElementById('coin-deact-modal-body').textContent =
+        '현재 ' + usage + '개 고객사가 ' + c.symbol + ' 코인을 사용 중입니다. 비활성화하시겠습니까?';
+      openModal('coin-deact-modal');
+    } else {
+      openOTPModal('코인 비활성화 — ' + c.symbol, function() {
+        c.status = 'inactive';
+        _COIN_DEACT_IDX = null;
+        renderSupportedCoinsTable();
+        renderSupportedCoinsStats();
+        addActLog('[코인 비활성화] ' + c.symbol);
+        showToast(c.symbol + ' 코인이 비활성화되었습니다.');
+      });
+    }
+  }
+
+  function confirmCoinDeactivate() {
+    closeModal('coin-deact-modal');
+    var id = _COIN_DEACT_IDX;
+    var c  = _SUPPORTED_COINS.find(function(x){ return x.id === id; });
+    if (!c) return;
+    openOTPModal('코인 비활성화 — ' + c.symbol, function() {
+      c.status = 'inactive';
+      _COIN_DEACT_IDX = null;
+      renderSupportedCoinsTable();
+      renderSupportedCoinsStats();
+      addActLog('[코인 비활성화] ' + c.symbol);
+      showToast(c.symbol + ' 코인이 비활성화되었습니다.');
+    });
+  }
+
+  /* ── Coin Delete ── */
+  function openCoinDelete(id) {
+    var c = _SUPPORTED_COINS.find(function(x){ return x.id === id; });
+    if (!c) return;
+    _COIN_DEL_IDX = id;
+    document.getElementById('coin-delete-target').textContent = c.symbol + ' / ' + c.networks.join(', ');
+    for (var i = 0; i < 6; i++) { var el = document.getElementById('coin-del-otp-'+i); if(el) el.value = ''; }
+    document.getElementById('coin-del-otp-err').style.display = 'none';
+    openModal('coin-delete-modal');
+  }
+
+  function submitCoinDelete() {
+    var otp = soOtpValue('coin-del-otp');
+    var otpErr = document.getElementById('coin-del-otp-err');
+    if (otp.length < 6) {
+      otpErr.textContent = 'OTP 6자리를 입력하세요.';
+      otpErr.style.display = '';
+      return;
+    }
+    otpErr.style.display = 'none';
+    var c = _SUPPORTED_COINS.find(function(x){ return x.id === _COIN_DEL_IDX; });
+    if (!c) return;
+    var sym = c.symbol;
+    _SUPPORTED_COINS = _SUPPORTED_COINS.filter(function(x){ return x.id !== _COIN_DEL_IDX; });
+    _COIN_DEL_IDX = null;
+    closeModal('coin-delete-modal');
+    renderSupportedCoinsTable();
+    renderSupportedCoinsStats();
+    addActLog('[코인 삭제] ' + sym);
+    showToast(sym + ' 코인이 삭제되었습니다.');
+  }
+
+  /* ── Network helpers ── */
+  function getSelectedNetworks(prefix) {
+    var result = [];
+    var container = document.getElementById(prefix + '-networks');
+    if (!container) return result;
+    container.querySelectorAll('input[type=checkbox]:checked').forEach(function(cb){ result.push(cb.value); });
+    container.querySelectorAll('.custom-network-input').forEach(function(inp){
+      var v = inp.value.trim();
+      if (v) result.push(v);
+    });
+    return result;
+  }
+
+  function addCustomNetworkInput(prefix) {
+    var container = document.getElementById(prefix + '-custom-networks');
+    if (!container) return;
+    var row = createCustomNetworkRow(prefix, '');
+    container.appendChild(row);
+    row.querySelector('input').focus();
+  }
+
+  function createCustomNetworkRow(prefix, value) {
+    var div = document.createElement('div');
+    div.style.cssText = 'display:flex; align-items:center; gap:6px; margin-top:4px;';
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'form-control custom-network-input';
+    inp.placeholder = '네트워크 직접 입력';
+    inp.value = value;
+    inp.style.flex = '1';
+    inp.oninput = function(){ if (prefix === 'coin-add') validateCoinAddForm(); else validateCoinEditForm(); };
+    var btn = document.createElement('button');
+    btn.className = 'btn btn-outline btn-xs';
+    btn.style.color = 'var(--danger)';
+    btn.textContent = '✕';
+    btn.onclick = function(){ div.remove(); if (prefix === 'coin-add') validateCoinAddForm(); else validateCoinEditForm(); };
+    div.appendChild(inp);
+    div.appendChild(btn);
+    return div;
+  }
+
+  /* ── Slide-over internal OTP helpers ── */
+  function soOtpMove(prefix, el, idx) {
+    el.value = el.value.replace(/[^0-9]/g, '');
+    if (el.value && idx < 5) {
+      var next = document.getElementById(prefix + '-' + (idx+1));
+      if (next) next.focus();
+    }
+  }
+  function soOtpBack(prefix, e, el, idx) {
+    if (e.key === 'Backspace' && !el.value && idx > 0) {
+      var prev = document.getElementById(prefix + '-' + (idx-1));
+      if (prev) { prev.value = ''; prev.focus(); }
+    }
+  }
+  function soOtpValue(prefix) {
+    var v = '';
+    for (var i = 0; i < 6; i++) {
+      var el = document.getElementById(prefix + '-' + i);
+      v += el ? (el.value || '') : '';
+    }
+    return v;
+  }
+
+  /* ── Activity log helper ── */
+  function addActLog(msg) {
+    if (!_ACTLOG_DATA) return;
+    _ACTLOG_DATA.unshift({
+      idx: _ACTLOG_DATA.length, datetime: new Date().toISOString().replace('T',' ').slice(0,19),
+      actorName:'홍길동', actorEmail:'hong@infiniteblock.io', actorMask:'홍○동', role:_ADMIN_ROLE,
+      corp:'(시스템)', cat:'설정', action: msg, result:'success', ip:'192.168.10.10', ua:'Chrome / macOS', errCode:null
+    });
+  }
+
+  /* ════════════════════════════════════
      INIT
   ════════════════════════════════════ */
   (function init() {
@@ -6797,6 +7417,8 @@
     renderCoinAddRequests();
     renderCWAllWallets();
     renderClientIPTable();
+    renderSupportedCoinsTable();
+    renderSupportedCoinsStats();
   })();
 </script>
 </body>
