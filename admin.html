@@ -274,6 +274,42 @@
     .compare-old  { color: var(--text-secondary); text-decoration: line-through; font-size: 12px; }
     .compare-new  { color: var(--primary); font-weight: 700; }
 
+    /* ── 자산 관리 (섹션 16) ── */
+    .assets-total-box {
+      background: linear-gradient(135deg, #1E3A5F 0%, #2563EB 100%);
+      border-radius: 12px; padding: 24px 28px; color: #fff; margin-bottom: 20px;
+    }
+    .assets-total-label { font-size: 12px; font-weight: 600; letter-spacing: 0.5px; opacity: 0.8; text-transform: uppercase; margin-bottom: 8px; }
+    .assets-total-amount { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+    .assets-total-sub { font-size: 13px; opacity: 0.75; }
+    .assets-total-meta { font-size: 11px; opacity: 0.6; margin-top: 10px; }
+    .assets-coin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .assets-coin-table th { background: #F8FAFC; padding: 8px 12px; text-align: left; font-size: 11.5px; font-weight: 700; color: var(--text-secondary); border-bottom: 2px solid var(--border); white-space: nowrap; }
+    .assets-coin-table th.num { text-align: right; }
+    .assets-coin-table td { padding: 10px 12px; border-bottom: 1px solid #F1F5F9; vertical-align: middle; }
+    .assets-coin-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .assets-coin-table tr:last-child td { border-bottom: none; }
+    .assets-coin-table tr.total-row td { background: #F0F7FF; font-weight: 700; border-top: 2px solid var(--border); }
+    .assets-coin-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; margin-right: 8px; flex-shrink: 0; }
+    .assets-coin-icon.btc  { background: #FFF7ED; color: #F97316; }
+    .assets-coin-icon.eth  { background: #EFF6FF; color: #3B82F6; }
+    .assets-coin-icon.usdt { background: #F0FDF4; color: #22C55E; }
+    .assets-coin-icon.xrp  { background: #F5F3FF; color: #8B5CF6; }
+    .assets-coin-icon.default { background: #F1F5F9; color: #64748B; }
+    /* 고객별 자산 행 */
+    .assets-customer-hdr { cursor: pointer; transition: background 0.12s; }
+    .assets-customer-hdr:hover { background: #F8FAFC; }
+    .assets-customer-hdr td { font-weight: 600; }
+    .assets-detail-section { display: none; }
+    .assets-detail-section.open { display: table-row-group; }
+    .assets-detail-inner { background: #F8FAFC; }
+    .assets-detail-inner td { padding: 8px 12px 8px 40px; font-size: 12px; border-bottom: 1px solid #EEF2F7; }
+    .assets-detail-inner td.num { text-align: right; }
+    .assets-subtotal-row td { background: #EFF6FF; font-weight: 700; font-size: 12px; padding: 8px 12px 8px 40px; }
+    /* CSV 모달 */
+    .csv-month-wrap { display: flex; gap: 8px; align-items: center; }
+    .csv-month-wrap select { flex: 1; }
+
     /* ── Radio group ── */
     .radio-group { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
     .radio-item { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; }
@@ -451,6 +487,9 @@
         </div>
         <div class="nav-item" id="nav-accounts" onclick="showPage('accounts', this)">
           <span class="nav-icon">&#128100;</span> 계정 관리
+        </div>
+        <div class="nav-item" id="nav-assets" onclick="showPage('assets', this)">
+          <span class="nav-icon">&#128176;</span> 자산 관리
         </div>
       </div>
 
@@ -1744,6 +1783,95 @@
           </div>
         </div>
       </div><!-- /page-pwmfa -->
+
+      <!-- ══════════════════════════
+           PAGE: 자산 관리 (섹션 16)
+      ══════════════════════════ -->
+      <div class="page" id="page-assets">
+        <div class="page-header">
+          <h1 class="page-title">자산 관리 <span style="font-size:13px;font-weight:400;color:var(--text-secondary);">/ Asset Management</span></h1>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:12px;color:var(--text-secondary);">조회 기준: <strong style="color:var(--primary);">실시간</strong></span>
+            <button type="button" class="btn btn-outline btn-sm" onclick="openAssetsCSVModal()">&#8595; CSV 다운로드 (금감원 보고용)</button>
+          </div>
+        </div>
+
+        <div class="alert" style="background:#FFFBEB;border:1px solid #FCD34D;color:#92400E;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12.5px;">
+          &#9888; 인피닛블록 회원사 보유 자산은 집계에서 제외됩니다. 이 화면은 외부 고객사(고객 포털 사용 법인) 보유 자산만 표시합니다.
+        </div>
+
+        <!-- 탭 -->
+        <div class="admin-tabs">
+          <div class="admin-tab active" id="assets-tab-btn-overview" onclick="switchAssetsTab('overview', this)">&#128202; 전체 고객 자산 현황</div>
+          <div class="admin-tab" id="assets-tab-btn-detail" onclick="switchAssetsTab('detail', this)">&#128100; 고객별 자산 상세</div>
+        </div>
+
+        <!-- TAB 1: 전체 현황 -->
+        <div class="admin-tab-panel active" id="assets-tab-overview">
+          <div class="assets-total-box">
+            <div class="assets-total-label">&#128200; 전체 고객 총 자산 (KRW 환산) — 인피닛블록 회원사 제외</div>
+            <div class="assets-total-amount" id="assets-grand-total-krw">₩ 0</div>
+            <div class="assets-total-sub" id="assets-grand-total-sub">계산 중...</div>
+            <div class="assets-total-meta" id="assets-price-time">현재가 기준 시각: 2026-04-09 10:30:00 (실시간)</div>
+          </div>
+
+          <div class="section-box">
+            <div class="section-box-title">코인별 자산 내역</div>
+            <div style="overflow-x:auto;">
+              <table class="assets-coin-table" id="assets-overview-table">
+                <thead>
+                  <tr>
+                    <th>코인</th>
+                    <th>심볼</th>
+                    <th>네트워크</th>
+                    <th class="num">수량 합계</th>
+                    <th class="num">현재가 (KRW)</th>
+                    <th class="num">평가금액 (KRW)</th>
+                  </tr>
+                </thead>
+                <tbody id="assets-overview-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: 고객별 상세 -->
+        <div class="admin-tab-panel" id="assets-tab-detail">
+          <!-- 필터 바 -->
+          <div class="filter-bar" style="margin-bottom:16px;">
+            <input type="text" class="form-control" id="assets-search" placeholder="&#128269; 고객사명 검색" style="max-width:200px;" oninput="renderAssetsDetail()" />
+            <select class="form-control" id="assets-filter-coin" style="max-width:160px;" onchange="renderAssetsDetail()">
+              <option value="">전체 코인</option>
+              <option value="BTC">BTC</option>
+              <option value="ETH">ETH</option>
+              <option value="USDT_ERC20">USDT (ERC20)</option>
+              <option value="USDT_TRC20">USDT (TRC20)</option>
+              <option value="XRP">XRP</option>
+            </select>
+            <select class="form-control" id="assets-sort" style="max-width:160px;" onchange="renderAssetsDetail()">
+              <option value="total_desc">총 자산 내림차순</option>
+              <option value="total_asc">총 자산 오름차순</option>
+              <option value="name_asc">고객사명 오름차순</option>
+            </select>
+          </div>
+
+          <div class="section-box" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <table class="assets-coin-table" id="assets-detail-table" style="min-width:700px;">
+                <thead>
+                  <tr>
+                    <th style="width:32px;"></th>
+                    <th>고객사명</th>
+                    <th class="num">총 자산 (KRW)</th>
+                    <th>보유 코인</th>
+                  </tr>
+                </thead>
+                <tbody id="assets-detail-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /page-assets -->
 
     </div><!-- /main -->
   </div><!-- /body-wrap -->
@@ -3932,6 +4060,81 @@
   </div>
 </div>
 
+<!-- ══════════════════════════
+     MODAL: 자산 CSV 다운로드 (금감원 보고용)
+══════════════════════════ -->
+<div class="modal modal-wide" id="modal-assets-csv" style="max-width:500px;">
+  <div class="modal-header">
+    <span class="modal-title">고객 자산 현황 CSV 다운로드 (금감원 보고용)</span>
+    <button class="modal-close" type="button" onclick="closeModal('modal-assets-csv')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="padding:20px 24px;">
+    <!-- 안내 -->
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:10px 14px;font-size:12px;color:#1E40AF;margin-bottom:20px;line-height:1.6;">
+      &#9432; 인피닛블록 회원사 자산은 포함되지 않습니다.<br>
+      &#9432; 선택한 월의 말일 24:00(자정) 기준 시세가 적용됩니다.
+    </div>
+
+    <!-- 기준 월 선택 -->
+    <div class="form-group">
+      <label class="form-label">기준 월 선택 <span style="color:#EF4444;">*</span></label>
+      <div class="csv-month-wrap">
+        <select class="form-control" id="csv-year" onchange="onCSVMonthChange()"></select>
+        <span style="font-size:13px;color:var(--text-secondary);">년</span>
+        <select class="form-control" id="csv-month" onchange="onCSVMonthChange()">
+          <option value="1">01월</option><option value="2">02월</option><option value="3">03월</option>
+          <option value="4">04월</option><option value="5">05월</option><option value="6">06월</option>
+          <option value="7">07월</option><option value="8">08월</option><option value="9">09월</option>
+          <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+        </select>
+        <span style="font-size:13px;color:var(--text-secondary);">월</span>
+      </div>
+      <div class="form-hint" style="margin-top:4px;">선택한 월 말일(예: 3월 → 3/31) 24:00 기준가 적용</div>
+      <div id="csv-month-error" style="display:none;color:#EF4444;font-size:12px;margin-top:4px;"></div>
+    </div>
+
+    <!-- 다운로드 사유 -->
+    <div class="form-group" style="margin-top:16px;">
+      <label class="form-label">다운로드 사유 <span style="color:#EF4444;">*</span></label>
+      <select class="form-control" id="csv-reason-preset" onchange="onCSVReasonPreset()" style="margin-bottom:6px;">
+        <option value="">사유 선택...</option>
+        <option value="금감원 월간 보고">금감원 월간 보고</option>
+        <option value="내부 감사">내부 감사</option>
+        <option value="기타">기타 (직접 입력)</option>
+      </select>
+      <textarea class="form-control" id="csv-reason" rows="2" maxlength="100" placeholder="다운로드 사유를 입력하세요 (최대 100자)" oninput="validateCSVForm()" style="resize:none;"></textarea>
+      <div class="form-hint"><span id="csv-reason-len">0</span>/100자</div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:20px 0;"></div>
+
+    <!-- OTP 입력 -->
+    <div style="text-align:center;">
+      <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">OTP 인증</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Google Authenticator 앱에서 6자리 코드를 입력하세요</div>
+      <div class="otp-row" style="justify-content:center;margin-bottom:8px;" id="csv-otp-row">
+        <input type="text" class="otp-box" maxlength="1" id="cotp-0" oninput="csvOtpMove(this,0)" onkeydown="csvOtpBack(event,this,0)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="cotp-1" oninput="csvOtpMove(this,1)" onkeydown="csvOtpBack(event,this,1)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="cotp-2" oninput="csvOtpMove(this,2)" onkeydown="csvOtpBack(event,this,2)" inputmode="numeric" />
+        <div style="width:8px;"></div>
+        <input type="text" class="otp-box" maxlength="1" id="cotp-3" oninput="csvOtpMove(this,3)" onkeydown="csvOtpBack(event,this,3)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="cotp-4" oninput="csvOtpMove(this,4)" onkeydown="csvOtpBack(event,this,4)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="cotp-5" oninput="csvOtpMove(this,5)" onkeydown="csvOtpBack(event,this,5)" inputmode="numeric" />
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);">남은 시도: <span id="csv-otp-attempts">5</span>회</div>
+      <div id="csv-otp-error" style="display:none;color:#EF4444;font-size:12px;margin-top:4px;"></div>
+      <div id="csv-otp-lock" style="display:none;color:#EF4444;font-size:12px;margin-top:4px;font-weight:600;">&#128274; 5회 실패로 잠금되었습니다. 관리자에게 문의하세요.</div>
+      <div style="margin-top:10px;padding:6px 12px;background:#F8FAFC;border-radius:6px;font-size:11px;color:var(--text-secondary);display:inline-block;">
+        <strong>Demo</strong> : 아무 6자리 숫자 입력 시 인증됩니다
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer" style="gap:10px;">
+    <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-assets-csv')">취소</button>
+    <button type="button" class="btn btn-primary" style="flex:2;" id="csv-download-btn" onclick="submitAssetsCSV()" disabled>&#8595; CSV 다운로드</button>
+  </div>
+</div>
+
 <div class="modal" id="modal-otp" style="max-width:380px;">
   <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
     <span></span>
@@ -3992,6 +4195,7 @@
     'nav-clients':        ['master', 'general', 'aml_officer', 'aml_manager'],  // coldwallet 제외
     'nav-kyb':            ['master', 'aml_officer', 'aml_manager'],
     'nav-accounts':       ['master', 'general'],
+    'nav-assets':         ['master', 'general'],
     // ── 지갑·자산
     'nav-coldwallet':     ['master', 'coldwallet'],
     'nav-whitelist':      ['master', 'general'],
@@ -4129,6 +4333,7 @@
     if (pageId === 'transactions') initTxPage();
     if (pageId === 'activitylog') renderActLog();
     if (pageId === 'pwmfa') applyPWMFARoleUI();
+    if (pageId === 'assets') renderAssetsPage();
 
     closeMobileSidebar();
   }
@@ -8308,6 +8513,415 @@
   }
 
   /* ════════════════════════════════════
+     자산 관리 (섹션 16) — 데이터
+  ════════════════════════════════════ */
+  var _ASSETS_COINS = {
+    'BTC':        { name:'Bitcoin',    symbol:'BTC',  network:'Bitcoin Mainnet', price:140000000, icon:'₿',  cls:'btc'  },
+    'ETH':        { name:'Ethereum',   symbol:'ETH',  network:'Ethereum Mainnet',price:5200000,   icon:'◎',  cls:'eth'  },
+    'USDT_ERC20': { name:'Tether USD', symbol:'USDT', network:'ERC20',           price:1380,      icon:'₮',  cls:'usdt' },
+    'USDT_TRC20': { name:'Tether USD', symbol:'USDT', network:'TRC20',           price:1380,      icon:'₮',  cls:'usdt' },
+    'XRP':        { name:'Ripple',     symbol:'XRP',  network:'XRP Ledger',      price:850,       icon:'✕',  cls:'xrp'  }
+  };
+
+  var _ASSETS_CUSTOMERS = [
+    { id:1, name:'알파투자운용(주)', bizNum:'123-45-67890', wallets:[
+      { wallet:'운영 지갑 A', coin:'BTC',        qty:3.00000000 },
+      { wallet:'운영 지갑 A', coin:'USDT_ERC20', qty:500000.000000 },
+      { wallet:'운영 지갑 A', coin:'ETH',        qty:10.00000000 },
+      { wallet:'운영 지갑 B', coin:'BTC',        qty:1.50000000 },
+      { wallet:'예비 지갑 A', coin:'ETH',        qty:5.00000000 }
+    ]},
+    { id:2, name:'베타캐피탈(주)', bizNum:'234-56-78901', wallets:[
+      { wallet:'주 지갑 A', coin:'BTC',        qty:8.00000000 },
+      { wallet:'주 지갑 A', coin:'USDT_TRC20', qty:800000.000000 },
+      { wallet:'주 지갑 B', coin:'BTC',        qty:2.00000000 }
+    ]},
+    { id:3, name:'감마트레이딩(주)', bizNum:'345-67-89012', wallets:[
+      { wallet:'트레이딩 지갑 A', coin:'BTC', qty:5.00000000 },
+      { wallet:'트레이딩 지갑 A', coin:'ETH', qty:30.00000000 },
+      { wallet:'트레이딩 지갑 B', coin:'BTC', qty:2.50000000 }
+    ]},
+    { id:4, name:'델타자산운용(주)', bizNum:'456-78-90123', wallets:[
+      { wallet:'운용 지갑 A', coin:'BTC',        qty:2.00000000 },
+      { wallet:'운용 지갑 A', coin:'USDT_ERC20', qty:1000000.000000 },
+      { wallet:'운용 지갑 A', coin:'ETH',        qty:20.00000000 },
+      { wallet:'운용 지갑 B', coin:'XRP',        qty:2000000.000000 }
+    ]}
+  ];
+
+  var _assetsExpanded = {};  // { customerId: true/false }
+  var _csvOtpAttempts = 0;
+
+  /* ── 숫자 포맷 헬퍼 ── */
+  function _fmtNum(n) {
+    return n.toLocaleString('ko-KR');
+  }
+  function _fmtKRW(n) {
+    return '₩\u00A0' + n.toLocaleString('ko-KR');
+  }
+  function _fmtKRW_억(n) {
+    if (n >= 1e12) return (n / 1e12).toFixed(2) + '조\u00A0' + ((n % 1e12) / 1e8).toFixed(0) + '억\u00A0원';
+    if (n >= 1e8)  return (n / 1e8).toFixed(2) + '억\u00A0원';
+    if (n >= 1e4)  return (n / 1e4).toFixed(0) + '만\u00A0원';
+    return _fmtKRW(n);
+  }
+  function _calcCustomerTotal(customer) {
+    return customer.wallets.reduce(function(sum, w) {
+      var c = _ASSETS_COINS[w.coin];
+      return sum + (c ? c.price * w.qty : 0);
+    }, 0);
+  }
+
+  /* ── 탭 전환 ── */
+  function switchAssetsTab(tab, el) {
+    document.querySelectorAll('#page-assets .admin-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('#page-assets .admin-tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('assets-tab-' + tab).classList.add('active');
+    if (tab === 'detail') renderAssetsDetail();
+  }
+
+  /* ── 전체 페이지 진입 ── */
+  function renderAssetsPage() {
+    renderAssetsOverview();
+    renderAssetsDetail();
+  }
+
+  /* ── TAB 1: 전체 현황 ── */
+  function renderAssetsOverview() {
+    // 코인별 집계
+    var coinTotals = {};
+    _ASSETS_CUSTOMERS.forEach(function(c) {
+      c.wallets.forEach(function(w) {
+        if (!coinTotals[w.coin]) coinTotals[w.coin] = 0;
+        coinTotals[w.coin] += w.qty;
+      });
+    });
+
+    var grandTotal = 0;
+    var rows = '';
+    // 정렬: 평가금액 내림차순
+    var coinKeys = Object.keys(coinTotals).sort(function(a, b) {
+      return (_ASSETS_COINS[b].price * coinTotals[b]) - (_ASSETS_COINS[a].price * coinTotals[a]);
+    });
+
+    coinKeys.forEach(function(key) {
+      var c = _ASSETS_COINS[key];
+      var qty = coinTotals[key];
+      var eval_ = c.price * qty;
+      grandTotal += eval_;
+      rows += '<tr>'
+        + '<td><span class="assets-coin-icon ' + c.cls + '">' + c.icon + '</span>' + c.name + '</td>'
+        + '<td><strong>' + c.symbol + '</strong></td>'
+        + '<td><span style="font-size:11px;background:#F1F5F9;padding:2px 6px;border-radius:4px;color:var(--text-secondary);">' + c.network + '</span></td>'
+        + '<td class="num" style="font-family:monospace;">' + qty.toFixed(key === 'USDT_ERC20' || key === 'USDT_TRC20' || key === 'XRP' ? 2 : 8) + '</td>'
+        + '<td class="num">' + _fmtKRW(c.price) + '</td>'
+        + '<td class="num" style="font-weight:600;">' + _fmtKRW(Math.round(eval_)) + '</td>'
+        + '</tr>';
+    });
+
+    rows += '<tr class="total-row">'
+      + '<td colspan="5" style="text-align:right;font-size:13px;">합계</td>'
+      + '<td class="num">' + _fmtKRW(Math.round(grandTotal)) + '</td>'
+      + '</tr>';
+
+    document.getElementById('assets-overview-tbody').innerHTML = rows;
+    document.getElementById('assets-grand-total-krw').textContent = _fmtKRW(Math.round(grandTotal));
+    document.getElementById('assets-grand-total-sub').textContent = '(' + _fmtKRW_억(grandTotal) + ')';
+  }
+
+  /* ── TAB 2: 고객별 상세 ── */
+  function renderAssetsDetail() {
+    var search   = (document.getElementById('assets-search') || {}).value || '';
+    var coinFilt = (document.getElementById('assets-filter-coin') || {}).value || '';
+    var sort     = (document.getElementById('assets-sort') || {}).value || 'total_desc';
+
+    // 필터
+    var list = _ASSETS_CUSTOMERS.filter(function(c) {
+      if (search && c.name.indexOf(search) === -1) return false;
+      if (coinFilt && !c.wallets.some(function(w) { return w.coin === coinFilt; })) return false;
+      return true;
+    });
+
+    // 정렬
+    list = list.slice().sort(function(a, b) {
+      if (sort === 'total_asc')  return _calcCustomerTotal(a) - _calcCustomerTotal(b);
+      if (sort === 'name_asc')   return a.name.localeCompare(b.name);
+      return _calcCustomerTotal(b) - _calcCustomerTotal(a);
+    });
+
+    var tbody = document.getElementById('assets-detail-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-secondary);">조회된 고객사가 없습니다.</td></tr>';
+      return;
+    }
+
+    list.forEach(function(customer) {
+      var total = _calcCustomerTotal(customer);
+      var isOpen = !!_assetsExpanded[customer.id];
+
+      // 보유 코인 목록 (중복 제거)
+      var coins = [];
+      customer.wallets.forEach(function(w) {
+        var sym = _ASSETS_COINS[w.coin] ? _ASSETS_COINS[w.coin].symbol : w.coin;
+        if (coins.indexOf(sym) === -1) coins.push(sym);
+      });
+
+      // 헤더 행
+      var hdrTr = document.createElement('tr');
+      hdrTr.className = 'assets-customer-hdr';
+      hdrTr.onclick = (function(cid) { return function() { toggleCustomerAssets(cid); }; })(customer.id);
+      hdrTr.innerHTML = '<td style="text-align:center;font-size:14px;">' + (isOpen ? '&#9660;' : '&#9654;') + '</td>'
+        + '<td>' + customer.name + '</td>'
+        + '<td class="num" style="font-weight:700;">' + _fmtKRW(Math.round(total)) + '<br><span style="font-size:11px;color:var(--text-secondary);font-weight:400;">(' + _fmtKRW_억(total) + ')</span></td>'
+        + '<td><span style="font-size:11.5px;">' + coins.join(' / ') + '</span></td>';
+      tbody.appendChild(hdrTr);
+
+      // 상세 행 그룹
+      if (isOpen) {
+        var detailRows = '';
+        // 코인별로 그룹화
+        var wallets = coinFilt
+          ? customer.wallets.filter(function(w) { return w.coin === coinFilt; })
+          : customer.wallets;
+
+        wallets.forEach(function(w) {
+          var c = _ASSETS_COINS[w.coin];
+          if (!c) return;
+          var eval_ = c.price * w.qty;
+          var qtyDecimals = (c.symbol === 'BTC' || c.symbol === 'ETH') ? 8 : 2;
+          var tr = document.createElement('tr');
+          tr.className = 'assets-detail-inner';
+          tr.innerHTML = '<td style="text-align:center;padding-left:0;"></td>'
+            + '<td><span class="assets-coin-icon ' + c.cls + '" style="width:22px;height:22px;font-size:11px;margin-right:6px;">' + c.icon + '</span>'
+            + '<strong>' + c.symbol + '</strong>&nbsp;<span style="font-size:11px;color:var(--text-secondary);">' + c.network + '</span></td>'
+            + '<td style="font-size:12px;">' + w.wallet + '<span style="display:block;font-size:11px;color:var(--text-secondary);font-family:monospace;">' + w.qty.toFixed(qtyDecimals) + ' ' + c.symbol + '</span></td>'
+            + '<td class="num" style="font-weight:600;color:var(--primary);">' + _fmtKRW(Math.round(eval_)) + '</td>';
+          tbody.appendChild(tr);
+        });
+
+        var subtotalTr = document.createElement('tr');
+        subtotalTr.innerHTML = '<td colspan="3" style="background:#EFF6FF;font-weight:700;font-size:12px;padding:8px 12px 8px 20px;">소계</td>'
+          + '<td style="background:#EFF6FF;font-weight:700;font-size:12px;padding:8px 12px;text-align:right;">' + _fmtKRW(Math.round(total)) + '</td>';
+        tbody.appendChild(subtotalTr);
+      }
+    });
+  }
+
+  function toggleCustomerAssets(cid) {
+    _assetsExpanded[cid] = !_assetsExpanded[cid];
+    renderAssetsDetail();
+  }
+
+  /* ── CSV 다운로드 모달 ── */
+  function openAssetsCSVModal() {
+    // 연도 옵션 초기화
+    var yearSel = document.getElementById('csv-year');
+    yearSel.innerHTML = '';
+    var now = new Date();
+    for (var y = now.getFullYear(); y >= 2024; y--) {
+      var opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      yearSel.appendChild(opt);
+    }
+    // 기본: 직전 월
+    var prevMonth = now.getMonth(); // 0-based, so this is previous month (1-based)
+    var prevYear  = now.getFullYear();
+    if (prevMonth === 0) { prevMonth = 12; prevYear--; }
+    yearSel.value = prevYear;
+    document.getElementById('csv-month').value = prevMonth;
+
+    // OTP 초기화
+    _csvOtpAttempts = 0;
+    for (var i = 0; i < 6; i++) {
+      var box = document.getElementById('cotp-' + i);
+      if (box) { box.value = ''; box.disabled = false; box.style.borderColor = ''; }
+    }
+    document.getElementById('csv-otp-error').style.display  = 'none';
+    document.getElementById('csv-otp-lock').style.display   = 'none';
+    document.getElementById('csv-otp-attempts').textContent = 5;
+    document.getElementById('csv-month-error').style.display = 'none';
+
+    // 사유 초기화
+    document.getElementById('csv-reason-preset').value = '';
+    document.getElementById('csv-reason').value = '';
+    document.getElementById('csv-reason-len').textContent = '0';
+
+    validateCSVForm();
+    openModal('modal-assets-csv');
+    setTimeout(function() {
+      var f = document.getElementById('cotp-0');
+      if (f) f.focus();
+    }, 200);
+  }
+
+  function onCSVMonthChange() {
+    document.getElementById('csv-month-error').style.display = 'none';
+    validateCSVForm();
+  }
+
+  function onCSVReasonPreset() {
+    var val = document.getElementById('csv-reason-preset').value;
+    if (val && val !== '기타') {
+      document.getElementById('csv-reason').value = val;
+    } else if (val === '기타') {
+      document.getElementById('csv-reason').value = '';
+    }
+    document.getElementById('csv-reason-len').textContent = document.getElementById('csv-reason').value.length;
+    validateCSVForm();
+  }
+
+  function validateCSVForm() {
+    var reason  = (document.getElementById('csv-reason') || {}).value || '';
+    var yearEl  = document.getElementById('csv-year');
+    var monthEl = document.getElementById('csv-month');
+    var lenEl   = document.getElementById('csv-reason-len');
+    if (lenEl) lenEl.textContent = reason.length;
+
+    var now = new Date();
+    var selYear  = parseInt(yearEl ? yearEl.value : 0);
+    var selMonth = parseInt(monthEl ? monthEl.value : 0);
+    var isCurrent = (selYear === now.getFullYear() && selMonth === (now.getMonth() + 1));
+
+    var errEl = document.getElementById('csv-month-error');
+    if (isCurrent && errEl) {
+      errEl.textContent = '현재 진행 중인 월은 선택할 수 없습니다. 전월까지 선택 가능합니다.';
+      errEl.style.display = 'block';
+    } else if (errEl) {
+      errEl.style.display = 'none';
+    }
+
+    // OTP 모두 입력됐는지
+    var otpFilled = true;
+    for (var i = 0; i < 6; i++) {
+      var b = document.getElementById('cotp-' + i);
+      if (!b || !b.value) { otpFilled = false; break; }
+    }
+
+    var btn = document.getElementById('csv-download-btn');
+    if (btn) btn.disabled = !(!isCurrent && reason.trim().length > 0 && otpFilled);
+  }
+
+  function csvOtpMove(el, idx) {
+    el.value = el.value.replace(/[^0-9]/g, '');
+    if (el.value && idx < 5) {
+      var next = document.getElementById('cotp-' + (idx + 1));
+      if (next) next.focus();
+    }
+    validateCSVForm();
+  }
+
+  function csvOtpBack(e, el, idx) {
+    if (e.key === 'Backspace' && !el.value && idx > 0) {
+      var prev = document.getElementById('cotp-' + (idx - 1));
+      if (prev) { prev.value = ''; prev.focus(); }
+    }
+  }
+
+  function submitAssetsCSV() {
+    // OTP 검증
+    var code = '';
+    for (var i = 0; i < 6; i++) code += (document.getElementById('cotp-' + i).value || '');
+    if (code.length < 6) {
+      document.getElementById('csv-otp-error').textContent = '6자리 코드를 모두 입력해주세요.';
+      document.getElementById('csv-otp-error').style.display = 'block';
+      return;
+    }
+
+    _csvOtpAttempts++;
+    var remaining = 5 - _csvOtpAttempts;
+    document.getElementById('csv-otp-attempts').textContent = Math.max(0, remaining);
+
+    // Demo: 모든 6자리 허용
+    if (true) {
+      closeModal('modal-assets-csv');
+
+      var yearVal  = parseInt(document.getElementById('csv-year').value);
+      var monthVal = parseInt(document.getElementById('csv-month').value);
+      var reason   = document.getElementById('csv-reason').value;
+
+      // CSV 생성 및 다운로드
+      _generateAssetsCSV(yearVal, monthVal);
+
+      // 활동 로그
+      var lastDay = new Date(yearVal, monthVal, 0).getDate();
+      var refDate = yearVal + '-' + String(monthVal).padStart(2,'0') + '-' + String(lastDay).padStart(2,'0');
+      var nowStr  = new Date().toISOString().replace('T',' ').slice(0,16);
+      _ACTLOG_DATA.unshift({
+        idx: _ACTLOG_DATA.length,
+        datetime: nowStr,
+        actorName: '홍길동', actorEmail: 'hong@infiniteblock.io', actorMask: '홍○동',
+        role: _ADMIN_ROLE, corp: '-',
+        cat: '자산CSV다운로드',
+        action: '금감원 보고용 자산 CSV 다운로드 — 기준월: ' + yearVal + '년 ' + monthVal + '월 / 사유: ' + reason,
+        result: 'success', ip: '192.168.10.10', ua: 'Chrome / macOS', errCode: null
+      });
+
+      showToast('CSV 파일이 다운로드되었습니다. (기준월: ' + yearVal + '년 ' + monthVal + '월)');
+      return;
+    }
+
+    // OTP 실패
+    document.getElementById('csv-otp-error').textContent = 'OTP가 올바르지 않습니다. 남은 시도: ' + remaining + '회';
+    document.getElementById('csv-otp-error').style.display = 'block';
+    if (_csvOtpAttempts >= 5) {
+      for (var j = 0; j < 6; j++) {
+        var box = document.getElementById('cotp-' + j);
+        if (box) { box.disabled = true; box.style.borderColor = '#EF4444'; }
+      }
+      document.getElementById('csv-download-btn').disabled = true;
+      document.getElementById('csv-otp-lock').style.display = 'block';
+      document.getElementById('csv-otp-error').style.display = 'none';
+    }
+  }
+
+  function _generateAssetsCSV(year, month) {
+    var lastDay = new Date(year, month, 0).getDate();
+    var refDate = year + '-' + String(month).padStart(2,'0') + '-' + String(lastDay).padStart(2,'0');
+    var refTime = '24:00:00';
+
+    var headers = [
+      'reference_date','reference_time','customer_name','business_number',
+      'wallet_name','coin_name','coin_symbol','network',
+      'quantity','unit_price_krw','evaluated_amount_krw','note'
+    ].join(',');
+
+    var rows = [headers];
+    _ASSETS_CUSTOMERS.forEach(function(customer) {
+      customer.wallets.forEach(function(w) {
+        var c = _ASSETS_COINS[w.coin];
+        if (!c) return;
+        var eval_ = Math.round(c.price * w.qty);
+        var qtyStr = w.qty.toFixed(8);
+        rows.push([
+          refDate, refTime,
+          '"' + customer.name + '"',
+          customer.bizNum,
+          '"' + w.wallet + '"',
+          '"' + c.name + '"',
+          c.symbol, c.network,
+          qtyStr, c.price, eval_,
+          '인피닛블록 회원사 자산 제외'
+        ].join(','));
+      });
+    });
+
+    var csvContent = '\uFEFF' + rows.join('\r\n');  // BOM for Korean in Excel
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url;
+    a.download = 'infiniteblock_customer_assets_' + year + String(month).padStart(2,'0') + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  /* ════════════════════════════════════
      PW / MFA Setting — 데이터 (IIFE 전에 정의해야 initPWMFAPage에서 사용 가능)
   ════════════════════════════════════ */
   var _PWMFA_SAVED = {
@@ -8360,6 +8974,7 @@
     renderSupportedCoinsTable();
     renderSupportedCoinsStats();
     initPWMFAPage();
+    // 자산 관리는 페이지 진입 시 renderAssetsPage()로 렌더링
   })();
 
   /* ════════════════════════════════════
