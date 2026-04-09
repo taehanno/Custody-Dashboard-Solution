@@ -1382,51 +1382,93 @@
            PAGE: STR / 이상거래
       ══════════════════════════ -->
       <div class="page" id="page-str">
-        <div class="page-header">
-          <h1 class="page-title">STR / 이상거래</h1>
-          <button class="btn btn-outline btn-sm">&#8595; Export</button>
+        <div class="page-header" style="margin-bottom:16px;">
+          <h1 class="page-title">STR / 이상거래 탐지</h1>
         </div>
-        <div class="stats-row">
-          <div class="stat-card"><span class="stat-label">미처리 7일+</span><span class="stat-value stat-red">2</span></div>
-          <div class="stat-card"><span class="stat-label">검출</span><span class="stat-value stat-orange">5</span></div>
-          <div class="stat-card"><span class="stat-label">보고 완료</span><span class="stat-value stat-green">18</span></div>
-          <div class="stat-card"><span class="stat-label">미보고</span><span class="stat-value stat-blue">42</span></div>
+
+        <!-- 3-1: 통계 카드 -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px;">
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">미처리</div>
+            <div id="str-stat-unprocessed" style="font-size:24px; font-weight:700; color:#EF4444;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">보고 완료</div>
+            <div id="str-stat-reported" style="font-size:24px; font-weight:700; color:#10B981;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">미보고</div>
+            <div id="str-stat-nonreported" style="font-size:24px; font-weight:700; color:#6B7280;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">경고 (D+3 초과)</div>
+            <div id="str-stat-warning" style="font-size:24px; font-weight:700; color:#F59E0B;">0</div>
+          </div>
         </div>
+
         <div class="card" style="padding:0;">
+          <!-- 3-2: 탭 -->
+          <div id="str-tabs" style="display:flex; border-bottom:2px solid var(--border); padding:0 16px;">
+            <button class="kyb-tab active" data-tab="unprocessed" onclick="_strSetTab('unprocessed',this)">미처리</button>
+            <button class="kyb-tab" data-tab="reported" onclick="_strSetTab('reported',this)">보고 완료</button>
+            <button class="kyb-tab" data-tab="nonreported" onclick="_strSetTab('nonreported',this)">미보고</button>
+            <button class="kyb-tab" data-tab="all" onclick="_strSetTab('all',this)">전체</button>
+          </div>
+
+          <!-- 필터 바 -->
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border);">
+            <input type="text" id="str-search" class="form-control" placeholder="감지번호 / 고객명 검색" style="width:200px;" oninput="renderSTR()" />
+            <select id="str-rule-filter" class="form-control" style="width:130px;" onchange="renderSTR()">
+              <option value="">룰코드 전체</option>
+              <option value="RM">RM (자금세탁)</option>
+              <option value="RD">RD (이중지불)</option>
+              <option value="RS">RS (구조화)</option>
+              <option value="RA">RA (계정이상)</option>
+            </select>
+            <select id="str-status-filter" class="form-control" style="width:120px;" onchange="renderSTR()">
+              <option value="">상태 전체</option>
+              <option value="unprocessed">미처리</option>
+              <option value="warning">경고</option>
+              <option value="reported">보고 완료</option>
+              <option value="nonreported">미보고</option>
+            </select>
+            <div style="display:flex; gap:4px;">
+              <button class="btn btn-outline btn-sm" id="str-preset-7d" onclick="_strPreset('7d')" style="font-size:11px;">7일</button>
+              <button class="btn btn-outline btn-sm" id="str-preset-30d" onclick="_strPreset('30d')" style="font-size:11px;">30일</button>
+              <button class="btn btn-outline btn-sm" id="str-preset-all" onclick="_strPreset('all')" style="font-size:11px; background:var(--primary); color:#fff; border-color:var(--primary);">전체</button>
+            </div>
+            <input type="date" id="str-date-from" class="form-control" style="width:136px;" onchange="renderSTR()" />
+            <span style="color:var(--text-secondary); font-size:12px;">~</span>
+            <input type="date" id="str-date-to" class="form-control" style="width:136px;" onchange="renderSTR()" />
+            <button class="btn btn-outline btn-sm" onclick="_strResetFilters()" style="font-size:11px;">초기화</button>
+            <button class="btn btn-outline btn-sm" onclick="openSTRCSV()" style="font-size:11px; margin-left:auto;">&#8595; CSV</button>
+          </div>
+
+          <!-- 테이블 -->
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>이상거래번호</th>
-                  <th>검출일시</th>
-                  <th>경과</th>
-                  <th>고객사</th>
-                  <th>룰 ID</th>
+                  <th>감지번호</th>
+                  <th>감지일시</th>
+                  <th>룰코드</th>
+                  <th>룰명</th>
+                  <th>고객명</th>
+                  <th>거래금액</th>
                   <th>상태</th>
-                  <th>처리</th>
+                  <th>처리기한</th>
+                  <th>관리</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr class="row-danger">
-                  <td style="font-family:monospace; font-size:12px; font-weight:700;">STR-20251110-001</td>
-                  <td style="font-size:11.5px; white-space:nowrap;">2025-11-10 08:22:14</td>
-                  <td><span style="color:var(--danger); font-weight:700; font-size:12px;">D+10 &#9650;</span></td>
-                  <td style="font-weight:600;">감마트레이딩(주)</td>
-                  <td><span class="badge badge-danger">RM01</span></td>
-                  <td><span class="badge badge-danger">미처리</span></td>
-                  <td><button class="btn btn-warning btn-xs">처리</button></td>
-                </tr>
-                <tr>
-                  <td style="font-family:monospace; font-size:12px; font-weight:700;">STR-20251118-002</td>
-                  <td style="font-size:11.5px; white-space:nowrap;">2025-11-18 14:55:02</td>
-                  <td><span style="color:var(--warning); font-size:12px;">D+2</span></td>
-                  <td style="font-weight:600;">베타캐피탈 유한회사</td>
-                  <td><span class="badge badge-warning">RD02</span></td>
-                  <td><span class="badge badge-warning">검출</span></td>
-                  <td><button class="btn btn-warning btn-xs">처리</button></td>
-                </tr>
-              </tbody>
+              <tbody id="str-tbody"></tbody>
             </table>
+          </div>
+
+          <!-- 빈 상태 -->
+          <div id="str-empty" style="display:none; padding:48px 16px; text-align:center;">
+            <div style="font-size:32px; margin-bottom:10px;">&#128202;</div>
+            <div id="str-empty-msg" style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">해당하는 탐지 내역이 없습니다.</div>
+            <div style="font-size:12px; color:var(--text-secondary);">필터 조건을 변경해 보세요.</div>
           </div>
         </div>
       </div>
@@ -4124,6 +4166,189 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     MODALS & SLIDEOVER: STR / 이상거래 (섹션 3)
+══════════════════════════════════════ -->
+
+<!-- 3-3: STR 상세 Slideover -->
+<div class="slideover-backdrop" id="str-detail-backdrop" onclick="closeSTRDetail()"></div>
+<div class="slideover" id="str-detail-so" style="width:min(700px,100%);">
+  <div class="so-header">
+    <div>
+      <div class="so-title">STR 상세 — <span id="strd-id" style="font-family:monospace; font-size:13px;"></span></div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">이상거래 탐지 상세 정보</div>
+    </div>
+    <button class="modal-close" onclick="closeSTRDetail()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <!-- 상태 + 기본 정보 -->
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">상태</span><span class="info-value" id="strd-status"></span></div>
+      <div class="info-row"><span class="info-label">감지일시</span><span class="info-value" id="strd-detected-at"></span></div>
+      <div class="info-row"><span class="info-label">처리기한</span><span class="info-value" id="strd-deadline"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">경과일</span><span class="info-value" id="strd-elapsed"></span></div>
+    </div>
+    <!-- 고객 정보 -->
+    <div class="section-box">
+      <div class="section-box-title">고객 정보</div>
+      <div class="info-row"><span class="info-label">고객명</span><span class="info-value" id="strd-client"></span></div>
+      <div class="info-row"><span class="info-label">고객 ID</span><span class="info-value" id="strd-client-id" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">고객 유형</span><span class="info-value" id="strd-client-type"></span></div>
+    </div>
+    <!-- 룰 정보 -->
+    <div class="section-box">
+      <div class="section-box-title">탐지 룰</div>
+      <div class="info-row"><span class="info-label">룰코드</span><span class="info-value" id="strd-rule-code"></span></div>
+      <div class="info-row"><span class="info-label">룰명</span><span class="info-value" id="strd-rule-name"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">룰 설명</span><span class="info-value" id="strd-rule-desc" style="line-height:1.5; font-size:12.5px;"></span></div>
+    </div>
+    <!-- 거래 정보 -->
+    <div class="section-box">
+      <div class="section-box-title">거래 정보</div>
+      <div class="info-row"><span class="info-label">거래금액</span><span class="info-value" id="strd-amount" style="font-weight:700;"></span></div>
+      <div class="info-row"><span class="info-label">거래 유형</span><span class="info-value" id="strd-tx-type"></span></div>
+      <div class="info-row"><span class="info-label">코인</span><span class="info-value" id="strd-coin"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">관련 거래 수</span><span class="info-value" id="strd-tx-count"></span></div>
+    </div>
+    <!-- 처리 이력 -->
+    <div class="section-box" id="strd-process-section" style="display:none;">
+      <div class="section-box-title">처리 정보</div>
+      <div class="info-row"><span class="info-label">처리 유형</span><span class="info-value" id="strd-process-type"></span></div>
+      <div class="info-row"><span class="info-label">처리자</span><span class="info-value" id="strd-processor"></span></div>
+      <div class="info-row"><span class="info-label">처리일시</span><span class="info-value" id="strd-processed-at"></span></div>
+      <div class="info-row" id="strd-report-no-row" style="display:none;"><span class="info-label">보고 번호</span><span class="info-value" id="strd-report-no" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row" id="strd-report-ch-row" style="display:none;"><span class="info-label">보고 채널</span><span class="info-value" id="strd-report-ch"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">처리 사유</span><span class="info-value" id="strd-process-note" style="line-height:1.5; font-size:12.5px;"></span></div>
+    </div>
+  </div>
+  <div class="so-footer" id="strd-footer">
+    <!-- populated by openSTRDetail() -->
+  </div>
+</div>
+
+<!-- 3-4: 보고 처리 모달 -->
+<div class="modal" id="modal-str-report" style="max-width:480px;">
+  <div class="modal-header">
+    <span class="modal-title">&#128203; STR 보고 처리</span>
+    <button class="modal-close" onclick="closeModal('modal-str-report')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="display:grid; gap:14px;">
+    <div style="background:#EFF6FF; border-radius:8px; padding:10px 12px; font-size:12px; color:#1E40AF;">
+      &#9432; 감지번호 <strong id="str-rep-id"></strong>에 대한 STR/CTR 보고를 처리합니다.
+    </div>
+    <div>
+      <label class="form-label">보고 유형 <span style="color:var(--danger);">*</span></label>
+      <div style="display:flex; gap:10px; margin-top:4px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="str-rep-type" value="STR" onchange="_strRepTypeChange()" checked /> STR (의심거래보고)
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="str-rep-type" value="CTR" onchange="_strRepTypeChange()" /> CTR (고액현금거래보고)
+        </label>
+      </div>
+    </div>
+    <div>
+      <label class="form-label">보고 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea id="str-rep-reason" class="form-control" rows="4" placeholder="보고 사유를 상세히 입력하세요 (최대 500자)" maxlength="500" style="width:100%; resize:vertical;" oninput="_strRepValidate()"></textarea>
+      <div style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:2px;"><span id="str-rep-char">0</span>/500</div>
+    </div>
+    <div>
+      <label class="form-label">첨부파일 <span style="color:var(--text-secondary); font-weight:400;">(선택, 최대 3개)</span></label>
+      <input type="file" id="str-rep-file" class="form-control" multiple accept=".pdf,.xlsx,.docx,.jpg,.png" style="width:100%;" />
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:3px;">PDF, Excel, Word, JPG, PNG 허용 / 개당 최대 10MB</div>
+    </div>
+    <div>
+      <label class="form-label">보고 채널 <span style="color:var(--danger);">*</span></label>
+      <select id="str-rep-channel" class="form-control" style="width:100%;" onchange="_strRepValidate()">
+        <option value="">선택하세요</option>
+        <option value="FIU 온라인">FIU 온라인 시스템</option>
+        <option value="이메일">이메일 (보안메일)</option>
+        <option value="팩스">팩스</option>
+        <option value="직접제출">직접 제출</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-str-report')">취소</button>
+    <button class="btn btn-primary" id="str-rep-submit-btn" onclick="_strRepProceed()" disabled>보고 완료 → OTP ›</button>
+  </div>
+</div>
+
+<!-- 3-5: 미보고 처리 모달 -->
+<div class="modal" id="modal-str-nonreport" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title">&#9940; 미보고 처리</span>
+    <button class="modal-close" onclick="closeModal('modal-str-nonreport')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="display:grid; gap:14px;">
+    <div style="background:#FFF7ED; border-radius:8px; padding:10px 12px; font-size:12px; color:#92400E;">
+      &#9888; 미보고 처리 시 감독기관에 별도 소명 자료가 필요할 수 있습니다.
+    </div>
+    <div>
+      <label class="form-label">미보고 사유 분류 <span style="color:var(--danger);">*</span></label>
+      <select id="str-nr-category" class="form-control" style="width:100%;" onchange="_strNRValidate()">
+        <option value="">선택하세요</option>
+        <option value="오탐">오탐 (False Positive)</option>
+        <option value="임계값 미달">임계값 미달 — 보고 기준 불충족</option>
+        <option value="내부 검토 완료">내부 검토 완료 — 정상 거래 확인</option>
+        <option value="기타">기타</option>
+      </select>
+    </div>
+    <div>
+      <label class="form-label">상세 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea id="str-nr-reason" class="form-control" rows="4" placeholder="상세 사유를 입력하세요 (최대 300자)" maxlength="300" style="width:100%; resize:vertical;" oninput="_strNRValidate()"></textarea>
+      <div style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:2px;"><span id="str-nr-char">0</span>/300</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-str-nonreport')">취소</button>
+    <button class="btn btn-warning" id="str-nr-submit-btn" onclick="_strNRProceed()" disabled>미보고 확정 → OTP ›</button>
+  </div>
+</div>
+
+<!-- 3-8: CSV 다운로드 모달 -->
+<div class="modal" id="modal-str-csv" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">&#8595; STR 데이터 CSV 다운로드</span>
+    <button class="modal-close" onclick="closeModal('modal-str-csv')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="display:grid; gap:14px;">
+    <div style="background:#FFF7ED; border-radius:8px; padding:10px 12px; font-size:12px; color:#92400E;">
+      &#9888; STR 데이터는 민감 정보를 포함합니다. ISMS 보안정책에 따라 다운로드 사유와 OTP 인증이 필요합니다.
+    </div>
+    <div>
+      <label class="form-label">다운로드 범위</label>
+      <select id="str-csv-range" class="form-control" style="width:100%;">
+        <option value="current">현재 필터 결과</option>
+        <option value="30d">최근 30일</option>
+        <option value="90d">최근 90일</option>
+        <option value="all">전체</option>
+      </select>
+    </div>
+    <div>
+      <label class="form-label">포함 항목</label>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px; font-size:13px;">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="str-csv-col-id" checked /> 감지번호</label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="str-csv-col-date" checked /> 감지일시</label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="str-csv-col-rule" checked /> 룰코드/룰명</label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="str-csv-col-client" checked /> 고객명</label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="str-csv-col-amount" checked /> 거래금액</label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="str-csv-col-status" checked /> 상태</label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="str-csv-col-deadline" checked /> 처리기한</label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="str-csv-col-note" /> 처리 사유</label>
+      </div>
+    </div>
+    <div>
+      <label class="form-label">다운로드 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea id="str-csv-reason" class="form-control" rows="2" placeholder="사유를 입력하세요 (필수)" style="width:100%; resize:none;" oninput="_strCSVValidate()"></textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-str-csv')">취소</button>
+    <button class="btn btn-primary" id="str-csv-dl-btn" onclick="_strCSVProceed()" disabled>다운로드 → OTP ›</button>
+  </div>
+</div>
+
 <!-- modal-otp: OTP 인증 -->
 <!-- ══════════════════════════
      MODAL: PW/MFA 정책 변경 전·후 비교 확인
@@ -4862,6 +5087,7 @@
     if (pageId === 'activitylog') renderActLog();
     if (pageId === 'pwmfa') applyPWMFARoleUI();
     if (pageId === 'assets') renderAssetsPage();
+    if (pageId === 'str') renderSTR();
 
     closeMobileSidebar();
   }
@@ -10228,6 +10454,504 @@
     document.getElementById('cur-mfa-lockout').textContent = s.mfaLockout + '회';
     document.getElementById('cur-mfa-inactive').textContent= s.mfaInactive + '일';
     document.getElementById('cur-pwmfa-updated').textContent = s.updatedAt || '초기값 (변경 없음)';
+  }
+
+  /* ════════════════════════════════════
+     STR / 이상거래 (섹션 3)
+  ════════════════════════════════════ */
+
+  // 41개 룰 정의
+  var _STR_RULES = {
+    'RM01': { name: '대규모 단일 거래', desc: '24시간 내 단일 거래금액이 1억원을 초과하는 경우', category: 'RM' },
+    'RM02': { name: '연속 분산 입금', desc: '동일 주소에서 24시간 내 10회 이상 입금이 발생하여 합산 1천만원 이상인 경우', category: 'RM' },
+    'RM03': { name: '고위험 국가 거래', desc: 'FATF 블랙리스트 국가와 연관된 주소로부터 거래가 발생한 경우', category: 'RM' },
+    'RM04': { name: '믹서/토네이도 연루', desc: '믹서 또는 토네이도 캐시와 연관된 주소와의 거래', category: 'RM' },
+    'RM05': { name: '다크웹 연루 주소', desc: '다크웹 마켓플레이스와 연관된 주소로부터 수신 또는 송신', category: 'RM' },
+    'RM06': { name: '신규 계정 대량 거래', desc: '가입 7일 이내 계정에서 1천만원 이상 거래', category: 'RM' },
+    'RM07': { name: '미인증 계정 거래', desc: 'KYB 미완료 계정에서 500만원 이상 거래', category: 'RM' },
+    'RM08': { name: '동일 IP 다계정 거래', desc: '동일 IP에서 3개 이상 계정의 거래가 10분 내 발생', category: 'RM' },
+    'RM09': { name: '거래소 집중 출금', desc: '24시간 내 동일 거래소로 반복 출금 (5회 이상)', category: 'RM' },
+    'RM10': { name: '급격한 거래 패턴 변화', desc: '최근 30일 평균 대비 5배 이상 거래량 급증', category: 'RM' },
+    'RM11': { name: '블랙리스트 주소 거래', desc: '내부 블랙리스트 등재 주소와 거래', category: 'RM' },
+    'RM12': { name: '고객 자진 신고', desc: '고객 또는 거래 상대방이 자금세탁 관련 자진 신고', category: 'RM' },
+    'RD01': { name: '이중 지불 의심', desc: '동일 UTXO를 사용하는 복수 트랜잭션 발생', category: 'RD' },
+    'RD02': { name: '빠른 반복 출금', desc: '입금 직후 5분 이내 동일 금액 출금 시도', category: 'RD' },
+    'RD03': { name: '반복 실패 후 성공', desc: '동일 금액 출금 실패 3회 이후 성공 거래 발생', category: 'RD' },
+    'RD04': { name: '주소 재사용 의심', desc: '이미 처리 완료된 트랜잭션 해시 재사용 시도', category: 'RD' },
+    'RD05': { name: '체인 분기 거래', desc: '하드포크 이후 동일 키로 두 체인에서 동시 거래', category: 'RD' },
+    'RS01': { name: '임계값 직하 분할', desc: '보고 임계금액(1천만원) 바로 이하로 반복 분할 거래', category: 'RS' },
+    'RS02': { name: '시간 분산 구조화', desc: '1주일 내 동일 출처에서 임계 이하 10회 이상 거래', category: 'RS' },
+    'RS03': { name: '복수 계정 구조화', desc: '연관 계정 5개 이상에서 동시 임계 이하 거래', category: 'RS' },
+    'RS04': { name: '역 구조화', desc: '임계 이하 다수 입금 후 즉시 합산 출금', category: 'RS' },
+    'RS05': { name: '다채널 구조화', desc: '동일 주소로 여러 코인을 이용한 임계 이하 분산 입금', category: 'RS' },
+    'RA01': { name: '비정상 로그인 후 거래', desc: '비정상 지역에서 로그인 직후 즉시 대규모 거래', category: 'RA' },
+    'RA02': { name: '계정 정보 변경 후 거래', desc: '주요 계정 정보 변경 24시간 내 500만원 이상 거래', category: 'RA' },
+    'RA03': { name: '탈취 의심 패턴', desc: '기존 거래 패턴과 완전히 상이한 IP·디바이스에서 대규모 거래', category: 'RA' },
+    'RA04': { name: '비활성 계정 갑작스런 대거래', desc: '90일 이상 비활성 계정에서 갑작스럽게 1천만원 이상 거래', category: 'RA' },
+    'RA05': { name: 'OTP 우회 의심', desc: 'OTP 인증 실패 반복 후 성공 및 즉시 대규모 출금', category: 'RA' },
+    'RA06': { name: '동시 세션 거래', desc: '동일 계정이 두 기기에서 동시 로그인 상태로 거래', category: 'RA' },
+    'RA07': { name: '화이트리스트 미등록 출금', desc: '화이트리스트 미등록 주소로 500만원 이상 출금 시도', category: 'RA' },
+    'RA08': { name: '비밀번호 초기화 후 즉시 거래', desc: '비밀번호 초기화 1시간 이내 대규모 출금', category: 'RA' },
+    'RA09': { name: '이메일 변경 후 즉시 거래', desc: '이메일 변경 12시간 이내 300만원 이상 거래', category: 'RA' },
+    'RA10': { name: '신규 화이트리스트 즉시 사용', desc: '화이트리스트 등록 30분 이내 출금 실행', category: 'RA' },
+    'RA11': { name: 'VPN/Proxy 경유 거래', desc: 'VPN 또는 Proxy를 통해 접속 후 대규모 거래', category: 'RA' },
+    'RA12': { name: '관리자 권한 남용', desc: '비업무시간 관리자 계정에서 설정 변경 후 거래', category: 'RA' },
+    'RA13': { name: '계정 공유 의심', desc: '동일 계정이 24시간 내 5개 이상 국가에서 접속', category: 'RA' },
+  };
+
+  // 데모 데이터
+  var _STR_DATA = [
+    {
+      id: 'STR-20260409-001', detectedAt: '2026-04-09 09:14:22',
+      ruleCode: 'RM01', client: '알파테크(주)', clientId: 'CLI-0041', clientType: '법인',
+      amount: 150000000, coin: 'BTC', txType: '출금', txCount: 1,
+      status: 'unprocessed', deadline: '2026-04-12',
+      processor: null, processedAt: null, processType: null, processNote: null, reportNo: null, reportCh: null
+    },
+    {
+      id: 'STR-20260407-002', detectedAt: '2026-04-07 14:33:05',
+      ruleCode: 'RS01', client: '베타캐피탈 유한회사', clientId: 'CLI-0028', clientType: '법인',
+      amount: 9850000, coin: 'USDT', txType: '입금', txCount: 8,
+      status: 'warning', deadline: '2026-04-10',
+      processor: null, processedAt: null, processType: null, processNote: null, reportNo: null, reportCh: null
+    },
+    {
+      id: 'STR-20260405-003', detectedAt: '2026-04-05 11:02:44',
+      ruleCode: 'RA03', client: '감마트레이딩(주)', clientId: 'CLI-0013', clientType: '법인',
+      amount: 42000000, coin: 'ETH', txType: '출금', txCount: 3,
+      status: 'reported', deadline: '2026-04-08',
+      processor: '홍길동 (AML 담당자)', processedAt: '2026-04-06 16:20:11',
+      processType: 'STR', processNote: '계정 탈취 의심. 비정상 IP(해외)에서 로그인 후 즉각 대규모 출금 패턴 확인. FIU 보고 완료.',
+      reportNo: 'FIU-2026-04-00132', reportCh: 'FIU 온라인'
+    },
+    {
+      id: 'STR-20260403-004', detectedAt: '2026-04-03 08:55:30',
+      ruleCode: 'RD02', client: '델타파이낸셜(주)', clientId: 'CLI-0057', clientType: '법인',
+      amount: 5200000, coin: 'USDT', txType: '출금', txCount: 2,
+      status: 'nonreported', deadline: '2026-04-06',
+      processor: '이철수 (AML 담당자)', processedAt: '2026-04-05 10:33:02',
+      processType: null, processNote: '내부 검토 결과 고객의 정상 거래 확인. 입금 후 빠른 출금은 운영 자금 이동으로 확인됨.',
+      reportNo: null, reportCh: null,
+      nonreportCategory: '내부 검토 완료'
+    },
+    {
+      id: 'STR-20260402-005', detectedAt: '2026-04-02 17:41:09',
+      ruleCode: 'RM04', client: '에픽론인베스트', clientId: 'CLI-0089', clientType: '법인',
+      amount: 88000000, coin: 'ETH', txType: '입금', txCount: 1,
+      status: 'unprocessed', deadline: '2026-04-05',
+      processor: null, processedAt: null, processType: null, processNote: null, reportNo: null, reportCh: null
+    }
+  ];
+
+  var _strTab = 'unprocessed';
+  var _strCurrentId = null;
+  var _strPresetVal = 'all';
+
+  function _strStatusBadge(status) {
+    switch (status) {
+      case 'unprocessed': return '<span class="badge badge-danger">미처리</span>';
+      case 'warning':     return '<span class="badge badge-warning">경고</span>';
+      case 'reported':    return '<span class="badge badge-success">보고 완료</span>';
+      case 'nonreported': return '<span class="badge badge-gray">미보고</span>';
+      default: return '<span class="badge badge-gray">' + status + '</span>';
+    }
+  }
+
+  function _strFmtAmount(n) {
+    if (n >= 100000000) return (n / 100000000).toFixed(0) + '억원';
+    if (n >= 10000000)  return (n / 10000000).toFixed(1) + '천만원';
+    if (n >= 1000000)   return (n / 10000).toFixed(0) + '만원';
+    return n.toLocaleString() + '원';
+  }
+
+  function _strElapsed(detectedAt) {
+    var then = new Date(detectedAt.replace(' ', 'T'));
+    var now = new Date('2026-04-09T23:59:59');
+    var days = Math.floor((now - then) / 86400000);
+    return 'D+' + days;
+  }
+
+  function _strDeadlineBadge(deadline, status) {
+    if (status === 'reported' || status === 'nonreported') return deadline;
+    var dl = new Date(deadline);
+    var now = new Date('2026-04-09T23:59:59');
+    var diff = Math.ceil((dl - now) / 86400000);
+    if (diff < 0) return '<span style="color:#EF4444; font-weight:700;">' + deadline + ' <span style="font-size:10px;">초과</span></span>';
+    if (diff === 0) return '<span style="color:#EF4444; font-weight:700;">' + deadline + ' <span style="font-size:10px;">오늘</span></span>';
+    if (diff <= 1) return '<span style="color:#F59E0B; font-weight:600;">' + deadline + ' (D-' + diff + ')</span>';
+    return deadline + ' (D-' + diff + ')';
+  }
+
+  function _strGetFiltered() {
+    var search = (document.getElementById('str-search') || {}).value || '';
+    var ruleFilter = (document.getElementById('str-rule-filter') || {}).value || '';
+    var statusFilter = (document.getElementById('str-status-filter') || {}).value || '';
+    var dateFrom = (document.getElementById('str-date-from') || {}).value || '';
+    var dateTo = (document.getElementById('str-date-to') || {}).value || '';
+
+    return _STR_DATA.filter(function(d) {
+      // tab filter
+      if (_strTab === 'unprocessed' && d.status !== 'unprocessed' && d.status !== 'warning') return false;
+      if (_strTab === 'reported' && d.status !== 'reported') return false;
+      if (_strTab === 'nonreported' && d.status !== 'nonreported') return false;
+
+      // search
+      if (search && d.id.toLowerCase().indexOf(search.toLowerCase()) < 0
+                 && d.client.toLowerCase().indexOf(search.toLowerCase()) < 0) return false;
+
+      // rule category filter
+      if (ruleFilter && d.ruleCode.indexOf(ruleFilter) < 0) return false;
+
+      // status filter
+      if (statusFilter && d.status !== statusFilter) return false;
+
+      // date
+      if (dateFrom && d.detectedAt.slice(0,10) < dateFrom) return false;
+      if (dateTo   && d.detectedAt.slice(0,10) > dateTo)   return false;
+
+      return true;
+    });
+  }
+
+  function _strUpdateStats() {
+    // apply warning status: if unprocessed & deadline passed D+3
+    _STR_DATA.forEach(function(d) {
+      if (d.status === 'unprocessed') {
+        var then = new Date(d.detectedAt.replace(' ', 'T'));
+        var now = new Date('2026-04-09T23:59:59');
+        var days = Math.floor((now - then) / 86400000);
+        if (days >= 3) d.status = 'warning';
+      }
+    });
+
+    var unprocessed = _STR_DATA.filter(function(d) { return d.status === 'unprocessed'; }).length;
+    var reported    = _STR_DATA.filter(function(d) { return d.status === 'reported'; }).length;
+    var nonreported = _STR_DATA.filter(function(d) { return d.status === 'nonreported'; }).length;
+    var warning     = _STR_DATA.filter(function(d) { return d.status === 'warning'; }).length;
+
+    document.getElementById('str-stat-unprocessed').textContent = unprocessed;
+    document.getElementById('str-stat-reported').textContent    = reported;
+    document.getElementById('str-stat-nonreported').textContent = nonreported;
+    document.getElementById('str-stat-warning').textContent     = warning;
+  }
+
+  function renderSTR() {
+    _strUpdateStats();
+    var data = _strGetFiltered();
+    var tbody = document.getElementById('str-tbody');
+    var empty = document.getElementById('str-empty');
+    if (!tbody) return;
+
+    if (data.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    var canAct = (_ADMIN_ROLE === 'aml_officer' || _ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master');
+    var html = '';
+    data.forEach(function(d) {
+      var rule = _STR_RULES[d.ruleCode] || { name: d.ruleCode, desc: '' };
+      var elapsed = _strElapsed(d.detectedAt);
+      var isWarn = d.status === 'warning';
+      var isActive = d.status === 'unprocessed' || d.status === 'warning';
+
+      var actionBtns = '';
+      if (canAct && isActive) {
+        actionBtns = '<button class="btn btn-primary btn-xs" onclick="openSTRReport(\'' + d.id + '\')">보고 처리</button> '
+                   + '<button class="btn btn-outline btn-xs" onclick="openSTRNonReport(\'' + d.id + '\')">미보고</button>';
+      } else {
+        actionBtns = '<button class="btn btn-outline btn-xs" onclick="openSTRDetail(\'' + d.id + '\')">상세</button>';
+      }
+
+      html += '<tr style="' + (isWarn ? 'background:#FFFBEB;' : '') + '" onclick="openSTRDetail(\'' + d.id + '\')" style="cursor:pointer;">'
+            + '<td style="font-family:monospace; font-size:11.5px; font-weight:700; white-space:nowrap;">' + d.id + '</td>'
+            + '<td style="font-size:11.5px; white-space:nowrap;">' + d.detectedAt + '</td>'
+            + '<td><span class="badge badge-' + (d.ruleCode.startsWith('RM') ? 'danger' : d.ruleCode.startsWith('RD') ? 'warning' : d.ruleCode.startsWith('RS') ? 'purple' : 'info') + '">' + d.ruleCode + '</span></td>'
+            + '<td style="font-size:12.5px;">' + rule.name + '</td>'
+            + '<td style="font-weight:600;">' + d.client + '</td>'
+            + '<td style="font-weight:600; white-space:nowrap;">' + _strFmtAmount(d.amount) + '</td>'
+            + '<td>' + _strStatusBadge(d.status) + '</td>'
+            + '<td style="font-size:12px; white-space:nowrap;">' + _strDeadlineBadge(d.deadline, d.status) + '</td>'
+            + '<td onclick="event.stopPropagation();" style="white-space:nowrap;">' + actionBtns + '</td>'
+            + '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  function _strSetTab(tab, el) {
+    _strTab = tab;
+    document.querySelectorAll('#str-tabs .kyb-tab').forEach(function(b) { b.classList.remove('active'); });
+    if (el) el.classList.add('active');
+    renderSTR();
+  }
+
+  function _strPreset(p) {
+    _strPresetVal = p;
+    var now = new Date('2026-04-09T23:59:59');
+    document.getElementById('str-date-from').value = '';
+    document.getElementById('str-date-to').value = '';
+    // highlight active preset button
+    ['7d','30d','all'].forEach(function(k) {
+      var btn = document.getElementById('str-preset-' + k);
+      if (!btn) return;
+      if (k === p) {
+        btn.style.background = 'var(--primary)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--primary)';
+      } else {
+        btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = '';
+      }
+    });
+    if (p === '7d') {
+      var from = new Date(now); from.setDate(from.getDate() - 7);
+      document.getElementById('str-date-from').value = from.toISOString().slice(0,10);
+    } else if (p === '30d') {
+      var from2 = new Date(now); from2.setDate(from2.getDate() - 30);
+      document.getElementById('str-date-from').value = from2.toISOString().slice(0,10);
+    }
+    renderSTR();
+  }
+
+  function _strResetFilters() {
+    document.getElementById('str-search').value = '';
+    document.getElementById('str-rule-filter').value = '';
+    document.getElementById('str-status-filter').value = '';
+    document.getElementById('str-date-from').value = '';
+    document.getElementById('str-date-to').value = '';
+    _strPreset('all');
+  }
+
+  // ── Detail Slideover ──
+  function openSTRDetail(id) {
+    var d = _STR_DATA.find(function(x) { return x.id === id; });
+    if (!d) return;
+    _strCurrentId = id;
+    var rule = _STR_RULES[d.ruleCode] || { name: d.ruleCode, desc: '' };
+
+    document.getElementById('strd-id').textContent = d.id;
+    document.getElementById('strd-status').innerHTML = _strStatusBadge(d.status);
+    document.getElementById('strd-detected-at').textContent = d.detectedAt;
+    document.getElementById('strd-deadline').innerHTML = _strDeadlineBadge(d.deadline, d.status);
+    document.getElementById('strd-elapsed').textContent = _strElapsed(d.detectedAt);
+    document.getElementById('strd-client').textContent = d.client;
+    document.getElementById('strd-client-id').textContent = d.clientId;
+    document.getElementById('strd-client-type').textContent = d.clientType;
+    document.getElementById('strd-rule-code').innerHTML = '<span class="badge badge-' + (d.ruleCode.startsWith('RM') ? 'danger' : d.ruleCode.startsWith('RD') ? 'warning' : d.ruleCode.startsWith('RS') ? 'purple' : 'info') + '">' + d.ruleCode + '</span>';
+    document.getElementById('strd-rule-name').textContent = rule.name;
+    document.getElementById('strd-rule-desc').textContent = rule.desc;
+    document.getElementById('strd-amount').textContent = _strFmtAmount(d.amount) + ' (' + d.coin + ')';
+    document.getElementById('strd-tx-type').textContent = d.txType;
+    document.getElementById('strd-coin').textContent = d.coin;
+    document.getElementById('strd-tx-count').textContent = d.txCount + '건';
+
+    var procSection = document.getElementById('strd-process-section');
+    if (d.processedAt) {
+      procSection.style.display = '';
+      document.getElementById('strd-process-type').textContent = d.processType || (d.nonreportCategory ? '미보고 (' + d.nonreportCategory + ')' : '-');
+      document.getElementById('strd-processor').textContent = d.processor || '-';
+      document.getElementById('strd-processed-at').textContent = d.processedAt;
+      document.getElementById('strd-process-note').textContent = d.processNote || '-';
+
+      var repNoRow = document.getElementById('strd-report-no-row');
+      var repChRow = document.getElementById('strd-report-ch-row');
+      if (d.reportNo) {
+        repNoRow.style.display = ''; repChRow.style.display = '';
+        document.getElementById('strd-report-no').textContent = d.reportNo;
+        document.getElementById('strd-report-ch').textContent = d.reportCh;
+      } else {
+        repNoRow.style.display = 'none'; repChRow.style.display = 'none';
+      }
+    } else {
+      procSection.style.display = 'none';
+    }
+
+    // footer buttons
+    var canAct = (_ADMIN_ROLE === 'aml_officer' || _ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master');
+    var isActive = d.status === 'unprocessed' || d.status === 'warning';
+    var footer = document.getElementById('strd-footer');
+    if (canAct && isActive) {
+      footer.innerHTML = '<button class="btn btn-outline" onclick="closeSTRDetail()">닫기</button>'
+        + '<button class="btn btn-outline btn-sm" onclick="closeSTRDetail(); setTimeout(function(){ openSTRNonReport(\'' + id + '\'); }, 200);">미보고 처리</button>'
+        + '<button class="btn btn-primary" onclick="closeSTRDetail(); setTimeout(function(){ openSTRReport(\'' + id + '\'); }, 200);">&#128203; 보고 처리</button>';
+    } else {
+      footer.innerHTML = '<button class="btn btn-outline" onclick="closeSTRDetail()">닫기</button>';
+    }
+
+    document.getElementById('str-detail-backdrop').classList.add('open');
+    document.getElementById('str-detail-so').classList.add('open');
+  }
+
+  function closeSTRDetail() {
+    document.getElementById('str-detail-backdrop').classList.remove('open');
+    document.getElementById('str-detail-so').classList.remove('open');
+    _strCurrentId = null;
+  }
+
+  // ── 보고 처리 모달 ──
+  function openSTRReport(id) {
+    _strCurrentId = id;
+    document.getElementById('str-rep-id').textContent = id;
+    document.getElementById('str-rep-reason').value = '';
+    document.getElementById('str-rep-char').textContent = '0';
+    document.getElementById('str-rep-channel').value = '';
+    document.querySelector('input[name="str-rep-type"][value="STR"]').checked = true;
+    document.getElementById('str-rep-submit-btn').disabled = true;
+    openModal('modal-str-report');
+  }
+
+  function _strRepTypeChange() { _strRepValidate(); }
+
+  function _strRepValidate() {
+    var reason = document.getElementById('str-rep-reason').value.trim();
+    var channel = document.getElementById('str-rep-channel').value;
+    document.getElementById('str-rep-char').textContent = document.getElementById('str-rep-reason').value.length;
+    document.getElementById('str-rep-submit-btn').disabled = !(reason && channel);
+  }
+
+  function _strRepProceed() {
+    var id = _strCurrentId;
+    var reason = document.getElementById('str-rep-reason').value.trim();
+    var channel = document.getElementById('str-rep-channel').value;
+    var repType = document.querySelector('input[name="str-rep-type"]:checked').value;
+    closeModal('modal-str-report');
+    setTimeout(function() {
+      openOTPModal('STR 보고 처리', function() {
+        _submitSTRReport(id, repType, reason, channel);
+      });
+    }, 200);
+  }
+
+  function _submitSTRReport(id, repType, reason, channel) {
+    var d = _STR_DATA.find(function(x) { return x.id === id; });
+    if (!d) return;
+    d.status = 'reported';
+    d.processType = repType;
+    d.processNote = reason;
+    d.reportCh = channel;
+    d.processor = '현재 관리자 (' + (_ADMIN_ROLE === 'aml_manager' ? 'AML 관리자' : 'AML 담당자') + ')';
+    d.processedAt = '2026-04-09 ' + (function() { var n = new Date(); return String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0') + ':' + String(n.getSeconds()).padStart(2,'0'); })();
+    d.reportNo = 'FIU-2026-04-' + String(Math.floor(Math.random()*900)+100).padStart(5,'0');
+    showToast('보고 처리가 완료되었습니다. (' + d.reportNo + ')', 'success');
+    renderSTR();
+  }
+
+  // ── 미보고 처리 모달 ──
+  function openSTRNonReport(id) {
+    _strCurrentId = id;
+    document.getElementById('str-nr-category').value = '';
+    document.getElementById('str-nr-reason').value = '';
+    document.getElementById('str-nr-char').textContent = '0';
+    document.getElementById('str-nr-submit-btn').disabled = true;
+    openModal('modal-str-nonreport');
+  }
+
+  function _strNRValidate() {
+    var cat = document.getElementById('str-nr-category').value;
+    var reason = document.getElementById('str-nr-reason').value.trim();
+    document.getElementById('str-nr-char').textContent = document.getElementById('str-nr-reason').value.length;
+    document.getElementById('str-nr-submit-btn').disabled = !(cat && reason);
+  }
+
+  function _strNRProceed() {
+    var id = _strCurrentId;
+    var cat = document.getElementById('str-nr-category').value;
+    var reason = document.getElementById('str-nr-reason').value.trim();
+    closeModal('modal-str-nonreport');
+    setTimeout(function() {
+      openOTPModal('미보고 처리', function() {
+        _submitSTRNonReport(id, cat, reason);
+      });
+    }, 200);
+  }
+
+  function _submitSTRNonReport(id, cat, reason) {
+    var d = _STR_DATA.find(function(x) { return x.id === id; });
+    if (!d) return;
+    d.status = 'nonreported';
+    d.nonreportCategory = cat;
+    d.processNote = reason;
+    d.processor = '현재 관리자 (' + (_ADMIN_ROLE === 'aml_manager' ? 'AML 관리자' : 'AML 담당자') + ')';
+    d.processedAt = '2026-04-09 ' + (function() { var n = new Date(); return String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0') + ':' + String(n.getSeconds()).padStart(2,'0'); })();
+    showToast('미보고 처리가 완료되었습니다.', 'success');
+    renderSTR();
+  }
+
+  // ── CSV 다운로드 모달 ──
+  function openSTRCSV() {
+    document.getElementById('str-csv-reason').value = '';
+    document.getElementById('str-csv-dl-btn').disabled = true;
+    openModal('modal-str-csv');
+  }
+
+  function _strCSVValidate() {
+    var reason = document.getElementById('str-csv-reason').value.trim();
+    document.getElementById('str-csv-dl-btn').disabled = !reason;
+  }
+
+  function _strCSVProceed() {
+    var reason = document.getElementById('str-csv-reason').value.trim();
+    closeModal('modal-str-csv');
+    setTimeout(function() {
+      openOTPModal('STR CSV 다운로드', function() {
+        _strCSVDownload();
+      });
+    }, 200);
+  }
+
+  function _strCSVDownload() {
+    var range = document.getElementById('str-csv-range').value;
+    var inclId       = document.getElementById('str-csv-col-id').checked;
+    var inclDate     = document.getElementById('str-csv-col-date').checked;
+    var inclRule     = document.getElementById('str-csv-col-rule').checked;
+    var inclClient   = document.getElementById('str-csv-col-client').checked;
+    var inclAmount   = document.getElementById('str-csv-col-amount').checked;
+    var inclStatus   = document.getElementById('str-csv-col-status').checked;
+    var inclDeadline = document.getElementById('str-csv-col-deadline').checked;
+    var inclNote     = document.getElementById('str-csv-col-note').checked;
+
+    var data = _STR_DATA;
+    if (range === 'current') data = _strGetFiltered();
+    else if (range === '30d') {
+      var from = new Date('2026-04-09T23:59:59'); from.setDate(from.getDate()-30);
+      data = _STR_DATA.filter(function(d){ return new Date(d.detectedAt.replace(' ','T')) >= from; });
+    } else if (range === '90d') {
+      var from90 = new Date('2026-04-09T23:59:59'); from90.setDate(from90.getDate()-90);
+      data = _STR_DATA.filter(function(d){ return new Date(d.detectedAt.replace(' ','T')) >= from90; });
+    }
+
+    var headers = [];
+    if (inclId)       headers.push('감지번호');
+    if (inclDate)     headers.push('감지일시');
+    if (inclRule)     headers.push('룰코드', '룰명');
+    if (inclClient)   headers.push('고객명', '고객ID');
+    if (inclAmount)   headers.push('거래금액(원)', '코인');
+    if (inclStatus)   headers.push('상태');
+    if (inclDeadline) headers.push('처리기한');
+    if (inclNote)     headers.push('처리 사유');
+
+    var rows = [headers];
+    data.forEach(function(d) {
+      var rule = _STR_RULES[d.ruleCode] || { name: d.ruleCode };
+      var row = [];
+      if (inclId)       row.push(d.id);
+      if (inclDate)     row.push(d.detectedAt);
+      if (inclRule)     { row.push(d.ruleCode); row.push(rule.name); }
+      if (inclClient)   { row.push(d.client); row.push(d.clientId); }
+      if (inclAmount)   { row.push(d.amount); row.push(d.coin); }
+      if (inclStatus)   row.push(d.status);
+      if (inclDeadline) row.push(d.deadline);
+      if (inclNote)     row.push((d.processNote || '').replace(/"/g,'""'));
+      rows.push(row);
+    });
+
+    var csv = '\uFEFF' + rows.map(function(r){ return r.map(function(c){ return '"' + String(c||'').replace(/"/g,'""') + '"'; }).join(','); }).join('\n');
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'STR_export_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSV 다운로드 완료 (' + data.length + '건)', 'success');
   }
 </script>
 </body>
