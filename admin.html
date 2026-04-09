@@ -3971,7 +3971,7 @@
     'nav-coins-config':   ['master', 'general'],
     'nav-vasp':           ['master', 'general'],
     'nav-client-ip':      ['master', 'general'],
-    'nav-pwmfa':          ['master'],  // 마스터 관리자 전용 (일반: VIEW 접근 불가)
+    'nav-pwmfa':          ['master', 'general'],  // master: 저장 가능 / general: VIEW 전용
     // ── AML
     'nav-str':            ['master', 'aml_officer', 'aml_manager'],
     'nav-pep':            ['master', 'aml_officer', 'aml_manager'],
@@ -4081,6 +4081,9 @@
         document.getElementById('page-transactions').classList.contains('active')) {
       initTxPage();
     }
+
+    // PW/MFA Setting 역할별 UI 갱신
+    applyPWMFARoleUI();
   }
 
   /* ════════════════════════════════════
@@ -8325,9 +8328,53 @@
 
   function initPWMFAPage() {
     updatePWMFACurrentSummary();
-    // 마스터가 아닌 경우 저장 버튼 숨김 (네이게이션 자체가 차단되지만 방어 처리)
+    applyPWMFARoleUI();
+  }
+
+  /* PW/MFA 역할별 UI 분기
+     master  → 전체 편집 + 저장하기 버튼 활성
+     general → 읽기 전용 (모든 컨트롤 비활성, 저장 버튼 숨김)
+     기타    → 페이지 접근 불가 (NAV_ACCESS에서 이미 차단)            */
+  function applyPWMFARoleUI() {
+    var isMaster  = (_ADMIN_ROLE === 'master');
+    var isGeneral = (_ADMIN_ROLE === 'general');
+    if (!isMaster && !isGeneral) return; // 접근 불가 역할
+
+    var saveBtn  = document.getElementById('pwmfa-save-btn');
     var roleNote = document.getElementById('pwmfa-role-note');
-    if (roleNote) roleNote.textContent = '';
+    var resetBtn = document.querySelector('#page-pwmfa .btn-outline');
+
+    // 저장 버튼
+    if (saveBtn) saveBtn.style.display = isMaster ? '' : 'none';
+
+    // 역할 안내 문구
+    if (roleNote) {
+      roleNote.textContent = isMaster
+        ? ''
+        : '(일반 관리자 — 조회만 가능합니다)';
+      roleNote.style.color = '#F59E0B';
+    }
+
+    // 기본값 복원 버튼
+    if (resetBtn) resetBtn.disabled = !isMaster;
+
+    // 스피너 입력 및 버튼
+    document.querySelectorAll('#page-pwmfa .policy-spinner input, #page-pwmfa .policy-spinner-btn').forEach(function(el) {
+      el.disabled = !isMaster;
+    });
+
+    // 특수문자 토글
+    var toggle = document.getElementById('pwmfa-special-char');
+    if (toggle) toggle.disabled = !isMaster;
+
+    // 변경 주기 select
+    var cycle = document.getElementById('pwmfa-pw-cycle');
+    if (cycle) cycle.disabled = !isMaster;
+
+    // 읽기 전용 오버레이 느낌 — 카드 투명도 조정
+    document.querySelectorAll('#page-pwmfa .policy-card').forEach(function(card) {
+      card.style.opacity = isMaster ? '1' : '0.72';
+    });
   }
 
   // ─ 스피너 +/- 버튼
@@ -8393,8 +8440,12 @@
     return String(val);
   }
 
-  // ─ 저장하기 클릭 → 비교 모달 열기
+  // ─ 저장하기 클릭 → 비교 모달 열기 (master 전용)
   function openPWMFAConfirm() {
+    if (_ADMIN_ROLE !== 'master') {
+      showToast('마스터 관리자만 정책을 저장할 수 있습니다.');
+      return;
+    }
     var cur  = _PWMFA_SAVED;
     var next = _readPWMFAForm();
     var keys = Object.keys(_PWMFA_FIELD_LABELS);
