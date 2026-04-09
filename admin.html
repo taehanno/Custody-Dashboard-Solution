@@ -8476,21 +8476,22 @@
   // ─ OTP 인증 후 저장 실행
   function submitPWMFAPolicy() {
     closeModal('modal-pwmfa-confirm');
-    openOTPModal('PW / MFA 정책 저장', function() {
-      var next = _readPWMFAForm();
-      _PWMFA_SAVED = Object.assign({}, next, { updatedAt: new Date().toISOString().replace('T',' ').slice(0,16) });
-      updatePWMFACurrentSummary();
-      // 활동 로그 추가
-      var idx = _ACTLOG_DATA.length;
-      _ACTLOG_DATA.unshift({
-        idx: idx, datetime: _PWMFA_SAVED.updatedAt,
-        actorName: '홍길동', actorEmail: 'hong@infiniteblock.io', actorMask: '홍○동',
-        role: 'master', corp: '-', cat: 'PW·MFA정책',
-        action: 'PW·MFA 정책 변경 저장 완료',
-        result: 'success', ip: '192.168.10.10', ua: 'Chrome / macOS', errCode: null
+    setTimeout(function() {   // modal close animation(0.2s) 완료 후 OTP 열기
+      openOTPModal('PW / MFA 정책 저장', function() {
+        var next = _readPWMFAForm();
+        _PWMFA_SAVED = Object.assign({}, next, { updatedAt: new Date().toISOString().replace('T',' ').slice(0,16) });
+        updatePWMFACurrentSummary();
+        var idx = _ACTLOG_DATA.length;
+        _ACTLOG_DATA.unshift({
+          idx: idx, datetime: _PWMFA_SAVED.updatedAt,
+          actorName: '홍길동', actorEmail: 'hong@infiniteblock.io', actorMask: '홍○동',
+          role: 'master', corp: '-', cat: 'PW·MFA정책',
+          action: 'PW·MFA 정책 변경 저장 완료',
+          result: 'success', ip: '192.168.10.10', ua: 'Chrome / macOS', errCode: null
+        });
+        showToast('PW / MFA 정책이 저장되었습니다. 전체 계정에 즉시 적용됩니다.');
       });
-      showToast('PW / MFA 정책이 저장되었습니다. 전체 계정에 즉시 적용됩니다.');
-    });
+    }, 250);
   }
 
   // ─ 현재 적용 중 요약 갱신
