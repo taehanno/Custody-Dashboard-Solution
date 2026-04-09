@@ -1408,11 +1408,11 @@
 
         <div class="card" style="padding:0;">
           <!-- 3-2: 탭 -->
-          <div id="str-tabs" style="display:flex; border-bottom:2px solid var(--border); padding:0 16px;">
-            <button class="kyb-tab active" data-tab="unprocessed" onclick="_strSetTab('unprocessed',this)">미처리</button>
-            <button class="kyb-tab" data-tab="reported" onclick="_strSetTab('reported',this)">보고 완료</button>
-            <button class="kyb-tab" data-tab="nonreported" onclick="_strSetTab('nonreported',this)">미보고</button>
-            <button class="kyb-tab" data-tab="all" onclick="_strSetTab('all',this)">전체</button>
+          <div id="str-tabs" class="kyb-tabs" style="margin-bottom:0; padding:0 16px;">
+            <div class="kyb-tab active" data-tab="unprocessed" onclick="_strSetTab('unprocessed',this)">미처리</div>
+            <div class="kyb-tab" data-tab="reported" onclick="_strSetTab('reported',this)">보고 완료</div>
+            <div class="kyb-tab" data-tab="nonreported" onclick="_strSetTab('nonreported',this)">미보고</div>
+            <div class="kyb-tab" data-tab="all" onclick="_strSetTab('all',this)">전체</div>
           </div>
 
           <!-- 필터 바 -->
