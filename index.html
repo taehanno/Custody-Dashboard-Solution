@@ -522,6 +522,42 @@
     .btn-bene-type:hover { border-color: var(--primary); color: var(--primary); }
     .btn-bene-type.selected { border-color: var(--primary); background: #EFF6FF; color: var(--primary); }
 
+    /* ── Address type tab selector ── */
+    .addr-tab-group { display: flex; gap: 6px; margin-bottom: 12px; }
+    .addr-tab {
+      flex: 1; padding: 9px 4px; font-size: 11px; font-weight: 600;
+      text-align: center; line-height: 1.45;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      background: #fff; color: var(--text-secondary); cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      font-family: inherit;
+    }
+    .addr-tab:hover:not(.selected) { border-color: var(--primary); color: var(--primary); }
+    .addr-tab.selected { border-color: var(--primary); background: var(--primary); color: #fff; }
+    /* ── Internal wallet list ── */
+    .int-wallet-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .int-wallet-item {
+      padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      cursor: pointer; transition: all 0.15s;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .int-wallet-item:hover:not(.selected) { border-color: var(--primary); }
+    .int-wallet-item.selected { border-color: var(--primary); background: #EFF6FF; }
+    .int-wallet-name { font-size: 13px; font-weight: 600; }
+    .int-wallet-meta { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+    .int-wallet-item-right { text-align: right; font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
+    /* ── CODE verification result ── */
+    .code-verify-box { border-radius: 8px; padding: 12px 14px; margin-top: 4px; }
+    .code-verify-box.success  { background: #ECFDF5; border: 1px solid #6EE7B7; }
+    .code-verify-box.mismatch { background: #FEF2F2; border: 1px solid #FCA5A5; }
+    .code-verify-box.vasp-unk { background: #FFFBEB; border: 1px solid #FCD34D; }
+    /* ── CODE badge ── */
+    .code-badge {
+      font-size: 10px; font-weight: 700; color: #fff;
+      background: var(--primary); padding: 2px 6px; border-radius: 4px;
+      vertical-align: middle; margin-left: 4px;
+    }
+
     @media (max-width: 767px) { .wd-so { width: 100%; } }
 
     /* ── Strategy Engine ── */
@@ -1757,29 +1793,20 @@
   </div>
   <div class="so-body">
 
-    <!-- ── STEP 1: Recipient Address ── -->
+    <!-- ── STEP 1: 수신 주소 입력 방식 ── -->
     <div class="step-label">
       <div class="step-num">1</div>
-      <div class="step-title">수신 주소 / Recipient Address</div>
+      <div class="step-title">수신 주소 입력 방식</div>
     </div>
     <div class="step-section">
-      <!-- Address type toggle -->
-      <div class="radio-option selected" id="opt-whitelist" onclick="selectAddrType('whitelist')">
-        <input type="radio" name="addrType" value="whitelist" checked />
-        <div>
-          <div class="radio-option-label">&#9989; Whitelist 주소 선택</div>
-          <div class="radio-option-desc">사전 등록·승인된 주소에서 선택합니다. Travel Rule 입력 불필요.</div>
-        </div>
-      </div>
-      <div class="radio-option" id="opt-direct" onclick="selectAddrType('direct')">
-        <input type="radio" name="addrType" value="direct" />
-        <div>
-          <div class="radio-option-label">&#9998; 직접 주소 입력 (Travel Rule 적용)</div>
-          <div class="radio-option-desc">CODE Protocol로 수신 VASP를 자동 조회합니다.</div>
-        </div>
+      <!-- 3-tab selector -->
+      <div class="addr-tab-group">
+        <button class="addr-tab selected" id="tab-whitelist" onclick="selectAddrType('whitelist')">&#9989; Whitelist<br>주소 선택</button>
+        <button class="addr-tab" id="tab-direct" onclick="selectAddrType('direct')">&#9998; 외부 주소<br>직접 입력</button>
+        <button class="addr-tab" id="tab-internal" onclick="selectAddrType('internal')">&#8644; 내부 지갑<br>이전</button>
       </div>
 
-      <!-- Whitelist list (Case D) -->
+      <!-- Whitelist panel -->
       <div id="addr-whitelist-panel">
         <div class="wl-list">
           <div class="wl-item selected" id="wl-0" onclick="selectWLItem(0)">
@@ -1808,7 +1835,6 @@
 
       <!-- Direct input panel -->
       <div id="addr-direct-panel" style="display:none;">
-        <!-- Step A: VASP partner selection -->
         <div class="vasp-partner-label">&#127974; 수신 기관 선택 (Admin 등록 VASP)</div>
         <div class="vasp-partner-grid" id="vasp-partner-grid">
           <div class="vasp-partner-card" id="vpc-BTH" onclick="selectVASP('BTH','빗썸 (Bithumb)','KR-BTH','&#127974;','#FEF3C7')">
@@ -1847,8 +1873,6 @@
             <span class="vpc-badge unregistered">주의</span>
           </div>
         </div>
-
-        <!-- Step B: Address input — appears after VASP is selected -->
         <div class="vasp-addr-input-area" id="vasp-addr-input-area" style="display:none;">
           <div class="form-group" style="margin-bottom:8px;">
             <label class="form-label">수신 주소 입력 <span class="req">*</span></label>
@@ -1861,9 +1885,55 @@
             <input type="text" class="form-control" id="wd-addr-input" placeholder="수신 주소를 입력하세요"
               oninput="onAddrInput(this.value)" autocomplete="off" />
           </div>
-          <!-- VASP Lookup result area -->
           <div id="vasp-lookup-area" style="display:none;"></div>
         </div>
+      </div>
+
+      <!-- Internal wallet info note -->
+      <div id="addr-internal-panel" style="display:none;">
+        <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px; padding:10px 12px; font-size:12px; color:#1D4ED8; margin-top:4px; line-height:1.6;">
+          &#8505; 내부 지갑 이전은 Travel Rule (CODE 검증) 없이 진행됩니다.<br>아래에서 수신 지갑을 선택해주세요.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 2 (내부 이전 전용): 수신 지갑 선택 ── -->
+    <div id="step-internal-recv" style="display:none;">
+      <div class="step-label">
+        <div class="step-num" style="background:#8B5CF6;">2</div>
+        <div class="step-title">수신 지갑 선택</div>
+      </div>
+      <div class="step-section">
+        <div style="background:#F8FAFC; border-radius:8px; padding:10px 12px; font-size:12px; margin-bottom:12px; border:1px solid var(--border);">
+          <div style="font-size:11px; color:var(--text-secondary); margin-bottom:3px;">송신 지갑 (현재)</div>
+          <div style="font-weight:700; font-size:13px;" id="int-send-wallet-name">—</div>
+          <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="int-send-wallet-info">—</div>
+        </div>
+        <label class="form-label">수신 지갑 <span class="req">*</span></label>
+        <div class="int-wallet-list" id="int-wallet-list">
+          <div class="int-wallet-item" id="int-wl-0" onclick="selectInternalWallet(0)">
+            <div>
+              <div class="int-wallet-name">운영 지갑 B</div>
+              <div class="int-wallet-meta">BTC / Bitcoin</div>
+            </div>
+            <div class="int-wallet-item-right">잔액: 1.0 BTC</div>
+          </div>
+          <div class="int-wallet-item" id="int-wl-1" onclick="selectInternalWallet(1)">
+            <div>
+              <div class="int-wallet-name">운영 지갑 C</div>
+              <div class="int-wallet-meta">BTC / Bitcoin</div>
+            </div>
+            <div class="int-wallet-item-right">잔액: 0.3 BTC</div>
+          </div>
+          <div class="int-wallet-item" id="int-wl-2" onclick="selectInternalWallet(2)">
+            <div>
+              <div class="int-wallet-name">예비 지갑 A</div>
+              <div class="int-wallet-meta">BTC / Bitcoin</div>
+            </div>
+            <div class="int-wallet-item-right">잔액: 0.0 BTC</div>
+          </div>
+        </div>
+        <div class="form-hint" style="margin-top:6px;">&#8505; 송신 지갑과 동일한 코인·네트워크 내부 지갑만 표시됩니다. 동일 지갑은 선택 불가합니다.</div>
       </div>
     </div>
 
@@ -1900,43 +1970,40 @@
       </div>
     </div>
 
-    <!-- ── STEP 3: Travel Rule 수신자 정보 (dynamic) ── -->
-    <div class="step-label">
-      <div class="step-num">3</div>
-      <div class="step-title">Travel Rule 수신자 정보 <span style="font-size:11px; font-weight:400; color:var(--text-secondary);">CODE Protocol</span></div>
-    </div>
-    <div class="step-section" id="step3-content">
-
-      <!-- Case D (default): Whitelist selected -->
-      <div id="case-D">
-        <div class="vasp-result vasp-whitelist">
-          <div class="vasp-header">
-            <span style="font-size:16px;">&#9989;</span>
-            <span class="vasp-badge vasp-badge-success">Whitelist 사전 등록 주소</span>
-          </div>
-          <div style="font-size:13px; color:#1E40AF; font-weight:500;">Travel Rule 정보 입력이 필요하지 않습니다.</div>
-          <div style="font-size:12px; color:#3B82F6; margin-top:4px;">사전 검증 완료된 주소입니다.</div>
-        </div>
+    <!-- ── STEP 3: Travel Rule — CODE 검증 ── -->
+    <div id="step3-wrap">
+      <div class="step-label">
+        <div class="step-num">3</div>
+        <div class="step-title">Travel Rule 수신자 정보 <span class="code-badge">CODE</span></div>
       </div>
+      <div class="step-section" id="step3-content">
 
-      <!-- Case A: VASP confirmed -->
-      <div id="case-A" style="display:none;">
-        <div class="vasp-result vasp-success">
-          <div class="vasp-header">
-            <span style="font-size:16px;">&#9989;</span>
-            <span class="vasp-badge vasp-badge-success">수신 VASP 확인됨</span>
-            <span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">CODE Protocol 연동 ●</span>
-          </div>
-          <div class="vasp-institution">
-            <span class="vasp-inst-icon">&#127974;</span>
+        <!-- Case D: Whitelist 선택 시 (Travel Rule 생략) -->
+        <div id="case-D">
+          <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#EFF6FF; border-radius:8px; border:1px solid #BFDBFE;">
+            <span style="font-size:20px; flex-shrink:0;">&#9989;</span>
             <div>
-              <div class="vasp-inst-name" id="vasp-name">빗썸 (Bithumb)</div>
-              <div class="vasp-inst-code" id="vasp-code">KR-BTH</div>
+              <div style="font-size:13px; font-weight:600; color:#1E40AF;">Travel Rule 입력 불필요</div>
+              <div style="font-size:11px; color:#3B82F6; margin-top:2px;">Whitelist 사전 등록·검증 완료 주소입니다. STEP 3 전체 생략됩니다.</div>
             </div>
           </div>
-          <div class="beneficiary-form">
-            <!-- 개인 / 법인 toggle -->
-            <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">수신자 유형 선택</div>
+        </div>
+
+        <!-- Case A: VASP confirmed — CODE verification form -->
+        <div id="case-A" style="display:none;">
+          <!-- VASP 확인 정보 헤더 -->
+          <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#F0FDF4; border-radius:8px; border:1px solid #BBF7D0; margin-bottom:14px;">
+            <span style="font-size:16px; flex-shrink:0;">&#9989;</span>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:11px; font-weight:700; color:#065F46; text-transform:uppercase; letter-spacing:0.3px;">수신 VASP 확인됨 · CODE Protocol &#9679;</div>
+              <div style="font-size:13px; font-weight:700; margin-top:2px;" id="vasp-name">빗썸 (Bithumb)</div>
+              <div style="font-size:10px; font-family:monospace; color:#059669;" id="vasp-code">KR-BTH</div>
+            </div>
+          </div>
+
+          <!-- CODE 검증 폼 (검증 전 표시) -->
+          <div id="code-verify-form">
+            <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">수신자 구분 <span class="req">*</span></div>
             <div style="display:flex; gap:8px; margin-bottom:14px;">
               <button class="btn-bene-type selected" id="bene-type-personal" onclick="selectBeneType('personal')">&#128100; 개인 Individual</button>
               <button class="btn-bene-type" id="bene-type-corporate" onclick="selectBeneType('corporate')">&#127970; 법인 Corporate</button>
@@ -1945,96 +2012,95 @@
             <!-- 개인 폼 -->
             <div id="bene-personal-form">
               <div class="form-group" style="margin-bottom:10px;">
-                <label class="form-label">받는 분 성함 / Beneficiary Name <span class="req">*</span></label>
+                <label class="form-label">수신자 성함 (Full Name) <span class="req">*</span></label>
                 <input type="text" class="form-control" id="wd-bene-personal-name"
-                  placeholder="홍길동 또는 Hong Gil-dong" />
-                <div class="form-hint">한글, 영문 모두 입력 가능 · 수신 거래소에 등록된 실명</div>
+                  placeholder="홍길동 또는 Hong Gil-dong" oninput="updateCodeVerifyBtn()" />
+                <div class="form-hint">&#8505; CODE가 수신 VASP에서 성함으로 수신자를 검증합니다.</div>
               </div>
             </div>
 
             <!-- 법인 폼 -->
             <div id="bene-corporate-form" style="display:none;">
               <div class="form-group">
-                <label class="form-label">회사명 / Company Name <span class="req">*</span></label>
+                <label class="form-label">법인 사업자명 (Company Name) <span class="req">*</span></label>
                 <input type="text" class="form-control" id="wd-bene-corp-name"
-                  placeholder="(주)인피닛블록 또는 Infiniteblock Inc." />
-                <div class="form-hint">한글, 영문 모두 입력 가능</div>
+                  placeholder="알파투자운용(주) 또는 Alpha Investment Co., Ltd." oninput="updateCodeVerifyBtn()" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">대표자명 (Representative Name) <span class="req">*</span></label>
+                <input type="text" class="form-control" id="wd-bene-corp-rep"
+                  placeholder="김철수 또는 Kim Chul-soo" oninput="updateCodeVerifyBtn()" />
               </div>
               <div class="form-group" style="margin-bottom:10px;">
-                <label class="form-label">대표자 성명 / Representative Name <span class="req">*</span></label>
-                <input type="text" class="form-control" id="wd-bene-corp-rep"
-                  placeholder="홍길동 또는 Hong Gil-dong" />
-                <div class="form-hint">한글, 영문 모두 입력 가능</div>
+                <label class="form-label">법인 주소 (Registered Address) <span class="req">*</span></label>
+                <input type="text" class="form-control" id="wd-bene-corp-addr"
+                  placeholder="서울특별시 강남구 테헤란로 123, 5층" oninput="updateCodeVerifyBtn()" />
+                <div class="form-hint">&#8505; CODE가 사업자명, 대표자명, 주소를 기반으로 수신자를 검증합니다.</div>
               </div>
             </div>
 
-            <!-- 수신 지갑 주소 (read-only) -->
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label">수신 지갑 주소</label>
-              <input type="text" class="form-control" id="wd-recv-addr-display"
-                readonly style="background:#F8FAFC; color:var(--text-secondary); font-family:monospace; font-size:12px; cursor:default;" />
-              <div class="form-hint">자동 채움 (읽기 전용)</div>
-            </div>
+            <button class="btn btn-primary" id="btn-code-verify" style="width:100%; margin-top:4px;" disabled onclick="runCodeVerification()">
+              &#128269; CODE 검증하기
+            </button>
           </div>
-          <div style="margin-top:12px; font-size:11px; color:#065F46; background:rgba(16,185,129,0.08); border-radius:6px; padding:8px 10px;">
-            &#8505; 입력 정보는 CODE Protocol을 통해 <strong id="vasp-name-hint">빗썸</strong>으로 암호화 전송·검증됩니다.
+
+          <!-- CODE 검증 결과 (검증 후 표시) -->
+          <div id="code-verify-result" style="display:none;">
+            <!-- 결과 A: 검증 성공 -->
+            <div id="code-result-success" style="display:none;">
+              <div class="code-verify-box success">
+                <div style="font-weight:700; color:#065F46; margin-bottom:8px;">&#9989; 수신자 정보가 확인되었습니다.</div>
+                <div id="code-success-detail" style="font-size:12px; line-height:1.9; color:#047857;"></div>
+                <div style="margin-top:8px; font-size:11px; color:#065F46; opacity:0.75;">검증 방식: CODE Protocol</div>
+              </div>
+              <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="resetCodeVerification()">수신자 정보 수정</button>
+            </div>
+            <!-- 결과 B: 정보 불일치 -->
+            <div id="code-result-mismatch" style="display:none;">
+              <div class="code-verify-box mismatch">
+                <div style="font-weight:700; color:#991B1B; margin-bottom:4px;">&#10060; 수신자 정보가 일치하지 않습니다.</div>
+                <div style="font-size:12px; color:#B91C1C;">입력하신 정보를 다시 확인해 주세요.</div>
+              </div>
+              <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="resetCodeVerification()">다시 입력하기</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Case B: VASP unconfirmed -->
-      <div id="case-B" style="display:none;">
-        <div class="vasp-result vasp-blocked">
-          <div class="vasp-header">
-            <span style="font-size:16px;">&#9888;&#65039;</span>
-            <span class="vasp-badge vasp-badge-blocked">수신 VASP를 확인할 수 없습니다</span>
-          </div>
-          <div style="font-size:13px; color:#991B1B; font-weight:500; margin-bottom:12px;">
-            수신 VASP를 확인할 수 없습니다. Whitelist 등록 또는 담당자 문의.
-          </div>
-          <div class="blocked-options">
-            <div class="blocked-option">
-              <div class="blocked-option-icon">&#128220;</div>
-              <div>
-                <div class="blocked-option-title">Whitelist에 주소 등록 후 출금</div>
-                <div class="blocked-option-desc">신청 후 Admin 승인 완료 시 출금 가능합니다.</div>
-                <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="closeSO('so-withdrawal'); openSO('so-add-address')">Whitelist 신청하기</button>
+        <!-- Case B: VASP 미확인 (기타/미등록 VASP 선택 시) -->
+        <div id="case-B" style="display:none;">
+          <div class="code-verify-box vasp-unk">
+            <div style="font-weight:700; color:#92400E; margin-bottom:8px;">&#9888;&#65039; 해당 주소의 VASP를 CODE에서 확인할 수 없습니다.</div>
+            <div style="font-size:12px; color:#78350F; margin-bottom:12px;">다음 방법으로 진행할 수 있습니다.</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="background:#fff; border-radius:6px; padding:10px 12px; border:1px solid #FDE68A;">
+                <div style="font-size:12px; font-weight:600; margin-bottom:4px;">&#128220; Whitelist에 주소 등록 후 출금</div>
+                <div style="font-size:11px; color:var(--text-secondary); margin-bottom:6px;">신청 후 Admin 승인 완료 시 출금 가능합니다.</div>
+                <button class="btn btn-primary btn-sm" onclick="closeSO('so-withdrawal'); openSO('so-add-address')">Whitelist 신청하기</button>
               </div>
-            </div>
-            <div class="blocked-option">
-              <div class="blocked-option-icon">&#128222;</div>
-              <div>
-                <div class="blocked-option-title">담당자에게 VASP 등록 요청</div>
-                <div class="blocked-option-desc">해당 거래소/VASP 정보를 담당자에게 전달하여 Admin에서 VASP를 먼저 등록해주세요.</div>
+              <div style="background:#fff; border-radius:6px; padding:10px 12px; border:1px solid #FDE68A;">
+                <div style="font-size:12px; font-weight:600; margin-bottom:4px;">&#128222; 인피닛블록 담당자 문의</div>
+                <div style="font-size:11px; color:var(--text-secondary);">해당 거래소/VASP 정보를 담당자에게 전달하여 VASP를 먼저 등록해주세요.</div>
               </div>
             </div>
           </div>
-          <div style="margin-top:12px; padding:10px 12px; background:rgba(239,68,68,0.06); border-radius:8px; font-size:12px; font-weight:600; color:var(--danger); display:flex; align-items:center; gap:6px;">
+          <div style="margin-top:10px; padding:8px 12px; background:rgba(239,68,68,0.06); border-radius:6px; font-size:12px; font-weight:600; color:var(--danger); display:flex; align-items:center; gap:6px;">
             <span>&#10005;</span> 현재 이 주소로 출금 불가 — 출금 신청 버튼 비활성화
           </div>
         </div>
-      </div>
 
-      <!-- Case C: Internal wallet -->
-      <div id="case-C" style="display:none;">
-        <div class="vasp-result vasp-internal">
-          <div class="vasp-header">
-            <span style="font-size:16px;">&#9989;</span>
-            <span class="vasp-badge vasp-badge-success">내부 지갑 이전 확인됨</span>
-          </div>
-          <div class="vasp-institution">
-            <span class="vasp-inst-icon">&#8644;</span>
+        <!-- Case C: 내부 지갑 (레거시 — 탭 방식으로 이전됨) -->
+        <div id="case-C" style="display:none;">
+          <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#ECFDF5; border-radius:8px; border:1px solid #6EE7B7;">
+            <span style="font-size:20px;">&#9989;</span>
             <div>
-              <div class="vasp-inst-name">인피닛블록 내부 지갑</div>
-              <div class="vasp-inst-code">ETH 보관 지갑 (알파투자운용(주))</div>
+              <div style="font-size:13px; font-weight:600; color:#065F46;">내부 지갑 이전 — Travel Rule 생략</div>
+              <div style="font-size:11px; color:#059669; margin-top:2px;">내부 이전 건으로 자동 처리됩니다.</div>
             </div>
           </div>
-          <div style="font-size:13px; color:#065F46; font-weight:500;">Travel Rule 정보 입력이 필요하지 않습니다.</div>
-          <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">내부 이전 건으로 자동 처리됩니다.</div>
         </div>
-      </div>
 
-    </div><!-- /step3-content -->
+      </div><!-- /step3-content -->
+    </div><!-- /step3-wrap -->
 
     <!-- ── STEP 4: Memo ── -->
     <div class="step-label">
@@ -2168,7 +2234,7 @@
     <span class="modal-title">&#9888; 출금 신청 최종 확인</span>
     <button class="modal-close" onclick="closeModal('modal-wd-confirm')">&#10005;</button>
   </div>
-  <div class="modal-body">
+  <div class="modal-body" id="modal-wd-confirm-body">
     <div class="alert alert-warning" style="margin-bottom:14px; font-size:12px;">
       &#9888; 제출 후 취소는 서명자 전원 거절 또는 Admin만 가능합니다.
     </div>
@@ -5351,18 +5417,26 @@
   const USD_KRW = 1380; // 환율 기준
   const wdMaxBalance = { 'BTC': 0.5, 'ETH': 4.2, 'USDT-ERC': 12500, 'USDT-TRC': 8000 };
 
-  let _wdWalletName = '';
+  let _wdWalletName  = '';
   let _wdCurrentCase = 'D'; // A B C D
-  let _vasp_timer = null;
+  let _wdAddrType    = 'whitelist'; // 'whitelist' | 'direct' | 'internal'
+  let _codeVerified  = false;
+  let _selectedInternalWallet = null;
+  let _vasp_timer    = null;
 
-  function openWithdrawal(walletName, balance) {
+  function openWithdrawal(walletName) {
     _wdWalletName = walletName || 'BTC 보관 지갑 #1';
     document.getElementById('wd-wallet-label').textContent = '지갑: ' + _wdWalletName;
+    // 내부 이전 송신 지갑 표시 업데이트
+    document.getElementById('int-send-wallet-name').textContent = _wdWalletName;
+    document.getElementById('int-send-wallet-info').textContent = 'BTC / Bitcoin  |  잔액: 2.5 BTC';
     // reset form
     document.getElementById('wd-coin').value = 'BTC';
     document.getElementById('wd-amount').value = '';
     document.getElementById('wd-usd').textContent = '≈ ₩0';
     document.getElementById('wd-memo').value = '';
+    _codeVerified = false;
+    _selectedInternalWallet = null;
     clearVASPSelection();
     updateWDCoin();
     selectAddrType('whitelist');
@@ -5373,50 +5447,64 @@
   let _selectedVASP = null; // { id, name, code }
 
   function selectAddrType(type) {
+    _wdAddrType = type;
     const wlPanel  = document.getElementById('addr-whitelist-panel');
     const dirPanel = document.getElementById('addr-direct-panel');
-    const optWL    = document.getElementById('opt-whitelist');
-    const optDir   = document.getElementById('opt-direct');
+    const intPanel = document.getElementById('addr-internal-panel');
+    const intRecv  = document.getElementById('step-internal-recv');
+    const step3    = document.getElementById('step3-wrap');
+    const tabWL    = document.getElementById('tab-whitelist');
+    const tabDir   = document.getElementById('tab-direct');
+    const tabInt   = document.getElementById('tab-internal');
+
+    // 탭 초기화
+    [tabWL, tabDir, tabInt].forEach(t => t && t.classList.remove('selected'));
+    [wlPanel, dirPanel, intPanel].forEach(p => p && (p.style.display = 'none'));
 
     if (type === 'whitelist') {
-      optWL.classList.add('selected');
-      optDir.classList.remove('selected');
-      wlPanel.style.display  = 'block';
-      dirPanel.style.display = 'none';
+      tabWL.classList.add('selected');
+      wlPanel.style.display = 'block';
+      intRecv.style.display = 'none';
+      step3.style.display   = 'block';
       showVASPCase('D');
-    } else {
-      optDir.classList.add('selected');
-      optWL.classList.remove('selected');
+      document.getElementById('wd-submit-btn').disabled = false;
+    } else if (type === 'direct') {
+      tabDir.classList.add('selected');
       dirPanel.style.display = 'block';
-      wlPanel.style.display  = 'none';
-      // reset VASP selection and hide address input
+      intRecv.style.display  = 'none';
+      step3.style.display    = 'block';
       clearVASPSelection();
       ['case-A','case-B','case-C','case-D'].forEach(id => {
         document.getElementById(id).style.display = 'none';
       });
+      _codeVerified = false;
+      document.getElementById('wd-submit-btn').disabled = true;
+    } else if (type === 'internal') {
+      tabInt.classList.add('selected');
+      intPanel.style.display = 'block';
+      intRecv.style.display  = 'block';
+      step3.style.display    = 'none'; // Travel Rule 전면 생략
+      document.querySelectorAll('.int-wallet-item').forEach(el => el.classList.remove('selected'));
+      _selectedInternalWallet = null;
       document.getElementById('wd-submit-btn').disabled = true;
     }
   }
 
   function selectVASP(id, name, code, icon, bgColor) {
     _selectedVASP = { id, name, code };
-    // Highlight selected card
     document.querySelectorAll('.vasp-partner-card').forEach(el => el.classList.remove('selected'));
     document.getElementById('vpc-' + id).classList.add('selected');
-    // Populate selected badge
     document.getElementById('selected-vasp-icon').innerHTML = icon;
     document.getElementById('selected-vasp-name').textContent = name;
     document.getElementById('selected-vasp-code').textContent = code;
-    // Show address input area
     document.getElementById('vasp-addr-input-area').style.display = 'block';
     document.getElementById('wd-addr-input').value = '';
     document.getElementById('vasp-lookup-area').style.display = 'none';
-    // Clear any previous VASP case result
     ['case-A','case-B','case-C','case-D'].forEach(i => {
       document.getElementById(i).style.display = 'none';
     });
+    _codeVerified = false;
     document.getElementById('wd-submit-btn').disabled = true;
-    // Scroll address input into view
     setTimeout(() => document.getElementById('wd-addr-input').focus(), 80);
   }
 
@@ -5436,6 +5524,15 @@
     document.getElementById('wd-submit-btn').disabled = false;
   }
 
+  function selectInternalWallet(idx) {
+    document.querySelectorAll('.int-wallet-item').forEach((el, i) => {
+      el.classList.toggle('selected', i === idx);
+    });
+    _selectedInternalWallet = idx;
+    const amount = parseFloat(document.getElementById('wd-amount').value) || 0;
+    document.getElementById('wd-submit-btn').disabled = (amount <= 0);
+  }
+
   let _vasp_debounce = null;
   function onAddrInput(value) {
     clearTimeout(_vasp_debounce);
@@ -5445,33 +5542,30 @@
       ['case-A','case-B','case-C','case-D'].forEach(id => {
         document.getElementById(id).style.display = 'none';
       });
+      _codeVerified = false;
       document.getElementById('wd-submit-btn').disabled = true;
       return;
     }
     area.style.display = 'block';
-    area.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);"><span class="spin" style="display:inline-block;width:16px;height:16px;border:2px solid #CBD5E1;border-top-color:var(--primary);border-radius:50%;"></span> 수신 VASP 확인 중입니다... 🔄</div>';
+    area.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);"><span class="spin" style="display:inline-block;width:16px;height:16px;border:2px solid #CBD5E1;border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;"></span> 수신 VASP 확인 중입니다... &#128260;</div>';
     ['case-A','case-B','case-C','case-D'].forEach(id => {
       document.getElementById(id).style.display = 'none';
     });
+    _codeVerified = false;
     document.getElementById('wd-submit-btn').disabled = true;
 
     _vasp_debounce = setTimeout(() => {
       area.style.display = 'none';
       const v = value.trim().toLowerCase();
-      // Internal wallet detection (regardless of selected VASP)
       if (v.includes('internal') || v.includes('0x4d4b') || v.includes('내부')) {
         showVASPCase('C');
         return;
       }
-      // If a registered VASP (not OTHER) was selected → always Case A
       if (_selectedVASP && _selectedVASP.id !== 'OTHER') {
-        // Populate VASP info into Case A
         document.getElementById('vasp-name').textContent = _selectedVASP.name;
         document.getElementById('vasp-code').textContent = _selectedVASP.code;
-        document.getElementById('vasp-name-hint').textContent = _selectedVASP.name.split(' ')[0];
         showVASPCase('A');
       } else {
-        // OTHER or unknown → Case B
         showVASPCase('B');
       }
     }, 900);
@@ -5482,6 +5576,9 @@
     document.getElementById('bene-type-corporate').classList.toggle('selected', type === 'corporate');
     document.getElementById('bene-personal-form').style.display  = type === 'personal'  ? 'block' : 'none';
     document.getElementById('bene-corporate-form').style.display = type === 'corporate' ? 'block' : 'none';
+    // CODE 검증 결과 초기화 (수신자 구분 변경 시)
+    if (_codeVerified) resetCodeVerification();
+    else updateCodeVerifyBtn();
   }
 
   function showVASPCase(caseId) {
@@ -5489,24 +5586,98 @@
     ['case-A','case-B','case-C','case-D'].forEach(id => {
       document.getElementById(id).style.display = (id === 'case-' + caseId) ? 'block' : 'none';
     });
-    // B = blocked, cannot submit
-    document.getElementById('wd-submit-btn').disabled = (caseId === 'B');
-    // Case A: auto-fill 수신 지갑 주소 read-only field
     if (caseId === 'A') {
-      const addr = document.getElementById('wd-addr-input')
-        ? document.getElementById('wd-addr-input').value : '';
-      const recvEl = document.getElementById('wd-recv-addr-display');
-      if (recvEl) recvEl.value = addr;
-      // reset beneficiary type to personal by default
+      // CODE 검증 폼 초기 상태로
+      document.getElementById('code-verify-form').style.display   = 'block';
+      document.getElementById('code-verify-result').style.display = 'none';
       selectBeneType('personal');
+      _codeVerified = false;
+      document.getElementById('wd-submit-btn').disabled = true;
+    } else if (caseId === 'B') {
+      document.getElementById('wd-submit-btn').disabled = true;
+    } else if (caseId === 'C' || caseId === 'D') {
+      document.getElementById('wd-submit-btn').disabled = false;
     }
+  }
+
+  /* ── CODE 검증하기 버튼 활성화 조건 ── */
+  function updateCodeVerifyBtn() {
+    const isPersonal = document.getElementById('bene-type-personal').classList.contains('selected');
+    let enabled = false;
+    if (isPersonal) {
+      enabled = (document.getElementById('wd-bene-personal-name').value || '').trim().length > 0;
+    } else {
+      const corp = (document.getElementById('wd-bene-corp-name').value || '').trim();
+      const rep  = (document.getElementById('wd-bene-corp-rep').value || '').trim();
+      const addr = (document.getElementById('wd-bene-corp-addr').value || '').trim();
+      enabled = corp.length > 0 && rep.length > 0 && addr.length > 0;
+    }
+    const btn = document.getElementById('btn-code-verify');
+    if (btn) btn.disabled = !enabled;
+  }
+
+  /* ── CODE 검증 실행 (시뮬레이션) ── */
+  function runCodeVerification() {
+    const btn = document.getElementById('btn-code-verify');
+    if (!btn) return;
+    btn.disabled = true;
+    btn.textContent = '⏳ CODE 검증 중...';
+
+    setTimeout(() => {
+      btn.textContent = '🔍 CODE 검증하기';
+      const isPersonal = document.getElementById('bene-type-personal').classList.contains('selected');
+      const testVal = isPersonal
+        ? document.getElementById('wd-bene-personal-name').value
+        : document.getElementById('wd-bene-corp-name').value;
+      // "fail" 또는 "실패" 포함 시 불일치 시뮬레이션
+      const isMismatch = /fail|실패/i.test(testVal);
+      showCodeResult(isMismatch ? 'mismatch' : 'success');
+    }, 1200);
+  }
+
+  function showCodeResult(result) {
+    document.getElementById('code-verify-form').style.display   = 'none';
+    document.getElementById('code-verify-result').style.display = 'block';
+    document.getElementById('code-result-success').style.display  = result === 'success'  ? 'block' : 'none';
+    document.getElementById('code-result-mismatch').style.display = result === 'mismatch' ? 'block' : 'none';
+
+    if (result === 'success') {
+      _codeVerified = true;
+      const vaspName   = document.getElementById('vasp-name').textContent;
+      const vaspCode   = document.getElementById('vasp-code').textContent;
+      const isPersonal = document.getElementById('bene-type-personal').classList.contains('selected');
+      let detail = '<div><span style="color:var(--text-secondary);">VASP: </span>' + vaspName + ' (' + vaspCode + ')</div>';
+      if (isPersonal) {
+        detail += '<div><span style="color:var(--text-secondary);">수신자 성함: </span>' + document.getElementById('wd-bene-personal-name').value + '</div>';
+      } else {
+        detail += '<div><span style="color:var(--text-secondary);">사업자명: </span>'  + document.getElementById('wd-bene-corp-name').value + '</div>';
+        detail += '<div><span style="color:var(--text-secondary);">대표자명: </span>'  + document.getElementById('wd-bene-corp-rep').value  + '</div>';
+        detail += '<div><span style="color:var(--text-secondary);">주소: </span>'      + document.getElementById('wd-bene-corp-addr').value + '</div>';
+      }
+      document.getElementById('code-success-detail').innerHTML = detail;
+      document.getElementById('wd-submit-btn').disabled = false;
+    } else {
+      _codeVerified = false;
+      document.getElementById('wd-submit-btn').disabled = true;
+    }
+  }
+
+  function resetCodeVerification() {
+    _codeVerified = false;
+    document.getElementById('code-verify-form').style.display    = 'block';
+    document.getElementById('code-verify-result').style.display  = 'none';
+    document.getElementById('code-result-success').style.display  = 'none';
+    document.getElementById('code-result-mismatch').style.display = 'none';
+    document.getElementById('wd-submit-btn').disabled = true;
+    updateCodeVerifyBtn();
   }
 
   function updateWDCoin() {
     const coin = document.getElementById('wd-coin').value;
     document.getElementById('wd-network').textContent = coinNetworkMap[coin] || coin;
     const max = wdMaxBalance[coin] || 0;
-    document.querySelector('.form-hint strong') && (document.querySelector('.form-hint strong').textContent = max.toFixed(8) + ' ' + coin.split('-')[0]);
+    const hint = document.querySelector('#so-withdrawal .form-hint strong');
+    if (hint) hint.textContent = max.toFixed(8) + ' ' + coin.split('-')[0];
     updateUSD();
   }
 
@@ -5516,6 +5687,10 @@
     const price  = coinUSDPrice[coin] || 0;
     const krw    = Math.round(amount * price * USD_KRW);
     document.getElementById('wd-usd').textContent = krw > 0 ? '≈ ₩' + krw.toLocaleString('ko-KR') : '≈ ₩0';
+    // 내부 지갑: 수량 입력 시 제출 버튼 상태 갱신
+    if (_wdAddrType === 'internal' && _selectedInternalWallet !== null) {
+      document.getElementById('wd-submit-btn').disabled = (amount <= 0);
+    }
   }
 
   function setMaxAmount() {
@@ -5525,26 +5700,54 @@
   }
 
   function openWithdrawalConfirm() {
-    // ── 수신자 정보 검증 (Case A only) ──
-    if (_wdCurrentCase === 'A') {
-      const isPersonal = document.getElementById('bene-type-personal').classList.contains('selected');
-      if (isPersonal) {
-        const name = document.getElementById('wd-bene-personal-name').value.trim();
-        if (!name) { showToast('받는 분 성함을 입력해주세요.'); return; }
-      } else {
-        const corp = document.getElementById('wd-bene-corp-name').value.trim();
-        const rep  = document.getElementById('wd-bene-corp-rep').value.trim();
-        if (!corp || !rep) { showToast('회사명과 대표자 성명을 입력해주세요.'); return; }
-      }
-    }
-
     const coin    = document.getElementById('wd-coin').value;
     const network = coinNetworkMap[coin] || coin;
     const amount  = document.getElementById('wd-amount').value || '0';
     const usdText = document.getElementById('wd-usd').textContent;
     const symbol  = coin.split('-')[0];
+    const memo    = (document.getElementById('wd-memo').value || '').trim() || '—';
 
-    // Get address
+    // ── 내부 지갑 이전 확인 ──
+    if (_wdAddrType === 'internal') {
+      if (_selectedInternalWallet === null) { showToast('수신 지갑을 선택해주세요.'); return; }
+      if (!parseFloat(amount))              { showToast('이전 수량을 입력해주세요.'); return; }
+      const recvEl  = document.querySelector('.int-wallet-item.selected .int-wallet-name');
+      const recvWallet = recvEl ? recvEl.textContent : '(선택 안 됨)';
+      const feeAmt  = 0.00005;
+      const recvAmt = Math.max(0, parseFloat(amount) - feeAmt).toFixed(8);
+      document.getElementById('modal-wd-confirm-body').innerHTML =
+        '<div class="alert alert-warning" style="margin-bottom:14px; font-size:12px;">'
+        + '&#9888; 내부 지갑 이전은 Travel Rule 검증 없이 처리됩니다. 수신 지갑을 반드시 확인하세요.</div>'
+        + '<div style="background:#F8FAFC; border-radius:8px; padding:14px;">'
+        + '<div class="confirm-summary-row"><span class="confirm-label">이전 유형</span><span style="font-weight:600; color:var(--primary);">&#8644; 내부 지갑 이전</span></div>'
+        + '<div class="confirm-summary-row"><span class="confirm-label">송신 지갑</span><span style="font-weight:600;">' + _wdWalletName + '</span></div>'
+        + '<div class="confirm-summary-row"><span class="confirm-label">수신 지갑</span><span style="font-weight:600;">' + recvWallet + '</span></div>'
+        + '<div class="confirm-summary-row"><span class="confirm-label">코인 / 네트워크</span><span>' + symbol + ' / ' + network + '</span></div>'
+        + '<div class="confirm-summary-row"><span class="confirm-label">이전 수량</span><span style="font-weight:700;">' + amount + ' ' + symbol + '</span></div>'
+        + '<div class="confirm-summary-row"><span class="confirm-label">수수료 (예상)</span><span>' + feeAmt + ' ' + symbol + '</span></div>'
+        + '<div class="confirm-summary-row"><span class="confirm-label">실제 수신 수량</span><span style="font-weight:700; color:var(--primary);">' + recvAmt + ' ' + symbol + '</span></div>'
+        + '<div class="confirm-summary-row"><span class="confirm-label">원화 환산</span><span>' + usdText + '</span></div>'
+        + '<div class="confirm-summary-row" style="border-bottom:none;"><span class="confirm-label">메모</span><span style="font-size:12px; color:var(--text-secondary);">' + memo + '</span></div>'
+        + '</div>';
+      openModal('modal-wd-confirm');
+      return;
+    }
+
+    // ── 외부 출금 / Whitelist ──
+    if (_wdCurrentCase === 'A') {
+      if (!_codeVerified) { showToast('CODE 검증을 먼저 완료해주세요.'); return; }
+      const isPersonal = document.getElementById('bene-type-personal').classList.contains('selected');
+      if (isPersonal) {
+        if (!(document.getElementById('wd-bene-personal-name').value || '').trim()) { showToast('수신자 성함을 입력해주세요.'); return; }
+      } else {
+        if (!(document.getElementById('wd-bene-corp-name').value || '').trim()
+         || !(document.getElementById('wd-bene-corp-rep').value  || '').trim()
+         || !(document.getElementById('wd-bene-corp-addr').value || '').trim()) {
+          showToast('법인 정보를 모두 입력해주세요.'); return;
+        }
+      }
+    }
+
     let addr = '—';
     if (_wdCurrentCase === 'D') {
       const sel = document.querySelector('.wl-item.selected');
@@ -5553,50 +5756,53 @@
       addr = document.getElementById('wd-addr-input').value || '—';
     }
 
-    // ── Travel Rule 상세 텍스트 ──
     let travelHTML = '—';
     if (_wdCurrentCase === 'D') {
-      travelHTML = '✅ Whitelist 사전 검증 완료';
+      travelHTML = '&#9989; Whitelist 사전 검증 완료';
     } else if (_wdCurrentCase === 'C') {
-      travelHTML = '✅ 내부 지갑 이전 — 자동처리';
+      travelHTML = '&#9989; 내부 지갑 이전 — 자동처리';
     } else if (_wdCurrentCase === 'B') {
-      travelHTML = '<span style="color:var(--danger);">✕ 출금 불가 (미등록 VASP)</span>';
+      travelHTML = '<span style="color:var(--danger);">&#10005; 출금 불가 (VASP 미확인)</span>';
     } else if (_wdCurrentCase === 'A') {
-      const vaspName = document.getElementById('vasp-name').textContent;
-      const vaspCode = document.getElementById('vasp-code').textContent;
+      const vaspName   = document.getElementById('vasp-name').textContent;
+      const vaspCode   = document.getElementById('vasp-code').textContent;
       const isPersonal = document.getElementById('bene-type-personal').classList.contains('selected');
+      travelHTML = '<div style="font-size:12px; line-height:1.8;">'
+        + '<div><span style="color:var(--text-secondary);">수신 VASP: </span>' + vaspName + ' · ' + vaspCode + '</div>';
       if (isPersonal) {
-        const name = document.getElementById('wd-bene-personal-name').value.trim();
-        travelHTML = '<div style="font-size:12px; line-height:1.8;">'
-          + '<div><span style="color:var(--text-secondary);">수신 VASP: </span>' + vaspName + ' · ' + vaspCode + '</div>'
-          + '<div><span style="color:var(--text-secondary);">수신자명: </span>' + name + '</div>'
-          + '</div>';
+        travelHTML += '<div><span style="color:var(--text-secondary);">수신자명: </span>' + document.getElementById('wd-bene-personal-name').value.trim() + '</div>';
       } else {
-        const corp = document.getElementById('wd-bene-corp-name').value.trim();
-        const rep  = document.getElementById('wd-bene-corp-rep').value.trim();
-        travelHTML = '<div style="font-size:12px; line-height:1.8;">'
-          + '<div><span style="color:var(--text-secondary);">수신 VASP: </span>' + vaspName + ' · ' + vaspCode + '</div>'
-          + '<div><span style="color:var(--text-secondary);">회사명: </span>' + corp + '</div>'
-          + '<div><span style="color:var(--text-secondary);">대표자명: </span>' + rep + '</div>'
-          + '</div>';
+        travelHTML += '<div><span style="color:var(--text-secondary);">사업자명: </span>' + document.getElementById('wd-bene-corp-name').value.trim() + '</div>';
+        travelHTML += '<div><span style="color:var(--text-secondary);">대표자명: </span>' + document.getElementById('wd-bene-corp-rep').value.trim()  + '</div>';
       }
+      travelHTML += '</div>';
     }
 
-    document.getElementById('cf-wallet').textContent = _wdWalletName;
-    document.getElementById('cf-addr').textContent   = addr.length > 30 ? addr.slice(0,14)+'...'+addr.slice(-8) : addr;
-    document.getElementById('cf-coin').textContent   = symbol + ' / ' + network;
-    document.getElementById('cf-amount').innerHTML   = amount + ' ' + symbol
-      + ' <span style="color:var(--text-secondary);font-size:12px;font-weight:400;">' + usdText + '</span>';
-    document.getElementById('cf-travel').innerHTML   = travelHTML;
-
+    // 기존 confirm 모달 내용으로 복원 (내부 이전이 아닌 경우)
+    document.getElementById('modal-wd-confirm-body').innerHTML =
+      '<div class="alert alert-warning" style="margin-bottom:14px; font-size:12px;">'
+      + '&#9888; 제출 후 취소는 서명자 전원 거절 또는 Admin만 가능합니다.</div>'
+      + '<div style="background:#F8FAFC; border-radius:8px; padding:14px;">'
+      + '<div class="confirm-summary-row"><span class="confirm-label">지갑</span><span style="font-weight:600;">' + _wdWalletName + '</span></div>'
+      + '<div class="confirm-summary-row"><span class="confirm-label">수신 주소</span><span style="font-family:monospace; font-size:12px;">' + (addr.length > 30 ? addr.slice(0,14)+'...'+addr.slice(-8) : addr) + '</span></div>'
+      + '<div class="confirm-summary-row"><span class="confirm-label">코인 / 네트워크</span><span>' + symbol + ' / ' + network + '</span></div>'
+      + '<div class="confirm-summary-row"><span class="confirm-label">수량</span><span style="font-weight:700;">' + amount + ' ' + symbol + ' <span style="color:var(--text-secondary); font-size:12px; font-weight:400;">' + usdText + '</span></span></div>'
+      + '<div class="confirm-summary-row"><span class="confirm-label">Travel Rule</span><div style="text-align:right; font-size:12px;">' + travelHTML + '</div></div>'
+      + '<div class="confirm-summary-row" style="border-bottom:none;"><span class="confirm-label">서명 필요</span><span><strong>2 of 3</strong> 서명 수집 후 Admin 처리</span></div>'
+      + '</div>';
     openModal('modal-wd-confirm');
   }
 
   function submitWithdrawal() {
     closeModal('modal-wd-confirm');
-    openOTPModal('출금 신청 OTP 인증', function() {
+    const isInternal = (_wdAddrType === 'internal');
+    openOTPModal(isInternal ? '내부 지갑 이전 OTP 인증' : '출금 신청 OTP 인증', function() {
       closeSO('so-withdrawal');
-      showToast('출금 신청이 완료되었습니다. 서명자에게 알림이 발송됩니다.');
+      if (isInternal) {
+        showToast('내부 지갑 이전 신청이 완료되었습니다. Workflows에서 서명 진행 후 처리됩니다.');
+      } else {
+        showToast('출금 신청이 완료되었습니다. 서명자에게 알림이 발송됩니다.');
+      }
     });
   }
 
