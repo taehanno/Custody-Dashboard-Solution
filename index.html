@@ -987,6 +987,110 @@
 </div>
 
 <!-- ══════════════════════════════════════
+     MODAL: Workflows 출금 상세 (5-8)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wf-detail" style="max-width:540px;">
+  <div class="modal-header">
+    <div>
+      <div style="font-size:16px; font-weight:700;">출금 상세</div>
+      <div id="wfd-id" style="font-size:11px; color:var(--text-secondary); margin-top:2px;"></div>
+    </div>
+    <button class="modal-close" onclick="closeModal('modal-wf-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- Status row -->
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+      <div id="wfd-status"></div>
+      <div style="font-size:12px; color:var(--text-secondary);">신청자: <span id="wfd-requester" style="color:var(--text-primary);"></span> &nbsp;|&nbsp; <span id="wfd-date"></span></div>
+    </div>
+    <!-- Info -->
+    <div class="tx-section">
+      <div class="tx-info-row"><span class="info-label">지갑명</span><span id="wfd-wallet"></span></div>
+      <div class="tx-info-row"><span class="info-label">코인 / 네트워크</span><span id="wfd-coin"></span></div>
+      <div class="tx-info-row"><span class="info-label">출금 수량</span><span id="wfd-amount" style="font-weight:700;"></span></div>
+      <div class="tx-info-row"><span class="info-label">수수료 (예상)</span><span id="wfd-fee"></span></div>
+      <div class="tx-info-row"><span class="info-label">실제 출금</span><span id="wfd-actual"></span></div>
+      <div class="tx-info-row" style="border-bottom:none;"><span class="info-label">원화 환산</span><span id="wfd-krw" style="color:var(--text-secondary);"></span></div>
+    </div>
+    <!-- Address -->
+    <div class="tx-section">
+      <div class="tx-info-row"><span class="info-label">수신 주소</span>
+        <span id="wfd-toaddr" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="tx-info-row"><span class="info-label">수신 유형</span><span id="wfd-addrtype"></span></div>
+      <div class="tx-info-row" style="border-bottom:none;"><span class="info-label">메모</span><span id="wfd-memo" style="color:var(--text-secondary);"></span></div>
+    </div>
+    <!-- TXID (for broadcasting/completed) -->
+    <div id="wfd-txid-section" class="tx-section" style="display:none;">
+      <div class="tx-info-row" style="border-bottom:none;"><span class="info-label">TXID</span><span id="wfd-txid"></span></div>
+    </div>
+    <!-- Signers (5-8) -->
+    <div class="tx-section">
+      <div id="wfd-sig-title" style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; text-transform:uppercase; letter-spacing:.4px;"></div>
+      <div id="wfd-sig-list"></div>
+      <!-- My sign status highlight -->
+      <div id="wfd-my-sign" style="margin-top:8px; padding:8px 10px; border-radius:6px; font-size:12px;"></div>
+    </div>
+    <!-- Reject note -->
+    <div id="wfd-reject-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; background:#FEF2F2; color:#991B1B;"></div>
+  </div>
+  <div class="modal-footer" id="wfd-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wf-detail')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 서명 재확인 (5-9)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wf-sign-confirm" style="max-width:440px;">
+  <div class="modal-header">
+    <div style="font-size:16px; font-weight:700;">✍ 서명 전 출금 정보 확인</div>
+    <button class="modal-close" onclick="closeModal('modal-wf-sign-confirm')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="alert alert-warning" style="font-size:12px; margin-bottom:14px;">
+      &#9888; 서명 후에는 취소할 수 없습니다. 아래 출금 정보를 반드시 확인해주세요.
+    </div>
+    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:4px;">
+      <div class="tx-info-row"><span class="info-label">지갑</span><span id="wfsc-wallet"></span></div>
+      <div class="tx-info-row"><span class="info-label">코인</span><span id="wfsc-coin"></span></div>
+      <div class="tx-info-row"><span class="info-label">출금 수량</span><span id="wfsc-amount" style="font-weight:700;"></span></div>
+      <div class="tx-info-row"><span class="info-label">원화 환산</span><span id="wfsc-krw" style="color:var(--text-secondary);"></span></div>
+      <div class="tx-info-row" style="border-bottom:none;"><span class="info-label">수신 주소</span><span id="wfsc-addr" style="font-family:monospace; font-size:12px;"></span></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wf-sign-confirm')">취소</button>
+    <button class="btn btn-primary" id="wfsc-confirm-btn" onclick="_wfProceedSign()">서명 완료 &#10003;</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 거절 사유 입력 (5-10)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wf-reject-reason" style="max-width:440px;">
+  <div class="modal-header">
+    <div style="font-size:16px; font-weight:700;">출금 거절</div>
+    <button class="modal-close" onclick="closeModal('modal-wf-reject-reason')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="alert alert-danger" style="font-size:12px; margin-bottom:14px; background:#FEF2F2; border-color:#FECACA; color:#991B1B;">
+      &#9888; 거절 처리 후에는 되돌릴 수 없습니다. 신청자에게 거절 사유가 전달됩니다.
+    </div>
+    <div style="margin-bottom:6px; font-size:13px; font-weight:600;">거절 사유 <span style="color:var(--danger);">*</span></div>
+    <textarea id="wf-reject-reason-text" class="form-control" placeholder="거절 사유를 입력해주세요. (필수)" maxlength="500"
+      style="width:100%; height:100px; resize:vertical; font-size:13px;"
+      oninput="document.getElementById('wf-reject-next-btn').disabled=!this.value.trim(); document.getElementById('wf-reject-char').textContent=this.value.length;"></textarea>
+    <div style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:4px;">
+      <span id="wf-reject-char">0</span>/500
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wf-reject-reason')">취소</button>
+    <button class="btn btn-danger" id="wf-reject-next-btn" disabled onclick="_wfProceedReject()">다음 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
      MODAL: 출금 상세 (4-6-1)
 ══════════════════════════════════════ -->
 <div class="modal" id="modal-tx-detail-wd" style="max-width:520px;">
@@ -2713,7 +2817,7 @@
             <div class="card-title-sm">&#9989; To-do / Pending Actions</div>
             <div class="todo-item">
               <span class="todo-label">서명 대기 출금</span>
-              <span class="todo-count" onclick="showPage('workflows', document.getElementById('nav-workflows'))" style="cursor:pointer;">2</span>
+              <span class="todo-count" id="todo-wf-pending" onclick="showPage('workflows', document.getElementById('nav-workflows'))" style="cursor:pointer;">0</span>
             </div>
             <div class="todo-item">
               <span class="todo-label">Whitelist 승인 대기</span>
@@ -3215,169 +3319,104 @@
       <!-- ══════════════════════════
            PAGE: WORKFLOWS
       ══════════════════════════ -->
+      <!-- ══════════════════════════
+           PAGE: WORKFLOWS (5)
+      ══════════════════════════ -->
       <div class="page" id="page-workflows">
         <div class="page-header">
           <h1 class="page-title">Workflows <span style="font-size:14px; font-weight:400; color:var(--text-secondary);">출금 승인 대기함</span></h1>
         </div>
-        <div class="card" style="padding:0; margin-bottom:20px;">
-          <div style="padding:14px 20px 0;">
-            <div class="tabs">
-              <div class="tab active" onclick="switchWorkflowTab(this,'all')">전체 All</div>
-              <div class="tab" onclick="switchWorkflowTab(this,'pending')">서명 대기 <span style="background:var(--danger); color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; margin-left:4px;">2</span></div>
-              <div class="tab" onclick="switchWorkflowTab(this,'inprogress')">처리 중</div>
-              <div class="tab" onclick="switchWorkflowTab(this,'completed')">완료</div>
-              <div class="tab" onclick="switchWorkflowTab(this,'rejected')">거절</div>
+
+        <!-- 5-5: Stats cards -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px;">
+          <div class="card" style="padding:14px 18px;">
+            <div style="font-size:11px; color:#3B82F6; font-weight:600; margin-bottom:3px; text-transform:uppercase; letter-spacing:.5px;">전체</div>
+            <div id="wf-stat-total" style="font-size:22px; font-weight:700; color:#3B82F6;">0건</div>
+          </div>
+          <div class="card" style="padding:14px 18px;">
+            <div style="font-size:11px; color:#F59E0B; font-weight:600; margin-bottom:3px; text-transform:uppercase; letter-spacing:.5px;">서명 대기</div>
+            <div id="wf-stat-pending" style="font-size:22px; font-weight:700; color:#F59E0B;">0건</div>
+          </div>
+          <div class="card" style="padding:14px 18px;">
+            <div style="font-size:11px; color:#8B5CF6; font-weight:600; margin-bottom:3px; text-transform:uppercase; letter-spacing:.5px;">처리 중</div>
+            <div id="wf-stat-processing" style="font-size:22px; font-weight:700; color:#8B5CF6;">0건</div>
+          </div>
+          <div class="card" style="padding:14px 18px;">
+            <div style="font-size:11px; color:#EF4444; font-weight:600; margin-bottom:3px; text-transform:uppercase; letter-spacing:.5px;">거절</div>
+            <div id="wf-stat-rejected" style="font-size:22px; font-weight:700; color:#EF4444;">0건</div>
+          </div>
+        </div>
+
+        <!-- Main card -->
+        <div class="card" style="padding:0;">
+          <!-- 5-4: Type tabs -->
+          <div style="padding:16px 20px 0;">
+            <div class="tabs" id="wf-tabs">
+              <div class="tab active" onclick="_wfSetTab('all',this)">전체</div>
+              <div class="tab" onclick="_wfSetTab('pending_sig',this)">서명 대기</div>
+              <div class="tab" onclick="_wfSetTab('processing',this)">처리 중</div>
+              <div class="tab" onclick="_wfSetTab('completed',this)">완료</div>
+              <div class="tab" onclick="_wfSetTab('rejected',this)">거절</div>
             </div>
           </div>
-          <div style="padding:16px 20px;" id="workflows-list">
-            <!-- Item 1: Pending signature -->
-            <div class="workflow-item" data-status="pending">
-              <div class="workflow-header">
-                <div>
-                  <div class="workflow-id">WD-20260407-003</div>
-                  <div class="workflow-coin">USDT — Ethereum (ERC20)</div>
-                </div>
-                <span class="badge badge-warning">⏳ 서명 대기</span>
-              </div>
-              <div class="workflow-amount">500.00 USDT</div>
-              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩690,000</div>
-              <div class="workflow-addr">→ 0xA1b2C3d4E5f6...C9d0 (거래소 출금지갑)</div>
-              <div class="signature-progress">
-                <div class="sig-title">서명 현황 1 / 3</div>
-                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-07 11:00 완료</span></div>
-                <div class="sig-row" style="background:#EFF6FF; border-radius:5px; padding:4px 6px;"><span class="sig-icon-wait" style="color:var(--primary);">→</span><span style="font-weight:700; color:var(--primary);">김철수 (나)</span><span style="font-size:11px; font-weight:600; color:var(--primary); margin-left:auto;">내 서명 필요</span></div>
-                <div class="sig-row"><span class="sig-icon-wait">⏳</span><span style="font-weight:600; color:var(--text-secondary);">박민준</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">대기 중</span></div>
-              </div>
-              <div class="workflow-actions">
-                <button class="btn btn-primary" onclick="openSO('so-workflow-sign')">&#128394; 서명하기</button>
-                <button class="btn btn-outline btn-sm" onclick="openWithdrawalDetail('pending')">상세 보기</button>
-              </div>
+
+          <!-- 5-13: Filter bar -->
+          <div class="hist-filter-bar">
+            <select id="wf-wallet-filter" class="form-control" style="font-size:12px; padding:5px 8px; height:auto; max-width:140px;" onchange="renderWorkflows()">
+              <option value="">전체 지갑</option>
+              <option value="wallet1">운영 지갑 A</option>
+              <option value="wallet2">운영 지갑 B</option>
+              <option value="wallet3">예비 지갑 A</option>
+            </select>
+            <select id="wf-coin-filter" class="form-control" style="font-size:12px; padding:5px 8px; height:auto; max-width:110px;" onchange="renderWorkflows()">
+              <option value="">전체 코인</option>
+              <option>BTC</option><option>ETH</option><option>USDT</option>
+            </select>
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+              <button class="hist-type-tab" id="wf-p-today" onclick="_wfSetPreset('today',this)">오늘</button>
+              <button class="hist-type-tab active" id="wf-p-7d" onclick="_wfSetPreset('7d',this)">7일</button>
+              <button class="hist-type-tab" id="wf-p-30d" onclick="_wfSetPreset('30d',this)">30일</button>
+              <button class="hist-type-tab" id="wf-p-90d" onclick="_wfSetPreset('90d',this)">90일</button>
+              <button class="hist-type-tab" id="wf-p-custom" onclick="_wfSetPreset('custom',this)">직접입력</button>
             </div>
-            <!-- Item 2: Pending signature -->
-            <div class="workflow-item" data-status="pending">
-              <div class="workflow-header">
-                <div>
-                  <div class="workflow-id">WD-20260406-002</div>
-                  <div class="workflow-coin">BTC — Bitcoin Mainnet</div>
-                </div>
-                <span class="badge badge-warning">⏳ 서명 대기</span>
-              </div>
-              <div class="workflow-amount">0.0100 BTC</div>
-              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩579,600</div>
-              <div class="workflow-addr">→ bc1qxy2kgdygjrsq...nfkj (외부 주소)</div>
-              <div class="signature-progress">
-                <div class="sig-title">서명 현황 0 / 2</div>
-                <div class="sig-row" style="background:#EFF6FF; border-radius:5px; padding:4px 6px;"><span class="sig-icon-wait" style="color:var(--primary);">→</span><span style="font-weight:700; color:var(--primary);">김철수 (나)</span><span style="font-size:11px; font-weight:600; color:var(--primary); margin-left:auto;">내 서명 필요</span></div>
-                <div class="sig-row"><span class="sig-icon-wait">⏳</span><span style="font-weight:600; color:var(--text-secondary);">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">대기 중</span></div>
-              </div>
-              <div class="workflow-actions">
-                <button class="btn btn-primary" onclick="openSO('so-workflow-sign')">&#128394; 서명하기</button>
-                <button class="btn btn-outline btn-sm" onclick="openWithdrawalDetail('pending')">상세 보기</button>
-              </div>
+            <div id="wf-custom-dates" style="display:none; gap:4px; align-items:center; flex-wrap:wrap;">
+              <input type="date" id="wf-from" class="form-control" style="font-size:12px; padding:4px 6px; height:auto; width:130px;" onchange="renderWorkflows()">
+              <span style="font-size:11px; color:var(--text-secondary);">~</span>
+              <input type="date" id="wf-to" class="form-control" style="font-size:12px; padding:4px 6px; height:auto; width:130px;" onchange="renderWorkflows()">
             </div>
-            <!-- Item 3: Processing (🔄 처리 중 — Admin Keypal 서명 전) -->
-            <div class="workflow-item" data-status="inprogress">
-              <div class="workflow-header">
-                <div>
-                  <div class="workflow-id">WD-20260407-001</div>
-                  <div class="workflow-coin">USDT — Ethereum (ERC20)</div>
-                </div>
-                <span class="badge badge-purple">🔄 처리 중</span>
-              </div>
-              <div class="workflow-amount">100.00 USDT</div>
-              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩138,000</div>
-              <div class="workflow-addr">→ 0x4d4b...C3E69</div>
-              <div class="signature-progress">
-                <div class="sig-title">서명 현황 2 / 3 ✓</div>
-                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">김철수</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-07 10:25 완료</span></div>
-                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-07 10:28 완료</span></div>
-                <div class="sig-row"><span class="sig-icon-wait">—</span><span style="font-weight:600; color:var(--text-secondary);">박민준</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">불필요 (N 충족)</span></div>
-              </div>
-              <div style="font-size:12px; color:var(--text-secondary); margin-top:8px; padding:8px; background:#F8FAFC; border-radius:6px;">Admin이 처리 중입니다. 완료 후 TXID가 등록됩니다.</div>
-              <div class="workflow-actions">
-                <button class="btn btn-outline btn-sm" onclick="openWithdrawalDetail('inprogress')">상세 보기</button>
-              </div>
-            </div>
-            <!-- Item 4: Broadcasting (↗ 출금 중 — TXID 등록 후 1 confirm 대기) -->
-            <div class="workflow-item" data-status="inprogress">
-              <div class="workflow-header">
-                <div>
-                  <div class="workflow-id">WD-20260405-001</div>
-                  <div class="workflow-coin">BTC — Bitcoin Mainnet</div>
-                </div>
-                <span class="badge badge-info">↗ 출금 중</span>
-              </div>
-              <div class="workflow-amount">0.0200 BTC</div>
-              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩1,159,200</div>
-              <div class="workflow-addr">→ bc1q9d2...nfkj (외부 주소)</div>
-              <div class="signature-progress">
-                <div class="sig-title">서명 현황 2 / 2 ✓</div>
-                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">김철수</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-05 14:10 완료</span></div>
-                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-05 14:15 완료</span></div>
-              </div>
-              <div style="font-size:12px; margin-top:8px; padding:8px; background:#EFF6FF; border-radius:6px; color:var(--primary);">
-                TXID: <span style="font-family:monospace;">0x9a1b...e3f2</span>
-                <span style="cursor:pointer; margin-left:6px;">&#128203;</span>
-                <span style="margin-left:6px; text-decoration:underline; cursor:pointer;">익스플로러 ↗</span>
-                <div style="color:var(--text-secondary); margin-top:4px;">블록체인 확인 중 — 1 confirm 대기</div>
-              </div>
-              <div class="workflow-actions">
-                <button class="btn btn-outline btn-sm" onclick="openWithdrawalDetail('broadcasting')">상세 보기</button>
-              </div>
-            </div>
-            <!-- Item 5: Completed (● 완료) -->
-            <div class="workflow-item" data-status="completed">
-              <div class="workflow-header">
-                <div>
-                  <div class="workflow-id">WD-20260404-002</div>
-                  <div class="workflow-coin">ETH — Ethereum Mainnet</div>
-                </div>
-                <span class="badge badge-success">● 완료</span>
-              </div>
-              <div class="workflow-amount">0.5000 ETH</div>
-              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩2,350,000</div>
-              <div class="workflow-addr">→ 0x7c3F...A9d1 (외부 주소)</div>
-              <div class="signature-progress">
-                <div class="sig-title">서명 현황 2 / 2 ✓</div>
-                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">김철수</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-04 11:05 완료</span></div>
-                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-04 11:08 완료</span></div>
-              </div>
-              <div style="font-size:12px; margin-top:8px; padding:8px; background:#ECFDF5; border-radius:6px; color:#065F46;">
-                TXID: <span style="font-family:monospace;">0x3f4e5a6b...a1b2</span>
-                <span style="cursor:pointer; margin-left:6px;">&#128203;</span>
-                <span style="margin-left:6px; text-decoration:underline; cursor:pointer;">익스플로러 ↗</span>
-                <div style="margin-top:4px;">완료 일시: 2026-04-04 11:42:17</div>
-              </div>
-              <div class="workflow-actions">
-                <button class="btn btn-outline btn-sm" onclick="openWithdrawalDetail('completed')">상세 보기</button>
-              </div>
-            </div>
-            <!-- Item 6: Rejected (✕ 거절) -->
-            <div class="workflow-item" data-status="rejected">
-              <div class="workflow-header">
-                <div>
-                  <div class="workflow-id">WD-20260403-001</div>
-                  <div class="workflow-coin">USDT — Ethereum (ERC20)</div>
-                </div>
-                <span class="badge badge-danger">✕ 거절</span>
-              </div>
-              <div class="workflow-amount">2,000.00 USDT</div>
-              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">≈ ₩2,760,000</div>
-              <div class="workflow-addr">→ 0xD9eF...4c7B (외부 주소)</div>
-              <div class="signature-progress">
-                <div class="sig-title">서명 현황 1 / 3</div>
-                <div class="sig-row"><span class="sig-icon-done">✓</span><span style="font-weight:600;">김철수</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">04-03 09:10 완료</span></div>
-                <div class="sig-row"><span class="sig-icon-wait" style="color:var(--danger);">✕</span><span style="font-weight:600; color:var(--danger);">박민준 (거절)</span><span style="font-size:11px; color:var(--danger); margin-left:auto;">04-03 09:18 거절</span></div>
-                <div class="sig-row"><span class="sig-icon-wait">—</span><span style="font-weight:600; color:var(--text-secondary);">이영희</span><span style="font-size:11px; color:var(--text-secondary); margin-left:auto;">불필요 (거절 확정)</span></div>
-              </div>
-              <div style="font-size:12px; margin-top:8px; padding:8px; background:#FEF2F2; border-radius:6px; color:#991B1B;">
-                <div style="font-weight:600; margin-bottom:4px;">거절 사유</div>
-                <div>수신 주소가 Whitelist에 등록되지 않은 주소입니다. 주소 확인 후 재신청해주세요.</div>
-              </div>
-              <div class="workflow-actions">
-                <button class="btn btn-outline btn-sm" onclick="openWithdrawalDetail('rejected')">상세 보기</button>
-              </div>
-            </div>
+            <button class="btn btn-outline btn-sm" onclick="_wfResetFilters()">초기화</button>
+          </div>
+          <!-- Active filter badges -->
+          <div id="wf-badges" style="padding:0 20px 10px; gap:6px; flex-wrap:wrap; display:none;"></div>
+
+          <!-- 5-6: Table -->
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="white-space:nowrap;">신청 일시</th>
+                  <th>지갑명</th>
+                  <th>코인</th>
+                  <th style="text-align:right;">출금 수량</th>
+                  <th style="text-align:center;">서명 현황</th>
+                  <th>상태 / 액션</th>
+                </tr>
+              </thead>
+              <tbody id="wf-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- Load more -->
+          <div id="wf-load-more" style="display:none; text-align:center; padding:12px 20px;">
+            <button class="btn btn-outline btn-sm" style="width:100%;" onclick="_wfLoadMore()">더 보기</button>
+          </div>
+
+          <!-- 5-14: Empty state -->
+          <div id="wf-empty" style="display:none; padding:48px 20px; text-align:center; color:var(--text-secondary);">
+            <div id="wf-empty-icon" style="font-size:36px; margin-bottom:12px;">✅</div>
+            <div id="wf-empty-msg" style="font-size:14px; font-weight:600; margin-bottom:6px;">처리할 서명 요청이 없습니다.</div>
+            <div id="wf-empty-sub" style="font-size:12px; margin-bottom:14px;"></div>
+            <button id="wf-empty-reset" class="btn btn-outline btn-sm" style="display:none;" onclick="_wfResetFilters()">필터 초기화</button>
           </div>
         </div>
       </div>
@@ -3840,6 +3879,7 @@
 
     // Page-specific init
     if (pageId === 'transactions') renderTransactions();
+    if (pageId === 'workflows')    renderWorkflows();
   }
 
   function openWalletDetail(walletId) {
@@ -5259,6 +5299,448 @@
     showToast('CSV 다운로드 완료', 'success');
   }
 
+  /* ════════════════════════════════════════════════════════
+     5. WORKFLOWS PAGE
+  ════════════════════════════════════════════════════════ */
+  const _DEMO_USER = '김철수'; // logged-in user name for signer matching
+
+  /* Workflow data — withdrawal entries visible to current user as signer */
+  const _WORKFLOW_DATA = [
+    // WD-W1: pending_sig — 김철수 아직 미서명 (primary demo case)
+    { id:'WD-W1', walletId:'wallet1', walletName:'운영 지갑 A',
+      coin:'USDT', network:'Ethereum (ERC-20)', amount:5000, amountKRW:6900000,
+      fee:3.5, actualAmount:4996.5, status:'pending_sig', date:'2026-04-08 15:22',
+      toAddr:'0x4d4bC4a1...C3E1', addrType:'외부 지갑', txid:null, memo:'운영비 지출',
+      requester:'이영희', sigPolicy:{n:2,m:3},
+      signers:[{name:'이영희',done:true,at:'2026-04-08 15:24'},{name:'김철수',done:false,at:null},{name:'박민준',done:false,at:null}] },
+    // WD-W2: pending_sig — 김철수 이미 서명 완료, N of M 미충족 (서명 대기 유지)
+    { id:'WD-W2', walletId:'wallet2', walletName:'운영 지갑 B',
+      coin:'BTC', network:'Bitcoin Mainnet', amount:0.01, amountKRW:1400000,
+      fee:0.00005, actualAmount:0.00995, status:'pending_sig', date:'2026-04-06 14:10',
+      toAddr:'bc1q7xyz...9abc', addrType:'Whitelist 주소', txid:null, memo:'',
+      requester:'박민준', sigPolicy:{n:2,m:3},
+      signers:[{name:'김철수',done:true,at:'2026-04-06 14:12'},{name:'이영희',done:false,at:null},{name:'박민준',done:false,at:null}] },
+    // WD-W3: processing
+    { id:'WD-W3', walletId:'wallet1', walletName:'운영 지갑 A',
+      coin:'ETH', network:'Ethereum Mainnet', amount:0.5, amountKRW:2600000,
+      fee:0.002, actualAmount:0.498, status:'processing', date:'2026-04-07 10:22',
+      toAddr:'0x9a1b2c3d...E5F6', addrType:'내부 지갑', txid:null, memo:'',
+      requester:'김철수', sigPolicy:{n:2,m:3},
+      signers:[{name:'김철수',done:true,at:'2026-04-07 10:25'},{name:'이영희',done:true,at:'2026-04-07 10:28'},{name:'박민준',done:false,at:null}] },
+    // WD-W4: broadcasting
+    { id:'WD-W4', walletId:'wallet2', walletName:'운영 지갑 B',
+      coin:'BTC', network:'Bitcoin Mainnet', amount:0.005, amountKRW:700000,
+      fee:0.00005, actualAmount:0.00495, status:'broadcasting', date:'2026-04-06 14:10',
+      toAddr:'bc1q7xyz...9abc', addrType:'외부 지갑', txid:'0xf1e2d3c4...b5a6', memo:'',
+      requester:'이영희', sigPolicy:{n:2,m:3},
+      signers:[{name:'김철수',done:true,at:'2026-04-06 14:12'},{name:'이영희',done:true,at:'2026-04-06 14:15'},{name:'박민준',done:true,at:'2026-04-06 14:18'}] },
+    // WD-W5: completed
+    { id:'WD-W5', walletId:'wallet1', walletName:'운영 지갑 A',
+      coin:'USDT', network:'Ethereum (ERC-20)', amount:200, amountKRW:276000,
+      fee:2.1, actualAmount:197.9, status:'completed', date:'2026-04-04 09:30',
+      toAddr:'0x3f4e5a6b...A1B2', addrType:'Whitelist 주소', txid:'0x3f4e5a6b...a1b2', memo:'파트너 정산',
+      requester:'김철수', sigPolicy:{n:2,m:3},
+      signers:[{name:'김철수',done:true,at:'2026-04-04 09:33'},{name:'이영희',done:true,at:'2026-04-04 09:36'},{name:'박민준',done:true,at:'2026-04-04 09:40'}],
+      completedAt:'2026-04-04 11:42' },
+    // WD-W6: rejected
+    { id:'WD-W6', walletId:'wallet2', walletName:'운영 지갑 B',
+      coin:'ETH', network:'Ethereum Mainnet', amount:1.0, amountKRW:5200000,
+      fee:0.003, actualAmount:0.997, status:'rejected', date:'2026-04-03 09:00',
+      toAddr:'0xUnkown1...F2F3', addrType:'미등록 주소', txid:null, memo:'',
+      requester:'이영희', sigPolicy:{n:2,m:3},
+      signers:[{name:'김철수',done:true,at:'2026-04-03 09:10'},{name:'이영희',done:false,at:null},{name:'박민준',done:false,at:null}],
+      rejectNote:'수신 주소가 Whitelist에 등록되지 않은 주소입니다. 확인 후 재신청해주세요.',
+      rejectBy:'김철수', rejectAt:'2026-04-03 09:18' },
+  ];
+
+  var _wfTab     = 'all';
+  var _wfPreset  = '7d';
+  var _wfPage    = 1;
+  var _wfCurrentId = null;
+  const _WF_PAGE_SIZE = 20;
+
+  /* ─ tab label → status values map */
+  const _WF_TAB_STATUSES = {
+    all:        null,
+    pending_sig:['pending_sig'],
+    processing: ['processing','broadcasting'],
+    completed:  ['completed'],
+    rejected:   ['rejected'],
+  };
+
+  /* ─ date range */
+  function _wfGetDateRange() {
+    const now = new Date('2026-04-09T23:59:59');
+    if (_wfPreset === 'custom') {
+      const fv = (document.getElementById('wf-from')||{}).value||'';
+      const tv = (document.getElementById('wf-to')  ||{}).value||'';
+      return { from: fv?new Date(fv):new Date('2000-01-01'), to: tv?new Date(tv+'T23:59:59'):new Date('2099-12-31') };
+    }
+    const days = {today:0,'7d':7,'30d':30,'90d':90}[_wfPreset]??7;
+    const from = new Date(now); from.setDate(from.getDate()-days); from.setHours(0,0,0,0);
+    return { from, to:new Date('2099-12-31') };
+  }
+
+  /* ─ filter */
+  function _wfGetFiltered() {
+    const walletF = (document.getElementById('wf-wallet-filter')||{}).value||'';
+    const coinF   = (document.getElementById('wf-coin-filter')  ||{}).value||'';
+    const { from, to } = _wfGetDateRange();
+    const statuses = _WF_TAB_STATUSES[_wfTab];
+
+    return _WORKFLOW_DATA.filter(w => {
+      if (statuses && !statuses.includes(w.status)) return false;
+      if (walletF && w.walletId !== walletF) return false;
+      if (coinF   && w.coin    !== coinF)   return false;
+      const d = new Date(w.date);
+      if (d < from || d > to) return false;
+      return true;
+    }).sort((a,b) => new Date(b.date)-new Date(a.date));
+  }
+
+  /* ─ stat cards (5-5) */
+  function _wfUpdateStats() {
+    const all  = _WORKFLOW_DATA;
+    document.getElementById('wf-stat-total').textContent     = all.length + '건';
+    document.getElementById('wf-stat-pending').textContent   = all.filter(w=>w.status==='pending_sig').length + '건';
+    document.getElementById('wf-stat-processing').textContent= all.filter(w=>w.status==='processing'||w.status==='broadcasting').length + '건';
+    document.getElementById('wf-stat-rejected').textContent  = all.filter(w=>w.status==='rejected').length + '건';
+  }
+
+  /* ─ sign status badge helper */
+  function _wfStatusBadge(status) {
+    const m = {
+      pending_sig: '<span class="badge badge-warning">&#9203; 서명 대기</span>',
+      processing:  '<span class="badge badge-purple">&#128260; 처리 중</span>',
+      broadcasting:'<span class="badge badge-info">&#8599; 출금 중</span>',
+      completed:   '<span class="badge badge-success">&#9679; 완료</span>',
+      rejected:    '<span class="badge badge-danger">&#10005; 거절</span>',
+    };
+    return m[status]||`<span class="badge badge-gray">${status}</span>`;
+  }
+
+  /* ─ render rows */
+  function _wfRenderRows(data, append) {
+    const tbody = document.getElementById('wf-tbody');
+    if (!tbody) return;
+
+    const start = append ? ((_wfPage-1)*_WF_PAGE_SIZE) : 0;
+    const slice = data.slice(start, start+_WF_PAGE_SIZE);
+
+    const html = slice.map(w => {
+      const doneCnt = w.signers.filter(s=>s.done).length;
+      const totalS  = w.signers.length;
+      const mySig   = w.signers.find(s=>s.name===_DEMO_USER);
+      const myDone  = mySig && mySig.done;
+      const nMet    = doneCnt >= (w.sigPolicy?w.sigPolicy.n:2);
+      const canSign = w.status==='pending_sig' && !myDone && !nMet;
+      const canReject = w.status==='pending_sig';
+
+      const sigHtml = `<span style="font-weight:700;">${doneCnt}</span> / ${totalS}
+        ${myDone ? '<span style="color:#10B981; font-size:10px;">나 ✓</span>' : (w.status==='pending_sig' ? '<span style="color:#F59E0B; font-size:10px;">내 서명 필요</span>' : '')}`;
+
+      const actionHtml = w.status === 'pending_sig' ? `
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          ${_wfStatusBadge(w.status)}
+          ${canSign ? `<button class="btn btn-primary btn-xs" onclick="event.stopPropagation(); openWFSignConfirm('${w.id}')">&#10003; 서명</button>` : ''}
+          ${canReject ? `<button class="btn btn-outline btn-xs btn-danger" onclick="event.stopPropagation(); openWFRejectModal('${w.id}')">&#10005; 거절</button>` : ''}
+        </div>` :
+        `<div style="display:flex; gap:6px; align-items:center;">${_wfStatusBadge(w.status)}
+          <button class="btn btn-outline btn-xs" onclick="event.stopPropagation(); openWFDetail('${w.id}')">상세</button>
+        </div>`;
+
+      return `
+        <tr style="cursor:pointer;" onclick="openWFDetail('${w.id}')">
+          <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap; line-height:1.6;">
+            ${w.date.slice(0,10)}<br><span style="font-size:10px;">${w.date.slice(11,16)}</span>
+          </td>
+          <td style="font-size:12px;">${w.walletName}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div class="coin-circle" style="background:${_txnCoinColor(w.coin)}; width:22px; height:22px; font-size:10px; flex-shrink:0;">${_txnCoinSym(w.coin)}</div>
+              <span style="font-size:12px;">${w.coin}<br><span style="font-size:10px; color:var(--text-secondary);">${w.network}</span></span>
+            </div>
+          </td>
+          <td style="text-align:right; font-weight:600; white-space:nowrap; line-height:1.6;">
+            ${w.amount.toLocaleString(undefined,{maximumFractionDigits:8})} ${w.coin}<br>
+            <span style="font-size:10px; color:var(--text-secondary);">≈ ₩${(w.amountKRW||0).toLocaleString()}</span>
+          </td>
+          <td style="text-align:center; font-size:13px;">${sigHtml}</td>
+          <td>${actionHtml}</td>
+        </tr>`;
+    }).join('');
+
+    if (append) tbody.insertAdjacentHTML('beforeend', html);
+    else tbody.innerHTML = html;
+  }
+
+  /* ─ main render */
+  function renderWorkflows() {
+    _wfPage = 1;
+    _wfUpdateStats();
+    _wfUpdateBadges();
+    const data = _wfGetFiltered();
+
+    const empty    = document.getElementById('wf-empty');
+    const loadMore = document.getElementById('wf-load-more');
+    if (!empty) return;
+
+    if (data.length === 0) {
+      document.getElementById('wf-tbody').innerHTML = '';
+      empty.style.display = 'block';
+      if (loadMore) loadMore.style.display = 'none';
+
+      const walletF = (document.getElementById('wf-wallet-filter')||{}).value||'';
+      const coinF   = (document.getElementById('wf-coin-filter')  ||{}).value||'';
+      const hasFilter = walletF || coinF || _wfPreset !== '7d';
+      document.getElementById('wf-empty-icon').textContent = hasFilter ? '🔍' : '✅';
+      document.getElementById('wf-empty-msg').textContent = hasFilter
+        ? '해당 조건의 출금 건이 없습니다.'
+        : (_wfTab==='pending_sig' ? '처리할 서명 요청이 없습니다.' : '거래 내역이 없습니다.');
+      document.getElementById('wf-empty-sub').textContent = hasFilter ? '필터를 변경하거나 초기화해보세요.' : '';
+      const resetBtn = document.getElementById('wf-empty-reset');
+      if (resetBtn) resetBtn.style.display = hasFilter ? '' : 'none';
+    } else {
+      empty.style.display = 'none';
+      _wfRenderRows(data, false);
+      if (loadMore) loadMore.style.display = data.length > _WF_PAGE_SIZE ? '' : 'none';
+    }
+  }
+
+  function _wfLoadMore() {
+    _wfPage++;
+    const data = _wfGetFiltered();
+    _wfRenderRows(data, true);
+    const loadMore = document.getElementById('wf-load-more');
+    if (loadMore) loadMore.style.display = data.length > _wfPage*_WF_PAGE_SIZE ? '' : 'none';
+  }
+
+  /* ─ tab switch (5-4) */
+  function _wfSetTab(tab, el) {
+    _wfTab = tab;
+    document.querySelectorAll('#wf-tabs .tab').forEach(t=>t.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderWorkflows();
+  }
+
+  /* ─ date preset (5-13) */
+  function _wfSetPreset(preset, el) {
+    _wfPreset = preset;
+    document.querySelectorAll('[id^="wf-p-"]').forEach(b=>b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    const cd = document.getElementById('wf-custom-dates');
+    if (cd) cd.style.display = preset==='custom' ? 'flex' : 'none';
+    renderWorkflows();
+  }
+
+  /* ─ reset filters (5-13) */
+  function _wfResetFilters() {
+    _wfTab='all'; _wfPreset='7d';
+    const ws = document.getElementById('wf-wallet-filter');
+    const cs = document.getElementById('wf-coin-filter');
+    if (ws) ws.value=''; if (cs) cs.value='';
+    document.querySelectorAll('#wf-tabs .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+    document.querySelectorAll('[id^="wf-p-"]').forEach(b=>b.classList.remove('active'));
+    const p7=document.getElementById('wf-p-7d'); if(p7) p7.classList.add('active');
+    const cd=document.getElementById('wf-custom-dates'); if(cd) cd.style.display='none';
+    renderWorkflows();
+  }
+
+  /* ─ filter badges (5-13) */
+  function _wfUpdateBadges() {
+    const el = document.getElementById('wf-badges');
+    if (!el) return;
+    const walletV = (document.getElementById('wf-wallet-filter')||{}).value||'';
+    const coinV   = (document.getElementById('wf-coin-filter')  ||{}).value||'';
+    const wlabels = {wallet1:'운영 지갑 A',wallet2:'운영 지갑 B',wallet3:'예비 지갑 A'};
+    const badges  = [];
+    if (walletV) badges.push([`지갑: ${wlabels[walletV]||walletV}`, ()=>{ const w=document.getElementById('wf-wallet-filter'); if(w) w.value=''; renderWorkflows(); }]);
+    if (coinV)   badges.push([`코인: ${coinV}`, ()=>{ const c=document.getElementById('wf-coin-filter'); if(c) c.value=''; renderWorkflows(); }]);
+    if (badges.length===0) { el.style.display='none'; return; }
+    el.style.display='flex';
+    el.innerHTML=badges.map((b,i)=>`<span style="display:inline-flex;align-items:center;gap:4px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;border-radius:20px;padding:3px 10px;font-size:11px;cursor:pointer;" onclick="_wfBadgeClear(${i})">${b[0]} <span style="font-size:10px;opacity:.7;">✕</span></span>`).join('');
+    el._wfCbs = badges.map(b=>b[1]);
+  }
+  function _wfBadgeClear(i) { const el=document.getElementById('wf-badges'); if(el&&el._wfCbs&&el._wfCbs[i]) el._wfCbs[i](); }
+
+  /* ─ 5-8: open detail modal */
+  function openWFDetail(id) {
+    const w = _WORKFLOW_DATA.find(d=>d.id===id);
+    if (!w) return;
+    _wfCurrentId = id;
+
+    document.getElementById('wfd-id').textContent = '신청 ID: ' + w.id;
+    document.getElementById('wfd-status').innerHTML = _wfStatusBadge(w.status);
+    document.getElementById('wfd-requester').textContent = w.requester || '—';
+    document.getElementById('wfd-date').textContent = w.date;
+    document.getElementById('wfd-wallet').textContent = w.walletName;
+    document.getElementById('wfd-coin').textContent = w.coin + ' / ' + w.network;
+    document.getElementById('wfd-amount').textContent = w.amount.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin;
+    document.getElementById('wfd-fee').textContent = (w.fee||0) + ' ' + w.coin;
+    document.getElementById('wfd-actual').textContent = (w.actualAmount||w.amount) + ' ' + w.coin;
+    document.getElementById('wfd-krw').textContent = '약 ₩' + (w.amountKRW||0).toLocaleString();
+    // Address
+    const addrEl = document.getElementById('wfd-toaddr');
+    addrEl.innerHTML = (w.toAddr||'—')
+      + (w.toAddr ? ` <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${w.toAddr}').then(()=>showToast('주소 복사됨')).catch(()=>showToast('복사에 실패했습니다.'))" style="color:var(--primary);cursor:pointer;">&#128203;</span>
+        <a href="#" onclick="showToast('익스플로러 연결에 실패했습니다.');return false;" style="color:var(--primary);font-size:12px;margin-left:4px;">익스플로러 &#8599;</a>` : '');
+    document.getElementById('wfd-addrtype').textContent = w.addrType || '—';
+    document.getElementById('wfd-memo').textContent = w.memo || '—';
+    // TXID section
+    const txSec = document.getElementById('wfd-txid-section');
+    const txEl  = document.getElementById('wfd-txid');
+    if (w.txid) {
+      txSec.style.display = 'block';
+      txEl.innerHTML = `<span style="font-family:monospace;font-size:12px;">${w.txid}</span>
+        <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${w.txid}').then(()=>showToast('TXID 복사됨')).catch(()=>showToast('복사에 실패했습니다.'))" style="color:var(--primary);cursor:pointer;margin-left:4px;">&#128203;</span>
+        <a href="#" onclick="showToast('익스플로러 연결에 실패했습니다.');return false;" style="color:var(--primary);text-decoration:underline;font-size:12px;margin-left:4px;">익스플로러 &#8599;</a>`;
+    } else { txSec.style.display='none'; }
+    // Signers (5-8)
+    const doneCnt = w.signers.filter(s=>s.done).length;
+    document.getElementById('wfd-sig-title').textContent = `서명 현황  ${doneCnt} / ${w.signers.length} 완료`;
+    document.getElementById('wfd-sig-list').innerHTML = w.signers.map(s => {
+      const isMe = s.name === _DEMO_USER;
+      const rejectEntry = (w.rejectBy === s.name);
+      if (rejectEntry) {
+        return `<div class="sig-row" style="background:#FEF2F2;border-radius:5px;padding:4px 6px;">
+          <span class="sig-icon-wait" style="color:var(--danger);">&#10005;</span>
+          <span style="font-weight:600;color:var(--danger);">${s.name}${isMe?' (나)':''} (거절)</span>
+          <span style="color:var(--danger);margin-left:auto;font-size:11px;">${w.rejectAt||'—'}</span></div>`;
+      }
+      if (s.done) return `<div class="sig-row"><span class="sig-icon-done">&#10003;</span>
+        <span style="font-weight:600;">${s.name}${isMe?' (나)':''}</span>
+        <span style="color:var(--text-secondary);margin-left:auto;font-size:11px;">${s.at||''} 완료</span></div>`;
+      if (isMe && w.status==='pending_sig') return `<div class="sig-row" style="background:#EFF6FF;border-radius:5px;padding:4px 6px;">
+        <span class="sig-icon-wait" style="color:var(--primary);">&#8594;</span>
+        <span style="font-weight:700;color:var(--primary);">${s.name} (나)</span>
+        <span style="color:var(--primary);margin-left:auto;font-size:11px;font-weight:600;">내 서명 필요</span></div>`;
+      return `<div class="sig-row"><span class="sig-icon-wait">&#9203;</span>
+        <span style="font-weight:600;color:var(--text-secondary);">${s.name}${isMe?' (나)':''}</span>
+        <span style="color:var(--text-secondary);margin-left:auto;font-size:11px;">서명 대기 중</span></div>`;
+    }).join('');
+    // My sign status note
+    const mySig  = w.signers.find(s=>s.name===_DEMO_USER);
+    const mySign = document.getElementById('wfd-my-sign');
+    if (mySig) {
+      if (mySig.done) {
+        mySign.style.cssText='display:block;background:#ECFDF5;color:#065F46;border-radius:6px;';
+        mySign.textContent='✅ 이미 서명 완료하였습니다.';
+      } else if (w.status==='pending_sig') {
+        mySign.style.cssText='display:block;background:#EFF6FF;color:#1D4ED8;border-radius:6px;';
+        mySign.textContent='⏳ 아직 서명하지 않았습니다.';
+      } else {
+        mySign.style.display='none';
+      }
+    } else { mySign.style.display='none'; }
+    // Reject note
+    const rnEl = document.getElementById('wfd-reject-note');
+    if (w.status==='rejected' && w.rejectNote) {
+      rnEl.style.display='block';
+      rnEl.innerHTML=`<div style="font-weight:600;margin-bottom:4px;">거절자: ${w.rejectBy||'—'} · ${w.rejectAt||'—'}</div><div>${w.rejectNote}</div>`;
+    } else { rnEl.style.display='none'; }
+    // Footer
+    const footer = document.getElementById('wfd-footer');
+    const mySig2 = w.signers.find(s=>s.name===_DEMO_USER);
+    const nMet   = doneCnt >= (w.sigPolicy?w.sigPolicy.n:2);
+    const canSign   = w.status==='pending_sig' && mySig2 && !mySig2.done && !nMet;
+    const canReject = w.status==='pending_sig';
+    if (canSign || canReject) {
+      footer.innerHTML=`
+        ${canReject ? `<button class="btn btn-outline btn-danger" style="flex:1;" onclick="closeModal('modal-wf-detail'); setTimeout(()=>openWFRejectModal('${w.id}'),150)">거절하기</button>` : ''}
+        ${canSign   ? `<button class="btn btn-primary" onclick="closeModal('modal-wf-detail'); setTimeout(()=>openWFSignConfirm('${w.id}'),150)">서명하기</button>` : ''}
+        ${!canSign && !canReject ? '<button class="btn btn-outline" onclick="closeModal(\'modal-wf-detail\')">닫기</button>' : ''}`;
+    } else {
+      footer.innerHTML='<button class="btn btn-outline" onclick="closeModal(\'modal-wf-detail\')">닫기</button>';
+    }
+    openModal('modal-wf-detail');
+  }
+
+  /* ─ 5-9: sign confirmation modal */
+  function openWFSignConfirm(id) {
+    const w = _WORKFLOW_DATA.find(d=>d.id===id);
+    if (!w || w.status!=='pending_sig') { showToast('이미 처리 중인 출금 건입니다.'); return; }
+    const mySig = w.signers.find(s=>s.name===_DEMO_USER);
+    if (mySig && mySig.done) { showToast('이미 서명 완료된 건입니다.'); return; }
+    _wfCurrentId = id;
+    document.getElementById('wfsc-wallet').textContent  = w.walletName;
+    document.getElementById('wfsc-coin').textContent    = w.coin + ' / ' + w.network;
+    document.getElementById('wfsc-amount').textContent  = w.amount.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin;
+    document.getElementById('wfsc-krw').textContent     = '약 ₩' + (w.amountKRW||0).toLocaleString();
+    document.getElementById('wfsc-addr').textContent    = w.toAddr || '—';
+    openModal('modal-wf-sign-confirm');
+  }
+
+  /* ─ called by confirm modal [서명 완료] → OTP */
+  function _wfProceedSign() {
+    closeModal('modal-wf-sign-confirm');
+    _afterClose(() => openOTPModal({
+      title: '출금 서명',
+      desc: '서명하려면 인증 앱의 6자리 코드를 입력하세요. 서명 후 취소할 수 없습니다.',
+      cb: () => _wfSubmitSign(_wfCurrentId)
+    }));
+  }
+
+  /* ─ execute sign */
+  function _wfSubmitSign(id) {
+    const w = _WORKFLOW_DATA.find(d=>d.id===id);
+    if (!w || w.status!=='pending_sig') { showToast('이미 처리된 출금 건입니다.'); return; }
+    const mySig = w.signers.find(s=>s.name===_DEMO_USER);
+    if (!mySig) return;
+    mySig.done = true;
+    mySig.at   = _nowTs();
+    const doneCnt = w.signers.filter(s=>s.done).length;
+    const n       = w.sigPolicy ? w.sigPolicy.n : 2;
+    if (doneCnt >= n) {
+      w.status = 'processing';
+      showToast(`✓ ${doneCnt}/${w.signers.length} 서명 완료. 출금 처리 중입니다.`, 'success');
+    } else {
+      showToast(`✓ (${doneCnt}/${w.signers.length}) 서명 완료. 나머지 서명 대기 중입니다.`, 'success');
+    }
+    renderWorkflows();
+    _wfUpdateStats();
+    _updateTodoBadges();
+  }
+
+  /* ─ 5-10: reject reason modal */
+  function openWFRejectModal(id) {
+    const w = _WORKFLOW_DATA.find(d=>d.id===id);
+    if (!w || w.status!=='pending_sig') { showToast('이미 처리된 출금 건입니다.'); return; }
+    _wfCurrentId = id;
+    const ta = document.getElementById('wf-reject-reason-text');
+    if (ta) { ta.value=''; document.getElementById('wf-reject-char').textContent='0'; }
+    const btn = document.getElementById('wf-reject-next-btn');
+    if (btn) btn.disabled = true;
+    openModal('modal-wf-reject-reason');
+  }
+
+  /* ─ called by reject reason modal [다음 →] → OTP */
+  function _wfProceedReject() {
+    const reason = (document.getElementById('wf-reject-reason-text')||{}).value||'';
+    if (!reason.trim()) { showToast('거절 사유를 입력해주세요.'); return; }
+    closeModal('modal-wf-reject-reason');
+    _afterClose(() => openOTPModal({
+      title: '출금 거절',
+      desc: '거절 처리하려면 인증 앱의 6자리 코드를 입력하세요. 이 작업은 되돌릴 수 없습니다.',
+      cb: () => _wfSubmitReject(_wfCurrentId, reason)
+    }));
+  }
+
+  /* ─ execute reject */
+  function _wfSubmitReject(id, reason) {
+    const w = _WORKFLOW_DATA.find(d=>d.id===id);
+    if (!w || w.status!=='pending_sig') { showToast('이미 처리된 출금 건입니다.'); return; }
+    w.status     = 'rejected';
+    w.rejectNote = reason;
+    w.rejectBy   = _DEMO_USER;
+    w.rejectAt   = _nowTs();
+    const mySig  = w.signers.find(s=>s.name===_DEMO_USER);
+    if (mySig) mySig.done = false; // mark as rejecter (not signed)
+    showToast('출금이 거절되었습니다.');
+    renderWorkflows();
+    _wfUpdateStats();
+    _updateTodoBadges();
+  }
+
   function _nowTs() {
     const d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')
@@ -5266,6 +5748,14 @@
   }
 
   function _updateTodoBadges() {
+    // Workflow pending (서명 대기) badge
+    const wfPendEl = document.getElementById('todo-wf-pending');
+    if (wfPendEl && typeof _WORKFLOW_DATA !== 'undefined') {
+      const cnt = _WORKFLOW_DATA.filter(w => w.status === 'pending_sig').length;
+      wfPendEl.textContent = cnt;
+      wfPendEl.className = cnt > 0 ? 'todo-count' : 'todo-count zero';
+      wfPendEl.style.background = cnt > 0 ? 'var(--warning)' : '';
+    }
     // Coin rejected badge
     const rejected = _COIN_DATA.filter(c => c.status === 'rejected');
     const el = document.getElementById('todo-coin-rejected');
