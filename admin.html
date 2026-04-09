@@ -422,6 +422,7 @@
       animation: toastIn 0.25s ease; max-width: 340px;
     }
     @keyframes toastIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Table note ── */
     .table-note { font-size: 11.5px; color: var(--text-secondary); padding: 10px 16px; border-top: 1px solid var(--border); }
@@ -811,85 +812,119 @@
       </div>
 
       <!-- ══════════════════════════
-           PAGE: Travel Rule VASP
+           PAGE: Travel Rule VASP 파트너사 관리 (섹션 11)
       ══════════════════════════ -->
       <div class="page" id="page-vasp">
         <div class="page-header">
           <h1 class="page-title">Travel Rule VASP 파트너사 관리</h1>
-          <button class="btn btn-primary" id="btn-create-vasp">+ VASP 등록</button>
+          <button class="btn btn-primary" onclick="openVaspAddSO()">+ VASP 등록</button>
         </div>
+
+        <!-- 11-0: CODE 검증 방식 개요 -->
+        <details style="margin-bottom:14px;">
+          <summary style="cursor:pointer;padding:10px 14px;background:#EFF6FF;border-radius:8px;font-size:12.5px;font-weight:600;color:#1D4ED8;list-style:none;display:flex;align-items:center;gap:6px;user-select:none;">
+            &#9432; CODE 검증 방식 개요 — 출금 신청 시 수신자 정보 검증 기준
+            <span style="margin-left:auto;font-size:10px;font-weight:400;color:#64748B;">펼쳐 보기 &#9660;</span>
+          </summary>
+          <div style="padding:14px;background:#F8FAFC;border:1px solid #BFDBFE;border-top:0;border-radius:0 0 8px 8px;font-size:12px;">
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:280px;">
+                <div style="font-weight:600;margin-bottom:6px;">수신자 구분별 전달 정보</div>
+                <table style="border-collapse:collapse;font-size:11.5px;width:100%;">
+                  <thead><tr style="background:#EFF6FF;">
+                    <th style="padding:5px 10px;border:1px solid #BFDBFE;text-align:left;">수신자 구분</th>
+                    <th style="padding:5px 10px;border:1px solid #BFDBFE;text-align:left;">CODE에 전달하는 정보</th>
+                    <th style="padding:5px 10px;border:1px solid #BFDBFE;text-align:left;">설명</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr><td style="padding:5px 10px;border:1px solid #E2E8F0;">개인 (Individual)</td><td style="padding:5px 10px;border:1px solid #E2E8F0;">수신자 성함 (Full Name)</td><td style="padding:5px 10px;border:1px solid #E2E8F0;color:var(--text-secondary);">영문 또는 한글 실명</td></tr>
+                    <tr><td style="padding:5px 10px;border:1px solid #E2E8F0;">법인 (Corporate)</td><td style="padding:5px 10px;border:1px solid #E2E8F0;">사업자명 + 대표자명 + 법인 주소</td><td style="padding:5px 10px;border:1px solid #E2E8F0;color:var(--text-secondary);">법인 등록 정보 기준</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="flex:1;min-width:220px;">
+                <div style="font-weight:600;margin-bottom:6px;">검증 결과 분기</div>
+                <div style="display:flex;flex-direction:column;gap:5px;font-size:11.5px;">
+                  <span>&#9989; <strong>A</strong> — 검증 성공 &#8594; 출금 신청 활성화</span>
+                  <span>&#10060; <strong>B</strong> — 정보 불일치 &#8594; 재입력 요청</span>
+                  <span>&#9888;&#65039; <strong>C</strong> — VASP 미확인 &#8594; Whitelist 신청 또는 담당자 문의</span>
+                  <span>&#9989; <strong>D</strong> — 내부 지갑 &#8594; 수신자 정보 입력 생략</span>
+                  <span>&#9989; <strong>E</strong> — Whitelist 주소 &#8594; 수신자 정보 입력 생략</span>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;color:var(--text-secondary);border-top:1px solid #BFDBFE;padding-top:8px;">&#9432; Frontend 출금 신청 화면 STEP 3에서 수신자 정보를 입력하면 CODE로 전달되어 검증됩니다. (Frontend PRD 섹션 6 참조)</div>
+          </div>
+        </details>
+
+        <!-- Stats (11-1) -->
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px;">
+          <div class="stat-card" style="border-left:4px solid #3B82F6;">
+            <span class="stat-label">전체 VASP</span>
+            <span class="stat-value stat-blue" id="vasp-stat-total">0</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #10B981;">
+            <span class="stat-label">&#9679; 활성화</span>
+            <span class="stat-value" style="color:#10B981;" id="vasp-stat-active">0</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #F59E0B;">
+            <span class="stat-label">&#9888; 연동 오류</span>
+            <span class="stat-value" style="color:#F59E0B;" id="vasp-stat-error">0</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #94A3B8;">
+            <span class="stat-label">&#9675; 비활성화</span>
+            <span class="stat-value" style="color:#94A3B8;" id="vasp-stat-inactive">0</span>
+          </div>
+        </div>
+
+        <!-- Filter & Table (11-2) -->
         <div class="card" style="padding:0;">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border);">
+            <div class="toolbar">
+              <div class="search-wrap">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" id="vasp-search" class="form-control" placeholder="VASP명 / 기관코드 검색" oninput="renderVaspTable()" style="min-width:180px;" />
+              </div>
+              <select class="form-control" id="vasp-filter-country" onchange="renderVaspTable()">
+                <option value="">전체 국가</option>
+                <option value="KR">KR (국내)</option>
+                <option value="US">US</option>
+                <option value="INT">INT (해외)</option>
+              </select>
+              <select class="form-control" id="vasp-filter-method" onchange="renderVaspTable()">
+                <option value="">전체 연동방식</option>
+                <option value="VerifyVASP">VerifyVASP</option>
+                <option value="TRISA">TRISA</option>
+                <option value="OpenVASP">OpenVASP</option>
+                <option value="Direct API">Direct API</option>
+              </select>
+              <select class="form-control" id="vasp-filter-status" onchange="renderVaspTable()">
+                <option value="">전체 상태</option>
+                <option value="active">&#9679; 활성화</option>
+                <option value="error">&#9888; 연동 오류</option>
+                <option value="inactive">&#9675; 비활성화</option>
+              </select>
+            </div>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>VASP ID</th>
-                  <th>VASP명</th>
-                  <th>국가코드</th>
-                  <th>코드</th>
-                  <th>등록일</th>
+                  <th>VASP명 (국문 / 영문)</th>
+                  <th>기관코드</th>
+                  <th>국가</th>
+                  <th>연동방식</th>
+                  <th>Endpoint</th>
                   <th>상태</th>
+                  <th>등록일</th>
                   <th>관리</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td><span class="param-code">BTH</span></td>
-                  <td style="font-weight:600;">빗썸 (Bithumb)</td>
-                  <td><span class="badge badge-info">KR</span></td>
-                  <td style="font-family:monospace; font-size:12px;">KR-BTH</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-01-15</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">UPT</span></td>
-                  <td style="font-weight:600;">업비트 (Upbit)</td>
-                  <td><span class="badge badge-info">KR</span></td>
-                  <td style="font-family:monospace; font-size:12px;">KR-UPT</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-01-15</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">KBT</span></td>
-                  <td style="font-weight:600;">코빗 (Korbit)</td>
-                  <td><span class="badge badge-info">KR</span></td>
-                  <td style="font-family:monospace; font-size:12px;">KR-KBT</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-02-01</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">CBX</span></td>
-                  <td style="font-weight:600;">코인베이스 (Coinbase)</td>
-                  <td><span class="badge badge-gray">US</span></td>
-                  <td style="font-family:monospace; font-size:12px;">US-CBX</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-03-01</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">BNB</span></td>
-                  <td style="font-weight:600;">바이낸스 (Binance)</td>
-                  <td><span class="badge badge-warning">INT</span></td>
-                  <td style="font-family:monospace; font-size:12px;">INT-BNB</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-03-15</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">OKX</span></td>
-                  <td style="font-weight:600;">OKX</td>
-                  <td><span class="badge badge-warning">INT</span></td>
-                  <td style="font-family:monospace; font-size:12px;">INT-OKX</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">2025-04-01</td>
-                  <td><span class="badge badge-success">활성</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-              </tbody>
+              <tbody id="vasp-tbody"></tbody>
             </table>
           </div>
+          <div id="vasp-empty" style="display:none;text-align:center;padding:32px;color:var(--text-secondary);font-size:13px;">조회 결과가 없습니다.</div>
+          <div style="padding:10px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary);" id="vasp-count-label"></div>
         </div>
       </div>
 
@@ -4208,6 +4243,423 @@
   <div class="modal-footer" style="gap:10px;">
     <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-assets-csv')">취소</button>
     <button type="button" class="btn btn-primary" style="flex:2;" id="csv-download-btn" onclick="submitAssetsCSV()" disabled>&#8595; CSV 다운로드</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     VASP 파트너사 관리 — 모달 / 슬라이드오버 (섹션 11)
+════════════════════════════════════════════════════════ -->
+
+<!-- VASP 추가 Slide-over (11-3) -->
+<div class="slideover-backdrop" id="vasp-add-so-backdrop" onclick="closeVaspAddSO()"></div>
+<div class="slideover" id="vasp-add-so" style="max-width:520px;">
+  <div class="so-header">
+    <div>
+      <div class="so-title">VASP 등록</div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Travel Rule 파트너 VASP를 신규 등록합니다</div>
+    </div>
+    <button class="modal-close" onclick="closeVaspAddSO()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">* VASP명 (국문)</label>
+        <input type="text" class="form-control" id="vasp-add-nameKR" placeholder="빗썸" oninput="validateVaspAddForm()" />
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">* VASP명 (영문)</label>
+        <input type="text" class="form-control" id="vasp-add-nameEN" placeholder="Bithumb" oninput="validateVaspAddForm()" />
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">* 기관코드 <span style="font-size:11px;color:var(--text-secondary);font-weight:400;">예: KR-BTH</span></label>
+        <input type="text" class="form-control" id="vasp-add-instCode" placeholder="KR-BTH" oninput="validateVaspAddForm()" style="font-family:monospace;" />
+        <div id="vasp-add-instCode-err" style="font-size:11.5px;color:var(--danger);margin-top:4px;display:none;"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">* 국가</label>
+        <select class="form-control" id="vasp-add-country" onchange="validateVaspAddForm()">
+          <option value="">선택</option>
+          <option value="KR">KR (국내)</option>
+          <option value="US">US</option>
+          <option value="INT">INT (해외)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* 연동방식</label>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="vasp-add-method" value="VerifyVASP" onchange="validateVaspAddForm()"> VerifyVASP</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="vasp-add-method" value="TRISA" onchange="validateVaspAddForm()"> TRISA</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="vasp-add-method" value="OpenVASP" onchange="validateVaspAddForm()"> OpenVASP</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="vasp-add-method" value="Direct API" onchange="validateVaspAddForm()"> Direct API</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* Endpoint URL</label>
+      <input type="text" class="form-control" id="vasp-add-endpoint" placeholder="https://api.example.com/v1" oninput="validateVaspAddForm()" style="font-family:monospace;font-size:12px;" />
+      <div id="vasp-add-endpoint-err" style="font-size:11.5px;color:var(--danger);margin-top:4px;display:none;"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">담당자 연락처 <span style="font-weight:400;color:var(--text-secondary);">(선택)</span></label>
+        <input type="text" class="form-control" id="vasp-add-contact" placeholder="vasp@example.com" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모 <span style="font-weight:400;color:var(--text-secondary);">(선택, 최대 200자)</span></label>
+      <textarea class="form-control" id="vasp-add-memo" rows="2" maxlength="200" placeholder="메모를 입력하세요" style="resize:vertical;"></textarea>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+      <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text-secondary);">OTP 인증</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">VASP 등록을 위해 OTP 인증이 필요합니다.</div>
+      <div class="otp-row" style="justify-content:flex-start;">
+        <input type="text" class="otp-box" maxlength="1" id="vasp-add-otp-0" oninput="soOtpMove('vasp-add-otp',this,0)" onkeydown="soOtpBack('vasp-add-otp',event,this,0)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-add-otp-1" oninput="soOtpMove('vasp-add-otp',this,1)" onkeydown="soOtpBack('vasp-add-otp',event,this,1)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-add-otp-2" oninput="soOtpMove('vasp-add-otp',this,2)" onkeydown="soOtpBack('vasp-add-otp',event,this,2)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-add-otp-3" oninput="soOtpMove('vasp-add-otp',this,3)" onkeydown="soOtpBack('vasp-add-otp',event,this,3)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-add-otp-4" oninput="soOtpMove('vasp-add-otp',this,4)" onkeydown="soOtpBack('vasp-add-otp',event,this,4)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-add-otp-5" oninput="soOtpMove('vasp-add-otp',this,5)" onkeydown="soOtpBack('vasp-add-otp',event,this,5)" inputmode="numeric" />
+      </div>
+      <div id="vasp-add-otp-err" style="font-size:12px;color:var(--danger);margin-top:6px;display:none;"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--text-secondary);background:#F8FAFC;padding:8px 10px;border-radius:6px;"><strong>Demo</strong>: 아무 6자리 숫자를 입력하면 인증됩니다</div>
+    </div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-outline btn-sm" onclick="closeVaspAddSO()">취소</button>
+    <button class="btn btn-primary btn-sm" id="vasp-add-submit-btn" onclick="submitVaspAdd()" disabled>VASP 등록</button>
+  </div>
+</div>
+
+<!-- VASP 수정 Slide-over (11-5) -->
+<div class="slideover-backdrop" id="vasp-edit-so-backdrop" onclick="closeVaspEditSO()"></div>
+<div class="slideover" id="vasp-edit-so" style="max-width:520px;">
+  <div class="so-header">
+    <div>
+      <div class="so-title">VASP 수정</div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;" id="vasp-edit-subtitle"></div>
+    </div>
+    <button class="modal-close" onclick="closeVaspEditSO()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">* VASP명 (국문)</label>
+        <input type="text" class="form-control" id="vasp-edit-nameKR" oninput="validateVaspEditForm()" />
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">* VASP명 (영문)</label>
+        <input type="text" class="form-control" id="vasp-edit-nameEN" oninput="validateVaspEditForm()" />
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">기관코드 <span style="font-size:11px;color:var(--text-secondary);">&#128274; 수정 불가</span></label>
+        <input type="text" class="form-control" id="vasp-edit-instCode" disabled style="font-family:monospace;background:#F8FAFC;color:var(--text-secondary);" />
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">* 국가</label>
+        <select class="form-control" id="vasp-edit-country" onchange="validateVaspEditForm()">
+          <option value="KR">KR (국내)</option>
+          <option value="US">US</option>
+          <option value="INT">INT (해외)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* 연동방식</label>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="vasp-edit-method" value="VerifyVASP" onchange="validateVaspEditForm()"> VerifyVASP</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="vasp-edit-method" value="TRISA" onchange="validateVaspEditForm()"> TRISA</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="vasp-edit-method" value="OpenVASP" onchange="validateVaspEditForm()"> OpenVASP</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="radio" name="vasp-edit-method" value="Direct API" onchange="validateVaspEditForm()"> Direct API</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">* Endpoint URL <span style="font-size:11px;color:var(--text-secondary);font-weight:400;">변경 시 저장 후 연동 테스트 자동 재실행</span></label>
+      <input type="text" class="form-control" id="vasp-edit-endpoint" oninput="validateVaspEditForm()" style="font-family:monospace;font-size:12px;" />
+      <div id="vasp-edit-endpoint-err" style="font-size:11.5px;color:var(--danger);margin-top:4px;display:none;"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">담당자 연락처</label>
+        <input type="text" class="form-control" id="vasp-edit-contact" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모</label>
+      <textarea class="form-control" id="vasp-edit-memo" rows="2" maxlength="200" style="resize:vertical;"></textarea>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+      <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text-secondary);">OTP 인증</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">VASP 수정을 위해 OTP 인증이 필요합니다.</div>
+      <div class="otp-row" style="justify-content:flex-start;">
+        <input type="text" class="otp-box" maxlength="1" id="vasp-edit-otp-0" oninput="soOtpMove('vasp-edit-otp',this,0)" onkeydown="soOtpBack('vasp-edit-otp',event,this,0)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-edit-otp-1" oninput="soOtpMove('vasp-edit-otp',this,1)" onkeydown="soOtpBack('vasp-edit-otp',event,this,1)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-edit-otp-2" oninput="soOtpMove('vasp-edit-otp',this,2)" onkeydown="soOtpBack('vasp-edit-otp',event,this,2)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-edit-otp-3" oninput="soOtpMove('vasp-edit-otp',this,3)" onkeydown="soOtpBack('vasp-edit-otp',event,this,3)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-edit-otp-4" oninput="soOtpMove('vasp-edit-otp',this,4)" onkeydown="soOtpBack('vasp-edit-otp',event,this,4)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="vasp-edit-otp-5" oninput="soOtpMove('vasp-edit-otp',this,5)" onkeydown="soOtpBack('vasp-edit-otp',event,this,5)" inputmode="numeric" />
+      </div>
+      <div id="vasp-edit-otp-err" style="font-size:12px;color:var(--danger);margin-top:6px;display:none;"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--text-secondary);background:#F8FAFC;padding:8px 10px;border-radius:6px;"><strong>Demo</strong>: 아무 6자리 숫자를 입력하면 인증됩니다</div>
+    </div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-outline btn-sm" onclick="closeVaspEditSO()">취소</button>
+    <button class="btn btn-primary btn-sm" id="vasp-edit-submit-btn" onclick="submitVaspEdit()" disabled>수정 저장</button>
+  </div>
+</div>
+
+<!-- VASP 상세 팝업 (11-4) -->
+<div class="modal" id="vasp-detail-modal" style="max-width:580px;">
+  <div class="modal-header">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="modal-title" id="vasp-detail-title">VASP 상세</span>
+      <span id="vasp-detail-status-badge"></span>
+    </div>
+    <button class="modal-close" onclick="closeModal('vasp-detail-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- 기본 정보 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">VASP명 (국문)</div>
+        <div style="font-size:13px;font-weight:600;" id="vasp-detail-nameKR"></div>
+      </div>
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">VASP명 (영문)</div>
+        <div style="font-size:13px;font-weight:600;" id="vasp-detail-nameEN"></div>
+      </div>
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">기관코드</div>
+        <div style="font-family:monospace;font-size:13px;font-weight:600;" id="vasp-detail-instCode"></div>
+      </div>
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">국가</div>
+        <div id="vasp-detail-country"></div>
+      </div>
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">연동방식</div>
+        <div id="vasp-detail-method"></div>
+      </div>
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">담당자 연락처</div>
+        <div style="font-size:12px;" id="vasp-detail-contact"></div>
+      </div>
+      <div style="padding:10px 14px;grid-column:span 2;border-right:none;">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">Endpoint URL</div>
+        <div style="font-family:monospace;font-size:12px;word-break:break-all;" id="vasp-detail-endpoint"></div>
+      </div>
+    </div>
+    <!-- 연동 테스트 결과 -->
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">마지막 연동 테스트</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <span id="vasp-detail-test-result-badge"></span>
+          <span style="font-size:12px;color:var(--text-secondary);margin-left:8px;" id="vasp-detail-test-at"></span>
+        </div>
+        <button class="btn btn-outline btn-xs" id="vasp-detail-error-btn" onclick="openVaspErrorDetail(_vaspCurrentId)" style="display:none;">오류 상세 보기</button>
+      </div>
+    </div>
+    <!-- 메모 -->
+    <div id="vasp-detail-memo-wrap" style="display:none;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">메모</div>
+      <div style="font-size:12px;color:var(--text-secondary);" id="vasp-detail-memo"></div>
+    </div>
+    <!-- 비활성화 사유 (비활성 상태 전용) -->
+    <div id="vasp-detail-deact-wrap" style="display:none;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:10px 14px;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:600;color:#92400E;margin-bottom:4px;">비활성화 사유</div>
+      <div style="font-size:12px;color:#92400E;" id="vasp-detail-deact-reason"></div>
+    </div>
+    <!-- 등록/수정일 -->
+    <div style="font-size:11.5px;color:var(--text-secondary);display:flex;gap:20px;">
+      <span>등록일: <span id="vasp-detail-createdAt"></span></span>
+      <span>최종 수정일: <span id="vasp-detail-updatedAt"></span></span>
+    </div>
+  </div>
+  <div class="modal-footer" id="vasp-detail-footer">
+    <!-- 상태별 동적 버튼 -->
+  </div>
+</div>
+
+<!-- VASP 비활성화 모달 (11-6) -->
+<div class="modal" id="vasp-deact-modal" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--warning);">&#9888; VASP 비활성화</span>
+    <button class="modal-close" onclick="closeModal('vasp-deact-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="font-size:13px;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">VASP명</span><span style="font-weight:600;" id="vasp-deact-name"></span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;"><span style="color:var(--text-secondary);font-size:12px;">기관코드</span><span style="font-family:monospace;" id="vasp-deact-code"></span></div>
+    </div>
+    <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400E;margin-bottom:14px;">&#9888; 비활성화 즉시 해당 VASP와의 Travel Rule 연동이 중단됩니다. 수동으로 활성화 후 연동 테스트를 통해 재개할 수 있습니다.</div>
+    <div class="form-group">
+      <label class="form-label">* 비활성화 사유 (필수, 최대 200자)</label>
+      <textarea class="form-control" id="vasp-deact-reason" rows="3" maxlength="200" placeholder="비활성화 사유를 입력하세요" oninput="validateVaspDeactForm()" style="resize:vertical;width:100%;"></textarea>
+      <div style="font-size:11px;color:var(--text-secondary);text-align:right;margin-top:3px;"><span id="vasp-deact-reason-len">0</span>/200</div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text-secondary);">OTP 인증</div>
+    <div class="otp-row" style="justify-content:flex-start;">
+      <input type="text" class="otp-box" maxlength="1" id="vasp-deact-otp-0" oninput="soOtpMove('vasp-deact-otp',this,0)" onkeydown="soOtpBack('vasp-deact-otp',event,this,0)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-deact-otp-1" oninput="soOtpMove('vasp-deact-otp',this,1)" onkeydown="soOtpBack('vasp-deact-otp',event,this,1)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-deact-otp-2" oninput="soOtpMove('vasp-deact-otp',this,2)" onkeydown="soOtpBack('vasp-deact-otp',event,this,2)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-deact-otp-3" oninput="soOtpMove('vasp-deact-otp',this,3)" onkeydown="soOtpBack('vasp-deact-otp',event,this,3)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-deact-otp-4" oninput="soOtpMove('vasp-deact-otp',this,4)" onkeydown="soOtpBack('vasp-deact-otp',event,this,4)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-deact-otp-5" oninput="soOtpMove('vasp-deact-otp',this,5)" onkeydown="soOtpBack('vasp-deact-otp',event,this,5)" inputmode="numeric" />
+    </div>
+    <div id="vasp-deact-otp-err" style="font-size:12px;color:var(--danger);margin-top:6px;display:none;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('vasp-deact-modal')">취소</button>
+    <button class="btn btn-warning" id="vasp-deact-submit-btn" onclick="submitVaspDeact()" disabled>비활성화 확인</button>
+  </div>
+</div>
+
+<!-- VASP 활성화 모달 (11-7) -->
+<div class="modal" id="vasp-act-modal" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--success);">&#9679; VASP 활성화</span>
+    <button class="modal-close" onclick="closeModal('vasp-act-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="font-size:13px;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">VASP명</span><span style="font-weight:600;" id="vasp-act-name"></span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;"><span style="color:var(--text-secondary);font-size:12px;">기관코드</span><span style="font-family:monospace;" id="vasp-act-code"></span></div>
+    </div>
+    <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#065F46;margin-bottom:14px;">&#9989; 활성화 후 연동 테스트가 자동으로 실행됩니다. 테스트 성공 시 ● 활성화 상태로 전환됩니다.</div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text-secondary);">OTP 인증</div>
+    <div class="otp-row" style="justify-content:flex-start;">
+      <input type="text" class="otp-box" maxlength="1" id="vasp-act-otp-0" oninput="soOtpMove('vasp-act-otp',this,0)" onkeydown="soOtpBack('vasp-act-otp',event,this,0)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-act-otp-1" oninput="soOtpMove('vasp-act-otp',this,1)" onkeydown="soOtpBack('vasp-act-otp',event,this,1)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-act-otp-2" oninput="soOtpMove('vasp-act-otp',this,2)" onkeydown="soOtpBack('vasp-act-otp',event,this,2)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-act-otp-3" oninput="soOtpMove('vasp-act-otp',this,3)" onkeydown="soOtpBack('vasp-act-otp',event,this,3)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-act-otp-4" oninput="soOtpMove('vasp-act-otp',this,4)" onkeydown="soOtpBack('vasp-act-otp',event,this,4)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-act-otp-5" oninput="soOtpMove('vasp-act-otp',this,5)" onkeydown="soOtpBack('vasp-act-otp',event,this,5)" inputmode="numeric" />
+    </div>
+    <div id="vasp-act-otp-err" style="font-size:12px;color:var(--danger);margin-top:6px;display:none;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('vasp-act-modal')">취소</button>
+    <button class="btn btn-success" onclick="submitVaspAct()">활성화 + 연동 테스트</button>
+  </div>
+</div>
+
+<!-- VASP 삭제 모달 (11-8) -->
+<div class="modal" id="vasp-delete-modal" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">VASP 삭제</span>
+    <button class="modal-close" onclick="closeModal('vasp-delete-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="font-size:13px;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">VASP명</span><span style="font-weight:600;" id="vasp-del-name"></span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;"><span style="color:var(--text-secondary);font-size:12px;">기관코드</span><span style="font-family:monospace;" id="vasp-del-code"></span></div>
+    </div>
+    <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 12px;font-size:12px;color:#991B1B;margin-bottom:14px;">&#9888; 삭제 즉시 해당 VASP 정보가 영구 삭제됩니다. 비활성화 상태인 VASP만 삭제 가능합니다.</div>
+    <div class="form-group">
+      <label class="form-label">* 삭제 사유 (필수, 최대 200자)</label>
+      <textarea class="form-control" id="vasp-del-reason" rows="3" maxlength="200" placeholder="삭제 사유를 입력하세요" oninput="validateVaspDeleteForm()" style="resize:vertical;width:100%;"></textarea>
+      <div style="font-size:11px;color:var(--text-secondary);text-align:right;margin-top:3px;"><span id="vasp-del-reason-len">0</span>/200</div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text-secondary);">OTP 인증</div>
+    <div class="otp-row" style="justify-content:flex-start;">
+      <input type="text" class="otp-box" maxlength="1" id="vasp-del-otp-0" oninput="soOtpMove('vasp-del-otp',this,0)" onkeydown="soOtpBack('vasp-del-otp',event,this,0)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-del-otp-1" oninput="soOtpMove('vasp-del-otp',this,1)" onkeydown="soOtpBack('vasp-del-otp',event,this,1)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-del-otp-2" oninput="soOtpMove('vasp-del-otp',this,2)" onkeydown="soOtpBack('vasp-del-otp',event,this,2)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-del-otp-3" oninput="soOtpMove('vasp-del-otp',this,3)" onkeydown="soOtpBack('vasp-del-otp',event,this,3)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-del-otp-4" oninput="soOtpMove('vasp-del-otp',this,4)" onkeydown="soOtpBack('vasp-del-otp',event,this,4)" inputmode="numeric" />
+      <input type="text" class="otp-box" maxlength="1" id="vasp-del-otp-5" oninput="soOtpMove('vasp-del-otp',this,5)" onkeydown="soOtpBack('vasp-del-otp',event,this,5)" inputmode="numeric" />
+    </div>
+    <div id="vasp-del-otp-err" style="font-size:12px;color:var(--danger);margin-top:6px;display:none;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('vasp-delete-modal')">취소</button>
+    <button class="btn btn-danger" id="vasp-del-submit-btn" onclick="submitVaspDelete()" disabled>삭제 확인</button>
+  </div>
+</div>
+
+<!-- VASP 연동 테스트 모달 (11-9) -->
+<div class="modal" id="vasp-test-modal" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title" id="vasp-test-modal-title">&#128279; 연동 테스트</span>
+    <button class="modal-close" id="vasp-test-close-btn" onclick="closeModal('vasp-test-modal')" style="display:none;">&#10005;</button>
+  </div>
+  <div class="modal-body" style="text-align:center;padding:28px 24px;">
+    <!-- running -->
+    <div id="vasp-test-running" style="display:none;">
+      <div style="width:56px;height:56px;border-radius:50%;border:4px solid #BFDBFE;border-top-color:#3B82F6;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px;">연동 테스트 진행 중...</div>
+      <div style="font-size:12px;color:var(--text-secondary);" id="vasp-test-running-name"></div>
+    </div>
+    <!-- success -->
+    <div id="vasp-test-success" style="display:none;">
+      <div style="width:56px;height:56px;border-radius:50%;background:#ECFDF5;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;">&#10003;</div>
+      <div style="font-size:15px;font-weight:700;color:#065F46;margin-bottom:6px;">연동 테스트 성공</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;" id="vasp-test-success-name"></div>
+      <div style="background:#F0FDF4;border:1px solid #A7F3D0;border-radius:8px;padding:12px;text-align:left;font-size:12px;">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:var(--text-secondary);">응답 상태</span><span style="color:#065F46;font-weight:600;">200 OK</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:var(--text-secondary);">응답 시간</span><span style="font-family:monospace;" id="vasp-test-latency"></span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span style="color:var(--text-secondary);">테스트 일시</span><span id="vasp-test-at-display"></span></div>
+      </div>
+    </div>
+    <!-- fail -->
+    <div id="vasp-test-fail" style="display:none;">
+      <div style="width:56px;height:56px;border-radius:50%;background:#FEF2F2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;">&#10005;</div>
+      <div style="font-size:15px;font-weight:700;color:#991B1B;margin-bottom:6px;">연동 테스트 실패</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;" id="vasp-test-fail-name"></div>
+      <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px;text-align:left;font-size:12px;">
+        <div style="margin-bottom:6px;"><span style="font-weight:600;color:var(--danger);" id="vasp-test-err-code"></span></div>
+        <div style="color:#7F1D1D;" id="vasp-test-err-msg"></div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid #FECACA;">
+          <button class="btn btn-outline btn-xs" style="color:var(--danger);border-color:var(--danger);" onclick="openVaspErrorDetail(_vaspCurrentId)">상세 오류 보기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer" id="vasp-test-footer" style="display:none;">
+    <button class="btn btn-outline" onclick="closeModal('vasp-test-modal')">닫기</button>
+    <button class="btn btn-primary" id="vasp-test-retry-btn" onclick="runVaspTest(_vaspCurrentId, null)" style="display:none;">재테스트</button>
+  </div>
+</div>
+
+<!-- VASP 오류 상세 모달 (11-10) -->
+<div class="modal" id="vasp-error-detail-modal" style="max-width:500px;">
+  <div class="modal-header">
+    <span class="modal-title">&#9888; 연동 오류 상세</span>
+    <button class="modal-close" onclick="closeModal('vasp-error-detail-modal')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);background:#F8FAFC;">
+        <span style="font-size:11px;color:var(--text-secondary);">VASP명</span>
+        <span style="font-weight:600;font-size:12px;" id="vasp-err-detail-name"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);">
+        <span style="font-size:11px;color:var(--text-secondary);">마지막 테스트 일시</span>
+        <span style="font-size:12px;" id="vasp-err-detail-at"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);">
+        <span style="font-size:11px;color:var(--text-secondary);">오류 코드</span>
+        <span style="font-family:monospace;font-size:12px;color:var(--danger);font-weight:600;" id="vasp-err-detail-code"></span>
+      </div>
+      <div style="padding:8px 12px;border-bottom:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">오류 메시지</div>
+        <div style="font-size:12px;" id="vasp-err-detail-msg"></div>
+      </div>
+      <div style="padding:8px 12px;">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">상세 내용</div>
+        <pre style="font-size:11px;font-family:monospace;background:#F8FAFC;border:1px solid var(--border);border-radius:6px;padding:10px;margin:0;white-space:pre-wrap;word-break:break-all;" id="vasp-err-detail-detail"></pre>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text-secondary);">&#9432; 오류 해결 후 연동 테스트를 재실행하세요. Endpoint 또는 인증 정보가 변경된 경우 수정 후 재테스트가 필요합니다.</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('vasp-error-detail-modal')">닫기</button>
+    <button class="btn btn-warning" onclick="closeModal('vasp-error-detail-modal'); runVaspTest(_vaspCurrentId, null);">연동 테스트 재실행</button>
   </div>
 </div>
 
@@ -9270,6 +9722,500 @@
       }, 250);
     });
   }
+
+  /* ════════════════════════════════════
+     Travel Rule VASP 파트너사 관리 (섹션 11)
+  ════════════════════════════════════ */
+  var _VASP_DATA = [
+    { id:1, nameKR:'빗썸', nameEN:'Bithumb', instCode:'KR-BTH', country:'KR', method:'VerifyVASP',
+      endpoint:'https://api.bithumb-travel.com/v1', contact:'vasp@bithumb.com', memo:'국내 주요 거래소 연동',
+      status:'active', createdAt:'2025-01-15', updatedAt:'2025-01-15',
+      lastTestAt:'2025-04-08 10:30', lastTestResult:'success', lastTestError:null, deactReason:'' },
+    { id:2, nameKR:'업비트', nameEN:'Upbit', instCode:'KR-UPT', country:'KR', method:'VerifyVASP',
+      endpoint:'https://travel-rule.upbit.com/api/v1', contact:'travelrule@upbit.com', memo:'',
+      status:'active', createdAt:'2025-01-15', updatedAt:'2025-02-10',
+      lastTestAt:'2025-04-08 10:32', lastTestResult:'success', lastTestError:null, deactReason:'' },
+    { id:3, nameKR:'코빗', nameEN:'Korbit', instCode:'KR-KBT', country:'KR', method:'TRISA',
+      endpoint:'https://trisa.korbit.co.kr/v1', contact:'vasp@korbit.co.kr', memo:'TRISA 연동',
+      status:'active', createdAt:'2025-02-01', updatedAt:'2025-02-01',
+      lastTestAt:'2025-04-07 14:15', lastTestResult:'success', lastTestError:null, deactReason:'' },
+    { id:4, nameKR:'코인베이스', nameEN:'Coinbase', instCode:'US-CBX', country:'US', method:'TRISA',
+      endpoint:'https://vasp.coinbase.com/trisa/v1', contact:'compliance@coinbase.com', memo:'미국 주요 거래소',
+      status:'active', createdAt:'2025-03-01', updatedAt:'2025-03-01',
+      lastTestAt:'2025-04-06 09:00', lastTestResult:'success', lastTestError:null, deactReason:'' },
+    { id:5, nameKR:'바이낸스', nameEN:'Binance', instCode:'INT-BNB', country:'INT', method:'VerifyVASP',
+      endpoint:'https://travel-rule.binance.com/api/v2', contact:'vasp@binance.com', memo:'글로벌 최대 거래소',
+      status:'error', createdAt:'2025-03-15', updatedAt:'2025-04-01',
+      lastTestAt:'2025-04-08 08:00', lastTestResult:'fail',
+      lastTestError:{ code:'ERR_CONNECTION_TIMEOUT', message:'Connection timed out after 10000ms', detail:'Host: travel-rule.binance.com\nPort: 443\nTimeout: 10s\nRetry: 3/3 all failed' },
+      deactReason:'' },
+    { id:6, nameKR:'OKX', nameEN:'OKX', instCode:'INT-OKX', country:'INT', method:'TRISA',
+      endpoint:'https://trisa.okx.com/v1', contact:'compliance@okx.com', memo:'',
+      status:'inactive', createdAt:'2025-04-01', updatedAt:'2025-04-05',
+      lastTestAt:'2025-04-05 16:00', lastTestResult:'fail',
+      lastTestError:{ code:'ERR_CERT_INVALID', message:'TLS certificate verification failed', detail:'Certificate expired: 2025-03-31\nIssuer: Let\'s Encrypt Authority X3\nSubject: trisa.okx.com' },
+      deactReason:'연동 인증서 만료로 인한 서비스 중단. OKX 측 인증서 갱신 완료 후 재활성화 예정.' }
+  ];
+  var _VASP_NEXT_ID = 7;
+  var _vaspCurrentId = null;
+  var _vaspOtpAttempts = { add:0, edit:0, deact:0, act:0, del:0 };
+  var _vaspOtpMaxAttempts = 5;
+  var _vaspEditOrigEndpoint = '';
+
+  /* ─ 헬퍼 ─ */
+  function vaspById(id) { return _VASP_DATA.find(function(v){ return v.id === id; }); }
+
+  function vaspStatusBadge(status) {
+    if (status === 'active')   return '<span class="badge badge-success">&#9679; 활성화</span>';
+    if (status === 'error')    return '<span class="badge badge-warning">&#9888; 연동 오류</span>';
+    return '<span class="badge badge-gray">&#9675; 비활성화</span>';
+  }
+  function vaspCountryBadge(country) {
+    if (country === 'KR') return '<span class="badge badge-info">KR</span>';
+    if (country === 'US') return '<span class="badge badge-gray">US</span>';
+    return '<span class="badge badge-orange">INT</span>';
+  }
+  function vaspMethodTag(method) {
+    return '<span style="font-size:11px;background:#F0F9FF;color:#0369A1;border-radius:4px;padding:2px 7px;font-weight:600;">' + method + '</span>';
+  }
+  function vaspNow() {
+    return new Date().toISOString().replace('T', ' ').slice(0, 16);
+  }
+  function resetVaspOtp(prefix) {
+    for (var i = 0; i < 6; i++) {
+      var el = document.getElementById(prefix + '-' + i);
+      if (el) { el.value = ''; el.disabled = false; el.style.borderColor = ''; }
+    }
+    var errEl = document.getElementById(prefix + '-err');
+    if (errEl) errEl.style.display = 'none';
+    var key = prefix.replace('vasp-', '').replace('-otp', '');
+    if (_vaspOtpAttempts[key] !== undefined) _vaspOtpAttempts[key] = 0;
+  }
+  function checkVaspOtp(prefix, key) {
+    var otp = soOtpValue(prefix);
+    var errEl = document.getElementById(prefix + '-err');
+    if (otp.length < 6) {
+      errEl.textContent = 'OTP 6자리를 입력하세요.'; errEl.style.display = '';
+      return false;
+    }
+    // Demo: accept any 6-digit OTP, but track attempts for lockout display
+    _vaspOtpAttempts[key] = (_vaspOtpAttempts[key] || 0) + 1;
+    errEl.style.display = 'none';
+    return true;
+  }
+
+  /* ─ 테이블 렌더 (11-2) ─ */
+  function renderVaspTable() {
+    var search   = (document.getElementById('vasp-search').value || '').toLowerCase();
+    var country  = document.getElementById('vasp-filter-country').value;
+    var method   = document.getElementById('vasp-filter-method').value;
+    var status   = document.getElementById('vasp-filter-status').value;
+
+    var filtered = _VASP_DATA.filter(function(v) {
+      if (search && !(v.nameKR.toLowerCase().indexOf(search) >= 0 ||
+                      v.nameEN.toLowerCase().indexOf(search) >= 0 ||
+                      v.instCode.toLowerCase().indexOf(search) >= 0)) return false;
+      if (country && v.country !== country) return false;
+      if (method  && v.method  !== method)  return false;
+      if (status  && v.status  !== status)  return false;
+      return true;
+    });
+
+    document.getElementById('vasp-stat-total').textContent   = _VASP_DATA.length;
+    document.getElementById('vasp-stat-active').textContent  = _VASP_DATA.filter(function(v){ return v.status === 'active'; }).length;
+    document.getElementById('vasp-stat-error').textContent   = _VASP_DATA.filter(function(v){ return v.status === 'error';  }).length;
+    document.getElementById('vasp-stat-inactive').textContent= _VASP_DATA.filter(function(v){ return v.status === 'inactive'; }).length;
+
+    var tbody = document.getElementById('vasp-tbody');
+    var empty = document.getElementById('vasp-empty');
+    document.getElementById('vasp-count-label').textContent = filtered.length > 0 ? '총 ' + filtered.length + '건' : '';
+
+    if (filtered.length === 0) { tbody.innerHTML = ''; empty.style.display = ''; return; }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = filtered.map(function(v) {
+      var host = v.endpoint.replace(/^https?:\/\//, '').split('/')[0];
+      var errBtn = v.status === 'error'
+        ? ' <button class="btn btn-outline btn-xs" style="margin-left:4px;color:#F59E0B;border-color:#F59E0B;font-size:10px;" onclick="event.stopPropagation();openVaspErrorDetail(' + v.id + ')">오류 상세</button>' : '';
+      return '<tr>'
+        + '<td><div style="font-weight:600;font-size:13px;">' + v.nameKR + '</div><div style="font-size:11px;color:var(--text-secondary);">' + v.nameEN + '</div></td>'
+        + '<td><span class="param-code" style="font-size:12px;">' + v.instCode + '</span></td>'
+        + '<td>' + vaspCountryBadge(v.country) + '</td>'
+        + '<td>' + vaspMethodTag(v.method) + '</td>'
+        + '<td style="font-size:11.5px;color:var(--text-secondary);font-family:monospace;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + v.endpoint + '">' + host + '</td>'
+        + '<td>' + vaspStatusBadge(v.status) + errBtn + '</td>'
+        + '<td style="font-size:12px;color:var(--text-secondary);">' + v.createdAt + '</td>'
+        + '<td><button class="btn btn-outline btn-xs" onclick="openVaspDetail(' + v.id + ')">상세보기</button></td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  /* ─ VASP 추가 슬라이드오버 (11-3) ─ */
+  function openVaspAddSO() {
+    document.getElementById('vasp-add-nameKR').value = '';
+    document.getElementById('vasp-add-nameEN').value  = '';
+    document.getElementById('vasp-add-instCode').value = '';
+    document.getElementById('vasp-add-country').value  = '';
+    document.getElementById('vasp-add-endpoint').value = '';
+    document.getElementById('vasp-add-contact').value  = '';
+    document.getElementById('vasp-add-memo').value     = '';
+    document.querySelectorAll('input[name="vasp-add-method"]').forEach(function(r){ r.checked = false; });
+    document.getElementById('vasp-add-instCode-err').style.display  = 'none';
+    document.getElementById('vasp-add-endpoint-err').style.display  = 'none';
+    resetVaspOtp('vasp-add-otp');
+    document.getElementById('vasp-add-submit-btn').disabled = true;
+    document.getElementById('vasp-add-so-backdrop').classList.add('open');
+    document.getElementById('vasp-add-so').classList.add('open');
+  }
+  function closeVaspAddSO() {
+    document.getElementById('vasp-add-so-backdrop').classList.remove('open');
+    document.getElementById('vasp-add-so').classList.remove('open');
+  }
+  function validateVaspAddForm() {
+    var ok = document.getElementById('vasp-add-nameKR').value.trim() &&
+             document.getElementById('vasp-add-nameEN').value.trim() &&
+             document.getElementById('vasp-add-instCode').value.trim() &&
+             document.getElementById('vasp-add-country').value &&
+             document.querySelector('input[name="vasp-add-method"]:checked') &&
+             document.getElementById('vasp-add-endpoint').value.trim().indexOf('http') === 0;
+    document.getElementById('vasp-add-submit-btn').disabled = !ok;
+    return !!ok;
+  }
+  function submitVaspAdd() {
+    if (!validateVaspAddForm()) return;
+    var code = document.getElementById('vasp-add-instCode').value.trim().toUpperCase();
+    var instCodeErrEl = document.getElementById('vasp-add-instCode-err');
+    if (_VASP_DATA.some(function(v){ return v.instCode === code; })) {
+      instCodeErrEl.textContent = '이미 등록된 기관코드입니다.'; instCodeErrEl.style.display = '';
+      return;
+    }
+    instCodeErrEl.style.display = 'none';
+    var ep = document.getElementById('vasp-add-endpoint').value.trim();
+    var epErrEl = document.getElementById('vasp-add-endpoint-err');
+    if (!/^https?:\/\/.+/.test(ep)) {
+      epErrEl.textContent = 'URL 형식이 올바르지 않습니다. (https://... 형태)'; epErrEl.style.display = '';
+      return;
+    }
+    epErrEl.style.display = 'none';
+    if (!checkVaspOtp('vasp-add-otp', 'add')) return;
+
+    var newVasp = {
+      id: _VASP_NEXT_ID++,
+      nameKR:   document.getElementById('vasp-add-nameKR').value.trim(),
+      nameEN:   document.getElementById('vasp-add-nameEN').value.trim(),
+      instCode: code,
+      country:  document.getElementById('vasp-add-country').value,
+      method:   document.querySelector('input[name="vasp-add-method"]:checked').value,
+      endpoint: ep,
+      contact:  document.getElementById('vasp-add-contact').value.trim(),
+      memo:     document.getElementById('vasp-add-memo').value.trim(),
+      status: 'active', createdAt: new Date().toISOString().slice(0,10),
+      updatedAt: new Date().toISOString().slice(0,10),
+      lastTestAt: null, lastTestResult: null, lastTestError: null, deactReason: ''
+    };
+    _VASP_DATA.push(newVasp);
+    closeVaspAddSO();
+    addActLog('[VASP 등록] ' + newVasp.nameKR + ' (' + newVasp.instCode + ')');
+    _vaspCurrentId = newVasp.id;
+    setTimeout(function(){ runVaspTest(newVasp.id, null); }, 200);
+  }
+
+  /* ─ VASP 상세 팝업 (11-4) ─ */
+  function openVaspDetail(id) {
+    var v = vaspById(id);
+    if (!v) return;
+    _vaspCurrentId = id;
+
+    document.getElementById('vasp-detail-title').textContent   = v.nameKR + ' (' + v.nameEN + ')';
+    document.getElementById('vasp-detail-status-badge').innerHTML = vaspStatusBadge(v.status);
+    document.getElementById('vasp-detail-nameKR').textContent  = v.nameKR;
+    document.getElementById('vasp-detail-nameEN').textContent  = v.nameEN;
+    document.getElementById('vasp-detail-instCode').textContent = v.instCode;
+    document.getElementById('vasp-detail-country').innerHTML   = vaspCountryBadge(v.country);
+    document.getElementById('vasp-detail-method').innerHTML    = vaspMethodTag(v.method);
+    document.getElementById('vasp-detail-endpoint').textContent = v.endpoint;
+    document.getElementById('vasp-detail-contact').textContent = v.contact || '—';
+    document.getElementById('vasp-detail-createdAt').textContent = v.createdAt;
+    document.getElementById('vasp-detail-updatedAt').textContent = v.updatedAt;
+
+    // 테스트 결과
+    var testBadge = document.getElementById('vasp-detail-test-result-badge');
+    var testAtEl  = document.getElementById('vasp-detail-test-at');
+    var errBtn    = document.getElementById('vasp-detail-error-btn');
+    if (v.lastTestResult === 'success') {
+      testBadge.innerHTML = '<span class="badge badge-success">&#9989; 성공</span>';
+      errBtn.style.display = 'none';
+    } else if (v.lastTestResult === 'fail') {
+      testBadge.innerHTML = '<span class="badge badge-danger">&#10060; 실패</span>';
+      errBtn.style.display = '';
+    } else {
+      testBadge.innerHTML = '<span class="badge badge-gray">미실행</span>';
+      errBtn.style.display = 'none';
+    }
+    testAtEl.textContent = v.lastTestAt || '—';
+
+    // 메모
+    var memoWrap = document.getElementById('vasp-detail-memo-wrap');
+    if (v.memo) { document.getElementById('vasp-detail-memo').textContent = v.memo; memoWrap.style.display = ''; }
+    else { memoWrap.style.display = 'none'; }
+
+    // 비활성화 사유
+    var deactWrap = document.getElementById('vasp-detail-deact-wrap');
+    if (v.status === 'inactive' && v.deactReason) {
+      document.getElementById('vasp-detail-deact-reason').textContent = v.deactReason;
+      deactWrap.style.display = '';
+    } else { deactWrap.style.display = 'none'; }
+
+    // 상태별 버튼
+    var footer = document.getElementById('vasp-detail-footer');
+    if (v.status === 'active') {
+      footer.innerHTML =
+        '<button class="btn btn-outline" onclick="closeModal(\'vasp-detail-modal\'); runVaspTest(' + id + ', null);">&#128279; 연동 테스트</button>' +
+        '<button class="btn btn-outline" onclick="closeModal(\'vasp-detail-modal\'); openVaspEditSO(' + id + ')">수정</button>' +
+        '<button class="btn btn-warning" onclick="closeModal(\'vasp-detail-modal\'); openVaspDeact(' + id + ')">비활성화</button>';
+    } else if (v.status === 'error') {
+      footer.innerHTML =
+        '<button class="btn btn-warning" style="font-weight:700;" onclick="closeModal(\'vasp-detail-modal\'); runVaspTest(' + id + ', null);">&#9888; 연동 테스트 (오류 확인)</button>' +
+        '<button class="btn btn-outline" onclick="closeModal(\'vasp-detail-modal\'); openVaspEditSO(' + id + ')">수정</button>' +
+        '<button class="btn btn-outline" style="color:var(--text-secondary);" onclick="closeModal(\'vasp-detail-modal\'); openVaspDeact(' + id + ')">비활성화</button>';
+    } else {
+      footer.innerHTML =
+        '<button class="btn btn-outline" onclick="closeModal(\'vasp-detail-modal\'); openVaspEditSO(' + id + ')">수정</button>' +
+        '<button class="btn btn-success" onclick="closeModal(\'vasp-detail-modal\'); openVaspAct(' + id + ')">활성화</button>' +
+        '<button class="btn btn-danger" onclick="closeModal(\'vasp-detail-modal\'); openVaspDelete(' + id + ')">삭제</button>';
+    }
+    openModal('vasp-detail-modal');
+  }
+
+  /* ─ VASP 수정 슬라이드오버 (11-5) ─ */
+  function openVaspEditSO(id) {
+    var v = vaspById(id);
+    if (!v) return;
+    _vaspCurrentId = id;
+    _vaspEditOrigEndpoint = v.endpoint;
+
+    document.getElementById('vasp-edit-subtitle').textContent = v.nameKR + ' (' + v.instCode + ')';
+    document.getElementById('vasp-edit-nameKR').value   = v.nameKR;
+    document.getElementById('vasp-edit-nameEN').value   = v.nameEN;
+    document.getElementById('vasp-edit-instCode').value = v.instCode;
+    document.getElementById('vasp-edit-country').value  = v.country;
+    document.querySelectorAll('input[name="vasp-edit-method"]').forEach(function(r){ r.checked = r.value === v.method; });
+    document.getElementById('vasp-edit-endpoint').value = v.endpoint;
+    document.getElementById('vasp-edit-contact').value  = v.contact || '';
+    document.getElementById('vasp-edit-memo').value     = v.memo || '';
+    document.getElementById('vasp-edit-endpoint-err').style.display = 'none';
+    resetVaspOtp('vasp-edit-otp');
+    document.getElementById('vasp-edit-submit-btn').disabled = false;
+    document.getElementById('vasp-edit-so-backdrop').classList.add('open');
+    document.getElementById('vasp-edit-so').classList.add('open');
+  }
+  function closeVaspEditSO() {
+    document.getElementById('vasp-edit-so-backdrop').classList.remove('open');
+    document.getElementById('vasp-edit-so').classList.remove('open');
+  }
+  function validateVaspEditForm() {
+    var ok = document.getElementById('vasp-edit-nameKR').value.trim() &&
+             document.getElementById('vasp-edit-nameEN').value.trim() &&
+             document.getElementById('vasp-edit-country').value &&
+             document.querySelector('input[name="vasp-edit-method"]:checked') &&
+             document.getElementById('vasp-edit-endpoint').value.trim().indexOf('http') === 0;
+    document.getElementById('vasp-edit-submit-btn').disabled = !ok;
+    return !!ok;
+  }
+  function submitVaspEdit() {
+    if (!validateVaspEditForm()) return;
+    var ep = document.getElementById('vasp-edit-endpoint').value.trim();
+    var epErrEl = document.getElementById('vasp-edit-endpoint-err');
+    if (!/^https?:\/\/.+/.test(ep)) {
+      epErrEl.textContent = 'URL 형식이 올바르지 않습니다. (https://... 형태)'; epErrEl.style.display = '';
+      return;
+    }
+    epErrEl.style.display = 'none';
+    if (!checkVaspOtp('vasp-edit-otp', 'edit')) return;
+
+    var v = vaspById(_vaspCurrentId);
+    if (!v) return;
+    var endpointChanged = ep !== _vaspEditOrigEndpoint;
+    v.nameKR   = document.getElementById('vasp-edit-nameKR').value.trim();
+    v.nameEN   = document.getElementById('vasp-edit-nameEN').value.trim();
+    v.country  = document.getElementById('vasp-edit-country').value;
+    v.method   = document.querySelector('input[name="vasp-edit-method"]:checked').value;
+    v.endpoint = ep;
+    v.contact  = document.getElementById('vasp-edit-contact').value.trim();
+    v.memo     = document.getElementById('vasp-edit-memo').value.trim();
+    v.updatedAt = new Date().toISOString().slice(0,10);
+
+    closeVaspEditSO();
+    renderVaspTable();
+    addActLog('[VASP 수정] ' + v.nameKR + ' (' + v.instCode + ')');
+    showToast(v.nameKR + ' VASP 정보가 수정되었습니다.' + (endpointChanged ? ' (Endpoint 변경 — 연동 테스트 재실행)' : ''));
+    if (endpointChanged) {
+      setTimeout(function(){ runVaspTest(v.id, null); }, 300);
+    }
+  }
+
+  /* ─ VASP 비활성화 (11-6) ─ */
+  function openVaspDeact(id) {
+    var v = vaspById(id);
+    if (!v) return;
+    _vaspCurrentId = id;
+    document.getElementById('vasp-deact-name').textContent = v.nameKR + ' (' + v.nameEN + ')';
+    document.getElementById('vasp-deact-code').textContent = v.instCode;
+    document.getElementById('vasp-deact-reason').value = '';
+    document.getElementById('vasp-deact-reason-len').textContent = '0';
+    document.getElementById('vasp-deact-submit-btn').disabled = true;
+    resetVaspOtp('vasp-deact-otp');
+    openModal('vasp-deact-modal');
+  }
+  function validateVaspDeactForm() {
+    var reason = document.getElementById('vasp-deact-reason').value;
+    document.getElementById('vasp-deact-reason-len').textContent = reason.length;
+    document.getElementById('vasp-deact-submit-btn').disabled = reason.trim().length === 0;
+  }
+  function submitVaspDeact() {
+    var reason = document.getElementById('vasp-deact-reason').value.trim();
+    if (!reason) { document.getElementById('vasp-deact-otp-err').textContent = '비활성화 사유를 입력하세요.'; document.getElementById('vasp-deact-otp-err').style.display = ''; return; }
+    if (!checkVaspOtp('vasp-deact-otp', 'deact')) return;
+    var v = vaspById(_vaspCurrentId);
+    if (!v) return;
+    v.status = 'inactive'; v.deactReason = reason; v.updatedAt = new Date().toISOString().slice(0,10);
+    closeModal('vasp-deact-modal');
+    renderVaspTable();
+    addActLog('[VASP 비활성화] ' + v.nameKR + ' (' + v.instCode + ')');
+    showToast(v.nameKR + ' VASP가 비활성화되었습니다.');
+  }
+
+  /* ─ VASP 활성화 (11-7) ─ */
+  function openVaspAct(id) {
+    var v = vaspById(id);
+    if (!v) return;
+    _vaspCurrentId = id;
+    document.getElementById('vasp-act-name').textContent = v.nameKR + ' (' + v.nameEN + ')';
+    document.getElementById('vasp-act-code').textContent = v.instCode;
+    resetVaspOtp('vasp-act-otp');
+    openModal('vasp-act-modal');
+  }
+  function submitVaspAct() {
+    if (!checkVaspOtp('vasp-act-otp', 'act')) return;
+    var v = vaspById(_vaspCurrentId);
+    if (!v) return;
+    closeModal('vasp-act-modal');
+    setTimeout(function(){ runVaspTest(v.id, 'activate'); }, 200);
+  }
+
+  /* ─ VASP 삭제 (11-8) ─ */
+  function openVaspDelete(id) {
+    var v = vaspById(id);
+    if (!v) return;
+    if (v.status !== 'inactive') { showToast('비활성화 상태인 VASP만 삭제할 수 있습니다.'); return; }
+    _vaspCurrentId = id;
+    document.getElementById('vasp-del-name').textContent = v.nameKR + ' (' + v.nameEN + ')';
+    document.getElementById('vasp-del-code').textContent = v.instCode;
+    document.getElementById('vasp-del-reason').value = '';
+    document.getElementById('vasp-del-reason-len').textContent = '0';
+    document.getElementById('vasp-del-submit-btn').disabled = true;
+    resetVaspOtp('vasp-del-otp');
+    openModal('vasp-delete-modal');
+  }
+  function validateVaspDeleteForm() {
+    var reason = document.getElementById('vasp-del-reason').value;
+    document.getElementById('vasp-del-reason-len').textContent = reason.length;
+    document.getElementById('vasp-del-submit-btn').disabled = reason.trim().length === 0;
+  }
+  function submitVaspDelete() {
+    var reason = document.getElementById('vasp-del-reason').value.trim();
+    if (!reason) { document.getElementById('vasp-del-otp-err').textContent = '삭제 사유를 입력하세요.'; document.getElementById('vasp-del-otp-err').style.display = ''; return; }
+    if (!checkVaspOtp('vasp-del-otp', 'del')) return;
+    var v = vaspById(_vaspCurrentId);
+    if (!v) return;
+    var name = v.nameKR;
+    var code = v.instCode;
+    _VASP_DATA = _VASP_DATA.filter(function(x){ return x.id !== _vaspCurrentId; });
+    closeModal('vasp-delete-modal');
+    renderVaspTable();
+    addActLog('[VASP 삭제] ' + name + ' (' + code + ')');
+    showToast(name + ' VASP가 삭제되었습니다.');
+  }
+
+  /* ─ VASP 연동 테스트 (11-9) ─ */
+  function openVaspTestDirect(id) {
+    _vaspCurrentId = id;
+    runVaspTest(id, null);
+  }
+  function runVaspTest(id, postAction) {
+    var v = vaspById(id);
+    if (!v) return;
+    _vaspCurrentId = id;
+
+    // 모달 열기 — 로딩 상태
+    document.getElementById('vasp-test-modal-title').textContent = '연동 테스트 — ' + v.nameKR;
+    document.getElementById('vasp-test-running').style.display  = '';
+    document.getElementById('vasp-test-success').style.display  = 'none';
+    document.getElementById('vasp-test-fail').style.display     = 'none';
+    document.getElementById('vasp-test-running-name').textContent = v.nameKR + ' (' + v.endpoint + ')';
+    document.getElementById('vasp-test-footer').style.display   = 'none';
+    document.getElementById('vasp-test-close-btn').style.display = 'none';
+    openModal('vasp-test-modal');
+
+    // Demo: 일부 VASP는 실패(오류 상태 유지), 나머지 성공
+    var willFail = (v.status === 'error' && postAction !== 'activate');
+    var latency = Math.floor(Math.random() * 200 + 60);
+
+    setTimeout(function() {
+      var now = vaspNow();
+      v.lastTestAt = now;
+      document.getElementById('vasp-test-running').style.display = 'none';
+      document.getElementById('vasp-test-close-btn').style.display = '';
+      document.getElementById('vasp-test-footer').style.display = '';
+
+      if (willFail) {
+        v.lastTestResult = 'fail';
+        document.getElementById('vasp-test-fail').style.display = '';
+        document.getElementById('vasp-test-fail-name').textContent = v.nameKR + ' (' + v.instCode + ')';
+        var err = v.lastTestError || { code: 'ERR_UNKNOWN', message: '알 수 없는 오류', detail: '' };
+        document.getElementById('vasp-test-err-code').textContent = err.code;
+        document.getElementById('vasp-test-err-msg').textContent  = err.message;
+        document.getElementById('vasp-test-retry-btn').style.display = '';
+      } else {
+        v.lastTestResult = 'success';
+        v.lastTestError = null;
+        if (postAction === 'activate') {
+          v.status = 'active';
+          v.deactReason = '';
+          v.updatedAt = new Date().toISOString().slice(0,10);
+          addActLog('[VASP 활성화] ' + v.nameKR + ' (' + v.instCode + ')');
+        }
+        document.getElementById('vasp-test-success').style.display = '';
+        document.getElementById('vasp-test-success-name').textContent = v.nameKR + ' (' + v.instCode + ')';
+        document.getElementById('vasp-test-latency').textContent = latency + 'ms';
+        document.getElementById('vasp-test-at-display').textContent = now;
+        document.getElementById('vasp-test-retry-btn').style.display = 'none';
+      }
+      renderVaspTable();
+    }, 1800);
+  }
+
+  /* ─ VASP 오류 상세 (11-10) ─ */
+  function openVaspErrorDetail(id) {
+    var v = vaspById(id);
+    if (!v || !v.lastTestError) return;
+    _vaspCurrentId = id;
+    document.getElementById('vasp-err-detail-name').textContent   = v.nameKR + ' (' + v.nameEN + ')';
+    document.getElementById('vasp-err-detail-at').textContent     = v.lastTestAt || '—';
+    document.getElementById('vasp-err-detail-code').textContent   = v.lastTestError.code;
+    document.getElementById('vasp-err-detail-msg').textContent    = v.lastTestError.message;
+    document.getElementById('vasp-err-detail-detail').textContent = v.lastTestError.detail || '';
+    openModal('vasp-error-detail-modal');
+  }
+
+  /* ─ 페이지 초기화 ─ */
+  (function initVasp() {
+    var orig = showPage;
+    showPage = function(pageId, navEl) {
+      orig(pageId, navEl);
+      if (pageId === 'vasp') renderVaspTable();
+    };
+  })();
 
   // ─ 현재 적용 중 요약 갱신
   function updatePWMFACurrentSummary() {
