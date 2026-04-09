@@ -1572,24 +1572,88 @@
            PAGE: 국가위험정책
       ══════════════════════════ -->
       <div class="page" id="page-country">
-        <div class="page-header">
-          <h1 class="page-title">국가위험정책</h1>
-        </div>
-        <div class="card">
-          <div class="placeholder-info">
-            <p>FATF 고위험·비협력 국가 및 내부 위험 등급별 국가 정책을 관리합니다.</p>
+        <div class="page-header" style="margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <h1 class="page-title">국가위험정책 / Country Risk Policy</h1>
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">
+              기준 버전: 국가위험평가결과_20260220 &nbsp;|&nbsp; 총 <span id="cty-total-count">0</span>개국
+            </div>
           </div>
-          <div class="table-wrap" style="margin-top:16px;">
+          <div style="display:flex; gap:8px;" id="cty-manager-btns">
+            <button class="btn btn-outline btn-sm" onclick="openCountryUpload()" style="font-size:12px;">&#8593; 일괄 업로드</button>
+            <button class="btn btn-outline btn-sm" onclick="openFATFExcluded()" style="font-size:12px;">FATF 제외국가 관리</button>
+            <button class="btn btn-outline btn-sm" onclick="openCountryHistory()" style="font-size:12px;">&#128336; 변경 이력</button>
+          </div>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px;">
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">전체</div>
+            <div id="cty-stat-total" style="font-size:24px; font-weight:700; color:var(--primary);">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9679; 고위험 (61~100점)</div>
+            <div id="cty-stat-high" style="font-size:24px; font-weight:700; color:#EF4444;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9679; 중위험 (31~60점)</div>
+            <div id="cty-stat-mid" style="font-size:24px; font-weight:700; color:#F97316;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9679; 저위험 (0~30점)</div>
+            <div id="cty-stat-low" style="font-size:24px; font-weight:700; color:#10B981;">0</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <!-- 탭 -->
+          <div id="cty-tabs" class="kyb-tabs" style="margin-bottom:0; padding:0 16px;">
+            <div class="kyb-tab active" onclick="_ctySetTab('all',this)">전체</div>
+            <div class="kyb-tab" onclick="_ctySetTab('high',this)">&#9679; 고위험</div>
+            <div class="kyb-tab" onclick="_ctySetTab('mid',this)">&#9679; 중위험</div>
+            <div class="kyb-tab" onclick="_ctySetTab('low',this)">&#9679; 저위험</div>
+          </div>
+
+          <!-- 필터 바 -->
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border);">
+            <input type="text" id="cty-search" class="form-control" placeholder="국가명 / 국가코드 검색" style="width:210px;" oninput="renderCountry()" />
+            <select id="cty-fatf-filter" class="form-control" style="width:150px;" onchange="renderCountry()">
+              <option value="">FATF 지위 전체</option>
+              <option value="member">회원국</option>
+              <option value="high">고위험 성명서</option>
+              <option value="weak">이행취약국</option>
+            </select>
+            <select id="cty-un-filter" class="form-control" style="width:130px;" onchange="renderCountry()">
+              <option value="">UN 제재 전체</option>
+              <option value="yes">UN 제재 해당</option>
+              <option value="no">UN 제재 미해당</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="_ctyResetFilters()" style="font-size:11px;">초기화</button>
+          </div>
+
+          <!-- 테이블 -->
+          <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>국가코드</th><th>국가명</th><th>위험등급</th><th>FATF 제재</th><th>정책</th></tr>
+                <tr>
+                  <th>#</th>
+                  <th>국가코드</th>
+                  <th>국가명 (국문)</th>
+                  <th>국가명 (영문)</th>
+                  <th>위험등급</th>
+                  <th>최종점수</th>
+                  <th>최종수정일</th>
+                  <th>관리</th>
+                </tr>
               </thead>
-              <tbody>
-                <tr><td>KP</td><td>북한</td><td><span class="badge badge-danger">최고위험</span></td><td><span class="badge badge-danger">&#9888; 블랙리스트</span></td><td>거래 전면 차단</td></tr>
-                <tr><td>IR</td><td>이란</td><td><span class="badge badge-danger">최고위험</span></td><td><span class="badge badge-danger">&#9888; 블랙리스트</span></td><td>거래 전면 차단</td></tr>
-                <tr><td>RU</td><td>러시아</td><td><span class="badge badge-warning">고위험</span></td><td><span class="badge badge-warning">감시대상</span></td><td>강화 심사</td></tr>
-              </tbody>
+              <tbody id="cty-tbody"></tbody>
             </table>
+          </div>
+          <div id="cty-empty" style="display:none; padding:48px 16px; text-align:center;">
+            <div style="font-size:32px; margin-bottom:10px;">&#127757;</div>
+            <div style="font-size:14px; font-weight:600; margin-bottom:4px;">검색 결과가 없습니다.</div>
+            <div style="font-size:12px; color:var(--text-secondary);">필터 조건을 변경해 보세요.</div>
           </div>
         </div>
       </div>
@@ -4698,6 +4762,196 @@
   </div>
 </div>
 
+<!-- ══════════════════════════
+     SLIDEOVER: 국가 상세 / 평가 수정
+══════════════════════════ -->
+<div class="slideover-backdrop" id="country-detail-backdrop" onclick="closeCountryDetail()"></div>
+<div class="slideover" id="country-detail-so" style="width:600px; max-width:96vw;">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <h2 style="font-size:16px; font-weight:700; margin:0;">국가 위험 평가 상세</h2>
+    <button onclick="closeCountryDetail()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);">&#10005;</button>
+  </div>
+
+  <!-- 기본 정보 -->
+  <div class="card" style="margin-bottom:14px; padding:16px;">
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">기본 정보</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px 20px; font-size:13px;">
+      <div><span style="color:var(--text-secondary);">국가코드</span><br><strong id="cty-d-code"></strong></div>
+      <div><span style="color:var(--text-secondary);">국가명 (국문)</span><br><strong id="cty-d-name-kr"></strong></div>
+      <div><span style="color:var(--text-secondary);">국가명 (영문)</span><br><strong id="cty-d-name-en"></strong></div>
+      <div><span style="color:var(--text-secondary);">FATF 지위</span><br><span id="cty-d-fatf"></span></div>
+      <div><span style="color:var(--text-secondary);">UN 제재</span><br><span id="cty-d-un"></span></div>
+      <div><span style="color:var(--text-secondary);">최종수정일</span><br><span id="cty-d-updated"></span></div>
+    </div>
+  </div>
+
+  <!-- 현재 등급 -->
+  <div class="card" style="margin-bottom:14px; padding:16px;">
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">현재 위험등급</div>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div style="text-align:center;">
+        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">산출점수</div>
+        <div id="cty-d-score" style="font-size:28px; font-weight:800; color:var(--primary);"></div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">등급</div>
+        <div id="cty-d-grade-badge"></div>
+      </div>
+      <div id="cty-d-override-note" style="display:none; background:#FFF7ED; border:1px solid #F97316; border-radius:6px; padding:8px 12px; font-size:12px; color:#9A3412; flex:1;">
+        수동 강제등급 적용 중
+      </div>
+    </div>
+  </div>
+
+  <!-- 12개 지표 평가 (수정 가능) -->
+  <div class="card" style="margin-bottom:14px; padding:16px;">
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px;">12개 지표 평가</div>
+    <div id="cty-indicator-form" style="display:grid; gap:10px;"></div>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:12px; color:var(--text-secondary);">산출 점수</span>
+      <span id="cty-calc-score" style="font-size:20px; font-weight:800; color:var(--primary);"></span>
+    </div>
+  </div>
+
+  <!-- 강제등급 override -->
+  <div class="card" style="margin-bottom:14px; padding:16px;">
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">수동 강제등급 (선택)</div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <select id="cty-override-select" class="form-control" style="width:160px;">
+        <option value="">강제등급 없음 (점수 기반)</option>
+        <option value="high">고위험</option>
+        <option value="mid">중위험</option>
+        <option value="low">저위험</option>
+      </select>
+      <span style="font-size:12px; color:var(--text-secondary);">선택 시 산출점수와 무관하게 해당 등급 적용</span>
+    </div>
+  </div>
+
+  <!-- 수정 사유 -->
+  <div class="card" style="margin-bottom:16px; padding:16px;">
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; text-transform:uppercase; letter-spacing:.5px;">수정 사유</div>
+    <textarea id="cty-edit-reason" class="form-control" rows="3" placeholder="평가 수정 사유를 입력하세요 (최대 500자)" maxlength="500" style="resize:vertical;" oninput="_ctyCheckEditBtn()"></textarea>
+  </div>
+
+  <div style="display:flex; gap:10px; justify-content:flex-end;">
+    <button class="btn btn-outline" onclick="closeCountryDetail()">닫기</button>
+    <button class="btn btn-primary" id="cty-edit-submit-btn" onclick="_ctyEditProceed()">저장 → OTP ›</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     MODAL: 일괄 업로드
+══════════════════════════ -->
+<div class="modal-backdrop" id="modal-country-upload-backdrop" onclick="closeModal('modal-country-upload')"></div>
+<div class="modal" id="modal-country-upload" style="max-width:560px;">
+  <div class="modal-header">
+    <span class="modal-title">국가위험 일괄 업로드</span>
+    <button class="modal-close" onclick="closeModal('modal-country-upload')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- Step 1 -->
+    <div id="cty-upload-step1">
+      <div style="background:#F0F9FF; border:1px solid #BAE6FD; border-radius:8px; padding:12px 14px; font-size:12.5px; color:#0369A1; margin-bottom:16px; line-height:1.6;">
+        CSV 또는 Excel 파일을 업로드하세요.<br>
+        컬럼 순서: 국가코드 / 지표1~12 점수(0-10) / 강제등급(선택)<br>
+        <a href="#" onclick="return false;" style="color:#0369A1; font-weight:600;">&#8659; 양식 다운로드</a>
+      </div>
+      <div style="border:2px dashed var(--border); border-radius:8px; padding:32px; text-align:center; margin-bottom:16px; cursor:pointer;" onclick="document.getElementById('cty-upload-file').click()">
+        <div style="font-size:28px; margin-bottom:8px;">&#128196;</div>
+        <div id="cty-upload-filename" style="font-size:13px; color:var(--text-secondary);">파일을 클릭하거나 드래그하여 업로드</div>
+      </div>
+      <input type="file" id="cty-upload-file" accept=".csv,.xlsx,.xls" style="display:none;" onchange="_ctyUploadFileSelected(this)">
+      <div style="margin-bottom:12px;">
+        <label class="form-label">업로드 사유</label>
+        <textarea id="cty-upload-reason" class="form-control" rows="2" placeholder="업로드 사유를 입력하세요" oninput="_ctyCheckUploadBtn()"></textarea>
+      </div>
+    </div>
+    <!-- Step 2: Preview -->
+    <div id="cty-upload-step2" style="display:none;">
+      <div style="font-size:13px; font-weight:600; margin-bottom:10px;">미리보기 (최대 10개 표시)</div>
+      <div style="overflow-x:auto; max-height:260px; border:1px solid var(--border); border-radius:6px; font-size:12px;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead style="background:var(--bg-secondary); position:sticky; top:0;">
+            <tr>
+              <th style="padding:8px; text-align:left;">국가코드</th>
+              <th style="padding:8px; text-align:left;">국가명</th>
+              <th style="padding:8px; text-align:center;">산출점수</th>
+              <th style="padding:8px; text-align:center;">강제등급</th>
+              <th style="padding:8px; text-align:center;">상태</th>
+            </tr>
+          </thead>
+          <tbody id="cty-upload-preview-tbody"></tbody>
+        </table>
+      </div>
+      <div id="cty-upload-summary" style="font-size:12px; color:var(--text-secondary); margin-top:8px;"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-country-upload')">취소</button>
+    <button class="btn btn-outline" id="cty-upload-preview-btn" onclick="_ctyUploadPreview()" style="display:none;">미리보기</button>
+    <button class="btn btn-primary" id="cty-upload-submit-btn" onclick="_ctyUploadProceed()" disabled>적용 → OTP ›</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     SLIDEOVER: FATF 제외국가
+══════════════════════════ -->
+<div class="slideover-backdrop" id="country-fatf-backdrop" onclick="closeFATFExcluded()"></div>
+<div class="slideover" id="country-fatf-so" style="width:520px; max-width:96vw;">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <h2 style="font-size:16px; font-weight:700; margin:0;">FATF 제외국가 관리</h2>
+    <button onclick="closeFATFExcluded()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);">&#10005;</button>
+  </div>
+  <div style="background:#FFF7ED; border:1px solid #F97316; border-radius:8px; padding:12px 14px; font-size:12.5px; color:#9A3412; margin-bottom:16px; line-height:1.6;">
+    FATF 고위험 성명서·이행취약국으로 지정된 국가는 자동으로 <strong>고위험</strong>으로 분류됩니다.<br>
+    제외 목록에 추가하면 해당 국가는 산출점수 기반 등급을 사용합니다.
+  </div>
+
+  <!-- 추가 폼 -->
+  <div class="card" style="margin-bottom:14px; padding:14px;">
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px;">제외국가 추가</div>
+    <div style="display:flex; gap:8px; align-items:flex-end;">
+      <div style="flex:1;">
+        <label class="form-label">국가코드 / 국가명</label>
+        <input type="text" id="fatf-add-input" class="form-control" placeholder="예) KR, 한국" oninput="_fatfCheckAddBtn()" />
+      </div>
+      <div>
+        <label class="form-label">사유</label>
+        <input type="text" id="fatf-add-reason" class="form-control" placeholder="사유 입력" oninput="_fatfCheckAddBtn()" style="width:150px;" />
+      </div>
+      <button class="btn btn-primary btn-sm" id="fatf-add-btn" onclick="_fatfAddExcluded()" disabled style="white-space:nowrap;">추가</button>
+    </div>
+  </div>
+
+  <!-- 현재 목록 -->
+  <div class="card" style="padding:14px;">
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px;">현재 제외국가 (<span id="fatf-exc-count">0</span>개)</div>
+    <div id="fatf-exc-list" style="display:grid; gap:8px;"></div>
+    <div id="fatf-exc-empty" style="display:none; padding:24px; text-align:center; color:var(--text-secondary); font-size:13px;">제외국가 없음</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     SLIDEOVER: 변경 이력
+══════════════════════════ -->
+<div class="slideover-backdrop" id="country-history-backdrop" onclick="closeCountryHistory()"></div>
+<div class="slideover" id="country-history-so" style="width:560px; max-width:96vw;">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <h2 style="font-size:16px; font-weight:700; margin:0;">국가위험정책 변경 이력</h2>
+    <button onclick="closeCountryHistory()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);">&#10005;</button>
+  </div>
+  <div style="display:flex; gap:8px; margin-bottom:14px; align-items:center;">
+    <input type="text" id="cty-hist-search" class="form-control" placeholder="국가명 / 코드 검색" style="flex:1;" oninput="renderCountryHistory()" />
+    <select id="cty-hist-type" class="form-control" style="width:130px;" onchange="renderCountryHistory()">
+      <option value="">변경 유형 전체</option>
+      <option value="edit">개별 수정</option>
+      <option value="upload">일괄 업로드</option>
+    </select>
+  </div>
+  <div id="cty-history-list" style="display:grid; gap:10px; max-height:calc(100vh - 200px); overflow-y:auto;"></div>
+  <div id="cty-history-empty" style="display:none; padding:48px; text-align:center; color:var(--text-secondary); font-size:13px;">변경 이력이 없습니다.</div>
+</div>
+
 <!-- modal-otp: OTP 인증 -->
 <!-- ══════════════════════════
      MODAL: PW/MFA 정책 변경 전·후 비교 확인
@@ -5438,6 +5692,7 @@
     if (pageId === 'assets') renderAssetsPage();
     if (pageId === 'str') renderSTR();
     if (pageId === 'pep') renderPEP();
+    if (pageId === 'country') renderCountry();
 
     closeMobileSidebar();
   }
@@ -11644,6 +11899,446 @@
     document.getElementById('str-stat-reported').textContent    = reported;
     document.getElementById('str-stat-nonreported').textContent = nonreported;
     document.getElementById('str-stat-warning').textContent     = warning;
+  }
+
+  /* ════════════════════════════════════
+     국가위험정책 — COUNTRY RISK POLICY
+  ════════════════════════════════════ */
+
+  var _ctyTab = 'all';
+
+  var _CTY_INDICATORS = [
+    { key:'fatf',   label:'FATF 성명서 지정',          weight:15 },
+    { key:'un',     label:'UN 제재 대상',               weight:15 },
+    { key:'terror', label:'테러자금조달 위험',           weight:12 },
+    { key:'ml',     label:'자금세탁 위험',               weight:12 },
+    { key:'corrupt',label:'부패인식지수(CPI) 역산',      weight:10 },
+    { key:'tran',   label:'금융투명성 수준',             weight:8  },
+    { key:'tax',    label:'조세 비협조 지역',            weight:8  },
+    { key:'str',    label:'STR 비율 / 내부 위험지표',   weight:7  },
+    { key:'sanction',label:'자체 제재 국가',             weight:5  },
+    { key:'embassy',label:'외교관계 단절',               weight:3  },
+    { key:'ngo',    label:'NGO 국제 평판 지수',         weight:3  },
+    { key:'other',  label:'기타 종합 위험요인',          weight:2  }
+  ];
+
+  var _COUNTRY_DATA = [
+    { code:'AF', nameKR:'아프가니스탄', nameEN:'Afghanistan',   fatf:'high',   un:'yes', indicators:{ fatf:10,un:10,terror:10,ml:9,corrupt:8,tran:3,tax:7,str:6,sanction:8,embassy:2,ngo:7,other:5 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IR', nameKR:'이란',         nameEN:'Iran',          fatf:'high',   un:'yes', indicators:{ fatf:10,un:10,terror:10,ml:9,corrupt:7,tran:2,tax:8,str:7,sanction:10,embassy:3,ngo:6,other:6 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KP', nameKR:'북한',         nameEN:'North Korea',   fatf:'high',   un:'yes', indicators:{ fatf:10,un:10,terror:9,ml:9,corrupt:9,tran:1,tax:9,str:8,sanction:10,embassy:3,ngo:8,other:7 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SY', nameKR:'시리아',       nameEN:'Syria',         fatf:'high',   un:'yes', indicators:{ fatf:9,un:9,terror:9,ml:8,corrupt:8,tran:2,tax:6,str:6,sanction:9,embassy:3,ngo:7,other:5 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MM', nameKR:'미얀마',       nameEN:'Myanmar',       fatf:'weak',   un:'no',  indicators:{ fatf:7,un:3,terror:5,ml:8,corrupt:7,tran:3,tax:5,str:5,sanction:4,embassy:1,ngo:5,other:4 }, override:'high', updatedAt:'2026-02-20' },
+    { code:'RU', nameKR:'러시아',       nameEN:'Russia',        fatf:'member', un:'no',  indicators:{ fatf:3,un:4,terror:5,ml:6,corrupt:6,tran:4,tax:4,str:5,sanction:7,embassy:2,ngo:4,other:4 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CN', nameKR:'중국',         nameEN:'China',         fatf:'member', un:'no',  indicators:{ fatf:2,un:2,terror:3,ml:5,corrupt:5,tran:4,tax:3,str:4,sanction:2,embassy:0,ngo:3,other:3 }, override:null, updatedAt:'2026-02-20' },
+    { code:'VN', nameKR:'베트남',       nameEN:'Vietnam',       fatf:'weak',   un:'no',  indicators:{ fatf:5,un:1,terror:2,ml:5,corrupt:5,tran:4,tax:3,str:3,sanction:1,embassy:0,ngo:3,other:3 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PH', nameKR:'필리핀',       nameEN:'Philippines',   fatf:'member', un:'no',  indicators:{ fatf:2,un:1,terror:3,ml:4,corrupt:4,tran:5,tax:2,str:3,sanction:1,embassy:0,ngo:2,other:2 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TH', nameKR:'태국',         nameEN:'Thailand',      fatf:'member', un:'no',  indicators:{ fatf:1,un:1,terror:2,ml:3,corrupt:4,tran:5,tax:2,str:2,sanction:0,embassy:0,ngo:2,other:2 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SG', nameKR:'싱가포르',     nameEN:'Singapore',     fatf:'member', un:'no',  indicators:{ fatf:0,un:0,terror:0,ml:1,corrupt:1,tran:9,tax:1,str:1,sanction:0,embassy:0,ngo:1,other:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'JP', nameKR:'일본',         nameEN:'Japan',         fatf:'member', un:'no',  indicators:{ fatf:0,un:0,terror:0,ml:1,corrupt:1,tran:9,tax:0,str:1,sanction:0,embassy:0,ngo:0,other:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'US', nameKR:'미국',         nameEN:'United States', fatf:'member', un:'no',  indicators:{ fatf:0,un:0,terror:0,ml:1,corrupt:1,tran:9,tax:0,str:1,sanction:0,embassy:0,ngo:0,other:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'DE', nameKR:'독일',         nameEN:'Germany',       fatf:'member', un:'no',  indicators:{ fatf:0,un:0,terror:0,ml:0,corrupt:0,tran:10,tax:0,str:0,sanction:0,embassy:0,ngo:0,other:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KR', nameKR:'대한민국',     nameEN:'Korea, Republic of', fatf:'member', un:'no', indicators:{ fatf:0,un:0,terror:0,ml:1,corrupt:1,tran:8,tax:0,str:1,sanction:0,embassy:0,ngo:0,other:0 }, override:null, updatedAt:'2026-02-20' }
+  ];
+
+  var _FATF_EXCLUDED = [
+    { code:'RU', nameKR:'러시아', reason:'자체 분석 결과 FATF 성명서 예외 적용', addedAt:'2025-12-01', addedBy:'김AML관리자' }
+  ];
+
+  var _COUNTRY_HISTORY = [
+    { id:'CH-001', type:'edit',   code:'MM', nameKR:'미얀마',   changeFrom:'중위험',   changeTo:'고위험 (강제)',  reason:'FATF 이행취약국 신규 지정 반영',    changedAt:'2026-02-20', changedBy:'김AML관리자' },
+    { id:'CH-002', type:'upload', code:'*',  nameKR:'전체',      changeFrom:'구버전',   changeTo:'신버전',         reason:'국가위험평가결과_20260220 업로드',  changedAt:'2026-02-20', changedBy:'김AML관리자' },
+    { id:'CH-003', type:'edit',   code:'VN', nameKR:'베트남',   changeFrom:'저위험',   changeTo:'중위험',         reason:'FATF 이행취약국 지정 반영',         changedAt:'2026-01-15', changedBy:'김AML관리자' }
+  ];
+
+  var _ctyCurrentCode = null;
+
+  function _ctyComputeScore(indicators) {
+    var total = 0;
+    _CTY_INDICATORS.forEach(function(ind) {
+      var val = indicators[ind.key] || 0;
+      total += (val / 10) * ind.weight;
+    });
+    return Math.round(total);
+  }
+
+  function _ctyScoreToGrade(score, override) {
+    if (override) return override;
+    if (score >= 61) return 'high';
+    if (score >= 31) return 'mid';
+    return 'low';
+  }
+
+  function _ctyGradeBadge(grade) {
+    var map = { high: ['고위험', '#EF4444'], mid: ['중위험', '#F97316'], low: ['저위험', '#10B981'] };
+    var g = map[grade] || map['low'];
+    return '<span style="display:inline-block; padding:3px 10px; border-radius:12px; background:' + g[1] + '22; color:' + g[1] + '; font-size:12px; font-weight:700;">' + g[0] + '</span>';
+  }
+
+  function _ctyFATFLabel(fatf) {
+    var map = { member: '회원국', high: '고위험 성명서', weak: '이행취약국' };
+    return map[fatf] || fatf;
+  }
+
+  function _ctyUpdateStats() {
+    var total = _COUNTRY_DATA.length;
+    var high = 0, mid = 0, low = 0;
+    _COUNTRY_DATA.forEach(function(c) {
+      var score = _ctyComputeScore(c.indicators);
+      var grade = _ctyScoreToGrade(score, c.override);
+      if (grade === 'high') high++;
+      else if (grade === 'mid') mid++;
+      else low++;
+    });
+    document.getElementById('cty-stat-total').textContent = total;
+    document.getElementById('cty-stat-high').textContent  = high;
+    document.getElementById('cty-stat-mid').textContent   = mid;
+    document.getElementById('cty-stat-low').textContent   = low;
+    document.getElementById('cty-total-count').textContent = total;
+  }
+
+  function _ctyGetFiltered() {
+    var search = (document.getElementById('cty-search') || {value:''}).value.toLowerCase();
+    var fatfF  = (document.getElementById('cty-fatf-filter') || {value:''}).value;
+    var unF    = (document.getElementById('cty-un-filter') || {value:''}).value;
+    return _COUNTRY_DATA.filter(function(c) {
+      var score = _ctyComputeScore(c.indicators);
+      var grade = _ctyScoreToGrade(score, c.override);
+      if (_ctyTab !== 'all' && grade !== _ctyTab) return false;
+      if (search && !(c.code.toLowerCase().includes(search) || c.nameKR.includes(search) || c.nameEN.toLowerCase().includes(search))) return false;
+      if (fatfF && c.fatf !== fatfF) return false;
+      if (unF === 'yes' && c.un !== 'yes') return false;
+      if (unF === 'no'  && c.un !== 'no')  return false;
+      return true;
+    });
+  }
+
+  function _ctySetTab(tab, el) {
+    _ctyTab = tab;
+    var tabs = document.querySelectorAll('#cty-tabs .kyb-tab');
+    tabs.forEach(function(t) { t.classList.remove('active'); });
+    if (el) el.classList.add('active');
+    renderCountry();
+  }
+
+  function _ctyResetFilters() {
+    var s = document.getElementById('cty-search'); if (s) s.value = '';
+    var f = document.getElementById('cty-fatf-filter'); if (f) f.value = '';
+    var u = document.getElementById('cty-un-filter'); if (u) u.value = '';
+    renderCountry();
+  }
+
+  function renderCountry() {
+    if (!document.getElementById('cty-tbody')) return;
+    _ctyUpdateStats();
+    var data = _ctyGetFiltered();
+    var tbody = document.getElementById('cty-tbody');
+    var empty = document.getElementById('cty-empty');
+    var isMgr = (_ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master');
+    var mgrBtns = document.getElementById('cty-manager-btns');
+    if (mgrBtns) mgrBtns.style.display = isMgr ? 'flex' : 'none';
+
+    if (data.length === 0) {
+      tbody.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    tbody.innerHTML = data.map(function(c, i) {
+      var score = _ctyComputeScore(c.indicators);
+      var grade = _ctyScoreToGrade(score, c.override);
+      var overrideMark = c.override ? ' <span title="강제등급" style="font-size:10px; color:#F97316;">★</span>' : '';
+      return '<tr>' +
+        '<td>' + (i+1) + '</td>' +
+        '<td><code style="background:var(--bg-secondary); padding:2px 6px; border-radius:4px; font-size:12px;">' + c.code + '</code></td>' +
+        '<td>' + c.nameKR + '</td>' +
+        '<td style="color:var(--text-secondary); font-size:12px;">' + c.nameEN + '</td>' +
+        '<td>' + _ctyGradeBadge(grade) + overrideMark + '</td>' +
+        '<td style="text-align:center; font-weight:700; color:var(--primary);">' + score + '</td>' +
+        '<td style="font-size:12px; color:var(--text-secondary);">' + c.updatedAt + '</td>' +
+        '<td><button class="btn btn-outline btn-sm" onclick="openCountryDetail(\'' + c.code + '\')" style="font-size:11px;">상세보기</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function openCountryDetail(code) {
+    var c = _COUNTRY_DATA.find(function(x) { return x.code === code; });
+    if (!c) return;
+    _ctyCurrentCode = code;
+    var score = _ctyComputeScore(c.indicators);
+    var grade = _ctyScoreToGrade(score, c.override);
+    document.getElementById('cty-d-code').textContent = c.code;
+    document.getElementById('cty-d-name-kr').textContent = c.nameKR;
+    document.getElementById('cty-d-name-en').textContent = c.nameEN;
+    document.getElementById('cty-d-fatf').textContent = _ctyFATFLabel(c.fatf);
+    document.getElementById('cty-d-un').textContent = c.un === 'yes' ? 'UN 제재 해당' : '해당 없음';
+    document.getElementById('cty-d-updated').textContent = c.updatedAt;
+    document.getElementById('cty-d-score').textContent = score;
+    document.getElementById('cty-d-grade-badge').innerHTML = _ctyGradeBadge(grade);
+    document.getElementById('cty-d-override-note').style.display = c.override ? '' : 'none';
+    document.getElementById('cty-override-select').value = c.override || '';
+    document.getElementById('cty-edit-reason').value = '';
+    _ctyCheckEditBtn();
+
+    // 지표 폼
+    var form = document.getElementById('cty-indicator-form');
+    form.innerHTML = _CTY_INDICATORS.map(function(ind) {
+      var val = c.indicators[ind.key] || 0;
+      return '<div style="display:grid; grid-template-columns:1fr 80px 40px; gap:8px; align-items:center;">' +
+        '<label style="font-size:12.5px;">' + ind.label + ' <span style="color:var(--text-secondary); font-size:11px;">(가중치 ' + ind.weight + '%)</span></label>' +
+        '<input type="range" min="0" max="10" value="' + val + '" data-ind="' + ind.key + '" oninput="_ctyIndicatorInput(this)" style="width:100%;">' +
+        '<span id="cty-ind-val-' + ind.key + '" style="font-size:13px; font-weight:700; text-align:center;">' + val + '</span>' +
+      '</div>';
+    }).join('');
+    _ctyUpdateCalcScore(c.indicators);
+
+    var so = document.getElementById('country-detail-so');
+    var bd = document.getElementById('country-detail-backdrop');
+    if (so) so.classList.add('open');
+    if (bd) bd.classList.add('open');
+  }
+
+  function _ctyIndicatorInput(el) {
+    var key = el.getAttribute('data-ind');
+    var val = parseInt(el.value, 10);
+    var valEl = document.getElementById('cty-ind-val-' + key);
+    if (valEl) valEl.textContent = val;
+    // collect all current values
+    var inputs = document.querySelectorAll('#cty-indicator-form input[type=range]');
+    var inds = {};
+    inputs.forEach(function(inp) { inds[inp.getAttribute('data-ind')] = parseInt(inp.value, 10); });
+    _ctyUpdateCalcScore(inds);
+  }
+
+  function _ctyUpdateCalcScore(indicators) {
+    var score = _ctyComputeScore(indicators);
+    var calcEl = document.getElementById('cty-calc-score');
+    if (calcEl) calcEl.textContent = score + '점';
+  }
+
+  function _ctyCheckEditBtn() {
+    var reason = (document.getElementById('cty-edit-reason') || {value:''}).value.trim();
+    var btn = document.getElementById('cty-edit-submit-btn');
+    if (btn) btn.disabled = reason.length === 0;
+  }
+
+  function _ctyEditProceed() {
+    var reason = document.getElementById('cty-edit-reason').value.trim();
+    if (!reason) return;
+    openOTPModal('국가위험 평가 수정', function() {
+      var c = _COUNTRY_DATA.find(function(x) { return x.code === _ctyCurrentCode; });
+      if (!c) return;
+      var inputs = document.querySelectorAll('#cty-indicator-form input[type=range]');
+      inputs.forEach(function(inp) { c.indicators[inp.getAttribute('data-ind')] = parseInt(inp.value, 10); });
+      var override = document.getElementById('cty-override-select').value || null;
+      var prevScore = _ctyComputeScore(c.indicators);
+      var prevGrade = _ctyScoreToGrade(prevScore, c.override);
+      c.override = override;
+      c.updatedAt = '2026-04-09';
+      var newScore = _ctyComputeScore(c.indicators);
+      var newGrade = _ctyScoreToGrade(newScore, c.override);
+      _COUNTRY_HISTORY.unshift({
+        id: 'CH-' + String(_COUNTRY_HISTORY.length + 1).padStart(3,'0'),
+        type: 'edit', code: c.code, nameKR: c.nameKR,
+        changeFrom: ['high','mid','low'].indexOf(prevGrade) >= 0 ? { high:'고위험', mid:'중위험', low:'저위험' }[prevGrade] : prevGrade,
+        changeTo:   ['high','mid','low'].indexOf(newGrade) >= 0  ? { high:'고위험', mid:'중위험', low:'저위험' }[newGrade]  : newGrade,
+        reason: reason, changedAt: '2026-04-09', changedBy: '현재 관리자'
+      });
+      closeCountryDetail();
+      renderCountry();
+      showToast(c.nameKR + ' 평가가 수정되었습니다.');
+    });
+  }
+
+  function closeCountryDetail() {
+    var so = document.getElementById('country-detail-so');
+    var bd = document.getElementById('country-detail-backdrop');
+    if (so) so.classList.remove('open');
+    if (bd) bd.classList.remove('open');
+    _ctyCurrentCode = null;
+  }
+
+  // ── 일괄 업로드
+  var _ctyUploadParsed = [];
+
+  function openCountryUpload() {
+    _ctyUploadParsed = [];
+    document.getElementById('cty-upload-step1').style.display = '';
+    document.getElementById('cty-upload-step2').style.display = 'none';
+    document.getElementById('cty-upload-filename').textContent = '파일을 클릭하거나 드래그하여 업로드';
+    document.getElementById('cty-upload-reason').value = '';
+    document.getElementById('cty-upload-preview-btn').style.display = 'none';
+    document.getElementById('cty-upload-submit-btn').disabled = true;
+    var fi = document.getElementById('cty-upload-file'); if (fi) fi.value = '';
+    openModal('modal-country-upload');
+  }
+
+  function _ctyUploadFileSelected(input) {
+    if (!input.files || !input.files[0]) return;
+    var fn = document.getElementById('cty-upload-filename');
+    if (fn) fn.textContent = input.files[0].name;
+    document.getElementById('cty-upload-preview-btn').style.display = '';
+    _ctyCheckUploadBtn();
+  }
+
+  function _ctyCheckUploadBtn() {
+    var hasFile = document.getElementById('cty-upload-file').files && document.getElementById('cty-upload-file').files.length > 0;
+    var hasReason = document.getElementById('cty-upload-reason').value.trim().length > 0;
+    document.getElementById('cty-upload-submit-btn').disabled = !(hasFile && hasReason);
+  }
+
+  function _ctyUploadPreview() {
+    // Demo: show first 5 countries as preview
+    document.getElementById('cty-upload-step1').style.display = 'none';
+    document.getElementById('cty-upload-step2').style.display = '';
+    _ctyUploadParsed = _COUNTRY_DATA.slice(0, 5);
+    var tbody = document.getElementById('cty-upload-preview-tbody');
+    tbody.innerHTML = _ctyUploadParsed.map(function(c) {
+      var score = _ctyComputeScore(c.indicators);
+      var grade = _ctyScoreToGrade(score, c.override);
+      return '<tr>' +
+        '<td style="padding:6px 8px;">' + c.code + '</td>' +
+        '<td style="padding:6px 8px;">' + c.nameKR + '</td>' +
+        '<td style="padding:6px 8px; text-align:center;">' + score + '</td>' +
+        '<td style="padding:6px 8px; text-align:center;">' + (c.override ? {high:'고위험',mid:'중위험',low:'저위험'}[c.override] : '-') + '</td>' +
+        '<td style="padding:6px 8px; text-align:center;">' + _ctyGradeBadge(grade) + '</td>' +
+      '</tr>';
+    }).join('');
+    document.getElementById('cty-upload-summary').textContent = '총 ' + _COUNTRY_DATA.length + '개국 포함 예정';
+    document.getElementById('cty-upload-submit-btn').disabled = false;
+  }
+
+  function _ctyUploadProceed() {
+    var reason = document.getElementById('cty-upload-reason').value.trim();
+    closeModal('modal-country-upload');
+    setTimeout(function() {
+      openOTPModal('국가위험 일괄 업로드', function() {
+        _COUNTRY_HISTORY.unshift({
+          id: 'CH-' + String(_COUNTRY_HISTORY.length + 1).padStart(3,'0'),
+          type: 'upload', code: '*', nameKR: '전체 업로드',
+          changeFrom: '-', changeTo: '신규 업로드',
+          reason: reason, changedAt: '2026-04-09', changedBy: '현재 관리자'
+        });
+        renderCountry();
+        showToast('일괄 업로드가 완료되었습니다.');
+      });
+    }, 200);
+  }
+
+  // ── FATF 제외국가
+  function openFATFExcluded() {
+    _renderFATFList();
+    var so = document.getElementById('country-fatf-so');
+    var bd = document.getElementById('country-fatf-backdrop');
+    if (so) so.classList.add('open');
+    if (bd) bd.classList.add('open');
+    var ai = document.getElementById('fatf-add-input'); if (ai) ai.value = '';
+    var ar = document.getElementById('fatf-add-reason'); if (ar) ar.value = '';
+    _fatfCheckAddBtn();
+  }
+
+  function closeFATFExcluded() {
+    var so = document.getElementById('country-fatf-so');
+    var bd = document.getElementById('country-fatf-backdrop');
+    if (so) so.classList.remove('open');
+    if (bd) bd.classList.remove('open');
+  }
+
+  function _fatfCheckAddBtn() {
+    var inp = (document.getElementById('fatf-add-input') || {value:''}).value.trim();
+    var rsn = (document.getElementById('fatf-add-reason') || {value:''}).value.trim();
+    var btn = document.getElementById('fatf-add-btn');
+    if (btn) btn.disabled = !(inp && rsn);
+  }
+
+  function _fatfAddExcluded() {
+    var inp = document.getElementById('fatf-add-input').value.trim();
+    var rsn = document.getElementById('fatf-add-reason').value.trim();
+    if (!inp || !rsn) return;
+    var c = _COUNTRY_DATA.find(function(x) { return x.code.toLowerCase() === inp.toLowerCase() || x.nameKR.includes(inp); });
+    if (!c) { showToast('해당 국가코드/국가명을 찾을 수 없습니다.'); return; }
+    if (_FATF_EXCLUDED.find(function(x) { return x.code === c.code; })) { showToast('이미 제외 목록에 있습니다.'); return; }
+    _FATF_EXCLUDED.push({ code: c.code, nameKR: c.nameKR, reason: rsn, addedAt: '2026-04-09', addedBy: '현재 관리자' });
+    document.getElementById('fatf-add-input').value = '';
+    document.getElementById('fatf-add-reason').value = '';
+    _fatfCheckAddBtn();
+    _renderFATFList();
+    showToast(c.nameKR + ' 제외국가로 추가되었습니다.');
+  }
+
+  function _fatfRemoveExcluded(code) {
+    _FATF_EXCLUDED = _FATF_EXCLUDED.filter(function(x) { return x.code !== code; });
+    _renderFATFList();
+    showToast('제외국가에서 삭제되었습니다.');
+  }
+
+  function _renderFATFList() {
+    var list = document.getElementById('fatf-exc-list');
+    var empty = document.getElementById('fatf-exc-empty');
+    var countEl = document.getElementById('fatf-exc-count');
+    if (countEl) countEl.textContent = _FATF_EXCLUDED.length;
+    if (!_FATF_EXCLUDED.length) {
+      if (list) list.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+    if (list) list.innerHTML = _FATF_EXCLUDED.map(function(x) {
+      return '<div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--bg-secondary); border-radius:6px;">' +
+        '<code style="background:white; padding:2px 6px; border-radius:4px; font-size:12px; border:1px solid var(--border);">' + x.code + '</code>' +
+        '<div style="flex:1;"><div style="font-size:13px; font-weight:600;">' + x.nameKR + '</div><div style="font-size:11.5px; color:var(--text-secondary);">' + x.reason + ' · ' + x.addedAt + '</div></div>' +
+        '<button class="btn btn-outline btn-sm" onclick="_fatfRemoveExcluded(\'' + x.code + '\')" style="font-size:11px; color:#EF4444; border-color:#EF4444;">삭제</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ── 변경 이력
+  function openCountryHistory() {
+    var hi = document.getElementById('cty-hist-search'); if (hi) hi.value = '';
+    var ht = document.getElementById('cty-hist-type'); if (ht) ht.value = '';
+    renderCountryHistory();
+    var so = document.getElementById('country-history-so');
+    var bd = document.getElementById('country-history-backdrop');
+    if (so) so.classList.add('open');
+    if (bd) bd.classList.add('open');
+  }
+
+  function closeCountryHistory() {
+    var so = document.getElementById('country-history-so');
+    var bd = document.getElementById('country-history-backdrop');
+    if (so) so.classList.remove('open');
+    if (bd) bd.classList.remove('open');
+  }
+
+  function renderCountryHistory() {
+    var search = (document.getElementById('cty-hist-search') || {value:''}).value.toLowerCase();
+    var typeF  = (document.getElementById('cty-hist-type') || {value:''}).value;
+    var filtered = _COUNTRY_HISTORY.filter(function(h) {
+      if (typeF && h.type !== typeF) return false;
+      if (search && !(h.code.toLowerCase().includes(search) || h.nameKR.includes(search))) return false;
+      return true;
+    });
+    var list  = document.getElementById('cty-history-list');
+    var empty = document.getElementById('cty-history-empty');
+    if (!filtered.length) {
+      if (list) list.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+    var typeMap = { edit: '개별 수정', upload: '일괄 업로드' };
+    if (list) list.innerHTML = filtered.map(function(h) {
+      return '<div style="padding:14px; background:var(--bg-secondary); border-radius:8px; border-left:3px solid var(--primary);">' +
+        '<div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">' +
+          '<span style="font-size:11px; background:var(--primary); color:white; padding:2px 7px; border-radius:10px;">' + (typeMap[h.type]||h.type) + '</span>' +
+          '<code style="font-size:12px;">' + h.code + '</code>' +
+          '<strong style="font-size:13px;">' + h.nameKR + '</strong>' +
+          '<span style="margin-left:auto; font-size:11.5px; color:var(--text-secondary);">' + h.changedAt + ' · ' + h.changedBy + '</span>' +
+        '</div>' +
+        '<div style="font-size:12.5px; color:var(--text-secondary); margin-bottom:4px;">' + h.changeFrom + ' &rarr; <strong style="color:var(--text-primary);">' + h.changeTo + '</strong></div>' +
+        '<div style="font-size:12px; color:var(--text-secondary);">' + h.reason + '</div>' +
+      '</div>';
+    }).join('');
   }
 
   function renderSTR() {
