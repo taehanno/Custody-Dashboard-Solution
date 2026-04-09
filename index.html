@@ -1128,7 +1128,7 @@
     </div>
     <div id="txdep-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; margin-top:4px;"></div>
   </div>
-  <div class="modal-footer">
+  <div class="modal-footer" id="txdep-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-tx-detail-dep')">닫기</button>
   </div>
 </div>
@@ -3091,90 +3091,123 @@
       <!-- ══════════════════════════
            PAGE: TRANSACTIONS
       ══════════════════════════ -->
+      <!-- ══════════════════════════
+           PAGE: TRANSACTIONS (12)
+      ══════════════════════════ -->
       <div class="page" id="page-transactions">
         <div class="page-header">
           <h1 class="page-title">Transactions</h1>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-            <input type="date" class="form-control" style="width:140px; padding:7px 10px; font-size:12px;" value="2025-01-01" />
-            <span style="font-size:12px; color:var(--text-secondary);">~</span>
-            <input type="date" class="form-control" style="width:140px; padding:7px 10px; font-size:12px;" value="2025-12-31" />
-            <button class="btn btn-outline btn-sm">&#8595; CSV</button>
+        </div>
+
+        <!-- 12-3: Stats cards -->
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:16px;">
+          <div class="card" style="padding:16px 20px;">
+            <div style="font-size:11px; color:#3B82F6; font-weight:600; margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px;">전체 거래</div>
+            <div id="txn-stat-total" style="font-size:24px; font-weight:700; color:#3B82F6;">0건</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">현재 필터 범위</div>
+          </div>
+          <div class="card" style="padding:16px 20px;">
+            <div style="font-size:11px; color:#10B981; font-weight:600; margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px;">총 입금</div>
+            <div id="txn-stat-dep" style="font-size:24px; font-weight:700; color:#10B981;">+₩0</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">완료 기준</div>
+          </div>
+          <div class="card" style="padding:16px 20px;">
+            <div style="font-size:11px; color:#EF4444; font-weight:600; margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px;">총 출금</div>
+            <div id="txn-stat-wd" style="font-size:24px; font-weight:700; color:#EF4444;">-₩0</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">완료 기준</div>
           </div>
         </div>
+
+        <!-- Main card -->
         <div class="card" style="padding:0;">
-          <div style="padding:14px 20px 0;">
-            <div class="tabs">
-              <div class="tab active" onclick="switchSimpleTab(this)">전체 All</div>
-              <div class="tab" onclick="switchSimpleTab(this)">입금 Deposit</div>
-              <div class="tab" onclick="switchSimpleTab(this)">출금 Withdrawal</div>
+          <!-- 12-4: Type tabs -->
+          <div style="padding:16px 20px 0;">
+            <div class="tabs" id="txn-tabs">
+              <div class="tab active" onclick="_txnSetType('all',this)">전체</div>
+              <div class="tab" onclick="_txnSetType('deposit',this)">입금</div>
+              <div class="tab" onclick="_txnSetType('withdrawal',this)">출금</div>
             </div>
           </div>
+
+          <!-- 12-5: Filter bar -->
+          <div class="hist-filter-bar" id="txn-filter-bar">
+            <select id="txn-wallet-filter" class="form-control" style="font-size:12px; padding:5px 8px; height:auto; max-width:140px;"
+              onchange="renderTransactions()">
+              <option value="">전체 지갑</option>
+              <option value="wallet1">운영 지갑 A</option>
+              <option value="wallet2">운영 지갑 B</option>
+              <option value="wallet3">예비 지갑 A</option>
+            </select>
+            <select id="txn-coin-filter" class="form-control" style="font-size:12px; padding:5px 8px; height:auto; max-width:110px;"
+              onchange="renderTransactions()">
+              <option value="">전체 코인</option>
+              <option>BTC</option><option>ETH</option><option>USDT</option>
+            </select>
+            <select id="txn-status-filter" class="form-control" style="font-size:12px; padding:5px 8px; height:auto; max-width:120px;"
+              onchange="renderTransactions()">
+              <option value="">전체 상태</option>
+              <option value="pending_sig">서명 대기</option>
+              <option value="processing">처리 중</option>
+              <option value="broadcasting">출금 중</option>
+              <option value="confirming">확인 중</option>
+              <option value="hold">보류</option>
+              <option value="completed">완료</option>
+              <option value="rejected">거절</option>
+            </select>
+            <!-- Date presets -->
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+              <button class="hist-type-tab" id="txn-p-today" onclick="_txnSetPreset('today',this)">오늘</button>
+              <button class="hist-type-tab active" id="txn-p-7d" onclick="_txnSetPreset('7d',this)">7일</button>
+              <button class="hist-type-tab" id="txn-p-30d" onclick="_txnSetPreset('30d',this)">30일</button>
+              <button class="hist-type-tab" id="txn-p-90d" onclick="_txnSetPreset('90d',this)">90일</button>
+              <button class="hist-type-tab" id="txn-p-custom" onclick="_txnSetPreset('custom',this)">직접입력</button>
+            </div>
+            <div id="txn-custom-dates" style="display:none; gap:4px; align-items:center; flex-wrap:wrap;">
+              <input type="date" id="txn-from" class="form-control"
+                style="font-size:12px; padding:4px 6px; height:auto; width:130px;" onchange="renderTransactions()">
+              <span style="font-size:11px; color:var(--text-secondary);">~</span>
+              <input type="date" id="txn-to" class="form-control"
+                style="font-size:12px; padding:4px 6px; height:auto; width:130px;" onchange="renderTransactions()">
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="_txnResetFilters()">초기화</button>
+            <button class="btn btn-outline btn-sm" id="txn-csv-btn" onclick="_txnCSV()">&#8595; CSV</button>
+          </div>
+
+          <!-- Active filter badges -->
+          <div id="txn-badges" style="padding:0 20px 10px; gap:6px; flex-wrap:wrap; display:none;"></div>
+
+          <!-- Table (12-6) -->
           <div class="table-wrap">
             <table>
-              <thead><tr><th>일시</th><th>유형</th><th>지갑</th><th>코인</th><th style="text-align:right;">수량</th><th>상태</th><th>TXID</th><th>상세</th></tr></thead>
-              <tbody>
+              <thead>
                 <tr>
-                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 14:32:08</td>
-                  <td><span class="badge badge-info">입금</span></td>
-                  <td style="font-size:12px;">BTC 보관 지갑</td>
-                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#10B981; width:22px; height:22px; font-size:10px;">U</div>USDT/TRON</div></td>
-                  <td style="text-align:right; font-weight:600; color:var(--success);">+1,000.00</td>
-                  <td><span class="badge badge-success">● 완료</span></td>
-                  <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xa1b2...f9e8</td>
-                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
+                  <th style="white-space:nowrap;">거래 일시</th>
+                  <th>지갑명</th>
+                  <th>유형</th>
+                  <th>코인</th>
+                  <th style="text-align:right;">수량</th>
+                  <th>상태</th>
                 </tr>
-                <tr>
-                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-19 09:15:44</td>
-                  <td><span class="badge badge-warning">출금</span></td>
-                  <td style="font-size:12px;">ETH 보관 지갑</td>
-                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#6366F1; width:22px; height:22px; font-size:10px;">E</div>ETH/ETH</div></td>
-                  <td style="text-align:right; font-weight:600; color:var(--danger);">-0.5000</td>
-                  <td><span class="badge badge-warning">⏳ 서명 대기</span></td>
-                  <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xd4e5...a2b1</td>
-                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                </tr>
-                <tr>
-                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-18 22:07:33</td>
-                  <td><span class="badge badge-info">입금</span></td>
-                  <td style="font-size:12px;">BTC 보관 지갑</td>
-                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#F97316; width:22px; height:22px; font-size:10px;">B</div>BTC/BTC</div></td>
-                  <td style="text-align:right; font-weight:600; color:var(--success);">+0.0250</td>
-                  <td><span class="badge badge-success">● 완료</span></td>
-                  <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
-                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                </tr>
-                <tr>
-                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-17 16:44:20</td>
-                  <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
-                  <td style="font-size:12px;">ETH 보관 지갑</td>
-                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#10B981; width:22px; height:22px; font-size:10px;">U</div>USDT/TRON</div></td>
-                  <td style="text-align:right; font-weight:600; color:var(--danger);">-200.00</td>
-                  <td><span class="badge badge-purple">🔄 처리 중</span></td>
-                  <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
-                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                </tr>
-                <tr>
-                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-16 11:22:05</td>
-                  <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
-                  <td style="font-size:12px;">BTC 보관 지갑</td>
-                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#F97316; width:22px; height:22px; font-size:10px;">B</div>BTC/BTC</div></td>
-                  <td style="text-align:right; font-weight:600; color:var(--danger);">-0.0050</td>
-                  <td><span class="badge badge-info">↗ 출금 중</span></td>
-                  <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xf1e2...c3b4</td>
-                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                </tr>
-                <tr>
-                  <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-15 08:55:30</td>
-                  <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
-                  <td style="font-size:12px;">ETH 보관 지갑</td>
-                  <td><div style="display:flex; align-items:center; gap:6px;"><div class="coin-circle" style="background:#6366F1; width:22px; height:22px; font-size:10px;">E</div>ETH/ETH</div></td>
-                  <td style="text-align:right; font-weight:600; color:var(--danger);">-1.0000</td>
-                  <td><span class="badge badge-danger">✕ 거절</span></td>
-                  <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
-                  <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                </tr>
-              </tbody>
+              </thead>
+              <tbody id="txn-tbody"></tbody>
             </table>
+          </div>
+
+          <!-- Load more (infinite scroll placeholder) -->
+          <div id="txn-load-more" style="display:none; text-align:center; padding:12px 20px;">
+            <button class="btn btn-outline btn-sm" style="width:100%;" onclick="_txnLoadMore()">더 보기</button>
+          </div>
+          <!-- Load-more error state -->
+          <div id="txn-load-err" style="display:none; text-align:center; padding:10px 20px; font-size:12px; color:var(--danger);">
+            더 불러오기 실패. <button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:var(--danger);" onclick="_txnLoadMore()">재시도</button>
+          </div>
+
+          <!-- 12-10: Empty states -->
+          <div id="txn-empty" style="display:none; padding:48px 20px; text-align:center; color:var(--text-secondary);">
+            <div style="font-size:36px; margin-bottom:12px;">📭</div>
+            <div id="txn-empty-msg" style="font-size:14px; font-weight:600; margin-bottom:6px;">해당 조건의 거래 내역이 없습니다.</div>
+            <div id="txn-empty-sub" style="font-size:12px; margin-bottom:14px; color:var(--text-secondary);"></div>
+            <button id="txn-empty-reset" class="btn btn-outline btn-sm" style="display:none;" onclick="_txnResetFilters()">필터 초기화</button>
           </div>
         </div>
       </div>
@@ -3804,6 +3837,9 @@
     if (subNavEl) subNavEl.classList.add('active');
 
     closeMobileSidebar();
+
+    // Page-specific init
+    if (pageId === 'transactions') renderTransactions();
   }
 
   function openWalletDetail(walletId) {
@@ -4182,30 +4218,35 @@
   ════════════════════════════════════ */
   const _HISTORY_DATA = [
     { id:'WD-001', type:'withdrawal', coin:'USDT', network:'Ethereum (ERC-20)',
+      walletId:'wallet1', walletName:'운영 지갑 A',
       amount:5000, amountKRW:6900000, fee:3.5, actualAmount:4996.5,
       status:'pending_sig', date:'2026-04-08 15:22:10',
       toAddr:'0x4d4bC4a1...C3E1', addrType:'외부 지갑', txid:null, memo:'운영비 지출',
       requester:'김철수',
       signers:[{name:'김철수',done:true,at:'2026-04-08 15:24'},{name:'이영희',done:false,at:null},{name:'박민준',done:false,at:null}] },
     { id:'WD-002', type:'withdrawal', coin:'ETH', network:'Ethereum Mainnet',
+      walletId:'wallet1', walletName:'운영 지갑 A',
       amount:0.5, amountKRW:2600000, fee:0.002, actualAmount:0.498,
       status:'processing', date:'2026-04-07 10:22:33',
       toAddr:'0x9a1b2c3d...E5F6', addrType:'내부 지갑', txid:null, memo:'',
       requester:'김철수',
       signers:[{name:'김철수',done:true,at:'2026-04-07 10:25'},{name:'이영희',done:true,at:'2026-04-07 10:28'},{name:'박민준',done:true,at:'2026-04-07 10:31'}] },
     { id:'WD-003', type:'withdrawal', coin:'BTC', network:'Bitcoin Mainnet',
+      walletId:'wallet2', walletName:'운영 지갑 B',
       amount:0.005, amountKRW:700000, fee:0.00005, actualAmount:0.00495,
       status:'broadcasting', date:'2026-04-06 14:10:05',
       toAddr:'bc1q7xyz...9abc', addrType:'외부 지갑', txid:'0xf1e2d3c4...b5a6', memo:'',
       requester:'이영희',
       signers:[{name:'김철수',done:true,at:'2026-04-06 14:12'},{name:'이영희',done:true,at:'2026-04-06 14:15'},{name:'박민준',done:true,at:'2026-04-06 14:18'}] },
     { id:'WD-004', type:'withdrawal', coin:'USDT', network:'Ethereum (ERC-20)',
+      walletId:'wallet1', walletName:'운영 지갑 A',
       amount:200, amountKRW:276000, fee:2.1, actualAmount:197.9,
       status:'completed', date:'2026-04-04 09:30:00',
       toAddr:'0x3f4e5a6b...A1B2', addrType:'Whitelist 주소', txid:'0x3f4e5a6b...a1b2', memo:'파트너 정산',
       requester:'김철수',
       signers:[{name:'김철수',done:true,at:'2026-04-04 09:33'},{name:'이영희',done:true,at:'2026-04-04 09:36'},{name:'박민준',done:true,at:'2026-04-04 09:40'}] },
     { id:'WD-005', type:'withdrawal', coin:'ETH', network:'Ethereum Mainnet',
+      walletId:'wallet2', walletName:'운영 지갑 B',
       amount:1.0, amountKRW:5200000, fee:0.003, actualAmount:0.997,
       status:'rejected', date:'2026-04-03 09:00:00',
       toAddr:'0xUnkown1...F2F3', addrType:'미등록 주소', txid:null, memo:'',
@@ -4214,27 +4255,32 @@
       rejectNote:'수신 주소가 Whitelist에 등록되지 않은 주소입니다. 확인 후 재신청해주세요.',
       rejectBy:'박민준', rejectAt:'2026-04-03 09:18' },
     { id:'DEP-001', type:'deposit', coin:'USDT', network:'TRC20',
+      walletId:'wallet1', walletName:'운영 지갑 A',
       amount:1000, amountKRW:1380000,
       status:'completed', date:'2026-04-05 14:32:08',
       fromAddr:'TQnR7x...8Kjm', addrType:'외부 지갑', txid:'0xa1b2c3d4...f9e8',
       blockConfirm:'6 / 6', holdReasons:[] },
     { id:'DEP-002', type:'deposit', coin:'ETH', network:'Ethereum Mainnet',
+      walletId:'wallet2', walletName:'운영 지갑 B',
       amount:2.0, amountKRW:10400000,
       status:'hold', date:'2026-04-02 22:07:33',
       fromAddr:'0xAbCd...1234', addrType:'미등록 주소', txid:'0xd4e5f6...7a8b',
       blockConfirm:'12 / 12',
       holdReasons:['송신 주소가 Travel Rule 화이트리스트에 등록되지 않았습니다.','거래 금액이 임계값(₩10,000,000)을 초과합니다.'] },
     { id:'DEP-003', type:'deposit', coin:'BTC', network:'Bitcoin Mainnet',
+      walletId:'wallet3', walletName:'예비 지갑 A',
       amount:0.025, amountKRW:3500000,
       status:'completed', date:'2026-03-30 18:22:05',
       fromAddr:'bc1qXyz...5678', addrType:'내부 지갑', txid:'0xb5c6d7e8...f1a2',
       blockConfirm:'6 / 6', holdReasons:[] },
     { id:'DEP-004', type:'deposit', coin:'USDT', network:'Ethereum (ERC-20)',
+      walletId:'wallet1', walletName:'운영 지갑 A',
       amount:50000, amountKRW:69000000,
       status:'confirming', date:'2026-04-09 08:15:00',
       fromAddr:'0x7fGh...9012', addrType:'외부 지갑', txid:'0xc7d8e9f0...2b3c',
       blockConfirm:'2 / 12', holdReasons:[] },
     { id:'DEP-005', type:'deposit', coin:'ETH', network:'Ethereum Mainnet',
+      walletId:'wallet2', walletName:'운영 지갑 B',
       amount:5.0, amountKRW:26000000,
       status:'rejected', date:'2026-03-25 10:05:00',
       fromAddr:'0xSanctioned...ADDR', addrType:'제재 주소', txid:'0xe8f9a0b1...3c4d',
@@ -4565,11 +4611,15 @@
       noteEl.textContent = '블록체인 확인 중 — 처리 완료 대기';
     } else { noteEl.style.display = 'none'; }
     // Footer buttons
+    const _txnNavBtn = _txnOpenedFrom === 'transactions'
+      ? `<button class="btn btn-outline btn-sm" style="margin-right:auto; font-size:12px;" onclick="_txnGoToWalletHistory('${h.id}')">지갑 History &#8599;</button>`
+      : '';
     if (h.status === 'pending_sig') {
-      footer.innerHTML = `<button class="btn btn-outline btn-danger" style="flex:1;" onclick="closeModal('modal-tx-detail-wd'); setTimeout(()=>openWorkflowRejectOTP(),100)">거절하기</button>
+      footer.innerHTML = `${_txnNavBtn}
+        <button class="btn btn-outline btn-danger" style="flex:1;" onclick="closeModal('modal-tx-detail-wd'); setTimeout(()=>openWorkflowRejectOTP(),100)">거절하기</button>
         <button class="btn btn-primary" onclick="closeModal('modal-tx-detail-wd'); setTimeout(()=>openSO('so-workflow-sign'),100)">서명하기</button>`;
     } else {
-      footer.innerHTML = `<button class="btn btn-outline" onclick="closeModal('modal-tx-detail-wd')">닫기</button>`;
+      footer.innerHTML = `${_txnNavBtn}<button class="btn btn-outline" onclick="closeModal('modal-tx-detail-wd')">닫기</button>`;
     }
     openModal('modal-tx-detail-wd');
   }
@@ -4611,6 +4661,14 @@
       noteEl.style.cssText = 'display:block; padding:10px 12px; border-radius:6px; font-size:12px; background:#FEF2F2; color:#991B1B;';
       noteEl.innerHTML = `<div style="font-weight:600; margin-bottom:4px;">거절 일시: ${h.rejectAt || '—'}</div><div>${h.rejectNote}</div>`;
     } else { noteEl.style.display = 'none'; }
+    // Footer — add navigation button when opened from Transactions page
+    const depFooter = document.getElementById('txdep-footer');
+    if (depFooter) {
+      const _depNavBtn = _txnOpenedFrom === 'transactions'
+        ? `<button class="btn btn-outline btn-sm" style="margin-right:auto; font-size:12px;" onclick="_txnGoToWalletHistory('${h.id}')">지갑 History &#8599;</button>`
+        : '';
+      depFooter.innerHTML = `${_depNavBtn}<button class="btn btn-outline" onclick="closeModal('modal-tx-detail-dep')">닫기</button>`;
+    }
     openModal('modal-tx-detail-dep');
   }
 
@@ -4891,6 +4949,314 @@
     renderHoldBanners();
     _updateTodoBadges();
     showToast('모든 거절 건 확인 완료.');
+  }
+
+  /* ════════════════════════════════════════════════════════
+     12. TRANSACTIONS PAGE
+  ════════════════════════════════════════════════════════ */
+  var _txnType    = 'all';   // 'all' | 'deposit' | 'withdrawal'
+  var _txnPreset  = '7d';    // 'today' | '7d' | '30d' | '90d' | 'custom'
+  var _txnPage    = 1;       // pages loaded (20 per page)
+  var _txnOpenedFrom = null; // 'transactions' — set before opening detail modal
+
+  const _TXN_PAGE_SIZE = 20;
+
+  /* ─ date range helper (uses 2026-04-09 as demo "now") */
+  function _txnGetDateRange() {
+    const now = new Date('2026-04-09T23:59:59');
+    if (_txnPreset === 'custom') {
+      const fromV = (document.getElementById('txn-from') || {}).value || '';
+      const toV   = (document.getElementById('txn-to')   || {}).value || '';
+      return {
+        from: fromV ? new Date(fromV)             : new Date('2000-01-01'),
+        to:   toV   ? new Date(toV + 'T23:59:59') : new Date('2099-12-31')
+      };
+    }
+    const days = { today:0, '7d':7, '30d':30, '90d':90 }[_txnPreset] ?? 7;
+    const from = new Date(now); from.setDate(from.getDate() - days);
+    from.setHours(0,0,0,0);
+    return { from, to: new Date('2099-12-31') };
+  }
+
+  /* ─ filtered data */
+  function _txnGetFiltered() {
+    const walletF = (document.getElementById('txn-wallet-filter') || {}).value || '';
+    const coinF   = (document.getElementById('txn-coin-filter')   || {}).value || '';
+    const statusF = (document.getElementById('txn-status-filter') || {}).value || '';
+    const { from, to } = _txnGetDateRange();
+
+    return _HISTORY_DATA.filter(h => {
+      if (_txnType !== 'all' && h.type !== _txnType) return false;
+      if (walletF && h.walletId !== walletF) return false;
+      if (coinF   && h.coin !== coinF) return false;
+      if (statusF && h.status !== statusF) return false;
+      const d = new Date(h.date);
+      if (d < from || d > to) return false;
+      return true;
+    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  /* ─ stat cards (12-3) */
+  function _txnUpdateStats(data) {
+    const totalEl = document.getElementById('txn-stat-total');
+    const depEl   = document.getElementById('txn-stat-dep');
+    const wdEl    = document.getElementById('txn-stat-wd');
+    if (!totalEl) return;
+
+    const depSum = data.filter(h => h.type === 'deposit'    && h.status === 'completed')
+                       .reduce((s, h) => s + (h.amountKRW || 0), 0);
+    const wdSum  = data.filter(h => h.type === 'withdrawal' && h.status === 'completed')
+                       .reduce((s, h) => s + (h.amountKRW || 0), 0);
+
+    totalEl.textContent = data.length + '건';
+    depEl.textContent   = '+₩' + depSum.toLocaleString();
+    wdEl.textContent    = '-₩' + wdSum.toLocaleString();
+  }
+
+  /* ─ coin color/symbol helpers (reuse existing maps) */
+  function _txnCoinColor(coin) {
+    return { BTC:'#F97316', ETH:'#627EEA', USDT:'#10B981' }[coin] || '#94A3B8';
+  }
+  function _txnCoinSym(coin) {
+    return { BTC:'B', ETH:'E', USDT:'U' }[coin] || coin[0];
+  }
+
+  /* ─ render rows */
+  function _txnRenderRows(data, append) {
+    const tbody = document.getElementById('txn-tbody');
+    if (!tbody) return;
+
+    const start = append ? ((_txnPage - 1) * _TXN_PAGE_SIZE) : 0;
+    const slice = data.slice(start, start + _TXN_PAGE_SIZE);
+
+    const html = slice.map(h => {
+      const isWd  = h.type === 'withdrawal';
+      const amtSign = isWd ? '-' : '+';
+      const amtColor = isWd ? 'var(--danger)' : 'var(--success)';
+      const holdNote = (!isWd && h.status === 'hold')
+        ? ' <span style="color:#F97316; font-size:10px;">(보류)</span>' : '';
+      const coinSym   = _txnCoinSym(h.coin);
+      const coinColor = _txnCoinColor(h.coin);
+      const dateShort = h.date.replace('T',' ').slice(0,16);
+      const [datePart, timePart] = dateShort.split(' ');
+      const typeBadge = isWd
+        ? '<span class="badge" style="background:#FEF2F2; color:#EF4444; border:1px solid #FECACA;">출금</span>'
+        : '<span class="badge" style="background:#EFF6FF; color:#3B82F6; border:1px solid #BFDBFE;">입금</span>';
+
+      return `
+        <tr style="cursor:pointer;" onclick="openTxDetailFromTxn('${h.id}')">
+          <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap; line-height:1.6;">
+            ${datePart}<br><span style="font-size:10px;">${timePart}</span>
+          </td>
+          <td style="font-size:12px;">
+            <span style="cursor:pointer; color:var(--primary); text-decoration:underline;"
+              onclick="event.stopPropagation(); _txnOpenWallet('${h.walletId || 'wallet1'}')">${h.walletName || '—'}</span>
+          </td>
+          <td>${typeBadge}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div class="coin-circle" style="background:${coinColor}; width:22px; height:22px; font-size:10px; flex-shrink:0;">${coinSym}</div>
+              <span style="font-size:12px;">${h.coin}<br><span style="font-size:10px; color:var(--text-secondary);">${h.network}</span></span>
+            </div>
+          </td>
+          <td style="text-align:right; font-weight:600; color:${amtColor}; white-space:nowrap; line-height:1.6;">
+            ${amtSign}${h.amount.toLocaleString(undefined,{maximumFractionDigits:8})} ${h.coin}${holdNote}<br>
+            <span style="font-size:10px; color:var(--text-secondary);">${amtSign}₩${(h.amountKRW||0).toLocaleString()}</span>
+          </td>
+          <td>${_histStatusBadge(h.type, h.status)}</td>
+        </tr>`;
+    }).join('');
+
+    if (append) {
+      tbody.insertAdjacentHTML('beforeend', html);
+    } else {
+      tbody.innerHTML = html;
+    }
+  }
+
+  /* ─ main render */
+  function renderTransactions() {
+    _txnPage = 1;
+    _txnOpenedFrom = null;
+    const data = _txnGetFiltered();
+
+    _txnUpdateStats(data);
+    _txnUpdateBadges();
+
+    const empty = document.getElementById('txn-empty');
+    const tbody = document.getElementById('txn-tbody');
+    const loadMore = document.getElementById('txn-load-more');
+    const loadErr  = document.getElementById('txn-load-err');
+    if (!empty || !tbody) return;
+
+    if (loadErr) loadErr.style.display = 'none';
+
+    if (data.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      if (loadMore) loadMore.style.display = 'none';
+
+      const walletF = (document.getElementById('txn-wallet-filter') || {}).value || '';
+      const coinF   = (document.getElementById('txn-coin-filter')   || {}).value || '';
+      const statusF = (document.getElementById('txn-status-filter') || {}).value || '';
+      const hasFilter = walletF || coinF || statusF || _txnPreset !== '90d';
+
+      document.getElementById('txn-empty-msg').textContent = hasFilter
+        ? '해당 조건의 거래 내역이 없습니다.'
+        : '아직 거래 내역이 없습니다.';
+      document.getElementById('txn-empty-sub').textContent = hasFilter
+        ? '필터를 변경하거나 초기화해보세요.' : '';
+      const resetBtn = document.getElementById('txn-empty-reset');
+      if (resetBtn) resetBtn.style.display = hasFilter ? '' : 'none';
+    } else {
+      empty.style.display = 'none';
+      _txnRenderRows(data, false);
+      if (loadMore) loadMore.style.display = data.length > _TXN_PAGE_SIZE ? '' : 'none';
+    }
+  }
+
+  /* ─ load more (infinite scroll) */
+  function _txnLoadMore() {
+    _txnPage++;
+    const data = _txnGetFiltered();
+    _txnRenderRows(data, true);
+    const loadMore = document.getElementById('txn-load-more');
+    if (loadMore) loadMore.style.display = data.length > _txnPage * _TXN_PAGE_SIZE ? '' : 'none';
+  }
+
+  /* ─ type tab switch (12-4) */
+  function _txnSetType(type, el) {
+    _txnType = type;
+    document.querySelectorAll('#txn-tabs .tab').forEach(t => t.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderTransactions();
+  }
+
+  /* ─ date preset (12-5) */
+  function _txnSetPreset(preset, el) {
+    _txnPreset = preset;
+    document.querySelectorAll('[id^="txn-p-"]').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    const customDiv = document.getElementById('txn-custom-dates');
+    if (customDiv) customDiv.style.display = preset === 'custom' ? 'flex' : 'none';
+    renderTransactions();
+  }
+
+  /* ─ reset filters (12-5) */
+  function _txnResetFilters() {
+    _txnType   = 'all';
+    _txnPreset = '7d';
+    const walletSel = document.getElementById('txn-wallet-filter');
+    const coinSel   = document.getElementById('txn-coin-filter');
+    const statusSel = document.getElementById('txn-status-filter');
+    if (walletSel) walletSel.value = '';
+    if (coinSel)   coinSel.value   = '';
+    if (statusSel) statusSel.value = '';
+    document.querySelectorAll('#txn-tabs .tab').forEach((t,i) => t.classList.toggle('active', i===0));
+    document.querySelectorAll('[id^="txn-p-"]').forEach(b => b.classList.remove('active'));
+    const p7 = document.getElementById('txn-p-7d');
+    if (p7) p7.classList.add('active');
+    const customDiv = document.getElementById('txn-custom-dates');
+    if (customDiv) customDiv.style.display = 'none';
+    renderTransactions();
+  }
+
+  /* ─ active filter badges (12-5) */
+  function _txnUpdateBadges() {
+    const badgesEl = document.getElementById('txn-badges');
+    if (!badgesEl) return;
+
+    const walletSel = document.getElementById('txn-wallet-filter');
+    const coinSel   = document.getElementById('txn-coin-filter');
+    const statusSel = document.getElementById('txn-status-filter');
+    const walletV   = walletSel ? walletSel.value : '';
+    const coinV     = coinSel   ? coinSel.value   : '';
+    const statusV   = statusSel ? statusSel.value : '';
+
+    const statusLabels = { pending_sig:'서명 대기', processing:'처리 중', broadcasting:'출금 중',
+      confirming:'확인 중', hold:'보류', completed:'완료', rejected:'거절' };
+    const walletLabels = { wallet1:'운영 지갑 A', wallet2:'운영 지갑 B', wallet3:'예비 지갑 A' };
+
+    const badges = [];
+    if (walletV) badges.push([`지갑: ${walletLabels[walletV]||walletV}`, () => { if(walletSel) walletSel.value=''; renderTransactions(); }]);
+    if (coinV)   badges.push([`코인: ${coinV}`,    () => { if(coinSel)   coinSel.value='';   renderTransactions(); }]);
+    if (statusV) badges.push([`상태: ${statusLabels[statusV]||statusV}`, () => { if(statusSel) statusSel.value=''; renderTransactions(); }]);
+    if (_txnType !== 'all') badges.push([_txnType==='deposit'?'입금':'출금', () => { _txnSetType('all', document.querySelector('#txn-tabs .tab')); }]);
+
+    if (badges.length === 0) {
+      badgesEl.style.display = 'none';
+      return;
+    }
+    badgesEl.style.display = 'flex';
+    badgesEl.innerHTML = badges.map((b,i) =>
+      `<span style="display:inline-flex; align-items:center; gap:4px; background:#EFF6FF; color:#1D4ED8;
+        border:1px solid #BFDBFE; border-radius:20px; padding:3px 10px; font-size:11px; cursor:pointer;"
+        onclick="_txnBadgeClear(${i})">
+        ${b[0]} <span style="font-size:10px; opacity:.7;">✕</span>
+      </span>`).join('');
+
+    // store callbacks on element for badge clear
+    badgesEl._txnBadgeCbs = badges.map(b => b[1]);
+  }
+  function _txnBadgeClear(i) {
+    const el = document.getElementById('txn-badges');
+    if (el && el._txnBadgeCbs && el._txnBadgeCbs[i]) el._txnBadgeCbs[i]();
+  }
+
+  /* ─ open detail from Transactions (sets context flag) */
+  function openTxDetailFromTxn(id) {
+    _txnOpenedFrom = 'transactions';
+    openTxDetail(id);
+  }
+
+  /* ─ navigate to wallet History from modal */
+  function _txnGoToWalletHistory(id) {
+    const h = _HISTORY_DATA.find(d => d.id === id);
+    closeModal('modal-tx-detail-wd');
+    closeModal('modal-tx-detail-dep');
+    closeModal('modal-tx-hold-view');
+    const wId = (h && h.walletId) ? h.walletId : 'wallet1';
+    openWalletDetail(wId);
+    setTimeout(() => {
+      const histTab = document.querySelector('#walletDetailTabs .tab:nth-child(2)');
+      if (histTab) switchDetailTab(histTab, 'history');
+    }, 350);
+  }
+
+  /* ─ navigate to wallet detail (wallet name click) */
+  function _txnOpenWallet(walletId) {
+    openWalletDetail(walletId);
+  }
+
+  /* ─ CSV download (12-9) */
+  function _txnCSV() {
+    const data = _txnGetFiltered();
+    if (data.length > 10000) {
+      showToast('조회 결과가 너무 많습니다. 날짜 범위를 좁혀주세요.');
+      const btn = document.getElementById('txn-csv-btn');
+      if (btn) { btn.disabled = true; setTimeout(() => btn.disabled = false, 3000); }
+      return;
+    }
+    const headers = ['거래 일시','지갑명','지갑 ID','유형','코인','네트워크','수량','원화 환산 금액','상태','신청 ID','TXID','송신/수신 주소','메모'];
+    const rows = data.map(h => {
+      const addr = h.type === 'withdrawal' ? (h.toAddr||'') : (h.fromAddr||'');
+      const id_  = h.type === 'withdrawal' ? h.id : '';
+      return [
+        h.date, h.walletName||'', h.walletId||'',
+        h.type === 'withdrawal' ? '출금' : '입금',
+        h.coin, h.network,
+        h.amount.toFixed(8), h.amountKRW||0,
+        h.status, id_, h.txid||'', addr, h.memo||''
+      ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+    });
+    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `transactions_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    showToast('CSV 다운로드 완료', 'success');
   }
 
   function _nowTs() {
