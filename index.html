@@ -315,6 +315,29 @@
     .coin-name-row { display: flex; align-items: center; gap: 8px; }
     .coin-name-text { font-size: 13px; font-weight: 600; }
     .coin-network-text { font-size: 11px; color: var(--text-secondary); }
+    /* ══════════════════════════
+       4-9: 입금 보류 정책
+    ══════════════════════════ */
+    .hold-banner { display:flex; align-items:flex-start; gap:12px; padding:13px 16px; border-radius:8px; margin-bottom:10px; font-size:13px; background:#FFF7ED; border:1px solid #F97316; color:#92400E; }
+    .hold-banner-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+    .hold-banner-body { flex:1; min-width:0; }
+    .hold-banner-title { font-weight:700; margin-bottom:4px; }
+    .hold-banner-meta { font-size:12px; color:#B45309; line-height:1.6; }
+    .hold-banner-actions { display:flex; gap:8px; margin-top:8px; }
+    .hold-banner-reject { background:#FEF2F2; border-color:#FECACA; color:#991B1B; }
+    .hold-banner-reject .hold-banner-meta { color:#B91C1C; }
+    .hold-todo-row { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .hold-ack-btn { padding:3px 10px; border-radius:6px; border:1px solid #FECACA; background:#FEF2F2; color:#991B1B; font-size:11px; font-weight:600; cursor:pointer; }
+    .hold-ack-btn:hover { background:#FEE2E2; }
+    /* 4-9-1 판단 기준 패널 */
+    .hold-policy-details { border:1px solid var(--border); border-radius:8px; margin-bottom:12px; overflow:hidden; }
+    .hold-policy-details summary { padding:10px 14px; cursor:pointer; font-size:12px; font-weight:600; color:var(--text-secondary); background:#F8FAFC; user-select:none; list-style:none; display:flex; align-items:center; gap:6px; }
+    .hold-policy-details summary::before { content:'▶'; font-size:9px; transition:transform 0.2s; }
+    .hold-policy-details[open] summary::before { transform:rotate(90deg); }
+    .hold-policy-body { padding:12px 14px; font-size:12px; line-height:1.8; background:#fff; }
+    .hold-policy-tree { font-family:monospace; font-size:12px; line-height:2; }
+    .hold-policy-pass { color:var(--success); font-weight:600; }
+    .hold-policy-warn { color:#F97316; font-weight:600; }
     /* History tab */
     .hist-filter-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px 20px; border-bottom:1px solid var(--border); }
     .hist-type-tabs { display:flex; gap:4px; }
@@ -1105,11 +1128,14 @@
     </div>
     <div id="txdep-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; margin-top:4px;"></div>
   </div>
-  <div class="modal-footer">
-    <div id="txdep-hold-btn-wrap" style="display:none; flex:1;">
-      <button class="btn btn-warning btn-sm" onclick="openTxHoldDetail()">&#9888; 보류 상세 보기</button>
+  <div class="modal-footer" id="txdep-footer">
+    <!-- 4-9: 승인/거절 버튼 (보류 상태일 때만 표시) -->
+    <div id="txdep-approve-btns" style="display:none; gap:8px; flex:1;">
+      <button class="btn btn-outline btn-sm" onclick="openTxHoldDetail()" style="flex-shrink:0;">보류 사유</button>
+      <button class="btn btn-danger btn-sm" onclick="openHoldRejectModal()" style="flex:1;">&#10005; 거절</button>
+      <button class="btn btn-success btn-sm" onclick="approveHold()" style="flex:1;">&#10003; 승인</button>
     </div>
-    <button class="btn btn-outline" onclick="closeModal('modal-tx-detail-dep')">닫기</button>
+    <button class="btn btn-outline" id="txdep-close-btn" onclick="closeModal('modal-tx-detail-dep')">닫기</button>
   </div>
 </div>
 
@@ -1130,8 +1156,51 @@
       &#9888; 해당 입금은 잔액에 반영되지 않습니다. 관리자 검토 후 처리됩니다.
     </div>
   </div>
-  <div class="modal-footer">
+  <div class="modal-footer" id="hold-modal-footer">
+    <div id="hold-approve-btns" style="display:none; gap:8px; flex:1;">
+      <button class="btn btn-danger btn-sm" onclick="openHoldRejectModal()" style="flex:1;">&#10005; 거절</button>
+      <button class="btn btn-success btn-sm" onclick="approveHold()" style="flex:1;">&#10003; 승인</button>
+    </div>
     <button class="btn btn-outline" onclick="closeModal('modal-tx-detail-hold')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 입금 보류 거절 사유 (4-9-4)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-hold-reject" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">&#10005; 입금 보류 거절</span>
+    <button class="modal-close" onclick="closeModal('modal-hold-reject')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#991B1B;">
+      &#9888; 거절 시 해당 입금은 영구적으로 잔액에 반영되지 않습니다.
+    </div>
+    <div class="form-group">
+      <label class="form-label">거절 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea id="hold-reject-reason" class="form-control" rows="3" maxlength="200"
+        placeholder="거절 사유를 입력하세요 (최대 200자)"
+        oninput="document.getElementById('hold-reject-char').textContent=this.value.length"></textarea>
+      <div style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:4px;">
+        <span id="hold-reject-char">0</span>/200
+      </div>
+    </div>
+    <!-- Inline OTP -->
+    <div class="form-group" style="margin-top:12px;">
+      <label class="form-label">OTP 인증</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="hold-reject-otp" class="form-control" inputmode="numeric" maxlength="6"
+          placeholder="6자리 코드" style="letter-spacing:4px; font-size:16px; text-align:center; width:140px;" />
+        <div style="flex:1; font-size:12px; color:var(--text-secondary); display:flex; align-items:center;">
+          거절 처리를 위해 OTP 인증이 필요합니다.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-hold-reject')">취소</button>
+    <button class="btn btn-danger" onclick="submitHoldReject()">&#10005; 거절 확정</button>
   </div>
 </div>
 
@@ -2601,6 +2670,8 @@
         <div class="kyb-banner kyb-banner-warning">
           &#9888; KYB 갱신이 38일 후(2026-05-15) 만료됩니다. 담당자에게 갱신을 요청하세요.
         </div>
+        <!-- 4-9-2/4: 입금 보류·거절 배너 (동적 렌더링) -->
+        <div id="hold-banners"></div>
         <div class="dashboard-grid">
           <!-- Company Info -->
           <div class="card">
@@ -2660,10 +2731,25 @@
               <span class="todo-count zero" id="todo-coin-rejected" style="cursor:pointer;"
                 onclick="gotoRejectedCoins()">0</span>
             </div>
-            <div class="todo-item" style="border-bottom:none;">
+            <div class="todo-item">
               <span class="todo-label">지갑 삭제 요청 반려</span>
               <span class="todo-count zero" id="todo-wallet-del-rejected" style="cursor:pointer;"
                 onclick="gotoWalletDelRejected()">0</span>
+            </div>
+            <!-- 4-9-6: 입금 보류 to-do rows -->
+            <div class="todo-item" id="todo-hold-pending-row">
+              <span class="todo-label">&#9888; 입금 보류 처리 대기</span>
+              <span class="todo-count zero" id="todo-hold-pending" style="cursor:pointer; background:#F97316 !important; color:#fff;"
+                onclick="showPage('wallet',document.getElementById('nav-wallet'))">0</span>
+            </div>
+            <div class="todo-item" id="todo-hold-rejected-row" style="display:none; border-bottom:none;">
+              <div class="hold-todo-row">
+                <span class="todo-label" style="color:var(--danger);">&#10005; 입금 거절됨 (미확인)</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="todo-count zero" id="todo-hold-rejected" style="background:var(--danger) !important; color:#fff;">0</span>
+                  <button class="hold-ack-btn" onclick="ackAllHoldRejects()">확인 완료</button>
+                </div>
+              </div>
             </div>
             <span class="stat-link" style="margin-top:4px;" onclick="showPage('workflows', document.getElementById('nav-workflows'))">Workflows 바로가기 →</span>
           </div>
@@ -2794,12 +2880,33 @@
 
           <!-- ─── COINS TAB (4-5) ─── -->
           <div id="detail-coins">
-            <div style="padding:12px 20px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border);">
+            <div style="padding:12px 20px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); flex-wrap:wrap;">
               <span class="role-tip-wrap" id="wrap-coins-tab-add">
                 <button class="btn btn-primary btn-sm" id="btn-coins-tab-add" onclick="openAddCoin()">+ 코인 추가</button>
                 <span class="role-tip">Master 계정만 사용 가능합니다.</span>
               </span>
             </div>
+            <!-- 4-9-1: 입금 보류 판단 기준 (collapsible) -->
+            <div style="padding:12px 20px 0;">
+              <details class="hold-policy-details">
+                <summary>&#128274; 입금 보류 판단 기준 안내</summary>
+                <div class="hold-policy-body">
+                  <div class="hold-policy-tree">
+<pre style="margin:0; font-size:12px; line-height:1.9;">입금 감지
+  ├─ Whitelist 등록 주소           →  <span class="hold-policy-pass">즉시 완료</span>
+  ├─ Travel Rule (CODE) 검증 완료  →  <span class="hold-policy-pass">즉시 완료</span>
+  ├─ 내부 지갑 주소                →  <span class="hold-policy-pass">즉시 완료</span>
+  └─ 신규 미등록 주소              →  <span class="hold-policy-warn">자동 보류</span></pre>
+                  </div>
+                  <div style="margin-top:10px; font-size:11px; color:var(--text-secondary); line-height:1.7;">
+                    &#9888; 보류된 입금은 <strong>잔액에 반영되지 않습니다.</strong><br>
+                    Master 계정이 승인하면 즉시 잔액에 반영되며, 거절 시 영구 미반영 처리됩니다.
+                  </div>
+                </div>
+              </details>
+            </div>
+            <!-- 입금 보류 배너 (wallet-specific) -->
+            <div id="wallet-hold-banners" style="padding:12px 20px 0;"></div>
             <!-- Active coins table: 8 cols -->
             <div class="table-wrap" id="coins-active-wrap" style="overflow-x:auto;">
               <table>
@@ -3734,6 +3841,7 @@
     document.getElementById('detail-actlog').style.display  = 'none';
 
     renderCoinsTab();
+    renderHoldBanners();
     showPage('wallet-detail', document.getElementById('nav-wallet'));
   }
 
@@ -4450,6 +4558,7 @@
 
   function _openTxDetailDep(h) {
     _histTxId = h.id;
+    _holdCurrentId = h.status === 'hold' ? h.id : null;
     document.getElementById('txdep-status').innerHTML = _histStatusBadge('deposit', h.status);
     document.getElementById('txdep-coin').textContent = h.coin + ' — ' + h.network;
     document.getElementById('txdep-amount').textContent = h.amount.toLocaleString() + ' ' + h.coin;
@@ -4468,9 +4577,8 @@
     } else { txEl.textContent = '—'; }
     document.getElementById('txdep-confirm').textContent = h.blockConfirm || '—';
     document.getElementById('txdep-date').textContent = h.date;
-    // Hold section
+    // Hold reasons section
     const holdSection = document.getElementById('txdep-hold-section');
-    const holdBtn     = document.getElementById('txdep-hold-btn-wrap');
     const holdReasons = document.getElementById('txdep-hold-reasons');
     if (h.holdReasons && h.holdReasons.length) {
       holdSection.style.display = 'block';
@@ -4478,28 +4586,36 @@
         `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; font-size:13px;">
            <span style="color:var(--warning);">&#9888;</span><span>${r}</span>
          </div>`).join('');
-      holdBtn.style.display = 'block';
-    } else {
-      holdSection.style.display = 'none';
-      holdBtn.style.display = 'none';
-    }
+    } else { holdSection.style.display = 'none'; }
     // Note
     const noteEl = document.getElementById('txdep-note');
     if (h.status === 'rejected' && h.rejectNote) {
       noteEl.style.cssText = 'display:block; padding:10px 12px; border-radius:6px; font-size:12px; background:#FEF2F2; color:#991B1B;';
       noteEl.innerHTML = `<div style="font-weight:600; margin-bottom:4px;">거절 일시: ${h.rejectAt || '—'}</div><div>${h.rejectNote}</div>`;
+    } else if (h.status === 'hold') {
+      noteEl.style.cssText = 'display:block; padding:10px 12px; border-radius:6px; font-size:12px; background:#FFF7ED; color:#92400E;';
+      noteEl.innerHTML = '&#9888; 보류 중인 입금은 <strong>잔액에 반영되지 않습니다.</strong> 승인 또는 거절 처리가 필요합니다.';
     } else { noteEl.style.display = 'none'; }
+    // 4-9: Footer — approve/reject for hold, close only for others
+    const approveBtns = document.getElementById('txdep-approve-btns');
+    if (approveBtns) approveBtns.style.display = (h.status === 'hold') ? 'flex' : 'none';
     openModal('modal-tx-detail-dep');
   }
 
   function openTxHoldDetail() {
     const h = _HISTORY_DATA.find(d => d.id === _histTxId);
     if (!h || !h.holdReasons) return;
+    _holdCurrentId = h.status === 'hold' ? h.id : null;
     const listEl = document.getElementById('hold-reasons-list');
     listEl.innerHTML = h.holdReasons.map((r, i) =>
       `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; font-size:13px;">
          <span style="font-weight:700; color:#92400E; min-width:18px;">${i+1}.</span><span>${r}</span>
        </div>`).join('');
+    // Show approve/reject in hold detail modal
+    const holdApprove = document.getElementById('hold-approve-btns');
+    if (holdApprove) {
+      holdApprove.style.display = (h.status === 'hold') ? 'flex' : 'none';
+    }
     closeModal('modal-tx-detail-dep');
     setTimeout(() => openModal('modal-tx-detail-hold'), 200);
   }
@@ -4559,6 +4675,165 @@
       </tr>`).join('');
   }
 
+  /* ════════════════════════════════════
+     4-9: 입금 보류 정책 로직
+  ════════════════════════════════════ */
+  var _holdAckIds = []; // rejected hold IDs already confirmed by user
+  var _holdCurrentId = null; // ID of hold currently open in modal
+
+  function _getHolds() {
+    return _HISTORY_DATA.filter(h => h.type === 'deposit' && h.status === 'hold');
+  }
+  function _getHoldRejects() {
+    return _HISTORY_DATA.filter(h => h.type === 'deposit' && h.status === 'rejected'
+      && h.holdReasons && h.holdReasons.length && !_holdAckIds.includes(h.id));
+  }
+
+  /* 4-9-2/4: render orange/red banners on dashboard and wallet detail */
+  function renderHoldBanners() {
+    const dashEl   = document.getElementById('hold-banners');
+    const walletEl = document.getElementById('wallet-hold-banners');
+
+    const holds   = _getHolds();
+    const rejects = _getHoldRejects();
+
+    const holdHTML = holds.map(h => `
+      <div class="hold-banner" id="hb-${h.id}">
+        <span class="hold-banner-icon">&#9888;</span>
+        <div class="hold-banner-body">
+          <div class="hold-banner-title">입금 보류 — ${h.coin} ${h.amount.toLocaleString()} 감지됨</div>
+          <div class="hold-banner-meta">
+            코인: <strong>${h.coin}</strong> / 네트워크: ${h.network} &nbsp;|&nbsp;
+            수량: <strong>${h.amount.toLocaleString()} ${h.coin}</strong> &nbsp;|&nbsp;
+            감지: ${h.date}<br>
+            사유: ${h.holdReasons ? h.holdReasons[0] : '미등록 주소'}<br>
+            처리 예상: 영업일 기준 1일 이내 (관리자 검토)
+          </div>
+          <div class="hold-banner-actions">
+            <button class="btn btn-outline btn-sm" onclick="openTxDetail('${h.id}'); event.stopPropagation();">상세 보기</button>
+            <button class="btn btn-danger btn-sm" onclick="_quickHoldReject('${h.id}')">&#10005; 거절</button>
+            <button class="btn btn-success btn-sm" onclick="_quickHoldApprove('${h.id}')">&#10003; 승인</button>
+          </div>
+        </div>
+      </div>`).join('');
+
+    const rejectHTML = rejects.map(h => `
+      <div class="hold-banner hold-banner-reject" id="hbr-${h.id}">
+        <span class="hold-banner-icon">&#10005;</span>
+        <div class="hold-banner-body">
+          <div class="hold-banner-title">입금 거절됨 — ${h.coin} ${h.amount.toLocaleString()}</div>
+          <div class="hold-banner-meta">
+            거절 일시: ${h.rejectAt || '—'} &nbsp;|&nbsp; 사유: ${h.rejectNote || '—'}
+          </div>
+          <div class="hold-banner-actions">
+            <button class="hold-ack-btn" onclick="ackHoldReject('${h.id}')">&#10003; 확인 완료</button>
+          </div>
+        </div>
+      </div>`).join('');
+
+    const fullHTML = holdHTML + rejectHTML;
+    if (dashEl)   dashEl.innerHTML   = fullHTML;
+    if (walletEl) walletEl.innerHTML = holdHTML; // wallet detail only shows pending holds
+  }
+
+  /* Approve hold (from banner or modal) */
+  function _quickHoldApprove(id) {
+    _holdCurrentId = id;
+    approveHold();
+  }
+  function _quickHoldReject(id) {
+    _holdCurrentId = id;
+    openHoldRejectModal();
+  }
+
+  function approveHold() {
+    const id = _holdCurrentId;
+    if (!id) return;
+    const h = _HISTORY_DATA.find(d => d.id === id);
+    if (!h) return;
+    if (h.status !== 'hold') { showToast('이미 처리된 입금입니다.'); return; }
+    openOTPModal('입금 승인', function() {
+      h.status = 'completed';
+      h.depositDate = new Date().toISOString().slice(0,16).replace('T',' ');
+      // Reflect balance in wallet data
+      const wData = _WALLET_DATA.find(w => w.id === _currentWalletId);
+      if (wData) {
+        const coin = wData.coins.find(c => c.coin === h.coin && c.network === h.network);
+        if (coin) {
+          coin.balance = (parseFloat(coin.balance) || 0) + h.amount;
+          coin.balanceKRW = (coin.balanceKRW || 0) + (h.amountKRW || 0);
+          wData.totalKRW = (wData.totalKRW || 0) + (h.amountKRW || 0);
+        }
+      }
+      _holdCurrentId = null;
+      closeModal('modal-tx-detail-dep');
+      closeModal('modal-tx-detail-hold');
+      // Add actlog entry
+      _WALLET_ACTLOG_DATA.unshift({ date:_nowTs(), type:'deposit_complete', label:'입금 완료',
+        summary:`${h.id} · ${h.coin} ${h.amount.toLocaleString()} 입금 승인 완료 (보류→완료)`, acct:'김철수' });
+      renderHoldBanners();
+      renderHistoryTab();
+      _updateTodoBadges();
+      showToast('✓ 입금이 승인되었습니다. 잔액에 반영됩니다.', 'success');
+    });
+  }
+
+  function openHoldRejectModal() {
+    const id = _holdCurrentId || (document.getElementById('txdep-status') ? _histTxId : null);
+    if (id) _holdCurrentId = id;
+    const reasonEl = document.getElementById('hold-reject-reason');
+    const otpEl    = document.getElementById('hold-reject-otp');
+    const charEl   = document.getElementById('hold-reject-char');
+    if (reasonEl) { reasonEl.value = ''; }
+    if (otpEl)    { otpEl.value = ''; }
+    if (charEl)   { charEl.textContent = '0'; }
+    closeModal('modal-tx-detail-dep');
+    closeModal('modal-tx-detail-hold');
+    setTimeout(() => openModal('modal-hold-reject'), 200);
+  }
+
+  function submitHoldReject() {
+    const id     = _holdCurrentId;
+    const reason = (document.getElementById('hold-reject-reason').value || '').trim();
+    const otp    = (document.getElementById('hold-reject-otp').value || '').trim();
+    if (!reason) { showToast('거절 사유를 입력해주세요.'); return; }
+    if (otp.length !== 6) { showToast('OTP 6자리를 입력해주세요.'); return; }
+    const h = id ? _HISTORY_DATA.find(d => d.id === id) : null;
+    if (!h) { showToast('처리할 보류 건을 찾을 수 없습니다.'); return; }
+    if (h.status !== 'hold') { showToast('이미 처리된 입금입니다.'); closeModal('modal-hold-reject'); return; }
+    h.status     = 'rejected';
+    h.rejectNote = reason;
+    h.rejectAt   = _nowTs();
+    if (!h.holdReasons) h.holdReasons = [];
+    _holdCurrentId = null;
+    closeModal('modal-hold-reject');
+    _WALLET_ACTLOG_DATA.unshift({ date:_nowTs(), type:'deposit_reject', label:'입금 거절',
+      summary:`${h.id} · ${h.coin} ${h.amount.toLocaleString()} 입금 거절 — ${reason.slice(0,40)}`, acct:'김철수' });
+    renderHoldBanners();
+    renderHistoryTab();
+    _updateTodoBadges();
+    showToast('입금이 거절되었습니다.');
+  }
+
+  function ackHoldReject(id) {
+    if (!_holdAckIds.includes(id)) _holdAckIds.push(id);
+    renderHoldBanners();
+    _updateTodoBadges();
+  }
+
+  function ackAllHoldRejects() {
+    _getHoldRejects().forEach(h => { if (!_holdAckIds.includes(h.id)) _holdAckIds.push(h.id); });
+    renderHoldBanners();
+    _updateTodoBadges();
+    showToast('모든 거절 건 확인 완료.');
+  }
+
+  function _nowTs() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')
+      + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
   function _updateTodoBadges() {
     // Coin rejected badge
     const rejected = _COIN_DATA.filter(c => c.status === 'rejected');
@@ -4586,6 +4861,26 @@
         wdEl.style.background = '';
       }
     }
+    // 4-9-6: Hold pending / rejected badges
+    const holdCount = _getHolds().length;
+    const holdPendEl = document.getElementById('todo-hold-pending');
+    const holdPendRow = document.getElementById('todo-hold-pending-row');
+    if (holdPendEl) {
+      holdPendEl.textContent = holdCount;
+      if (holdCount > 0) {
+        holdPendEl.className = 'todo-count';
+        holdPendEl.style.cssText = 'cursor:pointer; background:#F97316 !important; color:#fff;';
+        if (holdPendRow) holdPendRow.style.borderBottom = '1px solid #F1F5F9';
+      } else {
+        holdPendEl.className = 'todo-count zero';
+        holdPendEl.style.cssText = '';
+      }
+    }
+    const holdRejCount = _getHoldRejects().length;
+    const holdRejRow  = document.getElementById('todo-hold-rejected-row');
+    const holdRejEl   = document.getElementById('todo-hold-rejected');
+    if (holdRejRow) holdRejRow.style.display = holdRejCount > 0 ? '' : 'none';
+    if (holdRejEl)  holdRejEl.textContent = holdRejCount;
   }
 
   let _crjIdx = null; // currently-open rejected coin idx
@@ -6155,15 +6450,17 @@
      TOAST
   ════════════════════════════════════ */
   let toastTimer;
-  function showToast(msg) {
+  function showToast(msg, type) {
     const t = document.getElementById('toast');
     t.textContent = msg;
+    t.style.background = (type === 'success') ? '#16A34A' : '';
     t.style.opacity = '1';
     t.style.transform = 'translateX(-50%) translateY(0)';
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
       t.style.opacity = '0';
       t.style.transform = 'translateX(-50%) translateY(80px)';
+      t.style.background = '';
     }, 3000);
   }
 
@@ -6813,6 +7110,7 @@
     renderCoinsTab();
     renderActivityLog();
     renderWalletDeleteDashboard();
+    renderHoldBanners();
     _updateTodoBadges();
     applyRoleUI();
   });
