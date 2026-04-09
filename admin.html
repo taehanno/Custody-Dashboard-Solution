@@ -8308,6 +8308,38 @@
   }
 
   /* ════════════════════════════════════
+     PW / MFA Setting — 데이터 (IIFE 전에 정의해야 initPWMFAPage에서 사용 가능)
+  ════════════════════════════════════ */
+  var _PWMFA_SAVED = {
+    pwLength:    8,
+    specialChar: true,
+    pwCycle:     '60',
+    pwLockout:   5,
+    pwHistory:   3,
+    mfaLockout:  10,
+    mfaInactive: 30,
+    updatedAt:   null
+  };
+
+  var _PWMFA_FIELD_LABELS = {
+    pwLength:    '비밀번호 최소 길이',
+    specialChar: '특수문자 포함 여부',
+    pwCycle:     '비밀번호 변경 주기',
+    pwLockout:   '오입력 잠금 횟수',
+    pwHistory:   '이전 비밀번호 재사용 금지',
+    mfaLockout:  'MFA 인증 오류 잠금 횟수',
+    mfaInactive: '미접속 제한 일수'
+  };
+
+  var _PWMFA_SPINNER_MAP = {
+    'pw-length':   { id: 'pwmfa-pw-length',    min: 6,  max: 24  },
+    'pw-lockout':  { id: 'pwmfa-pw-lockout',   min: 3,  max: 10  },
+    'pw-history':  { id: 'pwmfa-pw-history',   min: 1,  max: 10  },
+    'mfa-lockout': { id: 'pwmfa-mfa-lockout',  min: 3,  max: 20  },
+    'mfa-inactive':{ id: 'pwmfa-mfa-inactive', min: 7,  max: 365 }
+  };
+
+  /* ════════════════════════════════════
      INIT
   ════════════════════════════════════ */
   (function init() {
@@ -8333,28 +8365,6 @@
   /* ════════════════════════════════════
      PW / MFA Setting (섹션 15)
   ════════════════════════════════════ */
-
-  // 저장된 현재 정책 (기본값 = 초기값)
-  var _PWMFA_SAVED = {
-    pwLength:    8,
-    specialChar: true,
-    pwCycle:     '60',
-    pwLockout:   5,
-    pwHistory:   3,
-    mfaLockout:  10,
-    mfaInactive: 30,
-    updatedAt:   null
-  };
-
-  var _PWMFA_FIELD_LABELS = {
-    pwLength:    '비밀번호 최소 길이',
-    specialChar: '특수문자 포함 여부',
-    pwCycle:     '비밀번호 변경 주기',
-    pwLockout:   '오입력 잠금 횟수',
-    pwHistory:   '이전 비밀번호 재사용 금지',
-    mfaLockout:  'MFA 인증 오류 잠금 횟수',
-    mfaInactive: '미접속 제한 일수'
-  };
 
   function initPWMFAPage() {
     updatePWMFACurrentSummary();
@@ -8408,14 +8418,6 @@
   }
 
   // ─ 스피너 +/- 버튼
-  var _PWMFA_SPINNER_MAP = {
-    'pw-length':   { id: 'pwmfa-pw-length',    min: 6,  max: 24  },
-    'pw-lockout':  { id: 'pwmfa-pw-lockout',   min: 3,  max: 10  },
-    'pw-history':  { id: 'pwmfa-pw-history',   min: 1,  max: 10  },
-    'mfa-lockout': { id: 'pwmfa-mfa-lockout',  min: 3,  max: 20  },
-    'mfa-inactive':{ id: 'pwmfa-mfa-inactive', min: 7,  max: 365 }
-  };
-
   function adjustPolicy(key, delta) {
     var cfg = _PWMFA_SPINNER_MAP[key];
     if (!cfg) return;
