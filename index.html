@@ -2031,12 +2031,7 @@
                 <input type="text" class="form-control" id="wd-bene-corp-rep"
                   placeholder="김철수 또는 Kim Chul-soo" oninput="updateCodeVerifyBtn()" />
               </div>
-              <div class="form-group" style="margin-bottom:10px;">
-                <label class="form-label">법인 주소 (Registered Address) <span class="req">*</span></label>
-                <input type="text" class="form-control" id="wd-bene-corp-addr"
-                  placeholder="서울특별시 강남구 테헤란로 123, 5층" oninput="updateCodeVerifyBtn()" />
-                <div class="form-hint">&#8505; CODE가 사업자명, 대표자명, 주소를 기반으로 수신자를 검증합니다.</div>
-              </div>
+              <div class="form-hint" style="margin-bottom:10px;">&#8505; CODE가 사업자명, 대표자명을 기반으로 수신자를 검증합니다.</div>
             </div>
 
             <button class="btn btn-primary" id="btn-code-verify" style="width:100%; margin-top:4px;" disabled onclick="runCodeVerification()">
@@ -5609,8 +5604,7 @@
     } else {
       const corp = (document.getElementById('wd-bene-corp-name').value || '').trim();
       const rep  = (document.getElementById('wd-bene-corp-rep').value || '').trim();
-      const addr = (document.getElementById('wd-bene-corp-addr').value || '').trim();
-      enabled = corp.length > 0 && rep.length > 0 && addr.length > 0;
+      enabled = corp.length > 0 && rep.length > 0;
     }
     const btn = document.getElementById('btn-code-verify');
     if (btn) btn.disabled = !enabled;
@@ -5652,7 +5646,6 @@
       } else {
         detail += '<div><span style="color:var(--text-secondary);">사업자명: </span>'  + document.getElementById('wd-bene-corp-name').value + '</div>';
         detail += '<div><span style="color:var(--text-secondary);">대표자명: </span>'  + document.getElementById('wd-bene-corp-rep').value  + '</div>';
-        detail += '<div><span style="color:var(--text-secondary);">주소: </span>'      + document.getElementById('wd-bene-corp-addr').value + '</div>';
       }
       document.getElementById('code-success-detail').innerHTML = detail;
       document.getElementById('wd-submit-btn').disabled = false;
@@ -5741,9 +5734,8 @@
         if (!(document.getElementById('wd-bene-personal-name').value || '').trim()) { showToast('수신자 성함을 입력해주세요.'); return; }
       } else {
         if (!(document.getElementById('wd-bene-corp-name').value || '').trim()
-         || !(document.getElementById('wd-bene-corp-rep').value  || '').trim()
-         || !(document.getElementById('wd-bene-corp-addr').value || '').trim()) {
-          showToast('법인 정보를 모두 입력해주세요.'); return;
+         || !(document.getElementById('wd-bene-corp-rep').value  || '').trim()) {
+          showToast('사업자명과 대표자명을 입력해주세요.'); return;
         }
       }
     }
@@ -5772,8 +5764,8 @@
       if (isPersonal) {
         travelHTML += '<div><span style="color:var(--text-secondary);">수신자명: </span>' + document.getElementById('wd-bene-personal-name').value.trim() + '</div>';
       } else {
-        travelHTML += '<div><span style="color:var(--text-secondary);">사업자명: </span>' + document.getElementById('wd-bene-corp-name').value.trim() + '</div>';
-        travelHTML += '<div><span style="color:var(--text-secondary);">대표자명: </span>' + document.getElementById('wd-bene-corp-rep').value.trim()  + '</div>';
+        travelHTML += '<div><span style="color:var(--text-secondary);">사업자명: </span>' + (document.getElementById('wd-bene-corp-name').value || '').trim() + '</div>';
+        travelHTML += '<div><span style="color:var(--text-secondary);">대표자명: </span>' + (document.getElementById('wd-bene-corp-rep').value  || '').trim() + '</div>';
       }
       travelHTML += '</div>';
     }
