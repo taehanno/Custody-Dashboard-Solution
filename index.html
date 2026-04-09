@@ -1230,6 +1230,11 @@
       <div class="tx-section-title" style="color:var(--warning);">&#9888; 보류 정책 결과</div>
       <div id="txdep-hold-reasons"></div>
     </div>
+    <!-- 거절 상태: 잔액 미반영 안내 -->
+    <div id="txdep-unreflected" style="display:none; margin-top:8px; padding:11px 14px; border-radius:8px; background:#FEF2F2; border:1px solid #FECACA; font-size:12px; color:#991B1B;">
+      <div style="font-weight:700; margin-bottom:4px;">&#10005; 이 입금은 잔액에 반영되지 않았습니다.</div>
+      <div id="txdep-reject-detail"></div>
+    </div>
     <div id="txdep-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; margin-top:4px;"></div>
   </div>
   <div class="modal-footer" id="txdep-footer">
@@ -4559,11 +4564,10 @@
       const typeBadge = isWd
         ? '<span class="badge" style="background:#FFF7ED; color:#F97316;">&#8599; 출금</span>'
         : '<span class="badge badge-info">&#8600; 입금</span>';
+      const isDepRej = !isWd && h.status === 'rejected';
       const amtSign  = isWd ? '-' : '+';
-      const amtColor = isWd ? 'var(--danger)' : 'var(--success)';
-      const amtFmt   = isWd
-        ? h.amount.toLocaleString(undefined,{maximumFractionDigits:8})
-        : h.amount.toLocaleString(undefined,{maximumFractionDigits:8});
+      const amtColor = isWd ? 'var(--danger)' : (isDepRej ? 'var(--text-secondary)' : 'var(--success)');
+      const amtFmt   = h.amount.toLocaleString(undefined,{maximumFractionDigits:8});
       const txidHtml = h.txid
         ? `<span style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;"
              onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.txid}').then(()=>showToast('TXID 복사됨'))"
@@ -4573,7 +4577,9 @@
         <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">${h.date}</td>
         <td>${typeBadge}</td>
         <td><span style="font-weight:600;">${h.coin}</span> <span style="font-size:11px; color:var(--text-secondary);">${h.network}</span></td>
-        <td style="text-align:right; font-weight:600; color:${amtColor};">${amtSign}${amtFmt}</td>
+        <td style="text-align:right; font-weight:600; color:${amtColor}; line-height:1.5;">
+          ${isDepRej ? `<span style="text-decoration:line-through; opacity:.6;">${amtSign}${amtFmt}</span><br><span style="font-size:10px; font-weight:400; color:var(--danger);">잔액 미반영</span>` : `${amtSign}${amtFmt}`}
+        </td>
         <td>${_histStatusBadge(h.type, h.status)}</td>
         <td>${txidHtml}</td>
         <td><button class="btn btn-outline btn-xs" onclick="openTxDetail('${h.id}')">보기</button></td>
@@ -4695,12 +4701,25 @@
            <span style="color:var(--warning);">&#9888;</span><span>${r}</span>
          </div>`).join('');
     } else { holdSection.style.display = 'none'; }
-    // Note
+    // 거절 상태: 잔액 미반영 박스
+    const unreflEl = document.getElementById('txdep-unreflected');
+    const rejectDetailEl = document.getElementById('txdep-reject-detail');
+    if (h.status === 'rejected') {
+      if (unreflEl) {
+        unreflEl.style.display = 'block';
+        if (rejectDetailEl) {
+          let detail = '';
+          if (h.rejectAt)   detail += `거절 일시: ${h.rejectAt}`;
+          if (h.rejectNote) detail += (detail ? '<br>' : '') + `거절 사유: ${h.rejectNote}`;
+          rejectDetailEl.innerHTML = detail || '관리자에 의해 거절 처리되었습니다.';
+        }
+      }
+    } else {
+      if (unreflEl) unreflEl.style.display = 'none';
+    }
+    // Note (legacy — hide for rejected since unreflected box covers it)
     const noteEl = document.getElementById('txdep-note');
-    if (h.status === 'rejected' && h.rejectNote) {
-      noteEl.style.cssText = 'display:block; padding:10px 12px; border-radius:6px; font-size:12px; background:#FEF2F2; color:#991B1B;';
-      noteEl.innerHTML = `<div style="font-weight:600; margin-bottom:4px;">거절 일시: ${h.rejectAt || '—'}</div><div>${h.rejectNote}</div>`;
-    } else { noteEl.style.display = 'none'; }
+    noteEl.style.display = 'none';
     // Footer — add navigation button when opened from Transactions page
     const depFooter = document.getElementById('txdep-footer');
     if (depFooter) {
@@ -4781,8 +4800,9 @@
     return _HISTORY_DATA.filter(h => h.type === 'deposit' && h.status === 'hold');
   }
   function _getHoldRejects() {
+    // Catches ALL rejected deposits (hold-originated or direct), unacknowledged
     return _HISTORY_DATA.filter(h => h.type === 'deposit' && h.status === 'rejected'
-      && h.holdReasons && h.holdReasons.length && !_holdAckIds.includes(h.id));
+      && !_holdAckIds.includes(h.id));
   }
 
   /* 4-9-2/3/4: render notification banners on dashboard and wallet detail */
@@ -4851,22 +4871,28 @@
       }).join('');
 
     /* ─ 거절 완료 배너 (4-9-4): 미확인 거절 건 */
-    const rejectHTML = rejects.map(h => `
+    const rejectHTML = rejects.map(h => {
+      const reasonLine = h.rejectNote
+        ? `<div style="margin-top:4px; font-size:11px; opacity:.85;">거절 사유: ${h.rejectNote}</div>`
+        : '<div style="margin-top:4px; font-size:11px; opacity:.85;">자세한 내용은 이메일을 확인해주세요.</div>';
+      return `
       <div class="hold-banner hold-banner-reject">
         <span class="hold-banner-icon">&#10005;</span>
         <div class="hold-banner-body">
-          <div class="hold-banner-title">입금이 거절 처리되었습니다.</div>
+          <div class="hold-banner-title">입금이 거절되었습니다. — <strong>잔액 미반영</strong></div>
           <div class="hold-banner-meta">
             <strong>${h.coin} +${h.amount.toLocaleString(undefined,{maximumFractionDigits:8})}</strong>
-            (약 ₩${(h.amountKRW||0).toLocaleString()}) — 잔액 미반영<br>
-            자세한 내용은 이메일을 확인해주세요.
+            (약 ₩${(h.amountKRW||0).toLocaleString()}) · ${_holdWalletLabel(h)}
+            ${reasonLine}
           </div>
           <div class="hold-banner-actions">
+            <button class="btn btn-outline btn-sm" style="border-color:#FECACA; color:var(--danger);" onclick="openTxDetail('${h.id}')">상세 보기</button>
             <button class="btn btn-outline btn-sm" style="border-color:#FECACA; color:var(--danger);" onclick="gotoHoldHistory()">거래 내역 확인 &#8594;</button>
             <button class="hold-ack-btn" onclick="ackHoldReject('${h.id}')">&#10003; 확인 완료</button>
           </div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
 
     const fullHTML = holdHTML + approvedHTML + rejectHTML;
     if (dashEl)   dashEl.innerHTML   = fullHTML;
@@ -5070,11 +5096,11 @@
     const slice = data.slice(start, start + _TXN_PAGE_SIZE);
 
     const html = slice.map(h => {
-      const isWd  = h.type === 'withdrawal';
-      const amtSign = isWd ? '-' : '+';
-      const amtColor = isWd ? 'var(--danger)' : 'var(--success)';
-      const holdNote = (!isWd && h.status === 'hold')
-        ? ' <span style="color:#F97316; font-size:10px;">(보류)</span>' : '';
+      const isWd      = h.type === 'withdrawal';
+      const isDepRej  = !isWd && h.status === 'rejected';
+      const isDepHold = !isWd && h.status === 'hold';
+      const amtSign   = isWd ? '-' : '+';
+      const amtColor  = isWd ? 'var(--danger)' : (isDepRej ? 'var(--text-secondary)' : 'var(--success)');
       const coinSym   = _txnCoinSym(h.coin);
       const coinColor = _txnCoinColor(h.coin);
       const dateShort = h.date.replace('T',' ').slice(0,16);
@@ -5083,8 +5109,18 @@
         ? '<span class="badge" style="background:#FEF2F2; color:#EF4444; border:1px solid #FECACA;">출금</span>'
         : '<span class="badge" style="background:#EFF6FF; color:#3B82F6; border:1px solid #BFDBFE;">입금</span>';
 
+      // Amount cell — rejected: strikethrough + "잔액 미반영", hold: "(보류)"
+      const amtMain = isDepRej
+        ? `<span style="text-decoration:line-through; opacity:.55;">${amtSign}${h.amount.toLocaleString(undefined,{maximumFractionDigits:8})} ${h.coin}</span>`
+        : `${amtSign}${h.amount.toLocaleString(undefined,{maximumFractionDigits:8})} ${h.coin}`;
+      const amtSub = isDepRej
+        ? `<span style="font-size:10px; font-weight:500; color:var(--danger);">잔액 미반영</span>`
+        : isDepHold
+          ? `<span style="font-size:10px; color:#F97316;">(보류)</span>`
+          : `<span style="font-size:10px; color:var(--text-secondary);">${amtSign}₩${(h.amountKRW||0).toLocaleString()}</span>`;
+
       return `
-        <tr style="cursor:pointer;" onclick="openTxDetailFromTxn('${h.id}')">
+        <tr style="cursor:pointer; ${isDepRej ? 'opacity:.85;' : ''}" onclick="openTxDetailFromTxn('${h.id}')">
           <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap; line-height:1.6;">
             ${datePart}<br><span style="font-size:10px;">${timePart}</span>
           </td>
@@ -5100,8 +5136,7 @@
             </div>
           </td>
           <td style="text-align:right; font-weight:600; color:${amtColor}; white-space:nowrap; line-height:1.6;">
-            ${amtSign}${h.amount.toLocaleString(undefined,{maximumFractionDigits:8})} ${h.coin}${holdNote}<br>
-            <span style="font-size:10px; color:var(--text-secondary);">${amtSign}₩${(h.amountKRW||0).toLocaleString()}</span>
+            ${amtMain}<br>${amtSub}
           </td>
           <td>${_histStatusBadge(h.type, h.status)}</td>
         </tr>`;
@@ -5827,10 +5862,17 @@
             <span class="todo-count" style="background:var(--danger); color:#fff;">${rejects.length}</span>
           </div>
           ${rejects.map(h => `
-            <div class="todo-item" style="padding-left:12px; font-size:12px;">
-              <span style="flex:1; color:var(--text-secondary);">${h.coin} +${h.amount.toLocaleString(undefined,{maximumFractionDigits:4})} — 잔액 미반영</span>
-              <button class="btn btn-outline btn-xs" style="border-color:var(--danger); color:var(--danger); font-size:11px;"
-                onclick="ackHoldReject('${h.id}')">확인 완료</button>
+            <div class="todo-item" style="padding-left:12px; font-size:12px; flex-wrap:wrap; gap:4px;">
+              <span style="flex:1; color:var(--text-secondary); min-width:0;">
+                ${h.coin} +${h.amount.toLocaleString(undefined,{maximumFractionDigits:4})}
+                <span style="color:var(--danger); font-size:11px;"> 잔액 미반영</span>
+              </span>
+              <div style="display:flex; gap:4px;">
+                <button class="btn btn-outline btn-xs" style="border-color:var(--danger); color:var(--danger); font-size:11px;"
+                  onclick="openTxDetail('${h.id}')">상세</button>
+                <button class="btn btn-outline btn-xs" style="border-color:var(--danger); color:var(--danger); font-size:11px;"
+                  onclick="ackHoldReject('${h.id}')">확인</button>
+              </div>
             </div>`).join('')}`;
       }
     }
