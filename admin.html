@@ -1623,9 +1623,9 @@
                 <div class="policy-row-desc">Min Password Length &nbsp;(범위: 6 ~ 24자)</div>
               </div>
               <div class="policy-spinner">
-                <button class="policy-spinner-btn" onclick="adjustPolicy('pw-length',-1)">&#8722;</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('pw-length',-1)">&#8722;</button>
                 <input type="number" id="pwmfa-pw-length" value="8" min="6" max="24" oninput="clampPolicy('pw-length',6,24)" />
-                <button class="policy-spinner-btn" onclick="adjustPolicy('pw-length',1)">+</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('pw-length',1)">+</button>
                 <span class="policy-spinner-unit">자</span>
               </div>
             </div>
@@ -1664,9 +1664,9 @@
                 <div class="policy-row-desc">Login Lockout Threshold &nbsp;(범위: 3 ~ 10회)</div>
               </div>
               <div class="policy-spinner">
-                <button class="policy-spinner-btn" onclick="adjustPolicy('pw-lockout',-1)">&#8722;</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('pw-lockout',-1)">&#8722;</button>
                 <input type="number" id="pwmfa-pw-lockout" value="5" min="3" max="10" oninput="clampPolicy('pw-lockout',3,10)" />
-                <button class="policy-spinner-btn" onclick="adjustPolicy('pw-lockout',1)">+</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('pw-lockout',1)">+</button>
                 <span class="policy-spinner-unit">회</span>
               </div>
             </div>
@@ -1678,9 +1678,9 @@
                 <div class="policy-row-desc">Password History &nbsp;(범위: 1 ~ 10개)</div>
               </div>
               <div class="policy-spinner">
-                <button class="policy-spinner-btn" onclick="adjustPolicy('pw-history',-1)">&#8722;</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('pw-history',-1)">&#8722;</button>
                 <input type="number" id="pwmfa-pw-history" value="3" min="1" max="10" oninput="clampPolicy('pw-history',1,10)" />
-                <button class="policy-spinner-btn" onclick="adjustPolicy('pw-history',1)">+</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('pw-history',1)">+</button>
                 <span class="policy-spinner-unit">개</span>
               </div>
             </div>
@@ -1697,9 +1697,9 @@
                 <div class="policy-row-desc">MFA Lockout Threshold &nbsp;(범위: 3 ~ 20회)</div>
               </div>
               <div class="policy-spinner">
-                <button class="policy-spinner-btn" onclick="adjustPolicy('mfa-lockout',-1)">&#8722;</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('mfa-lockout',-1)">&#8722;</button>
                 <input type="number" id="pwmfa-mfa-lockout" value="10" min="3" max="20" oninput="clampPolicy('mfa-lockout',3,20)" />
-                <button class="policy-spinner-btn" onclick="adjustPolicy('mfa-lockout',1)">+</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('mfa-lockout',1)">+</button>
                 <span class="policy-spinner-unit">회</span>
               </div>
             </div>
@@ -1711,9 +1711,9 @@
                 <div class="policy-row-desc">Inactivity Lock Period &nbsp;(범위: 7 ~ 365일)</div>
               </div>
               <div class="policy-spinner">
-                <button class="policy-spinner-btn" onclick="adjustPolicy('mfa-inactive',-1)">&#8722;</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('mfa-inactive',-1)">&#8722;</button>
                 <input type="number" id="pwmfa-mfa-inactive" value="30" min="7" max="365" oninput="clampPolicy('mfa-inactive',7,365)" />
-                <button class="policy-spinner-btn" onclick="adjustPolicy('mfa-inactive',1)">+</button>
+                <button type="button" class="policy-spinner-btn" onclick="adjustPolicy('mfa-inactive',1)">+</button>
                 <span class="policy-spinner-unit">일</span>
               </div>
             </div>
@@ -3916,6 +3916,22 @@
   </div>
 </div>
 
+<!-- ══════════════════════════
+     MODAL: PW/MFA 정책 저장 완료
+══════════════════════════ -->
+<div class="modal" id="modal-pwmfa-success" style="max-width:420px;">
+  <div class="modal-body" style="text-align:center; padding:32px 24px 20px;">
+    <div style="width:56px; height:56px; border-radius:50%; background:#DCFCE7; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:26px;">&#10003;</div>
+    <div style="font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:6px;">정책 저장 완료</div>
+    <div style="font-size:12.5px; color:var(--text-secondary); margin-bottom:20px;">변경된 정책이 전체 계정에 즉시 적용되었습니다.</div>
+    <div id="pwmfa-success-table-wrap" style="text-align:left; margin-bottom:16px;"></div>
+    <div style="font-size:11.5px; color:var(--text-secondary);">저장 일시&nbsp;:&nbsp;<span id="pwmfa-success-datetime" style="font-weight:600; color:var(--text-primary);">—</span></div>
+  </div>
+  <div class="modal-footer" style="justify-content:center; border-top:1px solid var(--border); padding-top:14px;">
+    <button type="button" class="btn btn-primary" style="min-width:100px;" onclick="closeModal('modal-pwmfa-success')">확인</button>
+  </div>
+</div>
+
 <div class="modal" id="modal-otp">
   <div class="modal-header">
     <span class="modal-title" id="otp-modal-title">OTP 인증</span>
@@ -4099,6 +4115,7 @@
 
     if (pageId === 'transactions') initTxPage();
     if (pageId === 'activitylog') renderActLog();
+    if (pageId === 'pwmfa') applyPWMFARoleUI();
 
     closeMobileSidebar();
   }
@@ -8475,6 +8492,20 @@
 
   // ─ OTP 인증 후 저장 실행
   function submitPWMFAPolicy() {
+    // 변경 항목 미리 캡처 (confirm 모달 닫기 전)
+    var _pendingChanges = [];
+    var _curSnap = _PWMFA_SAVED;
+    var _nextSnap = _readPWMFAForm();
+    Object.keys(_PWMFA_FIELD_LABELS).forEach(function(k) {
+      if (String(_curSnap[k]) !== String(_nextSnap[k])) {
+        _pendingChanges.push({
+          label: _PWMFA_FIELD_LABELS[k],
+          oldVal: _pwmfaDisplay(k, _curSnap[k]),
+          newVal: _pwmfaDisplay(k, _nextSnap[k])
+        });
+      }
+    });
+
     closeModal('modal-pwmfa-confirm');
     setTimeout(function() {   // modal close animation(0.2s) 완료 후 OTP 열기
       openOTPModal('PW / MFA 정책 저장', function() {
@@ -8489,7 +8520,33 @@
           action: 'PW·MFA 정책 변경 저장 완료',
           result: 'success', ip: '192.168.10.10', ua: 'Chrome / macOS', errCode: null
         });
-        showToast('PW / MFA 정책이 저장되었습니다. 전체 계정에 즉시 적용됩니다.');
+
+        // 성공 모달 내용 채우기
+        var tableWrap = document.getElementById('pwmfa-success-table-wrap');
+        if (_pendingChanges.length > 0) {
+          var html = '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+            + '<thead><tr>'
+            + '<th style="text-align:left;padding:5px 8px;background:#F8FAFC;border:1px solid var(--border);font-weight:600;">항목</th>'
+            + '<th style="padding:5px 8px;background:#F8FAFC;border:1px solid var(--border);font-weight:600;">변경 전</th>'
+            + '<th style="padding:5px 8px;background:#EFF6FF;border:1px solid var(--border);font-weight:600;">변경 후</th>'
+            + '</tr></thead><tbody>';
+          _pendingChanges.forEach(function(c) {
+            html += '<tr>'
+              + '<td style="padding:5px 8px;border:1px solid var(--border);font-weight:600;">' + c.label + '</td>'
+              + '<td style="padding:5px 8px;border:1px solid var(--border);text-align:center;color:var(--text-secondary);text-decoration:line-through;">' + c.oldVal + '</td>'
+              + '<td style="padding:5px 8px;border:1px solid var(--border);text-align:center;font-weight:700;color:var(--primary);">' + c.newVal + '</td>'
+              + '</tr>';
+          });
+          html += '</tbody></table>';
+          tableWrap.innerHTML = html;
+        } else {
+          tableWrap.innerHTML = '';
+        }
+        document.getElementById('pwmfa-success-datetime').textContent = _PWMFA_SAVED.updatedAt;
+
+        setTimeout(function() {
+          openModal('modal-pwmfa-success');
+        }, 250);
       });
     }, 250);
   }
