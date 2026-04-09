@@ -250,6 +250,26 @@
     .wallet-card-add:hover { border-color: var(--primary); color: var(--primary); }
     .wallet-card-add .add-plus { font-size: 28px; line-height: 1; }
     .wallet-card-add .add-text { font-size: 13px; font-weight: 600; }
+    /* ── Wallet Cards v2 (Multi-coin, 4-1) ── */
+    .wallet-card { display: flex; flex-direction: column; }
+    .wallet-id-row { font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; font-family: monospace; }
+    .wallet-total-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; }
+    .wallet-total-krw { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: var(--text-primary); }
+    .wallet-section-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
+    .coin-chips-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; min-height: 24px; align-items: center; }
+    .coin-chip { display: inline-flex; align-items: center; gap: 4px; background: #F1F5F9; border-radius: 20px; padding: 3px 9px; font-size: 12px; font-weight: 600; }
+    .coin-chip-icon { font-size: 13px; }
+    .sig-policy-body { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .sig-badge { font-size: 11px; font-weight: 700; background: #EFF6FF; color: #1D4ED8; border-radius: 4px; padding: 2px 7px; flex-shrink: 0; }
+    .sig-avatars { display: inline-flex; gap: 3px; }
+    .sig-avatar { width: 22px; height: 22px; border-radius: 50%; background: #3B82F6; color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .wallet-requester-row { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+    .wallet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: auto; }
+    .wallet-actions .btn-full { grid-column: span 2; }
+    /* Deposit coin selection */
+    .deposit-coin-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); margin-bottom: 8px; transition: border-color 0.15s, background 0.15s; }
+    .deposit-coin-row:hover { border-color: var(--primary); background: #F0F9FF; }
+    .deposit-coin-row:last-child { margin-bottom: 0; }
 
     /* ── Wallet Delete Feature ── */
     .wallet-del-status { min-height: 0; margin-bottom: 0; }
@@ -796,16 +816,47 @@
 <!-- ══════════════════════════════════════
      MODAL: Deposit QR
 ══════════════════════════════════════ -->
-<div class="modal" id="modal-deposit-qr" style="max-width:400px;">
+<!-- MODAL: 코인 선택 (입금 주소 — 코인 2개 이상, 4-1-1) -->
+<div class="modal" id="modal-deposit-coin-select" style="max-width:420px;">
   <div class="modal-header">
-    <span class="modal-title">&#8600; 입금 주소 / Deposit Address</span>
+    <span class="modal-title">&#8600; 입금 주소 확인 — 코인 선택</span>
+    <button class="modal-close" onclick="closeModal('modal-deposit-coin-select')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">입금 받을 코인을 선택하세요.</div>
+    <div id="deposit-coin-list"></div>
+    <div class="alert alert-warning" style="margin-top:14px;font-size:12px;">
+      &#9888; 반드시 선택한 코인&#183;네트워크에 맞는 주소로 입금하세요.<br>다른 네트워크로 입금 시 자산이 소실될 수 있습니다.
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: 입금 주소 (4-1-1) -->
+<div class="modal" id="modal-deposit-qr" style="max-width:420px;">
+  <div class="modal-header">
+    <span class="modal-title">&#8600; 입금 주소</span>
     <button class="modal-close" onclick="closeModal('modal-deposit-qr')">&#10005;</button>
   </div>
   <div class="modal-body">
-    <div style="text-align:center; margin-bottom:14px; font-size:13px; color:var(--text-secondary);" id="qrCoinLabel">코인: USDT — Ethereum (ERC20)</div>
-    <div class="qr-display">
-      <div class="qr-box">
-        <svg width="140" height="140" viewBox="0 0 150 150" style="background:#fff;">
+    <!-- 지갑/코인/네트워크 정보 -->
+    <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;">
+      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--text-secondary);font-size:12px;">지갑명</span>
+        <span style="font-weight:600;" id="qr-wallet-name"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--text-secondary);font-size:12px;">코인</span>
+        <span style="font-weight:600;" id="qr-coin-name"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0;">
+        <span style="color:var(--text-secondary);font-size:12px;">네트워크</span>
+        <span id="qr-network-name"></span>
+      </div>
+    </div>
+    <!-- QR 코드 -->
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="display:inline-block;padding:12px;background:#fff;border:1px solid var(--border);border-radius:10px;">
+        <svg width="140" height="140" viewBox="0 0 150 150" style="background:#fff;display:block;">
           <rect x="8" y="8" width="42" height="42" rx="3" fill="#1A2B4A"/>
           <rect x="14" y="14" width="30" height="30" rx="2" fill="white"/>
           <rect x="20" y="20" width="18" height="18" fill="#1A2B4A"/>
@@ -833,12 +884,18 @@
           <rect x="94" y="124" width="8" height="8" fill="#1A2B4A"/><rect x="112" y="124" width="8" height="8" fill="#1A2B4A"/>
         </svg>
       </div>
-      <div class="qr-address" id="qrAddress">0x4d4bC4a1...C3E69F21</div>
-      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="copyAddress()">&#128203; 복사</button>
     </div>
-    <div class="alert alert-warning" style="margin-top:14px; font-size:12px;">
-      &#9888; 반드시 해당 네트워크로 입금하세요. 다른 네트워크 입금 시 자산이 소실될 수 있습니다.
+    <!-- 주소 표시 -->
+    <div style="font-family:monospace;font-size:12px;word-break:break-all;background:#F8FAFC;border:1px solid var(--border);border-radius:7px;padding:10px 12px;margin-bottom:12px;text-align:center;" id="qr-addr-short"></div>
+    <!-- 버튼 -->
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button class="btn btn-outline btn-sm" onclick="copyAddress()">&#128203; 전체 주소 복사</button>
+      <button class="btn btn-outline btn-sm" onclick="showToast('블록체인 익스플로러는 데모에서 지원되지 않습니다.')">&#8599; 블록체인 익스플로러</button>
     </div>
+    <!-- 경고 -->
+    <div class="alert alert-warning" style="margin-top:14px;font-size:12px;" id="qr-warning-text"></div>
+    <!-- hidden full addr for copy -->
+    <div id="qrAddress" style="display:none;"></div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-deposit-qr')">닫기</button>
@@ -2430,114 +2487,21 @@
             <span class="role-tip">Master 계정만 사용 가능합니다.</span>
           </span>
         </div>
-        <div class="wallet-summary">
-          <span class="wallet-summary-item">총 지갑 <strong>2개</strong></span>
-          <span style="color:var(--border);">|</span>
-          <span class="wallet-summary-item">총 자산 <strong>₩0</strong></span>
-          <span style="color:var(--border);">|</span>
-          <span class="wallet-summary-item">출금 대기 <strong>2건</strong></span>
-        </div>
-        <div class="wallet-grid">
-          <!-- Wallet Card 1: Active -->
-          <div class="wallet-card" id="wallet-card-wallet1" onclick="openWalletDetail('wallet1')">
-            <div class="wallet-card-header">
-              <div class="wallet-card-name" style="flex:1; min-width:0;">
-                <div class="name-edit-wrap" id="wrap-wallet1">
-                  <span id="lbl-wallet1">BTC 보관 지갑 #1</span>
-                  <button class="edit-pencil-btn" title="이름 수정" onclick="event.stopPropagation(); startEditName('wallet1')">&#9998;</button>
-                </div>
-                <div class="name-inline-edit" id="edit-wallet1">
-                  <input class="name-inline-input" id="input-wallet1" value="BTC 보관 지갑 #1" onclick="event.stopPropagation()"
-                    oninput="onNameInput('input-wallet1','hint-wallet1','savebtn-wallet1',this.dataset.original)"
-                    onkeydown="if(event.key==='Enter')saveWalletName('wallet1'); if(event.key==='Escape')cancelEditName('wallet1');" />
-                  <button class="name-confirm-btn" id="savebtn-wallet1" onclick="event.stopPropagation(); saveWalletName('wallet1')" title="저장" disabled>&#10003;</button>
-                  <button class="name-cancel-btn" onclick="event.stopPropagation(); cancelEditName('wallet1')" title="취소">&#10005;</button>
-                </div>
-                <div class="name-inline-hint" id="hint-wallet1"></div>
-              </div>
-              <span class="badge badge-success">&#9679; 활성화</span>
-            </div>
-            <div class="wallet-coin-row">
-              <div class="coin-circle" style="background:#F97316;">B</div>
-              <div><div style="font-size:13px; font-weight:600;">BTC</div><div style="font-size:11px; color:var(--text-secondary);">Bitcoin Mainnet</div></div>
-            </div>
-            <div class="wallet-address">bc1q...3f8e</div>
-            <div class="wallet-asset">₩0</div>
-            <div class="wallet-asset-sub">0.00000000 BTC</div>
-            <div class="wallet-del-status" id="wds-wallet1"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-              <div style="display:flex; gap:6px;">
-                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금</button>
-                <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); openWithdrawal('BTC 보관 지갑 #1')">&#8599; 출금</button>
-              </div>
-              <span class="del-btn-wrap" id="del-wrap-wallet1">
-                <button class="btn btn-outline btn-sm wallet-delete-btn" id="delbtn-wallet1"
-                  style="color:var(--danger); border-color:rgba(239,68,68,0.3);"
-                  onclick="event.stopPropagation(); openDeleteWallet('wallet1')">삭제</button>
-              </span>
-            </div>
+
+        <!-- 전체 총 자산 (4-1) -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">전체 총 자산 <span style="font-size:10px;">(ⓘ 모든 자산 금액은 KRW 환산 기준)</span></div>
+            <div style="font-size:22px;font-weight:700;" id="wallet-total-all">₩0</div>
           </div>
-          <!-- Wallet Card 2: Active -->
-          <div class="wallet-card" id="wallet-card-wallet2" onclick="openWalletDetail('wallet2')">
-            <div class="wallet-card-header">
-              <div class="wallet-card-name" style="flex:1; min-width:0;">
-                <div class="name-edit-wrap" id="wrap-wallet2">
-                  <span id="lbl-wallet2">ETH 보관 지갑</span>
-                  <button class="edit-pencil-btn" title="이름 수정" onclick="event.stopPropagation(); startEditName('wallet2')">&#9998;</button>
-                </div>
-                <div class="name-inline-edit" id="edit-wallet2">
-                  <input class="name-inline-input" id="input-wallet2" value="ETH 보관 지갑" onclick="event.stopPropagation()"
-                    oninput="onNameInput('input-wallet2','hint-wallet2','savebtn-wallet2',this.dataset.original)"
-                    onkeydown="if(event.key==='Enter')saveWalletName('wallet2'); if(event.key==='Escape')cancelEditName('wallet2');" />
-                  <button class="name-confirm-btn" id="savebtn-wallet2" onclick="event.stopPropagation(); saveWalletName('wallet2')" title="저장" disabled>&#10003;</button>
-                  <button class="name-cancel-btn" onclick="event.stopPropagation(); cancelEditName('wallet2')" title="취소">&#10005;</button>
-                </div>
-                <div class="name-inline-hint" id="hint-wallet2"></div>
-              </div>
-              <span class="badge badge-success">&#9679; 활성화</span>
-            </div>
-            <div class="wallet-coin-row">
-              <div class="coin-circle" style="background:#6366F1;">E</div>
-              <div><div style="font-size:13px; font-weight:600;">ETH</div><div style="font-size:11px; color:var(--text-secondary);">Ethereum Mainnet</div></div>
-            </div>
-            <div class="wallet-address">0x4d4b...C3E69</div>
-            <div class="wallet-asset">₩0</div>
-            <div class="wallet-asset-sub">0.00000000 ETH</div>
-            <div class="wallet-del-status" id="wds-wallet2"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-              <div style="display:flex; gap:6px;">
-                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openDepositQR('ETH','Ethereum Mainnet','0x4d4bC4a1...C3E69F21')">&#8600; 입금</button>
-                <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); openWithdrawal('ETH 보관 지갑 #1')">&#8599; 출금</button>
-              </div>
-              <span class="del-btn-wrap" id="del-wrap-wallet2">
-                <button class="btn btn-outline btn-sm wallet-delete-btn" id="delbtn-wallet2"
-                  style="color:var(--danger); border-color:rgba(239,68,68,0.3);"
-                  onclick="event.stopPropagation(); openDeleteWallet('wallet2')">삭제</button>
-              </span>
-            </div>
-          </div>
-          <!-- Wallet Card 3: Pending -->
-          <div class="wallet-card disabled">
-            <div class="wallet-card-header">
-              <div class="wallet-card-name">USDT 운영 지갑</div>
-              <span class="badge badge-gray">&#9679; 요청 중</span>
-            </div>
-            <div class="wallet-coin-row">
-              <div class="coin-circle" style="background:#10B981;">U</div>
-              <div><div style="font-size:13px; font-weight:600;">USDT</div><div style="font-size:11px; color:var(--text-secondary);">TRON (TRC-20)</div></div>
-            </div>
-            <div style="font-size:12px; color:var(--text-secondary); background:#F8FAFC; padding:10px; border-radius:7px; margin-top:10px; line-height:1.5;">
-              &#128336; Admin 처리 대기 중<br>
-              <span style="font-size:11px;">1~2 영업일 소요됩니다</span>
-            </div>
-          </div>
-          <!-- Add Wallet -->
-          <div class="wallet-card wallet-card-add" onclick="openModal('modal-coldwallet')">
-            <div class="add-plus">+</div>
-            <div class="add-text">지갑 추가 요청</div>
-            <div style="font-size:11px; color:var(--text-secondary);">Master 전용</div>
+          <div style="display:flex;gap:20px;font-size:12px;color:var(--text-secondary);">
+            <span>총 지갑 <strong id="wallet-count-all" style="color:var(--text-primary);">0개</strong></span>
+            <span>활성화 <strong id="wallet-count-active" style="color:#10B981;">0개</strong></span>
           </div>
         </div>
+
+        <!-- Wallet Grid — 동적 렌더링 (4-1) -->
+        <div class="wallet-grid" id="wallet-grid-container"></div>
 
         <!-- 4-3-4: Wallet Delete Dashboard -->
         <div class="del-dash card" style="margin-top:24px;">
@@ -3518,13 +3482,14 @@
   }
 
   function openWalletDetail(walletId) {
-    const coins = { wallet1: 'BTC / Bitcoin', wallet2: 'ETH / Ethereum' };
+    const wData = _WALLET_DATA.find(w => w.id === walletId);
     // Read current name from the live label span (may have been inline-edited)
     const lblEl = document.getElementById('lbl-' + walletId);
-    const wName = lblEl ? lblEl.textContent.trim() : '지갑';
+    const wName = lblEl ? lblEl.textContent.trim() : (wData ? wData.name : '지갑');
+    const coinSummary = wData ? wData.coins.map(c => c.coin + ' / ' + c.network).join(', ') : '—';
     document.getElementById('detailWalletName').textContent = wName;
     document.getElementById('input-detail').value = wName;
-    document.getElementById('detailCoin').textContent = coins[walletId] || '—';
+    document.getElementById('detailCoin').textContent = coinSummary;
     _currentWalletLabel = wName;
     document.getElementById('ac-wallet-label') && (document.getElementById('ac-wallet-label').textContent = wName);
     renderCoinsTab();
@@ -3741,55 +3706,14 @@
       if (w) w.style.pointerEvents = 'auto'; // allow hover for tooltip
     }
 
-    // 지갑 카드 삭제 버튼 — del-btn-wrap 처리는 기존 _updateWalletDeleteBadge에서 함
-    // 편집 연필 아이콘: Master만 표시
-    ['wrap-wallet1','wrap-wallet2'].forEach(wid => {
-      const wrap = document.getElementById(wid);
-      if (!wrap) return;
-      const pencil = wrap.querySelector('.edit-pencil-btn');
-      if (pencil) pencil.style.display = m ? '' : 'none';
-    });
+    // 지갑 카드: 동적 렌더링으로 재생성 (편집 연필 + 삭제 버튼 + 코인추가 포함)
+    renderWalletDashboard();
     // 지갑 상세 편집 아이콘
     const detailWrap = document.getElementById('wrap-detail');
     if (detailWrap) {
       const pencil = detailWrap.querySelector('.edit-pencil-btn');
       if (pencil) pencil.style.display = m ? '' : 'none';
     }
-    // 지갑 카드 삭제 버튼 role 비활성
-    ['wallet1','wallet2'].forEach(wid => {
-      const btn = document.getElementById('delbtn-' + wid);
-      if (!btn) return;
-      const state = _WALLET_DEL_STATE[wid];
-      if (!m) {
-        btn.className = 'btn btn-role-disabled btn-sm';
-        btn.disabled = true;
-        // wrap tip
-        const wrap = document.getElementById('del-wrap-' + wid);
-        if (wrap && !wrap.querySelector('.role-tip')) {
-          wrap.style.position = 'relative';
-          wrap.style.display = 'inline-block';
-          const tip = document.createElement('span');
-          tip.className = 'role-tip';
-          tip.textContent = 'Master 계정만 사용 가능합니다.';
-          wrap.appendChild(tip);
-          wrap.classList.add('role-tip-wrap');
-        }
-      } else {
-        // restore — only if not in pending state
-        if (state !== 'pending') {
-          btn.className = 'btn btn-outline btn-sm wallet-delete-btn';
-          btn.disabled = false;
-          btn.style.color = 'var(--danger)';
-          btn.style.borderColor = 'rgba(239,68,68,0.3)';
-        }
-        const wrap = document.getElementById('del-wrap-' + wid);
-        if (wrap) {
-          const tip = wrap.querySelector('.role-tip');
-          if (tip) tip.remove();
-          wrap.classList.remove('role-tip-wrap');
-        }
-      }
-    });
 
     // 지갑 상세 카드 — 코인 추가
     _setRoleBtn('btn-detail-add-coin', m, '', 'btn btn-outline btn-full');
@@ -3818,13 +3742,41 @@
     });
   }
 
+  /* ── Wallet data v2 — Multi-coin structure (4-1) ── */
   const _WALLET_DATA = [
-    { id:'wallet1', name:'BTC 보관 지갑 #1', coin:'BTC', network:'Bitcoin Mainnet',  addr:'bc1q4d4b...xy9f',  fullAddr:'bc1q4d4b9ePQjLwz3MmK7rTs8xy9f',  balance:'0.00000000', balanceKRW:'₩0' },
-    { id:'wallet2', name:'ETH 보관 지갑',    coin:'ETH', network:'Ethereum Mainnet', addr:'0x4d4b...C3E69', fullAddr:'0x4d4bA1f3E2c7B9d0F5a6C3E69', balance:'0.00000000', balanceKRW:'₩0' },
+    {
+      id: 'wallet1', name: '운영 지갑 A', walletId: '1687670', status: 'active',
+      coins: [
+        { coin:'BTC',  network:'Bitcoin Mainnet',  icon:'&#8383;', color:'#F97316', addr:'bc1q...3f8e',  fullAddr:'bc1q4d2jKLp9mNqRs7tUvWx3f8e',  balance:2.5,    balanceKRW:350000000 },
+        { coin:'USDT', network:'ERC20',             icon:'&#8366;', color:'#10B981', addr:'0x4d4b...C3E1', fullAddr:'0x4d4bC4a1f3E2c7B9d0F5a6C3E1', balance:100000, balanceKRW:138000000 },
+        { coin:'ETH',  network:'Ethereum Mainnet', icon:'&#9678;', color:'#627EEA', addr:'0x4d4b...C3E9', fullAddr:'0x4d4bC4a1f3E2c7B9d0F5a6C3E9', balance:23.0,   balanceKRW:119600000 }
+      ],
+      totalKRW: 607600000,
+      sigPolicy: { n:2, m:3, signers:['김','이','박'] },
+      requester: '김철수'
+    },
+    {
+      id: 'wallet2', name: '운영 지갑 B', walletId: '1687671', status: 'active',
+      coins: [
+        { coin:'USDT', network:'TRC20', icon:'&#8366;', color:'#10B981', addr:'TKuX...A8pQ', fullAddr:'TKuXd1B7nP3vLm5wA8pQ3rQ7', balance:500000, balanceKRW:690000000 }
+      ],
+      totalKRW: 690000000,
+      sigPolicy: { n:1, m:1, signers:['홍'] },
+      requester: '홍길동 (Master)'
+    },
+    {
+      id: 'wallet3', name: '예비 지갑 A', walletId: '1687672', status: 'active',
+      coins: [
+        { coin:'ETH', network:'Ethereum Mainnet', icon:'&#9678;', color:'#627EEA', addr:'0x9a3c...f4d2', fullAddr:'0x9a3cB7d1E2F0A5c84e91bD3CF4d2', balance:10.0, balanceKRW:52000000 }
+      ],
+      totalKRW: 52000000,
+      sigPolicy: { n:2, m:3, signers:['김','이','박'] },
+      requester: '김철수'
+    }
   ];
 
   // Per-wallet delete state: null | 'pending' | 'rejected' | 'done'
-  var _WALLET_DEL_STATE = { wallet1: null, wallet2: null };
+  var _WALLET_DEL_STATE = { wallet1: null, wallet2: null, wallet3: null };
   var _delWalletId = null; // currently-opening delete modal for which wallet
 
   // Demo historical delete requests for the dashboard
@@ -4549,15 +4501,181 @@
   /* ════════════════════════════════════
      DEPOSIT QR
   ════════════════════════════════════ */
-  function openDepositQR(coin, network, address) {
-    document.getElementById('qrCoinLabel').textContent = '코인: ' + coin + ' — ' + network;
-    document.getElementById('qrAddress').textContent = address;
+  /* ── 입금 주소 — 코인 분기 처리 (4-1-1) ── */
+  var _depositWalletId = null;
+  const _COIN_ICONS_MAP = { BTC:'&#8383;', ETH:'&#9678;', USDT:'&#8366;', BNB:'B', TRX:'T', XRP:'&#10005;' };
+
+  function openDepositAddr(walletId) {
+    const w = _WALLET_DATA.find(x => x.id === walletId);
+    if (!w) return;
+    const showCoins = w.coins.filter(c => c.balance > 0);
+    const list = showCoins.length > 0 ? showCoins : w.coins;
+    if (list.length === 0) { showToast('등록된 코인이 없습니다.'); return; }
+    if (list.length === 1) {
+      openDepositQR(w.name, list[0]);
+    } else {
+      _depositWalletId = walletId;
+      const listEl = document.getElementById('deposit-coin-list');
+      listEl.innerHTML = list.map((c, idx) =>
+        '<div class="deposit-coin-row" onclick="selectDepositCoin(\'' + walletId + '\',' + idx + ')">'
+        + '<div class="coin-circle" style="background:' + (c.color || '#64748B') + ';width:34px;height:34px;font-size:15px;">' + (_COIN_ICONS_MAP[c.coin] || c.coin[0]) + '</div>'
+        + '<div style="flex:1;">'
+        + '<div style="font-weight:600;font-size:13px;">' + (_COIN_ICONS_MAP[c.coin] || '') + ' ' + c.coin + '</div>'
+        + '<div style="font-size:12px;color:var(--text-secondary);">' + c.network + '</div>'
+        + '</div>'
+        + '<div style="font-size:12px;color:var(--text-secondary);">&#9654;</div>'
+        + '</div>'
+      ).join('');
+      openModal('modal-deposit-coin-select');
+    }
+  }
+
+  function selectDepositCoin(walletId, coinIdx) {
+    closeModal('modal-deposit-coin-select');
+    const w = _WALLET_DATA.find(x => x.id === walletId);
+    if (!w) return;
+    const showCoins = w.coins.filter(c => c.balance > 0);
+    const list = showCoins.length > 0 ? showCoins : w.coins;
+    const c = list[coinIdx];
+    if (!c) return;
+    setTimeout(() => openDepositQR(w.name, c), 150);
+  }
+
+  function openDepositQR(walletName, coinObj) {
+    document.getElementById('qr-wallet-name').textContent = walletName;
+    document.getElementById('qr-coin-name').textContent   = (_COIN_ICONS_MAP[coinObj.coin] || '') + ' ' + coinObj.coin;
+    document.getElementById('qr-network-name').textContent = coinObj.network;
+    document.getElementById('qr-addr-short').textContent  = coinObj.fullAddr || coinObj.addr;
+    document.getElementById('qrAddress').textContent      = coinObj.fullAddr || coinObj.addr;
+    document.getElementById('qr-warning-text').innerHTML  = '&#9888; 위 주소는 <strong>' + coinObj.coin + ' / ' + coinObj.network + '</strong> 전용입니다.<br>다른 코인&#183;네트워크로 입금 시 자산이 소실될 수 있습니다.';
     openModal('modal-deposit-qr');
   }
+
   function copyAddress() {
     const addr = document.getElementById('qrAddress').textContent;
     navigator.clipboard && navigator.clipboard.writeText(addr);
     showToast('주소가 복사되었습니다.');
+  }
+
+  /* ── 지갑 대시보드 동적 렌더링 (4-1) ── */
+  function renderWalletDashboard() {
+    const grid = document.getElementById('wallet-grid-container');
+    if (!grid) return;
+    const m = _IS_MASTER;
+
+    // 통계 계산
+    const totalKRW = _WALLET_DATA.reduce((s, w) => s + (w.totalKRW || 0), 0);
+    const activeCount = _WALLET_DATA.filter(w => w.status === 'active').length;
+    const totalEl = document.getElementById('wallet-total-all');
+    const cntAllEl = document.getElementById('wallet-count-all');
+    const cntActEl = document.getElementById('wallet-count-active');
+    if (totalEl)  totalEl.textContent  = '₩' + totalKRW.toLocaleString();
+    if (cntAllEl) cntAllEl.textContent = _WALLET_DATA.length + '개';
+    if (cntActEl) cntActEl.textContent = activeCount + '개';
+
+    // 카드 생성
+    let html = '';
+    _WALLET_DATA.forEach(w => {
+      const delState = _WALLET_DEL_STATE[w.id];
+      const statusBadge = w.status === 'active'
+        ? '<span class="badge badge-success">&#9679; 활성화</span>'
+        : '<span class="badge badge-gray">&#9675; ' + w.status + '</span>';
+
+      // 보유 코인 chips
+      const positiveCoins = w.coins.filter(c => c.balance > 0);
+      let chipHtml = '';
+      if (positiveCoins.length === 0) {
+        chipHtml = '<span style="font-size:12px;color:var(--text-secondary);">보유 코인 없음</span>';
+      } else {
+        const show = positiveCoins.slice(0, 5);
+        const extra = positiveCoins.length - 5;
+        chipHtml = show.map(c =>
+          '<span class="coin-chip"><span class="coin-chip-icon">' + (_COIN_ICONS_MAP[c.coin] || c.coin[0]) + '</span>' + c.coin + '</span>'
+        ).join('');
+        if (extra > 0) chipHtml += '<span class="coin-chip" style="background:#E2E8F0;color:var(--text-secondary);">+' + extra + '개</span>';
+      }
+
+      // 서명자 아바타
+      const avatarColors = ['#3B82F6','#10B981','#F59E0B','#8B5CF6','#EF4444'];
+      const avatarHtml = w.sigPolicy.signers.map((s, i) =>
+        '<span class="sig-avatar" style="background:' + (avatarColors[i % avatarColors.length]) + ';">' + s + '</span>'
+      ).join('');
+
+      // 삭제 상태 배지
+      let delStatusHtml = '';
+      if (delState === 'pending')  delStatusHtml = '<div class="wallet-del-status" id="wds-' + w.id + '" style="margin-bottom:8px;"><span class="badge badge-warning" style="font-size:11px;">&#128336; 삭제 요청 중</span></div>';
+      else if (delState === 'rejected') delStatusHtml = '<div class="wallet-del-status" id="wds-' + w.id + '" style="margin-bottom:8px;"><span class="badge badge-danger" style="font-size:11px;">&#10005; 삭제 반려됨</span></div>';
+      else delStatusHtml = '<div class="wallet-del-status" id="wds-' + w.id + '"></div>';
+
+      // 삭제 버튼
+      const delBtnHtml = m
+        ? '<button class="btn btn-outline btn-xs" id="delbtn-' + w.id + '" style="color:var(--danger);border-color:rgba(239,68,68,0.3);grid-column:span 2;margin-top:4px;"'
+          + (delState === 'pending' ? ' disabled' : '')
+          + ' onclick="event.stopPropagation();openDeleteWallet(\'' + w.id + '\')">삭제</button>'
+        : '';
+
+      html +=
+        '<div class="wallet-card" id="wallet-card-' + w.id + '" onclick="openWalletDetail(\'' + w.id + '\')">'
+        // 헤더: 지갑명 + 상태
+        + '<div class="wallet-card-header">'
+        + '<div class="wallet-card-name" style="flex:1;min-width:0;">'
+        + '<div class="name-edit-wrap" id="wrap-' + w.id + '">'
+        + '<span id="lbl-' + w.id + '">' + w.name + '</span>'
+        + (m ? '<button class="edit-pencil-btn" title="이름 수정" onclick="event.stopPropagation();startEditName(\'' + w.id + '\')">&#9998;</button>' : '')
+        + '</div>'
+        + '<div class="name-inline-edit" id="edit-' + w.id + '" style="display:none;">'
+        + '<input class="name-inline-input" id="input-' + w.id + '" value="' + w.name + '" onclick="event.stopPropagation()"'
+        + ' oninput="onNameInput(\'input-' + w.id + '\',\'hint-' + w.id + '\',\'savebtn-' + w.id + '\',this.dataset.original)"'
+        + ' onkeydown="if(event.key===\'Enter\')saveWalletName(\'' + w.id + '\');if(event.key===\'Escape\')cancelEditName(\'' + w.id + '\');" />'
+        + '<button class="name-confirm-btn" id="savebtn-' + w.id + '" onclick="event.stopPropagation();saveWalletName(\'' + w.id + '\')" title="저장" disabled>&#10003;</button>'
+        + '<button class="name-cancel-btn" onclick="event.stopPropagation();cancelEditName(\'' + w.id + '\')" title="취소">&#10005;</button>'
+        + '</div>'
+        + '<div class="name-inline-hint" id="hint-' + w.id + '"></div>'
+        + '</div>'
+        + statusBadge
+        + '</div>'
+        // ID
+        + '<div class="wallet-id-row">ID: ' + w.walletId + '</div>'
+        // 총 자산
+        + '<div class="wallet-total-label">총 자산 (KRW)</div>'
+        + '<div class="wallet-total-krw">&#8361;' + (w.totalKRW || 0).toLocaleString() + '</div>'
+        // 보유 코인
+        + '<div class="wallet-section-label">보유 코인</div>'
+        + '<div class="coin-chips-row">' + chipHtml + '</div>'
+        // 서명 정책
+        + '<div class="wallet-section-label">서명 정책</div>'
+        + '<div class="sig-policy-body">'
+        + '<span class="sig-badge">' + w.sigPolicy.n + ' of ' + w.sigPolicy.m + '</span>'
+        + '<div class="sig-avatars">' + avatarHtml + '</div>'
+        + '</div>'
+        // 요청자
+        + '<div class="wallet-requester-row">요청자 &nbsp; ' + w.requester + '</div>'
+        // 삭제 상태
+        + delStatusHtml
+        // 액션 버튼
+        + '<div class="wallet-actions">'
+        + '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openDepositAddr(\'' + w.id + '\')">&#8600; 입금 주소</button>'
+        + '<button class="btn btn-warning btn-sm" onclick="event.stopPropagation();openWithdrawal(\'' + w.name + '\')">&#8599; 출금 신청</button>'
+        + (m ? '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openAddCoin()">+ 코인 추가</button>' : '<button class="btn btn-outline btn-sm btn-role-disabled" disabled title="Master 전용">+ 코인 추가</button>')
+        + '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openWalletDetail(\'' + w.id + '\')">&#128269; 상세 보기</button>'
+        + delBtnHtml
+        + '</div>'
+        + '</div>';
+    });
+
+    // 지갑 추가 카드 (Master 전용)
+    html += '<div class="wallet-card wallet-card-add" onclick="' + (m ? 'openModal(\'modal-coldwallet\')' : '') + '" style="' + (!m ? 'pointer-events:none;' : '') + '">'
+      + '<div class="add-plus">' + (m ? '+' : '&#128274;') + '</div>'
+      + '<div class="add-text">지갑 추가 요청</div>'
+      + '<div style="font-size:11px;color:var(--text-secondary);">Master 전용</div>'
+      + '</div>';
+
+    grid.innerHTML = html;
+
+    // 삭제 배지 재적용
+    Object.keys(_WALLET_DEL_STATE).forEach(wid => {
+      _updateWalletDeleteBadge && _updateWalletDeleteBadge(wid);
+    });
   }
 
   /* ════════════════════════════════════
