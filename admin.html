@@ -155,6 +155,12 @@
       pointer-events: none; z-index: 9000;
     }
     .mask-wrap:hover .mask-tip { visibility: visible; opacity: 1; }
+    /* TXID 복사 셀 */
+    .txid-cell { display:inline-flex; align-items:center; gap:4px; cursor:pointer; }
+    .txid-cell .mask-tip { white-space:normal; word-break:break-all; max-width:340px; text-align:left; line-height:1.5; }
+    .txid-cell .txid-copy-icon { font-size:11px; opacity:0.35; transition:opacity 0.15s; }
+    .txid-cell:hover .txid-copy-icon { opacity:0.9; }
+    .txid-cell:hover { opacity:0.85; }
 
     /* ── Page header ── */
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
@@ -3152,8 +3158,20 @@
       <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="dd-corp"></span></div>
       <div class="info-row"><span class="info-label">코인 / 네트워크</span><span class="info-value" id="dd-coin"></span></div>
       <div class="info-row"><span class="info-label">수량</span><span class="info-value" id="dd-amount" style="font-weight:700; color:var(--success);"></span></div>
-      <div class="info-row"><span class="info-label">송신 주소</span><span class="info-value" id="dd-addr" style="font-family:monospace; font-size:12px;"></span></div>
-      <div class="info-row"><span class="info-label">TXID</span><span class="info-value" id="dd-txid" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row">
+        <span class="info-label">송신 주소</span>
+        <span class="info-value" style="display:flex;align-items:flex-start;gap:8px;min-width:0;">
+          <span id="dd-addr" style="font-family:monospace;font-size:12px;word-break:break-all;flex:1;"></span>
+          <button type="button" class="btn btn-outline btn-xs" style="flex-shrink:0;" onclick="wlCopyAddrById('dd-addr',this)">&#128203; 복사</button>
+        </span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">TXID</span>
+        <span class="info-value" style="display:flex;align-items:flex-start;gap:8px;min-width:0;">
+          <span id="dd-txid" style="font-family:monospace;font-size:12px;word-break:break-all;flex:1;"></span>
+          <button type="button" class="btn btn-outline btn-xs" style="flex-shrink:0;" onclick="wlCopyAddrById('dd-txid',this)">&#128203; 복사</button>
+        </span>
+      </div>
     </div>
     <!-- 보류 사유 (보류 상태에서만 표시) -->
     <div id="dd-hold-section" style="display:none;" class="section-box">
@@ -3188,7 +3206,13 @@
       <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="wd-corp"></span></div>
       <div class="info-row"><span class="info-label">코인 / 네트워크</span><span class="info-value" id="wd-coin"></span></div>
       <div class="info-row"><span class="info-label">수량</span><span class="info-value" id="wd-amount" style="font-weight:700; color:var(--danger);"></span></div>
-      <div class="info-row"><span class="info-label">수신 주소</span><span class="info-value" id="wd-addr" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row">
+        <span class="info-label">수신 주소</span>
+        <span class="info-value" style="display:flex;align-items:flex-start;gap:8px;min-width:0;">
+          <span id="wd-addr" style="font-family:monospace;font-size:12px;word-break:break-all;flex:1;"></span>
+          <button type="button" class="btn btn-outline btn-xs" style="flex-shrink:0;" onclick="wlCopyAddrById('wd-addr',this)">&#128203; 복사</button>
+        </span>
+      </div>
     </div>
     <!-- 서명 대기 상태 -->
     <div id="wd-signing-section" style="display:none;" class="section-box">
@@ -3199,7 +3223,13 @@
     <!-- TXID 섹션 (출금중/완료) -->
     <div id="wd-txid-section" style="display:none;" class="section-box">
       <div class="section-box-title">TXID</div>
-      <div class="info-row" style="border-bottom:none;"><span class="info-label">TXID</span><span class="info-value" id="wd-txid" style="font-family:monospace; font-size:12px;"></span></div>
+      <div class="info-row" style="border-bottom:none;">
+        <span class="info-label">TXID</span>
+        <span class="info-value" style="display:flex;align-items:flex-start;gap:8px;min-width:0;">
+          <span id="wd-txid" style="font-family:monospace;font-size:12px;word-break:break-all;flex:1;"></span>
+          <button type="button" class="btn btn-outline btn-xs" style="flex-shrink:0;" onclick="wlCopyAddrById('wd-txid',this)">&#128203; 복사</button>
+        </span>
+      </div>
     </div>
     <!-- 완료 타임라인 -->
     <div id="wd-timeline-section" style="display:none;" class="section-box">
@@ -3503,6 +3533,52 @@
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-coin-add-reject')">취소</button>
     <button class="btn btn-danger" onclick="confirmCoinAddReject()">거절 → OTP</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 콜드월렛 지갑 상세 (6-6-5)
+══════════════════════════════════════ -->
+<div class="modal modal-wide" id="modal-cw-wallet-detail" style="max-width:480px;">
+  <div class="modal-header">
+    <span class="modal-title">&#128274; 지갑 상세 정보</span>
+    <button class="modal-close" type="button" onclick="closeModal('modal-cw-wallet-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="padding:0;">
+    <div class="section-box" style="border-radius:0;border:none;border-bottom:1px solid var(--border);margin:0;">
+      <div class="section-box-title">기본 정보</div>
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="cwdet-corp" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="cwdet-name" style="font-weight:700;"></span></div>
+      <div class="info-row"><span class="info-label">코인</span><span class="info-value" id="cwdet-coin"></span></div>
+      <div class="info-row">
+        <span class="info-label">지갑 주소</span>
+        <span class="info-value" style="display:flex;align-items:flex-start;gap:8px;min-width:0;">
+          <span id="cwdet-addr" style="font-family:monospace;font-size:11.5px;word-break:break-all;flex:1;"></span>
+          <button type="button" class="btn btn-outline btn-xs" id="cwdet-addr-copy" style="flex-shrink:0;" onclick="wlCopyAddrById('cwdet-addr',this)">&#128203; 복사</button>
+        </span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">잔액</span>
+        <span class="info-value" id="cwdet-balance" style="font-family:monospace;font-weight:700;font-size:14px;"></span>
+      </div>
+      <div class="info-row" style="border-bottom:none;">
+        <span class="info-label">상태</span>
+        <span class="info-value" id="cwdet-status"></span>
+      </div>
+    </div>
+    <div id="cwdet-inactive-section" style="display:none;" class="section-box" style="border-radius:0;border:none;border-bottom:1px solid var(--border);margin:0;">
+      <div class="section-box-title" style="color:#92400E;">&#9888; 비활성화 이력</div>
+      <div class="info-row"><span class="info-label">비활성화 사유</span><span class="info-value" id="cwdet-deact-reason" style="color:#92400E;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">비활성화 일시</span><span class="info-value" id="cwdet-deact-at" style="color:var(--text-secondary);"></span></div>
+    </div>
+    <div id="cwdet-deleted-section" style="display:none;" class="section-box" style="border-radius:0;border:none;margin:0;">
+      <div class="section-box-title" style="color:var(--danger);">&#10005; 삭제 이력</div>
+      <div class="info-row"><span class="info-label">삭제 사유</span><span class="info-value" id="cwdet-del-reason" style="color:var(--danger);"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">삭제 일시</span><span class="info-value" id="cwdet-del-at" style="color:var(--text-secondary);"></span></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" onclick="closeModal('modal-cw-wallet-detail')">닫기</button>
   </div>
 </div>
 
@@ -5909,8 +5985,13 @@
       var typeBadge = r.type === 'deposit'
         ? '<span class="badge badge-info">입금</span>'
         : '<span class="badge badge-purple">출금</span>';
+      var _txShort = r.txid ? (r.txid.length > 20 ? r.txid.slice(0,10) + '\u2026' + r.txid.slice(-6) : r.txid) : '';
       var txidCell = r.txid
-        ? '<span style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;" title="' + r.txid + '">' + r.txid + '</span>'
+        ? '<span class="mask-wrap txid-cell" onclick="copyTxid(\'' + r.txid.replace(/'/g, '\\x27') + '\')">'
+          + '<span style="font-family:monospace;font-size:11px;color:var(--primary);">' + _txShort + '</span>'
+          + '<span class="txid-copy-icon">&#128203;</span>'
+          + '<span class="mask-tip">' + r.txid + '<br><span style="opacity:0.65;font-size:10px;">클릭하여 복사</span></span>'
+          + '</span>'
         : '<span style="color:var(--text-secondary);">—</span>';
       var addrCell = r.addr
         ? '<span style="font-family:monospace; font-size:11px; color:var(--text-secondary);" title="' + r.addr + '">' + r.addr + '</span>'
@@ -5939,6 +6020,18 @@
         + (showAction ? '<td>' + actionCell + '</td>' : '')
         + '</tr>';
     }).join('');
+  }
+
+  function copyTxid(txid) {
+    if (!txid) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(txid).then(function() { showToast('TXID가 복사되었습니다.', 1500); });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = txid; ta.style.cssText = 'position:fixed;opacity:0;';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('TXID가 복사되었습니다.', 1500);
+    }
   }
 
   function renderTxHoldTable() {
@@ -6327,19 +6420,42 @@
   function openCWWalletDetail(idx) {
     var w = _CW_ALL_WALLETS[idx];
     if (!w) return;
-    // Reuse deactivate modal body in read-only mode for detail view
-    // Or show a simple toast-style alert — use deactivate modal body as info view
-    var statusMap = { active:'● 활성화', inactive:'○ 비활성화', pending:'⏳ 요청 중', deleted:'✕ 삭제됨' };
-    var lines = [
-      '지갑명: ' + w.walletName,
-      '코인: ' + w.coin,
-      '주소: ' + w.addr,
-      '잔액: ' + w.balance,
-      '상태: ' + (statusMap[w.status] || w.status),
-    ];
-    if (w.status === 'inactive' && w.deactivatedReason) lines.push('비활성화 사유: ' + w.deactivatedReason);
-    if (w.status === 'deleted' && w.deletedReason) lines.push('삭제 사유: ' + w.deletedReason);
-    showToast('[' + w.corp + '] ' + lines.join(' | '), 6000);
+
+    var statusBadge = {
+      active:   '<span class="badge badge-success">&#9679; 활성화</span>',
+      inactive: '<span class="badge badge-gray">&#9675; 비활성화</span>',
+      pending:  '<span class="badge badge-warning">&#9203; 요청 중</span>',
+      deleted:  '<span class="badge badge-danger">&#10005; 삭제됨</span>'
+    };
+
+    document.getElementById('cwdet-corp').textContent   = w.corp;
+    document.getElementById('cwdet-name').textContent   = w.walletName;
+    document.getElementById('cwdet-coin').innerHTML     = '<span class="badge badge-info">' + w.coin + '</span>';
+    document.getElementById('cwdet-addr').textContent   = (w.addr && w.addr !== '—') ? w.addr : '—';
+    document.getElementById('cwdet-balance').textContent = w.balance + ' ' + w.coin;
+    document.getElementById('cwdet-status').innerHTML   = statusBadge[w.status] || w.status;
+
+    // 주소 복사 버튼: 주소가 없으면 숨김
+    var copyBtn = document.getElementById('cwdet-addr-copy');
+    if (copyBtn) copyBtn.style.display = (w.addr && w.addr !== '—') ? '' : 'none';
+
+    // 비활성화 이력
+    var inactiveSec = document.getElementById('cwdet-inactive-section');
+    inactiveSec.style.display = (w.status === 'inactive' && w.deactivatedReason) ? '' : 'none';
+    if (w.deactivatedReason) {
+      document.getElementById('cwdet-deact-reason').textContent = w.deactivatedReason;
+      document.getElementById('cwdet-deact-at').textContent = w.deactivatedAt || '—';
+    }
+
+    // 삭제 이력
+    var deletedSec = document.getElementById('cwdet-deleted-section');
+    deletedSec.style.display = (w.status === 'deleted') ? '' : 'none';
+    if (w.status === 'deleted') {
+      document.getElementById('cwdet-del-reason').textContent = w.deletedReason || '—';
+      document.getElementById('cwdet-del-at').textContent = w.deletedAt || '—';
+    }
+
+    openModal('modal-cw-wallet-detail');
   }
 
   /* ── 6-6-6: 비활성화 ── */
