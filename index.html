@@ -298,9 +298,10 @@
     /* ══════════════════════════
        PAGE: WALLET DETAIL
     ══════════════════════════ */
-    .wallet-detail-layout { display: flex; gap: 20px; align-items: flex-start; }
-    .wallet-detail-left { width: 280px; min-width: 260px; flex-shrink: 0; }
-    .wallet-detail-right { flex: 1; min-width: 0; }
+    .wallet-detail-header { display:grid; grid-template-columns:1fr auto; gap:16px; align-items:flex-start; margin-bottom:16px; }
+    .wallet-detail-info-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; padding-top:14px; border-top:1px solid var(--border); margin-top:10px; }
+    .wd-info-label { font-size:11px; color:var(--text-secondary); margin-bottom:4px; }
+    .wd-info-value { font-size:13px; font-weight:600; }
     .wallet-info-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-size: 13px; }
     .wallet-info-row:last-of-type { border-bottom: none; }
     .wallet-info-label { color: var(--text-secondary); font-size: 12px; }
@@ -314,7 +315,28 @@
     .coin-name-row { display: flex; align-items: center; gap: 8px; }
     .coin-name-text { font-size: 13px; font-weight: 600; }
     .coin-network-text { font-size: 11px; color: var(--text-secondary); }
-
+    /* History tab */
+    .hist-filter-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px 20px; border-bottom:1px solid var(--border); }
+    .hist-type-tabs { display:flex; gap:4px; }
+    .hist-type-tab { padding:5px 14px; border-radius:20px; border:1px solid var(--border); font-size:12px; cursor:pointer; background:#fff; color:var(--text-secondary); transition:all 0.15s; }
+    .hist-type-tab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .hist-date-presets { display:flex; gap:4px; }
+    .hist-preset-btn { padding:4px 10px; border-radius:6px; border:1px solid var(--border); font-size:11px; cursor:pointer; background:#fff; color:var(--text-secondary); }
+    .hist-preset-btn.active { background:#EFF6FF; color:var(--primary); border-color:#BFDBFE; }
+    .hist-empty { text-align:center; padding:40px 20px; color:var(--text-secondary); font-size:13px; }
+    /* Signature rows in tx detail */
+    .sig-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #F1F5F9; font-size:13px; }
+    .sig-row:last-child { border-bottom:none; }
+    .sig-icon-done { width:20px; height:20px; border-radius:50%; background:var(--success); color:#fff; font-size:11px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .sig-icon-wait { width:20px; height:20px; border-radius:50%; background:#E2E8F0; color:var(--text-secondary); font-size:11px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+    /* Wallet-specific actlog */
+    .wal-al-filter-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    /* Info rows in tx detail modals */
+    .tx-info-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #F1F5F9; font-size:13px; }
+    .tx-info-row:last-child { border-bottom:none; }
+    .tx-info-label { color:var(--text-secondary); font-size:12px; }
+    .tx-section { background:#F8FAFC; border-radius:8px; padding:12px 14px; margin-bottom:12px; }
+    .tx-section-title { font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
     /* History tab stats */
     .history-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
     .history-stat { background: #F8FAFC; border-radius: 8px; padding: 12px 14px; }
@@ -938,6 +960,178 @@
   </div>
   <div class="modal-footer" id="wd-modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-withdrawal-detail')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 출금 상세 (4-6-1)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-tx-detail-wd" style="max-width:520px;">
+  <div class="modal-header">
+    <span class="modal-title">&#8599; 출금 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-tx-detail-wd')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- Status + IDs -->
+    <div class="tx-section">
+      <div class="tx-info-row">
+        <span class="tx-info-label">상태</span>
+        <span id="txwd-status"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">출금 번호</span>
+        <span id="txwd-id" style="font-family:monospace; font-size:12px;"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">요청일시</span>
+        <span id="txwd-date"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">요청자</span>
+        <span id="txwd-requester" style="font-weight:600;"></span>
+      </div>
+    </div>
+    <!-- Amounts -->
+    <div class="tx-section">
+      <div class="tx-section-title">출금 금액</div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">코인</span>
+        <span id="txwd-coin"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">출금 수량</span>
+        <span id="txwd-amount" style="font-weight:700;"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">수수료</span>
+        <span id="txwd-fee"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">실제 출금</span>
+        <span id="txwd-actual" style="font-weight:600;"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">KRW 환산</span>
+        <span id="txwd-krw" style="color:var(--text-secondary);"></span>
+      </div>
+    </div>
+    <!-- Address + TXID -->
+    <div class="tx-section">
+      <div class="tx-section-title">수신 정보</div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">수신 주소</span>
+        <span id="txwd-toaddr" style="font-family:monospace; font-size:12px;"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">수신 유형</span>
+        <span id="txwd-addr-type"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">TXID</span>
+        <span id="txwd-txid"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">메모</span>
+        <span id="txwd-memo" style="color:var(--text-secondary);"></span>
+      </div>
+    </div>
+    <!-- Signature table -->
+    <div class="tx-section" id="txwd-sig-section">
+      <div class="tx-section-title" id="txwd-sig-title">서명 현황</div>
+      <div id="txwd-sig-list"></div>
+    </div>
+    <!-- Status note -->
+    <div id="txwd-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; margin-top:4px;"></div>
+  </div>
+  <div class="modal-footer" id="txwd-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-tx-detail-wd')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 입금 상세 (4-6-2)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-tx-detail-dep" style="max-width:500px;">
+  <div class="modal-header">
+    <span class="modal-title">&#8600; 입금 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-tx-detail-dep')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="tx-section">
+      <div class="tx-info-row">
+        <span class="tx-info-label">상태</span>
+        <span id="txdep-status"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">코인</span>
+        <span id="txdep-coin"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">입금 수량</span>
+        <span id="txdep-amount" style="font-weight:700;"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">KRW 환산</span>
+        <span id="txdep-krw" style="color:var(--text-secondary);"></span>
+      </div>
+    </div>
+    <div class="tx-section">
+      <div class="tx-section-title">송신 정보</div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">송신 주소</span>
+        <span id="txdep-fromaddr" style="font-family:monospace; font-size:12px;"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">송신 주소 유형</span>
+        <span id="txdep-addr-type"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">TXID</span>
+        <span id="txdep-txid"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">블록 확인</span>
+        <span id="txdep-confirm"></span>
+      </div>
+      <div class="tx-info-row">
+        <span class="tx-info-label">입금 일시</span>
+        <span id="txdep-date"></span>
+      </div>
+    </div>
+    <!-- Hold policy result (shown when status is hold/rejected) -->
+    <div id="txdep-hold-section" style="display:none;" class="tx-section">
+      <div class="tx-section-title" style="color:var(--warning);">&#9888; 보류 정책 결과</div>
+      <div id="txdep-hold-reasons"></div>
+    </div>
+    <div id="txdep-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; margin-top:4px;"></div>
+  </div>
+  <div class="modal-footer">
+    <div id="txdep-hold-btn-wrap" style="display:none; flex:1;">
+      <button class="btn btn-warning btn-sm" onclick="openTxHoldDetail()">&#9888; 보류 상세 보기</button>
+    </div>
+    <button class="btn btn-outline" onclick="closeModal('modal-tx-detail-dep')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 입금 보류 상세 (4-6-3)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-tx-detail-hold" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title">&#9888; 입금 보류 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-tx-detail-hold')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
+      <div style="font-size:12px; font-weight:700; color:#92400E; margin-bottom:8px;">보류 사유 목록</div>
+      <div id="hold-reasons-list"></div>
+    </div>
+    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 14px; font-size:12px; color:#991B1B;">
+      &#9888; 해당 입금은 잔액에 반영되지 않습니다. 관리자 검토 후 처리됩니다.
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-tx-detail-hold')">닫기</button>
   </div>
 </div>
 
@@ -2536,229 +2730,235 @@
            PAGE: WALLET DETAIL
       ══════════════════════════ -->
       <div class="page" id="page-wallet-detail">
-        <div class="wallet-detail-layout">
-          <!-- Left info card -->
-          <div class="wallet-detail-left">
-            <div class="card">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                <div>
-                  <div style="font-size:15px; font-weight:700;">
-                    <div class="name-edit-wrap" id="wrap-detail">
-                      <span id="detailWalletName">BTC 보관 지갑 #1</span>
-                      <button class="edit-pencil-btn" title="이름 수정" onclick="startEditDetailName()">&#9998;</button>
-                    </div>
-                    <div class="name-inline-edit" id="edit-detail">
-                      <input class="name-inline-input" id="input-detail" value="BTC 보관 지갑 #1"
-                        oninput="onNameInput('input-detail','hint-detail','savebtn-detail',this.dataset.original)"
-                        onkeydown="if(event.key==='Enter')saveDetailName(); if(event.key==='Escape')cancelDetailName();" />
-                      <button class="name-confirm-btn" id="savebtn-detail" onclick="saveDetailName()" title="저장" disabled>&#10003;</button>
-                      <button class="name-cancel-btn" onclick="cancelDetailName()" title="취소">&#10005;</button>
-                    </div>
-                    <div class="name-inline-hint" id="hint-detail"></div>
-                  </div>
-                  <div style="font-size:11px; color:var(--text-secondary);">ID: 1687670</div>
+        <!-- 4-4: Top header card -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="wallet-detail-header">
+            <!-- Left: name + ID + status -->
+            <div>
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                <div class="name-edit-wrap" id="wrap-detail">
+                  <span id="detailWalletName" style="font-size:17px; font-weight:700;">운영 지갑 A</span>
+                  <button class="edit-pencil-btn" title="이름 수정" onclick="startEditDetailName()">&#9998;</button>
                 </div>
-                <span class="badge badge-success">&#9679; 활성화</span>
+                <span class="badge badge-success" id="detail-status-badge">&#9679; 활성화</span>
               </div>
-              <div class="wallet-info-row"><span class="wallet-info-label">코인</span><span style="font-weight:600;" id="detailCoin">BTC / Bitcoin</span></div>
-              <div class="wallet-info-row"><span class="wallet-info-label">주소</span>
-                <span style="font-family:monospace; font-size:12px;">bc1q...3f8e <span onclick="copyAddress()" style="cursor:pointer; color:var(--primary);">&#128203;</span></span>
+              <div class="name-inline-edit" id="edit-detail">
+                <input class="name-inline-input" id="input-detail" value=""
+                  oninput="onNameInput('input-detail','hint-detail','savebtn-detail',this.dataset.original)"
+                  onkeydown="if(event.key==='Enter')saveDetailName(); if(event.key==='Escape')cancelDetailName();" />
+                <button class="name-confirm-btn" id="savebtn-detail" onclick="saveDetailName()" title="저장" disabled>&#10003;</button>
+                <button class="name-cancel-btn" onclick="cancelDetailName()" title="취소">&#10005;</button>
               </div>
-              <div class="wallet-info-row"><span class="wallet-info-label">총 자산 (KRW)</span><span style="font-size:18px; font-weight:700;">₩0</span></div>
-              <div class="wallet-info-row">
-                <span class="wallet-info-label">서명 정책</span>
-                <span>
-                  <div style="font-size:12px; font-weight:600; margin-bottom:5px;">2 of 3</div>
-                  <div class="n-of-m">
-                    <div class="n-dot n-dot-filled">김</div>
-                    <div class="n-dot n-dot-filled">이</div>
-                    <div class="n-dot n-dot-empty">박</div>
-                  </div>
-                </span>
-              </div>
-              <div class="wallet-info-row" style="border-bottom:none;"><span class="wallet-info-label">요청자</span><span>김철수</span></div>
-              <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
-                <button class="btn btn-success btn-full" id="btn-detail-deposit" onclick="openDepositQR('BTC','Bitcoin Mainnet','bc1q4d2jK...3f8e')">&#8600; 입금 주소</button>
-                <button class="btn btn-warning btn-full" id="btn-detail-withdraw" onclick="openWithdrawal('BTC 보관 지갑 #1')">&#8599; 출금 신청</button>
-                <span class="role-tip-wrap full-width" id="wrap-detail-add-coin">
-                  <button class="btn btn-outline btn-full" id="btn-detail-add-coin" onclick="openSO('so-add-coin')">+ 코인 추가 <span style="font-size:10px; color:var(--text-secondary);">(Master)</span></button>
-                  <span class="role-tip">Master 계정만 사용 가능합니다.</span>
-                </span>
-              </div>
+              <div class="name-inline-hint" id="hint-detail"></div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">ID: <span id="detailWalletId">1687670</span></div>
+            </div>
+            <!-- Right: action buttons -->
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;">
+              <button class="btn btn-success btn-sm" id="btn-detail-deposit" onclick="openDepositAddr(_currentWalletId)">&#8600; 입금 주소</button>
+              <button class="btn btn-warning btn-sm" id="btn-detail-withdraw" onclick="openWithdrawal(_currentWalletLabel)">&#8599; 출금 신청</button>
+              <span class="role-tip-wrap" id="wrap-detail-add-coin">
+                <button class="btn btn-outline btn-sm" id="btn-detail-add-coin" onclick="openAddCoin()">+ 코인 추가 <span style="font-size:10px; color:var(--text-secondary);">(Master)</span></button>
+                <span class="role-tip">Master 계정만 사용 가능합니다.</span>
+              </span>
             </div>
           </div>
-          <!-- Right tabs -->
-          <div class="wallet-detail-right">
-            <div class="card" style="padding:0;">
-              <div style="padding:16px 20px 0;">
-                <div class="tabs" id="walletDetailTabs">
-                  <div class="tab active" onclick="switchDetailTab(this,'coins')">Coins</div>
-                  <div class="tab" onclick="switchDetailTab(this,'history')">History</div>
-                  <div class="tab" onclick="switchDetailTab(this,'actlog')">활동 로그</div>
-                </div>
-              </div>
-              <!-- Coins Tab -->
-              <div id="detail-coins">
-                <div style="padding:12px 20px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border);">
-                  <span class="role-tip-wrap" id="wrap-coins-tab-add">
-                    <button class="btn btn-primary btn-sm" id="btn-coins-tab-add" onclick="openAddCoin()">+ 코인 추가</button>
-                    <span class="role-tip">Master 계정만 사용 가능합니다.</span>
-                  </span>
-                </div>
-                <!-- Active coins table -->
-                <div class="table-wrap" id="coins-active-wrap">
-                  <table>
-                    <thead><tr><th>코인</th><th>네트워크</th><th>입금 주소</th><th style="text-align:right;">잔액</th><th>Operation</th></tr></thead>
-                    <tbody id="coins-active-tbody"></tbody>
-                  </table>
-                </div>
-                <!-- Pending coins section -->
-                <div id="coins-pending-section" style="display:none; border-top:1px solid var(--border); padding:14px 20px;">
-                  <div style="font-size:12px; font-weight:700; color:var(--warning); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-                    &#9203; 요청 중인 코인 <span id="coins-pending-count" style="background:#FEF3C7; color:#92400E; border-radius:10px; padding:1px 8px; font-size:11px;"></span>
-                  </div>
-                  <div id="coins-pending-list"></div>
-                </div>
-                <!-- Rejected coins section -->
-                <div id="coins-rejected-section" style="display:none; border-top:1px solid var(--border); padding:14px 20px;">
-                  <div style="font-size:12px; font-weight:700; color:var(--danger); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-                    &#10006; 거절된 코인
-                    <span id="coins-rejected-count" style="background:#FEE2E2; color:#991B1B; border-radius:10px; padding:1px 8px; font-size:11px;"></span>
-                    <span style="font-size:11px; font-weight:400; color:var(--text-secondary); margin-left:4px;">[상세]에서 거절 사유 확인 및 재요청 가능</span>
-                  </div>
-                  <div id="coins-rejected-list"></div>
-                </div>
-              </div>
-              <!-- Activity Log Tab (4-8) -->
-              <div id="detail-actlog" style="display:none;">
-                <div style="padding:14px 20px; border-bottom:1px solid var(--border);">
-                  <!-- Filter bar -->
-                  <div class="al-filter-bar">
-                    <input type="date" id="al-date-from" value="2025-10-08" title="시작일" />
-                    <span style="font-size:12px; color:var(--text-secondary);">~</span>
-                    <input type="date" id="al-date-to" value="2026-04-07" title="종료일" />
-                    <select id="al-cat-filter" onchange="renderActivityLog()">
-                      <option value="">전체 유형</option>
-                      <option value="wallet">지갑 관리</option>
-                      <option value="coin">코인 관리</option>
-                      <option value="withdraw">출금 관리</option>
-                      <option value="strategy">Strategy Engine</option>
-                      <option value="whitelist">Whitelist</option>
-                      <option value="account">계정 관리</option>
-                    </select>
-                    <select id="al-acct-filter" onchange="renderActivityLog()">
-                      <option value="">전체 계정</option>
-                      <option value="김철수">김철수</option>
-                      <option value="이영희">이영희</option>
-                      <option value="박민준">박민준</option>
-                      <option value="Admin">Admin</option>
-                    </select>
-                    <button class="btn btn-outline btn-sm al-csv-btn" onclick="downloadALCSV()">&#8595; CSV</button>
-                    <button class="btn btn-outline btn-sm" onclick="renderActivityLog()" style="margin-left:0;">&#8635; 새로고침</button>
-                  </div>
-                  <div style="font-size:11px; color:var(--text-secondary);">* 최근 30일 기본 표시 · 읽기 전용 (Master·일반 모두 조회 가능)</div>
-                </div>
-                <!-- Table -->
-                <div class="table-wrap" style="overflow-x:auto;">
-                  <table class="al-table" id="al-table">
-                    <thead>
-                      <tr>
-                        <th style="width:130px;">일시</th>
-                        <th style="width:90px;">카테고리</th>
-                        <th>이벤트 · 요약</th>
-                        <th style="width:80px;">처리 계정</th>
-                        <th style="width:50px;"></th>
-                      </tr>
-                    </thead>
-                    <tbody id="al-tbody"></tbody>
-                  </table>
-                </div>
-                <div id="al-empty" style="display:none; text-align:center; padding:30px; font-size:13px; color:var(--text-secondary);">조건에 맞는 활동 기록이 없습니다.</div>
-              </div>
-              <!-- History Tab -->
-              <div id="detail-history" style="display:none; padding:16px 20px;">
-                <!-- Filters + stats -->
-                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
-                  <div class="tabs" style="border:none; flex-wrap:wrap; gap:4px;">
-                    <div class="tab active" style="border:1px solid var(--border); border-radius:20px; padding:5px 14px; margin-bottom:0; font-size:12px;" onclick="switchSimpleTab(this)">전체 All</div>
-                    <div class="tab" style="border:1px solid var(--border); border-radius:20px; padding:5px 14px; margin-bottom:0; font-size:12px;" onclick="switchSimpleTab(this)">입금</div>
-                    <div class="tab" style="border:1px solid var(--border); border-radius:20px; padding:5px 14px; margin-bottom:0; font-size:12px;" onclick="switchSimpleTab(this)">출금</div>
-                  </div>
-                  <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
-                    <input type="date" class="form-control" style="width:140px; padding:6px 10px; font-size:12px;" value="2025-01-01" />
-                    <input type="date" class="form-control" style="width:140px; padding:6px 10px; font-size:12px;" value="2025-12-31" />
-                    <button class="btn btn-outline btn-sm">&#8595; CSV</button>
-                  </div>
-                </div>
-                <div class="history-stats" style="margin-bottom:14px;">
-                  <div class="history-stat"><div class="history-stat-label">총 입금액</div><div class="history-stat-value" style="color:var(--success);">₩0</div></div>
-                  <div class="history-stat"><div class="history-stat-label">총 출금액</div><div class="history-stat-value" style="color:var(--danger);">₩0</div></div>
-                  <div class="history-stat"><div class="history-stat-label">이번달 거래</div><div class="history-stat-value" style="color:var(--primary);">3건</div></div>
-                  <div class="history-stat"><div class="history-stat-label">처리 중</div><div class="history-stat-value" style="color:var(--warning);">1건</div></div>
-                </div>
-                <div class="table-wrap">
-                  <table>
-                    <thead><tr><th>일시</th><th>유형</th><th>코인</th><th style="text-align:right;">수량</th><th>상태</th><th>TXID</th><th>상세</th></tr></thead>
-                    <tbody>
-                      <tr>
-                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-20 14:32:08</td>
-                        <td><span class="badge badge-info">입금</span></td>
-                        <td>USDT / TRON</td>
-                        <td style="text-align:right; font-weight:600; color:var(--success);">+1,000.00</td>
-                        <td><span class="badge badge-success">● 완료</span></td>
-                        <td style="font-family:monospace; font-size:11px; cursor:pointer; color:var(--primary);">0xa1b2...f9e8</td>
-                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                      </tr>
-                      <tr>
-                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-19 09:15:44</td>
-                        <td><span class="badge badge-warning">출금</span></td>
-                        <td>ETH / Ethereum</td>
-                        <td style="text-align:right; font-weight:600; color:var(--danger);">-0.5000</td>
-                        <td><span class="badge badge-warning">⏳ 서명 대기</span></td>
-                        <td style="font-family:monospace; font-size:11px; cursor:pointer; color:var(--primary);">0xd4e5...a2b1</td>
-                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                      </tr>
-                      <tr>
-                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-18 22:07:33</td>
-                        <td><span class="badge badge-info">입금</span></td>
-                        <td>BTC / Bitcoin</td>
-                        <td style="text-align:right; font-weight:600; color:var(--success);">+0.0250</td>
-                        <td><span class="badge badge-success">● 완료</span></td>
-                        <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
-                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                      </tr>
-                      <tr>
-                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-17 16:44:20</td>
-                        <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
-                        <td>USDT / TRON</td>
-                        <td style="text-align:right; font-weight:600; color:var(--danger);">-200.00</td>
-                        <td><span class="badge badge-purple">🔄 처리 중</span></td>
-                        <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
-                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                      </tr>
-                      <tr>
-                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-16 11:22:05</td>
-                        <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
-                        <td>BTC / Bitcoin</td>
-                        <td style="text-align:right; font-weight:600; color:var(--danger);">-0.0050</td>
-                        <td><span class="badge badge-info">↗ 출금 중</span></td>
-                        <td style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;">0xf1e2...c3b4</td>
-                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                      </tr>
-                      <tr>
-                        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">2025-11-15 08:55:30</td>
-                        <td><span class="badge badge-warning" style="background:#FFF7ED; color:#F97316;">↗ 출금</span></td>
-                        <td>ETH / Ethereum</td>
-                        <td style="text-align:right; font-weight:600; color:var(--danger);">-1.0000</td>
-                        <td><span class="badge badge-danger">✕ 거절</span></td>
-                        <td style="font-family:monospace; font-size:11px; color:var(--text-secondary);">—</td>
-                        <td><button class="btn btn-outline btn-xs" onclick="openModal('modal-withdrawal-detail')">보기</button></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+          <!-- Info grid: 총자산 / 서명정책 / 요청자 -->
+          <div class="wallet-detail-info-grid">
+            <div>
+              <div class="wd-info-label">총 자산 (KRW)</div>
+              <div style="font-size:20px; font-weight:700;" id="detail-total-krw">₩0</div>
+            </div>
+            <div>
+              <div class="wd-info-label">서명 정책</div>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
+                <span class="sig-badge" id="detail-sig-text">2 of 3</span>
+                <span class="sig-avatars" id="detail-sig-avatars"></span>
               </div>
             </div>
+            <div>
+              <div class="wd-info-label">요청자</div>
+              <div class="wd-info-value" id="detail-requester">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs card -->
+        <div class="card" style="padding:0;">
+          <div style="padding:16px 20px 0;">
+            <div class="tabs" id="walletDetailTabs">
+              <div class="tab active" onclick="switchDetailTab(this,'coins')">Coins</div>
+              <div class="tab" onclick="switchDetailTab(this,'history')">History</div>
+              <div class="tab" onclick="switchDetailTab(this,'actlog')">활동 로그</div>
+            </div>
+          </div>
+
+          <!-- ─── COINS TAB (4-5) ─── -->
+          <div id="detail-coins">
+            <div style="padding:12px 20px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border);">
+              <span class="role-tip-wrap" id="wrap-coins-tab-add">
+                <button class="btn btn-primary btn-sm" id="btn-coins-tab-add" onclick="openAddCoin()">+ 코인 추가</button>
+                <span class="role-tip">Master 계정만 사용 가능합니다.</span>
+              </span>
+            </div>
+            <!-- Active coins table: 8 cols -->
+            <div class="table-wrap" id="coins-active-wrap" style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>코인 / 심볼</th>
+                    <th>네트워크</th>
+                    <th>입금 주소</th>
+                    <th style="text-align:right;">수량</th>
+                    <th style="text-align:right;">현재가 (KRW)</th>
+                    <th style="text-align:right;">평가금액 (KRW)</th>
+                    <th>상태</th>
+                    <th style="text-align:center;">액션</th>
+                  </tr>
+                </thead>
+                <tbody id="coins-active-tbody"></tbody>
+              </table>
+            </div>
+            <!-- Pending coins section -->
+            <div id="coins-pending-section" style="display:none; border-top:1px solid var(--border); padding:14px 20px;">
+              <div style="font-size:12px; font-weight:700; color:var(--warning); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                &#9203; 요청 중인 코인 <span id="coins-pending-count" style="background:#FEF3C7; color:#92400E; border-radius:10px; padding:1px 8px; font-size:11px;"></span>
+              </div>
+              <div id="coins-pending-list"></div>
+            </div>
+            <!-- Rejected coins section -->
+            <div id="coins-rejected-section" style="display:none; border-top:1px solid var(--border); padding:14px 20px;">
+              <div style="font-size:12px; font-weight:700; color:var(--danger); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                &#10006; 거절된 코인
+                <span id="coins-rejected-count" style="background:#FEE2E2; color:#991B1B; border-radius:10px; padding:1px 8px; font-size:11px;"></span>
+                <span style="font-size:11px; font-weight:400; color:var(--text-secondary); margin-left:4px;">[상세]에서 거절 사유 확인 및 재요청 가능</span>
+              </div>
+              <div id="coins-rejected-list"></div>
+            </div>
+          </div>
+
+          <!-- ─── HISTORY TAB (4-6 / 4-7) ─── -->
+          <div id="detail-history" style="display:none;">
+            <!-- Filter bar -->
+            <div class="hist-filter-bar">
+              <!-- Type tabs -->
+              <div class="hist-type-tabs">
+                <button class="hist-type-tab active" onclick="setHistType('all',this)">전체</button>
+                <button class="hist-type-tab" onclick="setHistType('deposit',this)">입금</button>
+                <button class="hist-type-tab" onclick="setHistType('withdrawal',this)">출금</button>
+              </div>
+              <div style="width:1px; height:20px; background:var(--border); margin:0 4px;"></div>
+              <!-- Date presets -->
+              <div class="hist-date-presets">
+                <button class="hist-preset-btn" onclick="setHistPreset('today',this)">오늘</button>
+                <button class="hist-preset-btn active" onclick="setHistPreset('7d',this)">7일</button>
+                <button class="hist-preset-btn" onclick="setHistPreset('30d',this)">30일</button>
+                <button class="hist-preset-btn" onclick="setHistPreset('90d',this)">90일</button>
+                <button class="hist-preset-btn" onclick="setHistPreset('custom',this)">직접입력</button>
+              </div>
+              <div id="hist-custom-dates" style="display:none; gap:6px; align-items:center;">
+                <input type="date" id="hist-date-from" class="form-control" style="width:130px; padding:5px 8px; font-size:12px;" />
+                <span style="font-size:12px; color:var(--text-secondary);">~</span>
+                <input type="date" id="hist-date-to" class="form-control" style="width:130px; padding:5px 8px; font-size:12px;" />
+              </div>
+              <div style="margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <select id="hist-coin-filter" class="form-control" style="width:auto; padding:6px 10px; font-size:12px;" onchange="renderHistoryTab()">
+                  <option value="">전체 코인</option>
+                  <option value="BTC">BTC</option>
+                  <option value="ETH">ETH</option>
+                  <option value="USDT">USDT</option>
+                </select>
+                <select id="hist-status-filter" class="form-control" style="width:auto; padding:6px 10px; font-size:12px;" onchange="renderHistoryTab()">
+                  <option value="">전체 상태</option>
+                  <optgroup label="출금">
+                    <option value="pending_sig">⏳ 서명 대기</option>
+                    <option value="processing">🔄 처리 중</option>
+                    <option value="broadcasting">↗ 출금 중</option>
+                    <option value="completed_wd">● 완료</option>
+                    <option value="rejected_wd">✕ 거절</option>
+                  </optgroup>
+                  <optgroup label="입금">
+                    <option value="confirming">⏳ 확인 중</option>
+                    <option value="hold">⚠ 보류</option>
+                    <option value="completed_dep">● 완료</option>
+                    <option value="rejected_dep">✕ 거절</option>
+                  </optgroup>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="exportHistCSV()">&#8595; CSV</button>
+              </div>
+            </div>
+            <!-- Table -->
+            <div class="table-wrap" style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:140px;">일시</th>
+                    <th style="width:55px;">유형</th>
+                    <th>코인</th>
+                    <th style="text-align:right;">수량</th>
+                    <th>상태</th>
+                    <th>TXID</th>
+                    <th style="width:55px;">상세</th>
+                  </tr>
+                </thead>
+                <tbody id="hist-tbody"></tbody>
+              </table>
+            </div>
+            <div id="hist-empty" style="display:none;" class="hist-empty">&#128203; 조건에 맞는 거래 내역이 없습니다.</div>
+          </div>
+
+          <!-- ─── ACTIVITY LOG TAB (4-8) ─── -->
+          <div id="detail-actlog" style="display:none;">
+            <div style="padding:14px 20px; border-bottom:1px solid var(--border);">
+              <div class="wal-al-filter-bar">
+                <input type="date" id="wal-al-from" value="2025-10-08" title="시작일" />
+                <span style="font-size:12px; color:var(--text-secondary);">~</span>
+                <input type="date" id="wal-al-to" value="2026-04-09" title="종료일" />
+                <select id="wal-al-type" onchange="renderWalletActlog()">
+                  <option value="">전체 유형</option>
+                  <option value="wallet_create">지갑 생성</option>
+                  <option value="wallet_rename">지갑 이름 변경</option>
+                  <option value="wallet_deactivate">지갑 비활성화</option>
+                  <option value="wallet_activate">지갑 활성화</option>
+                  <option value="wallet_delete_req">지갑 삭제 요청</option>
+                  <option value="wallet_delete_done">지갑 삭제 완료</option>
+                  <option value="coin_add_req">코인 추가 요청</option>
+                  <option value="coin_add_done">코인 추가 완료</option>
+                  <option value="coin_add_reject">코인 추가 거절</option>
+                  <option value="coin_rerequest">코인 재요청</option>
+                  <option value="withdraw_request">출금 신청</option>
+                  <option value="withdraw_sign">출금 서명</option>
+                  <option value="withdraw_reject">출금 거절</option>
+                  <option value="withdraw_complete">출금 완료</option>
+                  <option value="deposit_complete">입금 완료</option>
+                  <option value="deposit_hold">입금 보류</option>
+                  <option value="deposit_reject">입금 거절</option>
+                  <option value="policy_change">서명 정책 변경</option>
+                </select>
+                <select id="wal-al-acct" onchange="renderWalletActlog()">
+                  <option value="">전체 계정</option>
+                  <option value="김철수">김철수</option>
+                  <option value="이영희">이영희</option>
+                  <option value="박민준">박민준</option>
+                  <option value="System">System</option>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="renderWalletActlog()">&#8635; 새로고침</button>
+              </div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:8px;">* 이 지갑의 활동만 표시됩니다 · 읽기 전용</div>
+            </div>
+            <div class="table-wrap" style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:140px;">일시</th>
+                    <th style="width:110px;">유형</th>
+                    <th>내용 요약</th>
+                    <th style="width:90px;">처리 계정</th>
+                  </tr>
+                </thead>
+                <tbody id="wal-al-tbody"></tbody>
+              </table>
+            </div>
+            <div id="wal-al-empty" style="display:none; text-align:center; padding:30px; font-size:13px; color:var(--text-secondary);">조건에 맞는 활동 기록이 없습니다.</div>
           </div>
         </div>
       </div>
@@ -3483,15 +3683,56 @@
 
   function openWalletDetail(walletId) {
     const wData = _WALLET_DATA.find(w => w.id === walletId);
-    // Read current name from the live label span (may have been inline-edited)
     const lblEl = document.getElementById('lbl-' + walletId);
     const wName = lblEl ? lblEl.textContent.trim() : (wData ? wData.name : '지갑');
-    const coinSummary = wData ? wData.coins.map(c => c.coin + ' / ' + c.network).join(', ') : '—';
-    document.getElementById('detailWalletName').textContent = wName;
-    document.getElementById('input-detail').value = wName;
-    document.getElementById('detailCoin').textContent = coinSummary;
+
     _currentWalletLabel = wName;
+    _currentWalletId = walletId;
+
+    // Header fields
+    document.getElementById('detailWalletName').textContent = wName;
+    const inp = document.getElementById('input-detail');
+    inp.value = wName;
+    inp.dataset.original = wName;
+
+    if (wData) {
+      document.getElementById('detailWalletId').textContent = wData.walletId || '—';
+      const statusBadgeEl = document.getElementById('detail-status-badge');
+      statusBadgeEl.className = wData.status === 'active' ? 'badge badge-success' : 'badge badge-gray';
+      statusBadgeEl.textContent = wData.status === 'active' ? '● 활성화' : '● 비활성화';
+      const totalKRW = wData.totalKRW || 0;
+      document.getElementById('detail-total-krw').textContent = '₩' + totalKRW.toLocaleString();
+      // Sig policy
+      const sp = wData.sigPolicy;
+      document.getElementById('detail-sig-text').textContent = sp.n + ' of ' + sp.m;
+      document.getElementById('detail-sig-avatars').innerHTML = sp.signers.map(s =>
+        `<span class="sig-avatar">${s}</span>`).join('');
+      document.getElementById('detail-requester').textContent = wData.requester || '—';
+
+      // Sync _COIN_DATA from wData.coins (active ones with price data)
+      const priceMap = { BTC:140000000, ETH:5200000, USDT:1380 };
+      _COIN_DATA = _COIN_DATA.filter(c => c.status !== 'active'); // keep pending/rejected
+      wData.coins.forEach((c, i) => {
+        const price = priceMap[c.coin] || 0;
+        const existing = _COIN_DATA.find(d => d.coin === c.coin && d.network === c.network && d.status === 'active');
+        if (!existing) {
+          _COIN_DATA.push({
+            idx: 100 + i, coin: c.coin, network: c.network, addr: c.addr || c.fullAddr || '—',
+            balance: c.balance, status: 'active', requestedAt: '—',
+            currentPriceKRW: price, valueKRW: c.balanceKRW || 0
+          });
+        }
+      });
+    }
+
     document.getElementById('ac-wallet-label') && (document.getElementById('ac-wallet-label').textContent = wName);
+
+    // Reset tabs to Coins
+    document.getElementById('walletDetailTabs').querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===0));
+    document.getElementById('detail-coins').style.display   = 'block';
+    document.getElementById('detail-history').style.display = 'none';
+    document.getElementById('detail-actlog').style.display  = 'none';
+
     renderCoinsTab();
     showPage('wallet-detail', document.getElementById('nav-wallet'));
   }
@@ -3515,13 +3756,20 @@
     el.classList.add('active');
   }
 
-  function switchDetailTab(el, tabId) {
+  function switchDetailTab(el, tabId, coinFilter) {
     document.getElementById('walletDetailTabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('detail-coins').style.display   = tabId === 'coins'   ? 'block' : 'none';
     document.getElementById('detail-history').style.display = tabId === 'history' ? 'block' : 'none';
     document.getElementById('detail-actlog').style.display  = tabId === 'actlog'  ? 'block' : 'none';
-    if (tabId === 'actlog') renderActivityLog();
+    if (tabId === 'history') {
+      if (coinFilter) {
+        const sel = document.getElementById('hist-coin-filter');
+        if (sel) sel.value = coinFilter;
+      }
+      renderHistoryTab();
+    }
+    if (tabId === 'actlog') renderWalletActlog();
   }
 
   function switchWorkflowTab(el, status) {
@@ -3715,8 +3963,8 @@
       if (pencil) pencil.style.display = m ? '' : 'none';
     }
 
-    // 지갑 상세 카드 — 코인 추가
-    _setRoleBtn('btn-detail-add-coin', m, '', 'btn btn-outline btn-full');
+    // 지갑 상세 헤더 — 코인 추가
+    _setRoleBtn('btn-detail-add-coin', m, '', 'btn btn-outline btn-sm');
 
     // Coins 탭 — + 코인 추가
     _setRoleBtn('btn-coins-tab-add', m, '', 'btn btn-primary btn-sm');
@@ -3800,7 +4048,101 @@
   ];
   var _wdrrRequestId = null; // currently open rerequest ID
   let _currentWalletLabel = 'BTC 보관 지갑 #1';
+  let _currentWalletId = 'wallet1';
   let _cdDetailIdx = null;
+
+  /* ════════════════════════════════════
+     HISTORY DATA (4-6)
+  ════════════════════════════════════ */
+  const _HISTORY_DATA = [
+    { id:'WD-001', type:'withdrawal', coin:'USDT', network:'Ethereum (ERC-20)',
+      amount:5000, amountKRW:6900000, fee:3.5, actualAmount:4996.5,
+      status:'pending_sig', date:'2026-04-08 15:22:10',
+      toAddr:'0x4d4bC4a1...C3E1', addrType:'외부 지갑', txid:null, memo:'운영비 지출',
+      requester:'김철수',
+      signers:[{name:'김철수',done:true,at:'2026-04-08 15:24'},{name:'이영희',done:false,at:null},{name:'박민준',done:false,at:null}] },
+    { id:'WD-002', type:'withdrawal', coin:'ETH', network:'Ethereum Mainnet',
+      amount:0.5, amountKRW:2600000, fee:0.002, actualAmount:0.498,
+      status:'processing', date:'2026-04-07 10:22:33',
+      toAddr:'0x9a1b2c3d...E5F6', addrType:'내부 지갑', txid:null, memo:'',
+      requester:'김철수',
+      signers:[{name:'김철수',done:true,at:'2026-04-07 10:25'},{name:'이영희',done:true,at:'2026-04-07 10:28'},{name:'박민준',done:true,at:'2026-04-07 10:31'}] },
+    { id:'WD-003', type:'withdrawal', coin:'BTC', network:'Bitcoin Mainnet',
+      amount:0.005, amountKRW:700000, fee:0.00005, actualAmount:0.00495,
+      status:'broadcasting', date:'2026-04-06 14:10:05',
+      toAddr:'bc1q7xyz...9abc', addrType:'외부 지갑', txid:'0xf1e2d3c4...b5a6', memo:'',
+      requester:'이영희',
+      signers:[{name:'김철수',done:true,at:'2026-04-06 14:12'},{name:'이영희',done:true,at:'2026-04-06 14:15'},{name:'박민준',done:true,at:'2026-04-06 14:18'}] },
+    { id:'WD-004', type:'withdrawal', coin:'USDT', network:'Ethereum (ERC-20)',
+      amount:200, amountKRW:276000, fee:2.1, actualAmount:197.9,
+      status:'completed', date:'2026-04-04 09:30:00',
+      toAddr:'0x3f4e5a6b...A1B2', addrType:'Whitelist 주소', txid:'0x3f4e5a6b...a1b2', memo:'파트너 정산',
+      requester:'김철수',
+      signers:[{name:'김철수',done:true,at:'2026-04-04 09:33'},{name:'이영희',done:true,at:'2026-04-04 09:36'},{name:'박민준',done:true,at:'2026-04-04 09:40'}] },
+    { id:'WD-005', type:'withdrawal', coin:'ETH', network:'Ethereum Mainnet',
+      amount:1.0, amountKRW:5200000, fee:0.003, actualAmount:0.997,
+      status:'rejected', date:'2026-04-03 09:00:00',
+      toAddr:'0xUnkown1...F2F3', addrType:'미등록 주소', txid:null, memo:'',
+      requester:'이영희',
+      signers:[{name:'김철수',done:true,at:'2026-04-03 09:10'},{name:'이영희',done:true,at:'2026-04-03 09:12'},{name:'박민준',done:false,at:null}],
+      rejectNote:'수신 주소가 Whitelist에 등록되지 않은 주소입니다. 확인 후 재신청해주세요.',
+      rejectBy:'박민준', rejectAt:'2026-04-03 09:18' },
+    { id:'DEP-001', type:'deposit', coin:'USDT', network:'TRC20',
+      amount:1000, amountKRW:1380000,
+      status:'completed', date:'2026-04-05 14:32:08',
+      fromAddr:'TQnR7x...8Kjm', addrType:'외부 지갑', txid:'0xa1b2c3d4...f9e8',
+      blockConfirm:'6 / 6', holdReasons:[] },
+    { id:'DEP-002', type:'deposit', coin:'ETH', network:'Ethereum Mainnet',
+      amount:2.0, amountKRW:10400000,
+      status:'hold', date:'2026-04-02 22:07:33',
+      fromAddr:'0xAbCd...1234', addrType:'미등록 주소', txid:'0xd4e5f6...7a8b',
+      blockConfirm:'12 / 12',
+      holdReasons:['송신 주소가 Travel Rule 화이트리스트에 등록되지 않았습니다.','거래 금액이 임계값(₩10,000,000)을 초과합니다.'] },
+    { id:'DEP-003', type:'deposit', coin:'BTC', network:'Bitcoin Mainnet',
+      amount:0.025, amountKRW:3500000,
+      status:'completed', date:'2026-03-30 18:22:05',
+      fromAddr:'bc1qXyz...5678', addrType:'내부 지갑', txid:'0xb5c6d7e8...f1a2',
+      blockConfirm:'6 / 6', holdReasons:[] },
+    { id:'DEP-004', type:'deposit', coin:'USDT', network:'Ethereum (ERC-20)',
+      amount:50000, amountKRW:69000000,
+      status:'confirming', date:'2026-04-09 08:15:00',
+      fromAddr:'0x7fGh...9012', addrType:'외부 지갑', txid:'0xc7d8e9f0...2b3c',
+      blockConfirm:'2 / 12', holdReasons:[] },
+    { id:'DEP-005', type:'deposit', coin:'ETH', network:'Ethereum Mainnet',
+      amount:5.0, amountKRW:26000000,
+      status:'rejected', date:'2026-03-25 10:05:00',
+      fromAddr:'0xSanctioned...ADDR', addrType:'제재 주소', txid:'0xe8f9a0b1...3c4d',
+      blockConfirm:'6 / 6',
+      holdReasons:['OFAC 제재 주소로부터 송금된 거래입니다.'],
+      rejectNote:'제재 대상 주소로부터의 입금으로 영구 거절 처리되었습니다.', rejectAt:'2026-03-25 11:30' },
+  ];
+
+  /* History filter state */
+  var _histType = 'all';
+  var _histPreset = '7d';
+  var _histTxId = null; // for current hold modal
+
+  /* ════════════════════════════════════
+     WALLET ACTIVITY LOG DATA (4-8)
+  ════════════════════════════════════ */
+  const _WALLET_ACTLOG_DATA = [
+    { date:'2026-04-09 08:15', type:'deposit_complete', label:'입금 완료', summary:'DEP-004 · USDT 50,000 입금 완료 (확인중)', acct:'System' },
+    { date:'2026-04-08 15:22', type:'withdraw_request', label:'출금 신청', summary:'WD-001 · USDT 5,000 출금 신청 (수신: 0x4d4b...C3E1)', acct:'김철수' },
+    { date:'2026-04-07 10:31', type:'withdraw_sign',    label:'출금 서명', summary:'WD-002 · ETH 0.5 서명 완료 (3/3)', acct:'박민준' },
+    { date:'2026-04-07 10:28', type:'withdraw_sign',    label:'출금 서명', summary:'WD-002 · ETH 0.5 서명 완료 (2/3)', acct:'이영희' },
+    { date:'2026-04-07 10:25', type:'withdraw_sign',    label:'출금 서명', summary:'WD-002 · ETH 0.5 서명 완료 (1/3)', acct:'김철수' },
+    { date:'2026-04-06 14:10', type:'withdraw_request', label:'출금 신청', summary:'WD-003 · BTC 0.005 출금 신청 (수신: bc1q7xyz...9abc)', acct:'이영희' },
+    { date:'2026-04-05 14:32', type:'deposit_complete', label:'입금 완료', summary:'DEP-001 · USDT 1,000 입금 완료', acct:'System' },
+    { date:'2026-04-04 09:30', type:'withdraw_complete', label:'출금 완료', summary:'WD-004 · USDT 200 출금 완료 (TXID: 0x3f4e...)', acct:'System' },
+    { date:'2026-04-03 09:18', type:'withdraw_reject',  label:'출금 거절', summary:'WD-005 · ETH 1.0 출금 거절 — 미등록 수신 주소', acct:'박민준' },
+    { date:'2026-04-02 22:07', type:'deposit_hold',     label:'입금 보류', summary:'DEP-002 · ETH 2.0 입금 보류 (Travel Rule 미충족)', acct:'System' },
+    { date:'2026-03-30 18:22', type:'deposit_complete', label:'입금 완료', summary:'DEP-003 · BTC 0.025 입금 완료', acct:'System' },
+    { date:'2026-03-25 11:30', type:'deposit_reject',   label:'입금 거절', summary:'DEP-005 · ETH 5.0 입금 거절 — OFAC 제재 주소', acct:'System' },
+    { date:'2026-03-20 09:00', type:'policy_change',    label:'서명 정책 변경', summary:'서명 정책 변경: 1of1 → 2of3 (서명자: 김철수, 이영희, 박민준)', acct:'김철수' },
+    { date:'2026-01-15 11:30', type:'coin_add_done',    label:'코인 추가 완료', summary:'USDT / Ethereum (ERC-20) 코인 추가 완료', acct:'System' },
+    { date:'2026-01-15 10:00', type:'coin_add_req',     label:'코인 추가 요청', summary:'USDT / Ethereum (ERC-20) 코인 추가 요청', acct:'김철수' },
+    { date:'2025-12-01 09:00', type:'wallet_create',    label:'지갑 생성', summary:'운영 지갑 A 생성 완료 (ID: 1687670)', acct:'김철수' },
+  ];
 
   function updateACNetworks() {
     const coin = document.getElementById('ac-coin')?.value || '';
@@ -3825,30 +4167,38 @@
     const rejected = _COIN_DATA.filter(c => c.status === 'rejected');
     const walletName = _currentWalletLabel;
 
-    // Active table
+    // Active table — 8 columns (4-5)
     const tbody = document.getElementById('coins-active-tbody');
     if (tbody) {
       if (active.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-secondary); padding:30px;">활성화된 코인이 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-secondary); padding:30px;">활성화된 코인이 없습니다.</td></tr>`;
       } else {
         tbody.innerHTML = active.map(c => {
           const color = _COIN_COLORS[c.coin] || '#94A3B8';
           const sym   = _COIN_SYMBOLS[c.coin] || c.coin[0];
-          const netShort = c.network.replace(' Mainnet','').replace(' (ERC-20)','').replace(' (TRC-20)','');
+          const balNum = parseFloat(c.balance) || 0;
+          const price  = c.currentPriceKRW || 0;
+          const valKRW = c.valueKRW || Math.round(balNum * price);
+          const fmtBal = typeof c.balance === 'number' ? c.balance.toLocaleString(undefined,{maximumFractionDigits:8}) : c.balance;
+          const addrDisplay = c.addr && c.addr !== '—' ? c.addr : '—';
+          const addrCopyBtn = c.addr && c.addr !== '—'
+            ? ` <span onclick="event.stopPropagation(); navigator.clipboard&&navigator.clipboard.writeText('${c.addr}').then(()=>showToast('주소 복사됨'))" style="color:var(--primary); cursor:pointer;">&#128203;</span>`
+            : '';
           return `
-            <tr onclick="openCoinDetail(${c.idx})" style="cursor:pointer;">
+            <tr onclick="goToHistoryWithCoin('${c.coin}')" style="cursor:pointer;" title="History 탭에서 ${c.coin} 거래 조회">
               <td><div class="coin-name-row">
                 <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${sym}</div>
-                <div><div class="coin-name-text">${c.coin}</div><div class="coin-network-text">${netShort}</div></div>
+                <div><div class="coin-name-text">${c.coin}</div></div>
               </div></td>
               <td style="font-size:12px;">${c.network}</td>
-              <td style="font-family:monospace; font-size:12px; color:var(--primary); cursor:pointer;"
-                onclick="event.stopPropagation(); openDepositQR('${c.coin}','${c.network}','${c.addr}')">${c.addr} &#128203;</td>
-              <td style="text-align:right;"><div style="font-weight:600;">${c.balance} ${c.coin}</div><div style="font-size:11px; color:var(--text-secondary);">≈ ₩0</div></td>
-              <td onclick="event.stopPropagation()"><div class="op-icons">
-                <button class="op-btn" onclick="openDepositQR('${c.coin}','${c.network}','${c.addr}')" title="입금">&#8600;</button>
-                <button class="op-btn" onclick="openWithdrawal('${walletName}')" title="출금">&#8599;</button>
-              </div></td>
+              <td onclick="event.stopPropagation()" style="font-family:monospace; font-size:12px;">${addrDisplay}${addrCopyBtn}</td>
+              <td style="text-align:right; font-weight:600;">${fmtBal} ${c.coin}</td>
+              <td style="text-align:right; color:var(--text-secondary); font-size:12px;">₩${price.toLocaleString()}</td>
+              <td style="text-align:right; font-weight:600;">₩${valKRW.toLocaleString()}</td>
+              <td><span class="badge badge-success">● 활성</span></td>
+              <td onclick="event.stopPropagation()" style="text-align:center;">
+                <button class="op-btn" title="입금 주소 QR" onclick="openDepositQR('${c.coin}','${c.network}','${c.addr}')">&#8600;</button>
+              </td>
             </tr>`;
         }).join('');
       }
@@ -3907,6 +4257,306 @@
     }
 
     _updateTodoBadges();
+  }
+
+  /* ════════════════════════════════════
+     HISTORY TAB (4-6 / 4-7)
+  ════════════════════════════════════ */
+  function setHistType(type, el) {
+    _histType = type;
+    document.querySelectorAll('.hist-type-tab').forEach(t => t.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderHistoryTab();
+  }
+
+  function setHistPreset(preset, el) {
+    _histPreset = preset;
+    document.querySelectorAll('.hist-preset-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    const customDiv = document.getElementById('hist-custom-dates');
+    if (customDiv) customDiv.style.display = preset === 'custom' ? 'flex' : 'none';
+    renderHistoryTab();
+  }
+
+  function _histGetDateRange() {
+    const now = new Date('2026-04-09');
+    let from, to = new Date(now);
+    if (_histPreset === 'today')  { from = new Date(now); }
+    else if (_histPreset === '7d')  { from = new Date(now); from.setDate(from.getDate()-7); }
+    else if (_histPreset === '30d') { from = new Date(now); from.setDate(from.getDate()-30); }
+    else if (_histPreset === '90d') { from = new Date(now); from.setDate(from.getDate()-90); }
+    else {
+      const f = document.getElementById('hist-date-from');
+      const t2 = document.getElementById('hist-date-to');
+      from = f && f.value ? new Date(f.value) : new Date('2000-01-01');
+      to   = t2 && t2.value ? new Date(t2.value + 'T23:59:59') : to;
+    }
+    return { from, to };
+  }
+
+  function _histStatusBadge(type, status) {
+    const map = {
+      pending_sig:   '<span class="badge badge-warning">&#9203; 서명 대기</span>',
+      processing:    '<span class="badge badge-purple">&#128260; 처리 중</span>',
+      broadcasting:  '<span class="badge badge-info">&#8599; 출금 중</span>',
+      completed:     '<span class="badge badge-success">&#9679; 완료</span>',
+      completed_wd:  '<span class="badge badge-success">&#9679; 완료</span>',
+      rejected:      '<span class="badge badge-danger">&#10005; 거절</span>',
+      rejected_wd:   '<span class="badge badge-danger">&#10005; 거절</span>',
+      confirming:    '<span class="badge badge-warning">&#9203; 확인 중</span>',
+      hold:          '<span class="badge badge-orange">&#9888; 보류</span>',
+      completed_dep: '<span class="badge badge-success">&#9679; 완료</span>',
+      rejected_dep:  '<span class="badge badge-danger">&#10005; 거절</span>',
+    };
+    return map[status] || `<span class="badge badge-gray">${status}</span>`;
+  }
+
+  function renderHistoryTab() {
+    const tbody = document.getElementById('hist-tbody');
+    const empty = document.getElementById('hist-empty');
+    if (!tbody) return;
+
+    const coinF   = (document.getElementById('hist-coin-filter') || {}).value || '';
+    const statusF = (document.getElementById('hist-status-filter') || {}).value || '';
+    const { from, to } = _histGetDateRange();
+
+    let rows = _HISTORY_DATA.filter(h => {
+      if (_histType !== 'all' && h.type !== _histType) return false;
+      if (coinF && h.coin !== coinF) return false;
+      // status filter: map compound keys
+      if (statusF) {
+        const sKey = statusF.replace('_wd','').replace('_dep','');
+        if (h.status !== sKey && h.status !== statusF) return false;
+      }
+      const d = new Date(h.date);
+      if (d < from || d > to) return false;
+      return true;
+    });
+    // Sort newest first
+    rows.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+    if (rows.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    tbody.innerHTML = rows.map(h => {
+      const isWd = h.type === 'withdrawal';
+      const typeBadge = isWd
+        ? '<span class="badge" style="background:#FFF7ED; color:#F97316;">&#8599; 출금</span>'
+        : '<span class="badge badge-info">&#8600; 입금</span>';
+      const amtSign  = isWd ? '-' : '+';
+      const amtColor = isWd ? 'var(--danger)' : 'var(--success)';
+      const amtFmt   = isWd
+        ? h.amount.toLocaleString(undefined,{maximumFractionDigits:8})
+        : h.amount.toLocaleString(undefined,{maximumFractionDigits:8});
+      const txidHtml = h.txid
+        ? `<span style="font-family:monospace; font-size:11px; color:var(--primary); cursor:pointer;"
+             onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.txid}').then(()=>showToast('TXID 복사됨'))"
+             title="${h.txid}">${h.txid.slice(0,14)}... &#128203;</span>`
+        : '<span style="color:var(--text-secondary);">—</span>';
+      return `<tr>
+        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">${h.date}</td>
+        <td>${typeBadge}</td>
+        <td><span style="font-weight:600;">${h.coin}</span> <span style="font-size:11px; color:var(--text-secondary);">${h.network}</span></td>
+        <td style="text-align:right; font-weight:600; color:${amtColor};">${amtSign}${amtFmt}</td>
+        <td>${_histStatusBadge(h.type, h.status)}</td>
+        <td>${txidHtml}</td>
+        <td><button class="btn btn-outline btn-xs" onclick="openTxDetail('${h.id}')">보기</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function goToHistoryWithCoin(coinSymbol) {
+    const histTab = document.querySelector('#walletDetailTabs .tab:nth-child(2)');
+    switchDetailTab(histTab, 'history', coinSymbol);
+  }
+
+  function exportHistCSV() { showToast('CSV 다운로드는 데모에서 지원되지 않습니다.'); }
+
+  /* ════════════════════════════════════
+     TX DETAIL MODALS (4-6-1/2/3)
+  ════════════════════════════════════ */
+  function openTxDetail(id) {
+    const h = _HISTORY_DATA.find(d => d.id === id);
+    if (!h) return;
+    if (h.type === 'withdrawal') _openTxDetailWd(h);
+    else if (h.status === 'hold' || (h.type === 'deposit' && h.holdReasons && h.holdReasons.length)) _openTxDetailDep(h);
+    else _openTxDetailDep(h);
+  }
+
+  function _openTxDetailWd(h) {
+    document.getElementById('txwd-status').innerHTML = _histStatusBadge('withdrawal', h.status);
+    document.getElementById('txwd-id').textContent = h.id;
+    document.getElementById('txwd-date').textContent = h.date;
+    document.getElementById('txwd-requester').textContent = h.requester || '—';
+    document.getElementById('txwd-coin').textContent = h.coin + ' — ' + h.network;
+    document.getElementById('txwd-amount').textContent = h.amount.toLocaleString() + ' ' + h.coin;
+    document.getElementById('txwd-fee').textContent = (h.fee || 0) + ' ' + h.coin;
+    document.getElementById('txwd-actual').textContent = (h.actualAmount || h.amount) + ' ' + h.coin;
+    document.getElementById('txwd-krw').textContent = '≈ ₩' + (h.amountKRW || 0).toLocaleString();
+    // To address with copy
+    const toEl = document.getElementById('txwd-toaddr');
+    toEl.innerHTML = (h.toAddr || '—') +
+      (h.toAddr ? ` <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.toAddr}').then(()=>showToast('주소 복사됨'))" style="color:var(--primary); cursor:pointer;">&#128203;</span>` : '');
+    document.getElementById('txwd-addr-type').textContent = h.addrType || '—';
+    // TXID
+    const txEl = document.getElementById('txwd-txid');
+    if (h.txid) {
+      txEl.innerHTML = `<span style="font-family:monospace; font-size:12px;">${h.txid}</span>
+        <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.txid}').then(()=>showToast('TXID 복사됨'))" style="color:var(--primary); cursor:pointer; margin-left:4px;">&#128203;</span>
+        <a href="#" onclick="return false;" style="color:var(--primary); text-decoration:underline; font-size:12px; margin-left:4px;">익스플로러 &#8599;</a>`;
+    } else {
+      txEl.innerHTML = '<span style="color:var(--text-secondary);">서명 완료 후 처리됩니다</span>';
+    }
+    document.getElementById('txwd-memo').textContent = h.memo || '—';
+    // Signatures
+    const sigList = document.getElementById('txwd-sig-list');
+    const sigTitle = document.getElementById('txwd-sig-title');
+    if (h.signers && h.signers.length) {
+      const done = h.signers.filter(s => s.done).length;
+      sigTitle.textContent = `서명 현황 ${done}/${h.signers.length} 완료`;
+      sigList.innerHTML = h.signers.map(s => `
+        <div class="sig-row">
+          <span class="${s.done ? 'sig-icon-done' : 'sig-icon-wait'}">${s.done ? '✓' : '⏳'}</span>
+          <span style="font-weight:600;">${s.name}</span>
+          <span style="color:var(--text-secondary); margin-left:auto; font-size:12px;">${s.done ? s.at + ' 완료' : '서명 대기 중'}</span>
+        </div>`).join('');
+    }
+    // Note
+    const noteEl = document.getElementById('txwd-note');
+    const footer  = document.getElementById('txwd-footer');
+    if (h.status === 'rejected' && h.rejectNote) {
+      noteEl.style.cssText = 'display:block; padding:10px 12px; border-radius:6px; font-size:12px; background:#FEF2F2; color:#991B1B;';
+      noteEl.innerHTML = `<div style="font-weight:600; margin-bottom:4px;">거절자: ${h.rejectBy || '—'} · ${h.rejectAt || '—'}</div><div>${h.rejectNote}</div>`;
+    } else if (h.status === 'processing') {
+      noteEl.style.cssText = 'display:block; padding:10px 12px; border-radius:6px; font-size:12px; background:#F8FAFC; color:var(--text-secondary);';
+      noteEl.textContent = 'Admin이 처리 중입니다. 완료 후 TXID가 등록됩니다.';
+    } else if (h.status === 'broadcasting') {
+      noteEl.style.cssText = 'display:block; padding:10px 12px; border-radius:6px; font-size:12px; background:#EFF6FF; color:var(--primary);';
+      noteEl.textContent = '블록체인 확인 중 — 처리 완료 대기';
+    } else { noteEl.style.display = 'none'; }
+    // Footer buttons
+    if (h.status === 'pending_sig') {
+      footer.innerHTML = `<button class="btn btn-outline btn-danger" style="flex:1;" onclick="closeModal('modal-tx-detail-wd'); setTimeout(()=>openWorkflowRejectOTP(),100)">거절하기</button>
+        <button class="btn btn-primary" onclick="closeModal('modal-tx-detail-wd'); setTimeout(()=>openSO('so-workflow-sign'),100)">서명하기</button>`;
+    } else {
+      footer.innerHTML = `<button class="btn btn-outline" onclick="closeModal('modal-tx-detail-wd')">닫기</button>`;
+    }
+    openModal('modal-tx-detail-wd');
+  }
+
+  function _openTxDetailDep(h) {
+    _histTxId = h.id;
+    document.getElementById('txdep-status').innerHTML = _histStatusBadge('deposit', h.status);
+    document.getElementById('txdep-coin').textContent = h.coin + ' — ' + h.network;
+    document.getElementById('txdep-amount').textContent = h.amount.toLocaleString() + ' ' + h.coin;
+    document.getElementById('txdep-krw').textContent = '≈ ₩' + (h.amountKRW || 0).toLocaleString();
+    // From address + copy
+    const fromEl = document.getElementById('txdep-fromaddr');
+    fromEl.innerHTML = (h.fromAddr || '—') +
+      (h.fromAddr ? ` <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.fromAddr}').then(()=>showToast('주소 복사됨'))" style="color:var(--primary); cursor:pointer;">&#128203;</span>` : '');
+    document.getElementById('txdep-addr-type').textContent = h.addrType || '—';
+    // TXID + copy
+    const txEl = document.getElementById('txdep-txid');
+    if (h.txid) {
+      txEl.innerHTML = `<span style="font-family:monospace; font-size:12px;">${h.txid}</span>
+        <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.txid}').then(()=>showToast('TXID 복사됨'))" style="color:var(--primary); cursor:pointer; margin-left:4px;">&#128203;</span>
+        <a href="#" onclick="return false;" style="color:var(--primary); text-decoration:underline; font-size:12px; margin-left:4px;">익스플로러 &#8599;</a>`;
+    } else { txEl.textContent = '—'; }
+    document.getElementById('txdep-confirm').textContent = h.blockConfirm || '—';
+    document.getElementById('txdep-date').textContent = h.date;
+    // Hold section
+    const holdSection = document.getElementById('txdep-hold-section');
+    const holdBtn     = document.getElementById('txdep-hold-btn-wrap');
+    const holdReasons = document.getElementById('txdep-hold-reasons');
+    if (h.holdReasons && h.holdReasons.length) {
+      holdSection.style.display = 'block';
+      holdReasons.innerHTML = h.holdReasons.map(r =>
+        `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; font-size:13px;">
+           <span style="color:var(--warning);">&#9888;</span><span>${r}</span>
+         </div>`).join('');
+      holdBtn.style.display = 'block';
+    } else {
+      holdSection.style.display = 'none';
+      holdBtn.style.display = 'none';
+    }
+    // Note
+    const noteEl = document.getElementById('txdep-note');
+    if (h.status === 'rejected' && h.rejectNote) {
+      noteEl.style.cssText = 'display:block; padding:10px 12px; border-radius:6px; font-size:12px; background:#FEF2F2; color:#991B1B;';
+      noteEl.innerHTML = `<div style="font-weight:600; margin-bottom:4px;">거절 일시: ${h.rejectAt || '—'}</div><div>${h.rejectNote}</div>`;
+    } else { noteEl.style.display = 'none'; }
+    openModal('modal-tx-detail-dep');
+  }
+
+  function openTxHoldDetail() {
+    const h = _HISTORY_DATA.find(d => d.id === _histTxId);
+    if (!h || !h.holdReasons) return;
+    const listEl = document.getElementById('hold-reasons-list');
+    listEl.innerHTML = h.holdReasons.map((r, i) =>
+      `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; font-size:13px;">
+         <span style="font-weight:700; color:#92400E; min-width:18px;">${i+1}.</span><span>${r}</span>
+       </div>`).join('');
+    closeModal('modal-tx-detail-dep');
+    setTimeout(() => openModal('modal-tx-detail-hold'), 200);
+  }
+
+  /* ════════════════════════════════════
+     WALLET ACTIVITY LOG (4-8)
+  ════════════════════════════════════ */
+  const _WAL_AL_TYPE_LABELS = {
+    wallet_create:'지갑 생성', wallet_rename:'지갑 이름 변경', wallet_deactivate:'지갑 비활성화',
+    wallet_activate:'지갑 활성화', wallet_delete_req:'지갑 삭제 요청', wallet_delete_done:'지갑 삭제 완료',
+    coin_add_req:'코인 추가 요청', coin_add_done:'코인 추가 완료', coin_add_reject:'코인 추가 거절',
+    coin_rerequest:'코인 재요청', withdraw_request:'출금 신청', withdraw_sign:'출금 서명',
+    withdraw_reject:'출금 거절', withdraw_complete:'출금 완료', deposit_complete:'입금 완료',
+    deposit_hold:'입금 보류', deposit_reject:'입금 거절', policy_change:'서명 정책 변경'
+  };
+  const _WAL_AL_TYPE_COLORS = {
+    deposit_complete:'badge-success', deposit_hold:'badge-orange', deposit_reject:'badge-danger',
+    withdraw_request:'badge-warning', withdraw_sign:'badge-info', withdraw_reject:'badge-danger',
+    withdraw_complete:'badge-success', wallet_create:'badge-success', wallet_rename:'badge-info',
+    coin_add_req:'badge-warning', coin_add_done:'badge-success', coin_add_reject:'badge-danger',
+    policy_change:'badge-purple', default:'badge-gray'
+  };
+
+  function renderWalletActlog() {
+    const tbody = document.getElementById('wal-al-tbody');
+    const empty = document.getElementById('wal-al-empty');
+    if (!tbody) return;
+
+    const typeF = (document.getElementById('wal-al-type') || {}).value || '';
+    const acctF = (document.getElementById('wal-al-acct') || {}).value || '';
+    const fromV = (document.getElementById('wal-al-from') || {}).value || '';
+    const toV   = (document.getElementById('wal-al-to') || {}).value || '';
+    const from  = fromV ? new Date(fromV) : new Date('2000-01-01');
+    const to    = toV   ? new Date(toV + 'T23:59:59') : new Date('2099-12-31');
+
+    const rows = _WALLET_ACTLOG_DATA.filter(r => {
+      if (typeF && r.type !== typeF) return false;
+      if (acctF && r.acct !== acctF) return false;
+      const d = new Date(r.date);
+      if (d < from || d > to) return false;
+      return true;
+    });
+
+    if (rows.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    const cls = (type) => _WAL_AL_TYPE_COLORS[type] || _WAL_AL_TYPE_COLORS.default;
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td style="font-size:11px; color:var(--text-secondary); white-space:nowrap;">${r.date}</td>
+        <td><span class="badge ${cls(r.type)}" style="font-size:11px;">${r.label}</span></td>
+        <td style="font-size:13px;">${r.summary}</td>
+        <td style="font-size:12px; color:var(--text-secondary);">${r.acct}</td>
+      </tr>`).join('');
   }
 
   function _updateTodoBadges() {
