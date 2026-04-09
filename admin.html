@@ -1720,7 +1720,7 @@
 
             <!-- 기본값 복원 버튼 -->
             <div style="margin-top:20px; padding-top:16px; border-top:1px dashed var(--border);">
-              <button class="btn btn-outline btn-sm" onclick="resetPWMFADefaults()">&#8635; 기본값으로 복원</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="resetPWMFADefaults()">&#8635; 기본값으로 복원</button>
               <div class="form-hint" style="margin-top:6px;">기본값: 길이 8자 · 특수문자 필수 · 60일 · 잠금 5회 · 재사용 금지 3개 · MFA 잠금 10회 · 미접속 30일</div>
             </div>
           </div>
@@ -3932,28 +3932,41 @@
   </div>
 </div>
 
-<div class="modal" id="modal-otp">
-  <div class="modal-header">
-    <span class="modal-title" id="otp-modal-title">OTP 인증</span>
+<div class="modal" id="modal-otp" style="max-width:380px;">
+  <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
+    <span></span>
     <button class="modal-close" onclick="closeModal('modal-otp')">&#10005;</button>
   </div>
-  <div class="modal-body" style="text-align:center;">
-    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:4px;">OTP 앱에서 6자리 코드를 입력하세요</p>
-    <div class="otp-row">
+  <div class="modal-body" style="text-align:center; padding:8px 28px 24px;">
+    <!-- 아이콘 + 타이틀 -->
+    <div style="width:52px;height:52px;border-radius:50%;background:#EFF6FF;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px;">&#128272;</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:4px;" id="otp-modal-title">OTP 인증</div>
+    <div style="font-size:12.5px;color:var(--text-secondary);margin-bottom:20px;">Google Authenticator 앱에서<br>6자리 코드를 확인 후 입력하세요.</div>
+
+    <!-- 6칸 OTP 입력 -->
+    <div class="otp-row" style="justify-content:center;margin-bottom:10px;">
       <input type="text" class="otp-box" maxlength="1" id="otp-0" oninput="otpMove(this,0)" onkeydown="otpBack(event,this,0)" onpaste="otpPaste(event)" inputmode="numeric" />
       <input type="text" class="otp-box" maxlength="1" id="otp-1" oninput="otpMove(this,1)" onkeydown="otpBack(event,this,1)" onpaste="otpPaste(event)" inputmode="numeric" />
       <input type="text" class="otp-box" maxlength="1" id="otp-2" oninput="otpMove(this,2)" onkeydown="otpBack(event,this,2)" onpaste="otpPaste(event)" inputmode="numeric" />
+      <div style="width:8px;"></div>
       <input type="text" class="otp-box" maxlength="1" id="otp-3" oninput="otpMove(this,3)" onkeydown="otpBack(event,this,3)" onpaste="otpPaste(event)" inputmode="numeric" />
       <input type="text" class="otp-box" maxlength="1" id="otp-4" oninput="otpMove(this,4)" onkeydown="otpBack(event,this,4)" onpaste="otpPaste(event)" inputmode="numeric" />
       <input type="text" class="otp-box" maxlength="1" id="otp-5" oninput="otpMove(this,5)" onkeydown="otpBack(event,this,5)" onpaste="otpPaste(event)" inputmode="numeric" />
     </div>
-    <div class="otp-hint">남은 시도: <span id="otp-attempts-left">5</span>회</div>
+
+    <!-- 시도 횟수 + 오류 메시지 -->
+    <div class="otp-hint" style="margin-bottom:6px;">남은 시도: <span id="otp-attempts-left">5</span>회</div>
     <div class="otp-error" id="otp-error">코드가 올바르지 않습니다. 다시 시도해주세요.</div>
     <div class="otp-lock-msg" id="otp-lock-msg">&#128274; 5회 실패로 잠금되었습니다. 관리자에게 문의하세요.</div>
+
+    <!-- 데모 안내 -->
+    <div style="margin-top:14px;padding:8px 12px;background:#F8FAFC;border-radius:8px;font-size:11px;color:var(--text-secondary);">
+      <strong>Demo</strong> : 아무 6자리 숫자를 입력하면 인증됩니다
+    </div>
   </div>
-  <div class="modal-footer">
-    <button class="btn btn-outline" onclick="closeModal('modal-otp')">취소</button>
-    <button class="btn btn-primary" id="otp-confirm-btn" onclick="confirmOTP()">확인</button>
+  <div class="modal-footer" style="padding-top:0;border-top:none;gap:10px;">
+    <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-otp')">취소</button>
+    <button type="button" class="btn btn-primary" style="flex:2;" id="otp-confirm-btn" onclick="confirmOTP()">&#128272; 인증 확인</button>
   </div>
 </div>
 
@@ -8375,18 +8388,18 @@
     // 기본값 복원 버튼
     if (resetBtn) resetBtn.disabled = !isMaster;
 
-    // 스피너 입력 및 버튼
+    // 스피너 입력 및 버튼 — 항상 활성 (role 제한은 저장 버튼에서만 적용)
     document.querySelectorAll('#page-pwmfa .policy-spinner input, #page-pwmfa .policy-spinner-btn').forEach(function(el) {
-      el.disabled = !isMaster;
+      el.disabled = false;
     });
 
-    // 특수문자 토글
+    // 특수문자 토글 — 항상 활성
     var toggle = document.getElementById('pwmfa-special-char');
-    if (toggle) toggle.disabled = !isMaster;
+    if (toggle) toggle.disabled = false;
 
-    // 변경 주기 select
+    // 변경 주기 select — 항상 활성
     var cycle = document.getElementById('pwmfa-pw-cycle');
-    if (cycle) cycle.disabled = !isMaster;
+    if (cycle) cycle.disabled = false;
 
     // 읽기 전용 오버레이 느낌 — 카드 투명도 조정
     document.querySelectorAll('#page-pwmfa .policy-card').forEach(function(card) {
@@ -8457,42 +8470,18 @@
     return String(val);
   }
 
-  // ─ 저장하기 클릭 → 비교 모달 열기 (master 전용)
+  // ─ 저장하기 클릭 → OTP 인증 (master 전용, 변경사항 없어도 허용)
   function openPWMFAConfirm() {
     if (_ADMIN_ROLE !== 'master') {
       showToast('마스터 관리자만 정책을 저장할 수 있습니다.');
       return;
     }
-    var cur  = _PWMFA_SAVED;
-    var next = _readPWMFAForm();
-    var keys = Object.keys(_PWMFA_FIELD_LABELS);
-    var tbody  = document.getElementById('pwmfa-compare-tbody');
-    var noChg  = document.getElementById('pwmfa-no-change');
-    var hasChg = false;
-
-    tbody.innerHTML = '';
-    keys.forEach(function(k) {
-      var oldVal = _pwmfaDisplay(k, cur[k]);
-      var newVal = _pwmfaDisplay(k, next[k]);
-      var changed = String(cur[k]) !== String(next[k]);
-      if (changed) hasChg = true;
-      var tr = document.createElement('tr');
-      if (changed) tr.className = 'compare-changed';
-      tr.innerHTML = '<td>' + _PWMFA_FIELD_LABELS[k] + (changed ? ' <span style="font-size:10px; background:#F59E0B; color:#fff; padding:1px 5px; border-radius:3px;">변경</span>' : '') + '</td>'
-        + '<td class="compare-old">' + oldVal + '</td>'
-        + '<td class="compare-new">' + (changed ? newVal : '<span style="color:var(--text-secondary); font-weight:400;">' + newVal + '</span>') + '</td>';
-      tbody.appendChild(tr);
-    });
-
-    noChg.style.display  = hasChg ? 'none' : 'block';
-    tbody.style.display  = hasChg ? '' : 'none';
-    document.getElementById('pwmfa-otp-btn').disabled = !hasChg;
-    openModal('modal-pwmfa-confirm');
+    submitPWMFAPolicy();
   }
 
   // ─ OTP 인증 후 저장 실행
   function submitPWMFAPolicy() {
-    // 변경 항목 미리 캡처 (confirm 모달 닫기 전)
+    // 변경 항목 캡처
     var _pendingChanges = [];
     var _curSnap = _PWMFA_SAVED;
     var _nextSnap = _readPWMFAForm();
@@ -8506,49 +8495,47 @@
       }
     });
 
-    closeModal('modal-pwmfa-confirm');
-    setTimeout(function() {   // modal close animation(0.2s) 완료 후 OTP 열기
-      openOTPModal('PW / MFA 정책 저장', function() {
-        var next = _readPWMFAForm();
-        _PWMFA_SAVED = Object.assign({}, next, { updatedAt: new Date().toISOString().replace('T',' ').slice(0,16) });
-        updatePWMFACurrentSummary();
-        var idx = _ACTLOG_DATA.length;
-        _ACTLOG_DATA.unshift({
-          idx: idx, datetime: _PWMFA_SAVED.updatedAt,
-          actorName: '홍길동', actorEmail: 'hong@infiniteblock.io', actorMask: '홍○동',
-          role: 'master', corp: '-', cat: 'PW·MFA정책',
-          action: 'PW·MFA 정책 변경 저장 완료',
-          result: 'success', ip: '192.168.10.10', ua: 'Chrome / macOS', errCode: null
-        });
-
-        // 성공 모달 내용 채우기
-        var tableWrap = document.getElementById('pwmfa-success-table-wrap');
-        if (_pendingChanges.length > 0) {
-          var html = '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
-            + '<thead><tr>'
-            + '<th style="text-align:left;padding:5px 8px;background:#F8FAFC;border:1px solid var(--border);font-weight:600;">항목</th>'
-            + '<th style="padding:5px 8px;background:#F8FAFC;border:1px solid var(--border);font-weight:600;">변경 전</th>'
-            + '<th style="padding:5px 8px;background:#EFF6FF;border:1px solid var(--border);font-weight:600;">변경 후</th>'
-            + '</tr></thead><tbody>';
-          _pendingChanges.forEach(function(c) {
-            html += '<tr>'
-              + '<td style="padding:5px 8px;border:1px solid var(--border);font-weight:600;">' + c.label + '</td>'
-              + '<td style="padding:5px 8px;border:1px solid var(--border);text-align:center;color:var(--text-secondary);text-decoration:line-through;">' + c.oldVal + '</td>'
-              + '<td style="padding:5px 8px;border:1px solid var(--border);text-align:center;font-weight:700;color:var(--primary);">' + c.newVal + '</td>'
-              + '</tr>';
-          });
-          html += '</tbody></table>';
-          tableWrap.innerHTML = html;
-        } else {
-          tableWrap.innerHTML = '';
-        }
-        document.getElementById('pwmfa-success-datetime').textContent = _PWMFA_SAVED.updatedAt;
-
-        setTimeout(function() {
-          openModal('modal-pwmfa-success');
-        }, 250);
+    // OTP 모달 바로 열기
+    openOTPModal('PW / MFA 정책 저장', function() {
+      var next = _readPWMFAForm();
+      _PWMFA_SAVED = Object.assign({}, next, { updatedAt: new Date().toISOString().replace('T',' ').slice(0,16) });
+      updatePWMFACurrentSummary();
+      var idx = _ACTLOG_DATA.length;
+      _ACTLOG_DATA.unshift({
+        idx: idx, datetime: _PWMFA_SAVED.updatedAt,
+        actorName: '홍길동', actorEmail: 'hong@infiniteblock.io', actorMask: '홍○동',
+        role: 'master', corp: '-', cat: 'PW·MFA정책',
+        action: 'PW·MFA 정책 변경 저장 완료',
+        result: 'success', ip: '192.168.10.10', ua: 'Chrome / macOS', errCode: null
       });
-    }, 250);
+
+      // 성공 모달 내용 채우기
+      var tableWrap = document.getElementById('pwmfa-success-table-wrap');
+      if (_pendingChanges.length > 0) {
+        var html = '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+          + '<thead><tr>'
+          + '<th style="text-align:left;padding:5px 8px;background:#F8FAFC;border:1px solid var(--border);font-weight:600;">항목</th>'
+          + '<th style="padding:5px 8px;background:#F8FAFC;border:1px solid var(--border);font-weight:600;">변경 전</th>'
+          + '<th style="padding:5px 8px;background:#EFF6FF;border:1px solid var(--border);font-weight:600;">변경 후</th>'
+          + '</tr></thead><tbody>';
+        _pendingChanges.forEach(function(c) {
+          html += '<tr>'
+            + '<td style="padding:5px 8px;border:1px solid var(--border);font-weight:600;">' + c.label + '</td>'
+            + '<td style="padding:5px 8px;border:1px solid var(--border);text-align:center;color:var(--text-secondary);text-decoration:line-through;">' + c.oldVal + '</td>'
+            + '<td style="padding:5px 8px;border:1px solid var(--border);text-align:center;font-weight:700;color:var(--primary);">' + c.newVal + '</td>'
+            + '</tr>';
+        });
+        html += '</tbody></table>';
+        tableWrap.innerHTML = html;
+      } else {
+        tableWrap.innerHTML = '<div style="text-align:center;padding:10px;font-size:12px;color:var(--text-secondary);">변경된 항목 없음 (현재 설정 그대로 저장됨)</div>';
+      }
+      document.getElementById('pwmfa-success-datetime').textContent = _PWMFA_SAVED.updatedAt;
+
+      setTimeout(function() {
+        openModal('modal-pwmfa-success');
+      }, 250);
+    });
   }
 
   // ─ 현재 적용 중 요약 갱신
