@@ -1477,17 +1477,93 @@
            PAGE: 내부요주의인물
       ══════════════════════════ -->
       <div class="page" id="page-pep">
-        <div class="page-header">
-          <h1 class="page-title">내부요주의인물 (PEP/Watchlist)</h1>
-          <button class="btn btn-primary">+ 등록</button>
-        </div>
-        <div class="card">
-          <div class="placeholder-info">
-            <p>정치적 주요인물(PEP), 제재 대상자 및 내부 요주의 인물 목록을 관리합니다.</p>
+        <div class="page-header" style="margin-bottom:10px;">
+          <div>
+            <h1 class="page-title">내부요주의인물 / Internal Watch List (WLF)</h1>
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">&#9432; STR 룰 RM05 감지에 자동 연동됩니다. 등록 승인 시 자동 포함, 삭제 승인 시 자동 제외.</div>
           </div>
-          <div class="empty-state">
-            <div class="empty-icon">&#128683;</div>
-            <p>등록된 요주의인물이 없습니다</p>
+          <button class="btn btn-primary btn-sm" id="btn-wlf-register" onclick="openWLFRegister()" style="display:none;">+ 등록 기안</button>
+        </div>
+
+        <!-- 4-1: 통계 카드 -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px;">
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9679; 등록완료</div>
+            <div id="wlf-stat-registered" style="font-size:24px; font-weight:700; color:#10B981;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9203; 결재 대기</div>
+            <div id="wlf-stat-pending" style="font-size:24px; font-weight:700; color:#F59E0B;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9203; 삭제 대기</div>
+            <div id="wlf-stat-delete" style="font-size:24px; font-weight:700; color:#F97316;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#10005; 거절됨</div>
+            <div id="wlf-stat-rejected" style="font-size:24px; font-weight:700; color:#EF4444;">0</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <!-- 탭 -->
+          <div id="wlf-tabs" class="kyb-tabs" style="margin-bottom:0; padding:0 16px;">
+            <div class="kyb-tab active" onclick="_wlfSetTab('registered',this)">등록완료</div>
+            <div class="kyb-tab" onclick="_wlfSetTab('pending',this)">결재 대기</div>
+            <div class="kyb-tab" onclick="_wlfSetTab('delete_pending',this)">삭제 대기</div>
+            <div class="kyb-tab" onclick="_wlfSetTab('rejected',this)">거절됨</div>
+            <div class="kyb-tab" onclick="_wlfSetTab('all',this)">전체</div>
+          </div>
+
+          <!-- 필터 바 -->
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border);">
+            <input type="text" id="wlf-search" class="form-control" placeholder="국문명 / 영문명 / 실명번호 검색" style="width:220px;" oninput="renderPEP()" />
+            <select id="wlf-type-filter" class="form-control" style="width:150px;" onchange="renderPEP()">
+              <option value="">유형 전체</option>
+              <option value="company">회사선정 요주의인물</option>
+              <option value="blackwallet">블랙지갑 소유자</option>
+              <option value="judicial">사법기관 정보제공자</option>
+              <option value="etc">기타</option>
+            </select>
+            <select id="wlf-nation-filter" class="form-control" style="width:110px;" onchange="renderPEP()">
+              <option value="">국적 전체</option>
+              <option value="KR">KR</option>
+              <option value="US">US</option>
+              <option value="CN">CN</option>
+              <option value="기타">기타</option>
+            </select>
+            <select id="wlf-client-filter" class="form-control" style="width:110px;" onchange="renderPEP()">
+              <option value="">고객구분 전체</option>
+              <option value="individual">개인</option>
+              <option value="corporate">법인</option>
+              <option value="walletonly">지갑주소만</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="_wlfResetFilters()" style="font-size:11px;">초기화</button>
+          </div>
+
+          <!-- 테이블 -->
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>등록번호</th>
+                  <th>유형</th>
+                  <th>국문명</th>
+                  <th>영문명</th>
+                  <th>실명번호</th>
+                  <th>국적</th>
+                  <th>고객구분</th>
+                  <th>상태</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="wlf-tbody"></tbody>
+            </table>
+          </div>
+          <div id="wlf-empty" style="display:none; padding:48px 16px; text-align:center;">
+            <div style="font-size:32px; margin-bottom:10px;">&#128683;</div>
+            <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">해당하는 내역이 없습니다.</div>
+            <div style="font-size:12px; color:var(--text-secondary);">필터 조건을 변경해 보세요.</div>
           </div>
         </div>
       </div>
@@ -4349,6 +4425,279 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     SLIDEOVERS & MODALS: 내부요주의인물 (섹션 4)
+══════════════════════════════════════ -->
+
+<!-- 4-3/4-10: 등록 기안 / 재기안 슬라이드오버 -->
+<div class="slideover-backdrop" id="wlf-register-backdrop" onclick="closeWLFRegister()"></div>
+<div class="slideover" id="wlf-register-so" style="width:min(680px,100%);">
+  <div class="so-header">
+    <div>
+      <div class="so-title" id="wlf-reg-title">내부요주의인물 등록 기안 / WLF Registration Draft</div>
+      <div id="wlf-reg-rejnote-wrap" style="display:none; background:#FEF2F2; border-radius:6px; padding:8px 12px; margin-top:8px; font-size:12px;">
+        <div style="font-weight:700; color:#EF4444; margin-bottom:3px;">&#9888; 이전 거절 사유</div>
+        <div id="wlf-reg-rejnote-meta" style="color:var(--text-secondary); margin-bottom:3px;"></div>
+        <div id="wlf-reg-rejnote-text" style="color:#7F1D1D; line-height:1.5;"></div>
+      </div>
+    </div>
+    <button class="modal-close" onclick="closeWLFRegister()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <!-- 유형 -->
+    <div class="form-group">
+      <label class="form-label">유형 <span style="color:var(--danger);">*</span></label>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-type" value="company" onchange="_wlfRegValidate()" checked /> 회사선정 요주의인물</label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-type" value="blackwallet" onchange="_wlfRegValidate()" /> 블랙지갑 소유자</label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-type" value="judicial" onchange="_wlfRegValidate()" /> 사법기관 정보제공자</label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-type" value="etc" onchange="_wlfRegValidate()" /> 기타</label>
+      </div>
+    </div>
+    <!-- 고객 구분 -->
+    <div class="form-group">
+      <label class="form-label">고객 구분 <span style="color:var(--danger);">*</span></label>
+      <div style="display:flex; gap:16px; margin-top:4px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-client" value="individual" onchange="_wlfRegValidate()" checked /> 개인 (Individual)</label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-client" value="corporate" onchange="_wlfRegValidate()" /> 법인 (Corporate)</label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-client" value="walletonly" onchange="_wlfRegValidate()" /> 지갑주소만</label>
+      </div>
+    </div>
+    <!-- 기본 정보 -->
+    <div class="section-box">
+      <div class="section-box-title">기본 정보</div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label class="form-label">국문명 <span style="color:var(--danger);">*</span></label>
+        <input type="text" id="wlf-reg-name-kr" class="form-control" placeholder="국문명 입력" style="width:100%;" oninput="_wlfRegValidate()" />
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label class="form-label">영문명 <span style="color:var(--danger);">*</span></label>
+        <input type="text" id="wlf-reg-name-en" class="form-control" placeholder="영문명 입력 (대문자)" style="width:100%; text-transform:uppercase;" oninput="_wlfRegValidate()" />
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label class="form-label">실명번호 <span style="color:var(--text-secondary); font-weight:400;">(선택)</span></label>
+        <input type="text" id="wlf-reg-idnum" class="form-control" placeholder="000000-0000000" maxlength="14" style="width:200px;" oninput="_wlfRegIDFormat(this)" />
+        <div class="form-hint" id="wlf-reg-idnum-err" style="color:var(--danger); display:none;">올바른 실명번호 형식을 입력하세요.</div>
+        <div class="form-hint">&#9432; 저장 시 뒷자리는 마스킹(*)으로 처리됩니다.</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="form-group" style="margin-bottom:10px;">
+          <label class="form-label">생년월일 <span style="color:var(--text-secondary); font-weight:400;">(선택)</span></label>
+          <input type="date" id="wlf-reg-dob" class="form-control" style="width:100%;" />
+        </div>
+        <div class="form-group" style="margin-bottom:10px;">
+          <label class="form-label">성별 <span style="color:var(--text-secondary); font-weight:400;">(선택)</span></label>
+          <div style="display:flex; gap:12px; margin-top:6px;">
+            <label style="display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-gender" value="M" /> 남</label>
+            <label style="display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-gender" value="F" /> 여</label>
+            <label style="display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;"><input type="radio" name="wlf-reg-gender" value="U" checked /> 미상</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label class="form-label">국적 <span style="color:var(--danger);">*</span></label>
+        <select id="wlf-reg-nation" class="form-control" style="width:200px;" onchange="_wlfRegValidate()">
+          <option value="">국가 선택</option>
+          <option value="KR">대한민국 (KR)</option>
+          <option value="US">미국 (US)</option>
+          <option value="CN">중국 (CN)</option>
+          <option value="JP">일본 (JP)</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">거주지 / 소재지 <span style="color:var(--text-secondary); font-weight:400;">(선택)</span></label>
+        <input type="text" id="wlf-reg-address" class="form-control" placeholder="거주지 또는 소재지 입력" style="width:100%;" />
+      </div>
+    </div>
+    <!-- 지갑주소 -->
+    <div class="section-box">
+      <div class="section-box-title">지갑주소 <span style="color:var(--text-secondary); font-weight:400;">(선택)</span></div>
+      <div style="display:flex; gap:8px; margin-bottom:8px;">
+        <input type="text" id="wlf-reg-wallet-input" class="form-control" placeholder="0x... 지갑주소 입력" style="flex:1; font-family:monospace; font-size:12px;" />
+        <button class="btn btn-outline btn-sm" onclick="_wlfRegAddWallet()">+ 추가</button>
+      </div>
+      <div id="wlf-reg-wallet-err" style="display:none; font-size:12px; color:var(--danger); margin-bottom:6px;">블랙지갑 소유자 유형은 지갑주소 1개 이상 필수입니다.</div>
+      <div id="wlf-reg-wallets-list" style="display:grid; gap:6px;"></div>
+    </div>
+    <!-- 출처 및 등록 사유 -->
+    <div class="form-group">
+      <label class="form-label">출처 및 등록 사유 <span style="color:var(--danger);">*</span> <span style="color:var(--text-secondary); font-weight:400;">(최대 1,000자)</span></label>
+      <textarea id="wlf-reg-reason" class="form-control" rows="5" placeholder="출처 및 등록 사유를 상세히 입력하세요" maxlength="1000" style="width:100%; resize:vertical;" oninput="_wlfRegValidate()"></textarea>
+      <div style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:2px;"><span id="wlf-reg-reason-char">0</span>/1000</div>
+    </div>
+    <!-- 수정 사유 (수정 모드 전용) -->
+    <div id="wlf-edit-reason-wrap" style="display:none;" class="form-group">
+      <label class="form-label">수정 사유 <span style="color:var(--danger);">*</span> <span style="color:var(--text-secondary); font-weight:400;">(최대 500자)</span></label>
+      <textarea id="wlf-edit-reason" class="form-control" rows="3" placeholder="수정 사유를 입력하세요 (변경 이력에 기록됩니다)" maxlength="500" style="width:100%; resize:vertical;" oninput="_wlfRegValidate()"></textarea>
+    </div>
+    <!-- 첨부파일 -->
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">첨부파일 <span style="color:var(--text-secondary); font-weight:400;">(선택)</span></label>
+      <input type="file" id="wlf-reg-file" class="form-control" accept=".pdf,.jpg,.png,.xlsx" style="width:100%;" />
+      <div class="form-hint">&#9432; 최대 10MB, PDF / JPG / PNG / XLSX</div>
+    </div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-outline" onclick="closeWLFRegister()">취소</button>
+    <button class="btn btn-primary" id="wlf-reg-submit-btn" onclick="_wlfRegProceed()" disabled id="wlf-reg-submit-btn">등록 기안 제출</button>
+  </div>
+</div>
+
+<!-- 4-5: 상세 / 4-7: 결재 슬라이드오버 -->
+<div class="slideover-backdrop" id="wlf-detail-backdrop" onclick="closeWLFDetail()"></div>
+<div class="slideover" id="wlf-detail-so" style="width:min(700px,100%);">
+  <div class="so-header">
+    <div>
+      <div class="so-title">내부요주의인물 상세 / WLF Detail — <span id="wlfd-id" style="font-family:monospace; font-size:13px;"></span></div>
+      <div id="wlfd-approval-banner" style="display:none; background:#FFF7ED; border-radius:6px; padding:6px 12px; margin-top:6px; font-size:12px; color:#92400E; font-weight:600;">&#9203; 결재 대기 중인 건입니다.</div>
+    </div>
+    <button class="modal-close" onclick="closeWLFDetail()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">상태</span><span class="info-value" id="wlfd-status"></span></div>
+      <div class="info-row"><span class="info-label">유형</span><span class="info-value" id="wlfd-type"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">고객 구분</span><span class="info-value" id="wlfd-client-type"></span></div>
+    </div>
+    <div class="section-box">
+      <div class="section-box-title">기본 정보</div>
+      <div class="info-row"><span class="info-label">국문명</span><span class="info-value" id="wlfd-name-kr" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">영문명</span><span class="info-value" id="wlfd-name-en" style="font-weight:600;"></span></div>
+      <div class="info-row">
+        <span class="info-label">실명번호</span>
+        <span class="info-value">
+          <span id="wlfd-idnum"></span>
+          <button id="wlfd-idnum-unmask-btn" class="btn btn-outline btn-xs" style="margin-left:8px; display:none;" onclick="_wlfUnmaskID()">전체 보기</button>
+        </span>
+      </div>
+      <div class="info-row"><span class="info-label">생년월일</span><span class="info-value" id="wlfd-dob"></span></div>
+      <div class="info-row"><span class="info-label">성별</span><span class="info-value" id="wlfd-gender"></span></div>
+      <div class="info-row"><span class="info-label">국적</span><span class="info-value" id="wlfd-nation"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">거주지/소재지</span><span class="info-value" id="wlfd-address"></span></div>
+    </div>
+    <div class="section-box" id="wlfd-wallets-section" style="display:none;">
+      <div class="section-box-title">지갑주소</div>
+      <div id="wlfd-wallets-list"></div>
+    </div>
+    <div class="section-box">
+      <div class="section-box-title">출처 및 등록 사유</div>
+      <div id="wlfd-reason" style="font-size:13px; line-height:1.6; color:var(--text-primary); white-space:pre-wrap;"></div>
+    </div>
+    <div class="section-box">
+      <div class="section-box-title">등록 정보</div>
+      <div class="info-row"><span class="info-label">기안자</span><span class="info-value" id="wlfd-drafter"></span></div>
+      <div class="info-row"><span class="info-label">기안일시</span><span class="info-value" id="wlfd-draft-at"></span></div>
+      <div class="info-row" id="wlfd-approver-row"><span class="info-label">결재자</span><span class="info-value" id="wlfd-approver"></span></div>
+      <div class="info-row" id="wlfd-approve-at-row"><span class="info-label">결재일시</span><span class="info-value" id="wlfd-approve-at"></span></div>
+      <div class="info-row" id="wlfd-approve-note-row" style="border-bottom:none;"><span class="info-label">결재 의견</span><span class="info-value" id="wlfd-approve-note"></span></div>
+    </div>
+    <!-- 거절 정보 (거절됨 상태) -->
+    <div class="section-box" id="wlfd-reject-section" style="display:none; border-left:3px solid #EF4444;">
+      <div class="section-box-title" style="color:#EF4444;">거절 정보</div>
+      <div class="info-row"><span class="info-label">거절자</span><span class="info-value" id="wlfd-reject-by"></span></div>
+      <div class="info-row"><span class="info-label">거절일시</span><span class="info-value" id="wlfd-reject-at"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">거절 사유</span><span class="info-value" id="wlfd-reject-note" style="color:#EF4444; line-height:1.5;"></span></div>
+    </div>
+    <!-- 삭제 기안 정보 -->
+    <div class="section-box" id="wlfd-delete-section" style="display:none; border-left:3px solid #F97316;">
+      <div class="section-box-title" style="color:#F97316;">삭제 기안 정보</div>
+      <div class="info-row"><span class="info-label">삭제 기안자</span><span class="info-value" id="wlfd-del-drafter"></span></div>
+      <div class="info-row"><span class="info-label">기안일시</span><span class="info-value" id="wlfd-del-draft-at"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">삭제 사유</span><span class="info-value" id="wlfd-del-reason" style="line-height:1.5;"></span></div>
+    </div>
+    <!-- 변경 이력 -->
+    <div class="section-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div class="section-box-title" style="margin-bottom:0;">변경 이력</div>
+        <button class="btn btn-outline btn-xs" onclick="_wlfToggleHistory()">이력 보기 &#9660;</button>
+      </div>
+      <div id="wlfd-history" style="display:none;">
+        <table style="width:100%; font-size:12px; border-collapse:collapse;">
+          <thead><tr style="border-bottom:1px solid var(--border);">
+            <th style="padding:6px 4px; text-align:left; color:var(--text-secondary); font-weight:600;">일시</th>
+            <th style="padding:6px 4px; text-align:left; color:var(--text-secondary); font-weight:600;">유형</th>
+            <th style="padding:6px 4px; text-align:left; color:var(--text-secondary); font-weight:600;">내용</th>
+            <th style="padding:6px 4px; text-align:left; color:var(--text-secondary); font-weight:600;">처리자</th>
+          </tr></thead>
+          <tbody id="wlfd-history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- RM05 상태 -->
+    <div class="section-box" style="border-bottom:none; margin-bottom:0;">
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">RM05 감지</span><span class="info-value" id="wlfd-rm05"></span></div>
+    </div>
+    <!-- 결재 의견 입력 (AML 관리자 + 결재대기/삭제대기 상태) -->
+    <div id="wlfd-approve-form" style="display:none; margin-top:16px;">
+      <div class="section-box" style="background:#F0FDF4; border-color:#86EFAC;">
+        <div class="section-box-title" style="color:#166534;">&#9989; 결재 의견</div>
+        <textarea id="wlfd-approve-opinion" class="form-control" rows="3" placeholder="결재 의견 입력 (선택, 최대 500자)" maxlength="500" style="width:100%; resize:none;"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="so-footer" id="wlfd-footer"></div>
+</div>
+
+<!-- 4-6: 삭제 기안 모달 -->
+<div class="modal" id="modal-wlf-delete" style="max-width:500px;">
+  <div class="modal-header">
+    <span class="modal-title">&#9888; 내부요주의인물 삭제 기안 / WLF Deletion Draft</span>
+    <button class="modal-close" onclick="closeModal('modal-wlf-delete')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="display:grid; gap:14px;">
+    <div class="section-box" style="margin-bottom:0;">
+      <div class="section-box-title">삭제 대상 정보</div>
+      <div class="info-row"><span class="info-label">등록번호</span><span class="info-value" id="wlf-del-id"></span></div>
+      <div class="info-row"><span class="info-label">유형</span><span class="info-value" id="wlf-del-type"></span></div>
+      <div class="info-row"><span class="info-label">국문명</span><span class="info-value" id="wlf-del-name-kr" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">영문명</span><span class="info-value" id="wlf-del-name-en"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">현재 상태</span><span class="info-value" id="wlf-del-status"></span></div>
+    </div>
+    <div style="background:#FFF7ED; border-radius:8px; padding:10px 12px; font-size:12px; color:#92400E; line-height:1.7;">
+      &#9888; 삭제 기안 제출 시:<br>
+      &nbsp;· 상태가 "⏳ 삭제 대기"로 변경됩니다.<br>
+      &nbsp;· AML 관리자 승인 후 DB에서 최종 삭제됩니다.<br>
+      &nbsp;· 삭제 승인 시 RM05 룰 감지 대상에서 자동 제외됩니다.
+    </div>
+    <div>
+      <label class="form-label">삭제 사유 <span style="color:var(--danger);">*</span> <span style="color:var(--text-secondary); font-weight:400;">(최대 1,000자)</span></label>
+      <textarea id="wlf-del-reason-text" class="form-control" rows="4" placeholder="삭제 사유를 상세히 입력하세요" maxlength="1000" style="width:100%; resize:vertical;" oninput="_wlfDelValidate()"></textarea>
+    </div>
+    <div>
+      <label class="form-label">첨부파일 <span style="color:var(--text-secondary); font-weight:400;">(선택)</span></label>
+      <input type="file" id="wlf-del-file" class="form-control" accept=".pdf,.jpg,.png,.xlsx" style="width:100%;" />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wlf-delete')">취소</button>
+    <button class="btn btn-danger" id="wlf-del-submit-btn" onclick="_wlfDelProceed()" disabled>삭제 기안 제출 → OTP ›</button>
+  </div>
+</div>
+
+<!-- 4-9: 결재 거절 모달 -->
+<div class="modal" id="modal-wlf-reject" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title">&#10005; 결재 거절 / Approval Rejection</span>
+    <button class="modal-close" onclick="closeModal('modal-wlf-reject')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="display:grid; gap:14px;">
+    <div style="font-size:13px;">
+      <span style="color:var(--text-secondary);">등록번호:</span> <strong id="wlf-rej-id"></strong>
+      &nbsp;&nbsp;<span style="color:var(--text-secondary);">대상:</span> <strong id="wlf-rej-name"></strong>
+    </div>
+    <div>
+      <label class="form-label">거절 사유 <span style="color:var(--danger);">*</span> <span style="color:var(--text-secondary); font-weight:400;">(최대 500자)</span></label>
+      <textarea id="wlf-rej-reason" class="form-control" rows="4" placeholder="거절 사유를 입력하세요" maxlength="500" style="width:100%; resize:vertical;" oninput="_wlfRejValidate()"></textarea>
+      <div style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">&#9432; 거절 사유가 기안자(AML 담당자)에게 전달됩니다.</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wlf-reject')">취소</button>
+    <button class="btn btn-danger" id="wlf-rej-submit-btn" onclick="_wlfRejProceed()" disabled>거절 확인 → OTP ›</button>
+  </div>
+</div>
+
 <!-- modal-otp: OTP 인증 -->
 <!-- ══════════════════════════
      MODAL: PW/MFA 정책 변경 전·후 비교 확인
@@ -5088,6 +5437,7 @@
     if (pageId === 'pwmfa') applyPWMFARoleUI();
     if (pageId === 'assets') renderAssetsPage();
     if (pageId === 'str') renderSTR();
+    if (pageId === 'pep') renderPEP();
 
     closeMobileSidebar();
   }
@@ -10454,6 +10804,667 @@
     document.getElementById('cur-mfa-lockout').textContent = s.mfaLockout + '회';
     document.getElementById('cur-mfa-inactive').textContent= s.mfaInactive + '일';
     document.getElementById('cur-pwmfa-updated').textContent = s.updatedAt || '초기값 (변경 없음)';
+  }
+
+  /* ════════════════════════════════════
+     내부요주의인물 / WLF (섹션 4)
+  ════════════════════════════════════ */
+
+  var _WLF_DATA = [
+    { id:'WL-0001', type:'company', clientType:'individual',
+      nameKR:'홍길동', nameEN:'HONG KILDONG', idNum:'7001011234567',
+      nationality:'KR', address:'서울특별시 강남구', gender:'M', dob:'1970-01-01',
+      wallets:['0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b'],
+      reason:'내부 심사 결과 거래위험 인물로 판단됨. 2026-03-15 거래 패턴 분석 결과 비정상 자금 이동 패턴 확인.',
+      status:'registered',
+      drafter:'박담당자 (AML 담당자)', draftAt:'2026-04-01 10:30',
+      approver:'최관리자 (AML 관리자)', approveAt:'2026-04-01 14:00', approveNote:'이상 없음',
+      rejectAt:null, rejectBy:null, rejectNote:null,
+      deleteDrafter:null, deleteDraftAt:null, deleteReason:null,
+      history:[
+        {at:'2026-04-01 14:00', type:'등록 승인', desc:'최초 등록 (WL-0001 부여)', actor:'최관리자'},
+        {at:'2026-04-05 14:00', type:'정보 수정', desc:'거주지: 서초구 → 강남구', actor:'박담당자'},
+        {at:'2026-04-08 09:00', type:'수정', desc:'지갑주소 1개 추가', actor:'박담당자'}
+      ]
+    },
+    { id:'WL-0002', type:'blackwallet', clientType:'individual',
+      nameKR:'김철수', nameEN:'KIM CHULSU', idNum:'8105152345678',
+      nationality:'KR', address:'', gender:'M', dob:'1981-05-15',
+      wallets:['0x1a2b3c4d5e6f7a8b9c0d1e2f','0x9f8e7d6c5b4a3f2e1d0c9b8a'],
+      reason:'2026-04-08 수사기관 공문 수신. 해당 인물 소유 지갑주소가 다크웹 거래와 연계 확인.',
+      status:'pending',
+      drafter:'박담당자 (AML 담당자)', draftAt:'2026-04-08 10:30',
+      approver:null, approveAt:null, approveNote:null,
+      rejectAt:null, rejectBy:null, rejectNote:null,
+      deleteDrafter:null, deleteDraftAt:null, deleteReason:null,
+      history:[]
+    },
+    { id:'WL-0003', type:'judicial', clientType:'individual',
+      nameKR:'JOHN DOE', nameEN:'JOHN DOE', idNum:null,
+      nationality:'US', address:'New York, USA', gender:'U', dob:'1975-03-20',
+      wallets:[],
+      reason:'수사기관 공문 수신. 국제 자금세탁 조직 관련자.',
+      status:'delete_pending',
+      drafter:'박담당자 (AML 담당자)', draftAt:'2026-04-01 09:00',
+      approver:'최관리자 (AML 관리자)', approveAt:'2026-04-01 12:00', approveNote:'이상 없음',
+      rejectAt:null, rejectBy:null, rejectNote:null,
+      deleteDrafter:'박담당자 (AML 담당자)', deleteDraftAt:'2026-04-09 10:00', deleteReason:'수사기관 무혐의 처분 확인',
+      history:[
+        {at:'2026-04-01 12:00', type:'등록 승인', desc:'최초 등록 (WL-0003 부여)', actor:'최관리자'},
+        {at:'2026-04-09 10:00', type:'삭제 기안', desc:'삭제 기안 제출', actor:'박담당자'}
+      ]
+    },
+    { id:'WL-0004', type:'etc', clientType:'corporate',
+      nameKR:'(주)알파', nameEN:'ALPHA CO.', idNum:'1234567890',
+      nationality:'KR', address:'서울특별시 중구', gender:null, dob:null,
+      wallets:[],
+      reason:'뉴스 기반 이상 거래 의심 법인.',
+      status:'rejected',
+      drafter:'박담당자 (AML 담당자)', draftAt:'2026-04-03 09:00',
+      approver:null, approveAt:null, approveNote:null,
+      rejectAt:'2026-04-03 15:00', rejectBy:'최관리자 (AML 관리자)',
+      rejectNote:'실명번호 확인 필요. 기재된 실명번호가 사업자등록번호와 일치하지 않습니다.',
+      deleteDrafter:null, deleteDraftAt:null, deleteReason:null,
+      history:[]
+    },
+    { id:'WL-0005', type:'company', clientType:'individual',
+      nameKR:'이영희', nameEN:'LEE YOUNGHEE', idNum:'9003221234567',
+      nationality:'KR', address:'서울특별시 서초구', gender:'F', dob:'1990-03-22',
+      wallets:[],
+      reason:'내부 심사: 비정상 거래 패턴 확인. 단기간 대량 이체 반복.',
+      status:'registered',
+      drafter:'박담당자 (AML 담당자)', draftAt:'2026-04-02 14:00',
+      approver:'최관리자 (AML 관리자)', approveAt:'2026-04-02 16:30', approveNote:'',
+      rejectAt:null, rejectBy:null, rejectNote:null,
+      deleteDrafter:null, deleteDraftAt:null, deleteReason:null,
+      history:[{at:'2026-04-02 16:30', type:'등록 승인', desc:'최초 등록 (WL-0005 부여)', actor:'최관리자'}]
+    }
+  ];
+
+  var _wlfTab = 'registered';
+  var _wlfCurrentId = null;
+  var _wlfMode = 'register'; // 'register' | 'edit' | 'resubmit'
+  var _wlfRegWallets = [];
+  var _wlfNextId = 6;
+
+  // ── 헬퍼 ──
+  var _WLF_TYPE_LABEL = { company:'회사선정 요주의인물', blackwallet:'블랙지갑 소유자', judicial:'사법기관 정보제공자', etc:'기타' };
+  var _WLF_CLIENT_LABEL = { individual:'개인 (Individual)', corporate:'법인 (Corporate)', walletonly:'지갑주소만' };
+  var _WLF_GENDER_LABEL = { M:'남', F:'여', U:'미상' };
+  var _WLF_NATION_LABEL = { KR:'대한민국 (KR)', US:'미국 (US)', CN:'중국 (CN)', JP:'일본 (JP)' };
+
+  function _wlfStatusBadge(status) {
+    switch (status) {
+      case 'registered':     return '<span class="badge badge-success">&#9679; 등록완료</span>';
+      case 'pending':        return '<span class="badge badge-warning">&#9203; 결재대기</span>';
+      case 'delete_pending': return '<span style="background:#FFF7ED; color:#F97316; border:1px solid #FED7AA; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:600;">&#9203; 삭제대기</span>';
+      case 'rejected':       return '<span class="badge badge-danger">&#10005; 거절됨</span>';
+      default: return '<span class="badge badge-gray">' + status + '</span>';
+    }
+  }
+
+  function _wlfMaskID(idNum) {
+    if (!idNum) return '—';
+    var parts = idNum.replace(/-/g,'');
+    if (parts.length === 13) return parts.slice(0,6) + '-' + parts.slice(6,7) + '******';
+    if (parts.length === 10) return parts.slice(0,3) + '-' + parts.slice(3,5) + '-' + parts.slice(5,7) + '***';
+    return idNum.slice(0, Math.ceil(idNum.length/2)) + '***';
+  }
+
+  function _wlfUpdateStats() {
+    document.getElementById('wlf-stat-registered').textContent = _WLF_DATA.filter(function(d){ return d.status==='registered'; }).length;
+    document.getElementById('wlf-stat-pending').textContent    = _WLF_DATA.filter(function(d){ return d.status==='pending'; }).length;
+    document.getElementById('wlf-stat-delete').textContent     = _WLF_DATA.filter(function(d){ return d.status==='delete_pending'; }).length;
+    document.getElementById('wlf-stat-rejected').textContent   = _WLF_DATA.filter(function(d){ return d.status==='rejected'; }).length;
+  }
+
+  function _wlfGetFiltered() {
+    var search = (document.getElementById('wlf-search')||{}).value || '';
+    var typeF   = (document.getElementById('wlf-type-filter')||{}).value || '';
+    var nationF = (document.getElementById('wlf-nation-filter')||{}).value || '';
+    var clientF = (document.getElementById('wlf-client-filter')||{}).value || '';
+    return _WLF_DATA.filter(function(d) {
+      if (_wlfTab !== 'all' && d.status !== _wlfTab) return false;
+      if (search) {
+        var s = search.toLowerCase();
+        if (d.nameKR.toLowerCase().indexOf(s) < 0 && d.nameEN.toLowerCase().indexOf(s) < 0 &&
+            (d.idNum||'').indexOf(s) < 0) return false;
+      }
+      if (typeF && d.type !== typeF) return false;
+      if (nationF && d.nationality !== nationF) return false;
+      if (clientF && d.clientType !== clientF) return false;
+      return true;
+    });
+  }
+
+  function renderPEP() {
+    _wlfUpdateStats();
+    // 역할 기반 등록 기안 버튼
+    var btn = document.getElementById('btn-wlf-register');
+    if (btn) btn.style.display = (_ADMIN_ROLE === 'aml_officer') ? '' : 'none';
+
+    var data = _wlfGetFiltered();
+    var tbody = document.getElementById('wlf-tbody');
+    var empty = document.getElementById('wlf-empty');
+    if (!tbody) return;
+    if (data.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    var isOfficer = (_ADMIN_ROLE === 'aml_officer');
+    var isManager = (_ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master');
+    var html = '';
+    data.forEach(function(d) {
+      var btns = '<button class="btn btn-outline btn-xs" onclick="openWLFDetail(\'' + d.id + '\')">상세</button>';
+      if (isOfficer && d.status === 'registered') {
+        btns += ' <button class="btn btn-outline btn-xs" onclick="openWLFEdit(\'' + d.id + '\')">수정</button>';
+        btns += ' <button class="btn btn-outline btn-xs" style="color:#F97316; border-color:#F97316;" onclick="openWLFDeleteDraft(\'' + d.id + '\')">삭제기안</button>';
+      }
+      if (isOfficer && d.status === 'rejected') {
+        btns += ' <button class="btn btn-primary btn-xs" onclick="openWLFResubmit(\'' + d.id + '\')">재기안</button>';
+      }
+      html += '<tr onclick="openWLFDetail(\'' + d.id + '\')" style="cursor:pointer;">'
+        + '<td style="font-family:monospace; font-size:11.5px; font-weight:700;">' + d.id + '</td>'
+        + '<td style="font-size:12px;">' + (_WLF_TYPE_LABEL[d.type]||d.type) + '</td>'
+        + '<td style="font-weight:600;">' + d.nameKR + '</td>'
+        + '<td style="font-size:12px;">' + d.nameEN + '</td>'
+        + '<td style="font-family:monospace; font-size:11.5px;">' + _wlfMaskID(d.idNum) + '</td>'
+        + '<td><span class="badge badge-gray">' + d.nationality + '</span></td>'
+        + '<td style="font-size:12px;">' + (d.clientType === 'individual' ? '개인' : d.clientType === 'corporate' ? '법인' : '지갑만') + '</td>'
+        + '<td>' + _wlfStatusBadge(d.status) + '</td>'
+        + '<td onclick="event.stopPropagation();" style="white-space:nowrap;">' + btns + '</td>'
+        + '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  function _wlfSetTab(tab, el) {
+    _wlfTab = tab;
+    document.querySelectorAll('#wlf-tabs .kyb-tab').forEach(function(b){ b.classList.remove('active'); });
+    if (el) el.classList.add('active');
+    renderPEP();
+  }
+
+  function _wlfResetFilters() {
+    document.getElementById('wlf-search').value = '';
+    document.getElementById('wlf-type-filter').value = '';
+    document.getElementById('wlf-nation-filter').value = '';
+    document.getElementById('wlf-client-filter').value = '';
+    renderPEP();
+  }
+
+  // ── 상세 슬라이드오버 ──
+  function openWLFDetail(id) {
+    var d = _WLF_DATA.find(function(x){ return x.id===id; });
+    if (!d) return;
+    _wlfCurrentId = id;
+
+    document.getElementById('wlfd-id').textContent = d.id;
+    document.getElementById('wlfd-status').innerHTML = _wlfStatusBadge(d.status);
+    document.getElementById('wlfd-type').textContent = _WLF_TYPE_LABEL[d.type]||d.type;
+    document.getElementById('wlfd-client-type').textContent = _WLF_CLIENT_LABEL[d.clientType]||d.clientType;
+    document.getElementById('wlfd-name-kr').textContent = d.nameKR;
+    document.getElementById('wlfd-name-en').textContent = d.nameEN;
+    document.getElementById('wlfd-idnum').textContent = _wlfMaskID(d.idNum);
+    var unmaskBtn = document.getElementById('wlfd-idnum-unmask-btn');
+    unmaskBtn.style.display = (d.idNum && _ADMIN_ROLE === 'aml_manager') ? 'inline-block' : 'none';
+    document.getElementById('wlfd-dob').textContent = d.dob || '—';
+    document.getElementById('wlfd-gender').textContent = _WLF_GENDER_LABEL[d.gender] || '—';
+    document.getElementById('wlfd-nation').textContent = _WLF_NATION_LABEL[d.nationality] || d.nationality;
+    document.getElementById('wlfd-address').textContent = d.address || '—';
+    document.getElementById('wlfd-reason').textContent = d.reason || '—';
+    document.getElementById('wlfd-drafter').textContent = d.drafter || '—';
+    document.getElementById('wlfd-draft-at').textContent = d.draftAt || '—';
+
+    var appRow = document.getElementById('wlfd-approver-row');
+    var appAtRow = document.getElementById('wlfd-approve-at-row');
+    var appNoteRow = document.getElementById('wlfd-approve-note-row');
+    if (d.approver) {
+      appRow.style.display = ''; appAtRow.style.display = ''; appNoteRow.style.display = '';
+      document.getElementById('wlfd-approver').textContent = d.approver;
+      document.getElementById('wlfd-approve-at').textContent = d.approveAt;
+      document.getElementById('wlfd-approve-note').textContent = d.approveNote || '—';
+    } else {
+      appRow.style.display = 'none'; appAtRow.style.display = 'none'; appNoteRow.style.display = 'none';
+    }
+
+    // 거절 정보
+    var rejSec = document.getElementById('wlfd-reject-section');
+    if (d.status === 'rejected' && d.rejectBy) {
+      rejSec.style.display = '';
+      document.getElementById('wlfd-reject-by').textContent = d.rejectBy;
+      document.getElementById('wlfd-reject-at').textContent = d.rejectAt;
+      document.getElementById('wlfd-reject-note').textContent = d.rejectNote;
+    } else { rejSec.style.display = 'none'; }
+
+    // 삭제 기안 정보
+    var delSec = document.getElementById('wlfd-delete-section');
+    if (d.status === 'delete_pending' && d.deleteDrafter) {
+      delSec.style.display = '';
+      document.getElementById('wlfd-del-drafter').textContent = d.deleteDrafter;
+      document.getElementById('wlfd-del-draft-at').textContent = d.deleteDraftAt;
+      document.getElementById('wlfd-del-reason').textContent = d.deleteReason;
+    } else { delSec.style.display = 'none'; }
+
+    // 지갑주소
+    var walletSec = document.getElementById('wlfd-wallets-section');
+    var walletList = document.getElementById('wlfd-wallets-list');
+    if (d.wallets && d.wallets.length > 0) {
+      walletSec.style.display = '';
+      walletList.innerHTML = d.wallets.map(function(w, i){
+        return '<div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-family:monospace; font-size:11.5px;">'
+          + '<span>&#9312; ' + w + '</span>'
+          + '<div style="display:flex; gap:6px;">'
+          + '<button class="btn btn-outline btn-xs" onclick="navigator.clipboard&&navigator.clipboard.writeText(\'' + w + '\');showToast(\'주소 복사됨\')">복사</button>'
+          + '</div></div>';
+      }).join('');
+    } else { walletSec.style.display = 'none'; }
+
+    // 변경 이력
+    document.getElementById('wlfd-history').style.display = 'none';
+    var hTbody = document.getElementById('wlfd-history-tbody');
+    if (d.history && d.history.length > 0) {
+      hTbody.innerHTML = d.history.map(function(h){
+        return '<tr><td style="padding:5px 4px; white-space:nowrap; color:var(--text-secondary);">' + h.at + '</td>'
+          + '<td style="padding:5px 4px;">' + h.type + '</td>'
+          + '<td style="padding:5px 4px;">' + h.desc + '</td>'
+          + '<td style="padding:5px 4px;">' + h.actor + '</td></tr>';
+      }).join('');
+    } else { hTbody.innerHTML = '<tr><td colspan="4" style="padding:10px 4px; color:var(--text-secondary); text-align:center;">변경 이력 없음</td></tr>'; }
+
+    // RM05 상태
+    document.getElementById('wlfd-rm05').innerHTML = d.status === 'registered'
+      ? '<span style="color:#10B981; font-weight:600;">&#9679; 활성 (RM05 감지 포함)</span>'
+      : '<span style="color:var(--text-secondary);">&#9675; 비활성</span>';
+
+    // 결재 배너
+    var banner = document.getElementById('wlfd-approval-banner');
+    var isApprovalPending = (d.status === 'pending' || d.status === 'delete_pending');
+    banner.style.display = isApprovalPending ? '' : 'none';
+    banner.textContent = d.status === 'delete_pending' ? '⏳ 삭제 결재 대기 중인 건입니다.' : '⏳ 등록 결재 대기 중인 건입니다.';
+
+    // 결재 의견 입력폼 (AML 관리자 + 결재대기)
+    var approveForm = document.getElementById('wlfd-approve-form');
+    var isManager = (_ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master');
+    approveForm.style.display = (isManager && isApprovalPending) ? '' : 'none';
+    if (approveForm.style.display !== 'none') {
+      document.getElementById('wlfd-approve-opinion').value = '';
+    }
+
+    // footer
+    var isOfficer = (_ADMIN_ROLE === 'aml_officer');
+    var footer = document.getElementById('wlfd-footer');
+    var btns = '<button class="btn btn-outline" onclick="closeWLFDetail()">닫기</button>';
+    if (isOfficer && d.status === 'registered') {
+      btns += '<button class="btn btn-outline" onclick="closeWLFDetail(); setTimeout(function(){ openWLFEdit(\'' + id + '\'); }, 200);">수정</button>';
+      btns += '<button class="btn btn-outline" style="color:#F97316; border-color:#F97316;" onclick="closeWLFDetail(); setTimeout(function(){ openWLFDeleteDraft(\'' + id + '\'); }, 200);">삭제 기안</button>';
+    }
+    if (isOfficer && d.status === 'rejected') {
+      btns += '<button class="btn btn-primary" onclick="closeWLFDetail(); setTimeout(function(){ openWLFResubmit(\'' + id + '\'); }, 200);">재기안</button>';
+    }
+    if (isManager && isApprovalPending) {
+      btns += '<button class="btn btn-danger" onclick="openWLFRejectModal(\'' + id + '\')">거절</button>';
+      btns += '<button class="btn btn-success" onclick="_wlfApproveProceed(\'' + id + '\')">&#10003; 승인</button>';
+    }
+    footer.innerHTML = btns;
+
+    document.getElementById('wlf-detail-backdrop').classList.add('open');
+    document.getElementById('wlf-detail-so').classList.add('open');
+  }
+
+  function closeWLFDetail() {
+    document.getElementById('wlf-detail-backdrop').classList.remove('open');
+    document.getElementById('wlf-detail-so').classList.remove('open');
+    _wlfCurrentId = null;
+  }
+
+  function _wlfToggleHistory() {
+    var el = document.getElementById('wlfd-history');
+    el.style.display = el.style.display === 'none' ? '' : 'none';
+  }
+
+  function _wlfUnmaskID() {
+    var d = _WLF_DATA.find(function(x){ return x.id===_wlfCurrentId; });
+    if (!d || !d.idNum) return;
+    openOTPModal('실명번호 조회', function() {
+      var raw = d.idNum.replace(/-/g,'');
+      var formatted = raw.length === 13 ? raw.slice(0,6)+'-'+raw.slice(6) : d.idNum;
+      document.getElementById('wlfd-idnum').textContent = formatted + ' (전체 표시)';
+      document.getElementById('wlfd-idnum-unmask-btn').style.display = 'none';
+      showToast('실명번호 전체가 표시되었습니다. (1회성 조회)');
+    });
+  }
+
+  // ── 등록 기안 슬라이드오버 ──
+  function _wlfRegReset() {
+    document.querySelectorAll('input[name="wlf-reg-type"]')[0].checked = true;
+    document.querySelectorAll('input[name="wlf-reg-client"]')[0].checked = true;
+    document.querySelectorAll('input[name="wlf-reg-gender"]')[2].checked = true; // 미상
+    document.getElementById('wlf-reg-name-kr').value = '';
+    document.getElementById('wlf-reg-name-en').value = '';
+    document.getElementById('wlf-reg-idnum').value = '';
+    document.getElementById('wlf-reg-dob').value = '';
+    document.getElementById('wlf-reg-nation').value = '';
+    document.getElementById('wlf-reg-address').value = '';
+    document.getElementById('wlf-reg-wallet-input').value = '';
+    document.getElementById('wlf-reg-reason').value = '';
+    document.getElementById('wlf-reg-reason-char').textContent = '0';
+    document.getElementById('wlf-reg-idnum-err').style.display = 'none';
+    document.getElementById('wlf-reg-wallet-err').style.display = 'none';
+    document.getElementById('wlf-reg-wallets-list').innerHTML = '';
+    document.getElementById('wlf-edit-reason-wrap').style.display = 'none';
+    document.getElementById('wlf-reg-rejnote-wrap').style.display = 'none';
+    _wlfRegWallets = [];
+    _wlfRegValidate();
+  }
+
+  function openWLFRegister() {
+    _wlfMode = 'register';
+    _wlfCurrentId = null;
+    _wlfRegReset();
+    document.getElementById('wlf-reg-title').textContent = '내부요주의인물 등록 기안 / WLF Registration Draft';
+    document.getElementById('wlf-reg-submit-btn').textContent = '등록 기안 제출';
+    document.getElementById('wlf-register-backdrop').classList.add('open');
+    document.getElementById('wlf-register-so').classList.add('open');
+  }
+
+  function openWLFEdit(id) {
+    var d = _WLF_DATA.find(function(x){ return x.id===id; });
+    if (!d) return;
+    _wlfMode = 'edit';
+    _wlfCurrentId = id;
+    _wlfRegReset();
+
+    document.getElementById('wlf-reg-title').textContent = '내부요주의인물 수정 / WLF Edit — ' + id;
+
+    // 기존 값 채우기
+    document.querySelector('input[name="wlf-reg-type"][value="'+d.type+'"]').checked = true;
+    document.querySelector('input[name="wlf-reg-client"][value="'+d.clientType+'"]').checked = true;
+    document.getElementById('wlf-reg-name-kr').value = d.nameKR;
+    document.getElementById('wlf-reg-name-en').value = d.nameEN;
+    document.getElementById('wlf-reg-idnum').value = d.idNum ? _wlfMaskID(d.idNum) : '';
+    document.getElementById('wlf-reg-dob').value = d.dob || '';
+    if (d.gender) {
+      var genderEl = document.querySelector('input[name="wlf-reg-gender"][value="'+d.gender+'"]');
+      if (genderEl) genderEl.checked = true;
+    }
+    document.getElementById('wlf-reg-nation').value = d.nationality || '';
+    document.getElementById('wlf-reg-address').value = d.address || '';
+    document.getElementById('wlf-reg-reason').value = d.reason || '';
+    document.getElementById('wlf-reg-reason-char').textContent = (d.reason||'').length;
+    _wlfRegWallets = d.wallets ? d.wallets.slice() : [];
+    _wlfRegRenderWallets();
+
+    document.getElementById('wlf-edit-reason-wrap').style.display = '';
+    document.getElementById('wlf-reg-submit-btn').textContent = '수정 저장';
+    _wlfRegValidate();
+
+    document.getElementById('wlf-register-backdrop').classList.add('open');
+    document.getElementById('wlf-register-so').classList.add('open');
+  }
+
+  function openWLFResubmit(id) {
+    var d = _WLF_DATA.find(function(x){ return x.id===id; });
+    if (!d) return;
+    _wlfMode = 'resubmit';
+    _wlfCurrentId = id;
+    _wlfRegReset();
+
+    document.getElementById('wlf-reg-title').textContent = '내부요주의인물 재기안 / WLF Re-submission — ' + id + ' (재기안)';
+
+    // 거절 사유 표시
+    var rejWrap = document.getElementById('wlf-reg-rejnote-wrap');
+    if (d.rejectBy) {
+      rejWrap.style.display = '';
+      document.getElementById('wlf-reg-rejnote-meta').textContent = '거절 일시: ' + d.rejectAt + '  |  거절자: ' + d.rejectBy;
+      document.getElementById('wlf-reg-rejnote-text').textContent = d.rejectNote;
+    }
+
+    // 기존 값 채우기
+    document.querySelector('input[name="wlf-reg-type"][value="'+d.type+'"]').checked = true;
+    document.querySelector('input[name="wlf-reg-client"][value="'+d.clientType+'"]').checked = true;
+    document.getElementById('wlf-reg-name-kr').value = d.nameKR;
+    document.getElementById('wlf-reg-name-en').value = d.nameEN;
+    document.getElementById('wlf-reg-nation').value = d.nationality || '';
+    document.getElementById('wlf-reg-address').value = d.address || '';
+    document.getElementById('wlf-reg-reason').value = d.reason || '';
+    document.getElementById('wlf-reg-reason-char').textContent = (d.reason||'').length;
+    _wlfRegWallets = d.wallets ? d.wallets.slice() : [];
+    _wlfRegRenderWallets();
+
+    document.getElementById('wlf-reg-submit-btn').textContent = '재기안 제출';
+    _wlfRegValidate();
+
+    document.getElementById('wlf-register-backdrop').classList.add('open');
+    document.getElementById('wlf-register-so').classList.add('open');
+  }
+
+  function closeWLFRegister() {
+    document.getElementById('wlf-register-backdrop').classList.remove('open');
+    document.getElementById('wlf-register-so').classList.remove('open');
+  }
+
+  function _wlfRegIDFormat(el) {
+    var val = el.value.replace(/[^0-9]/g,'');
+    if (val.length > 6) val = val.slice(0,6) + '-' + val.slice(6,13);
+    el.value = val;
+    var errEl = document.getElementById('wlf-reg-idnum-err');
+    var raw = val.replace('-','');
+    if (raw.length > 0 && raw.length !== 13 && raw.length < 10) {
+      errEl.style.display = 'block';
+    } else { errEl.style.display = 'none'; }
+    _wlfRegValidate();
+  }
+
+  function _wlfRegAddWallet() {
+    var input = document.getElementById('wlf-reg-wallet-input');
+    var val = input.value.trim();
+    if (!val) return;
+    _wlfRegWallets.push(val);
+    input.value = '';
+    _wlfRegRenderWallets();
+    _wlfRegValidate();
+  }
+
+  function _wlfRegRemoveWallet(i) {
+    _wlfRegWallets.splice(i, 1);
+    _wlfRegRenderWallets();
+    _wlfRegValidate();
+  }
+
+  function _wlfRegRenderWallets() {
+    var list = document.getElementById('wlf-reg-wallets-list');
+    list.innerHTML = _wlfRegWallets.map(function(w, i){
+      return '<div style="display:flex; align-items:center; gap:8px; padding:5px 0;">'
+        + '<span style="font-family:monospace; font-size:11.5px; flex:1; color:var(--text-primary);">&#9312; ' + w + '</span>'
+        + '<button class="btn btn-outline btn-xs" style="color:var(--danger);" onclick="_wlfRegRemoveWallet(' + i + ')">삭제</button>'
+        + '</div>';
+    }).join('');
+  }
+
+  function _wlfRegValidate() {
+    var nameKR  = (document.getElementById('wlf-reg-name-kr')||{}).value || '';
+    var nameEN  = (document.getElementById('wlf-reg-name-en')||{}).value || '';
+    var reason  = (document.getElementById('wlf-reg-reason')||{}).value || '';
+    var nation  = (document.getElementById('wlf-reg-nation')||{}).value || '';
+    var type    = (document.querySelector('input[name="wlf-reg-type"]:checked')||{}).value || '';
+    var editReason = '';
+    if (_wlfMode === 'edit') {
+      editReason = (document.getElementById('wlf-edit-reason')||{}).value || '';
+    }
+    var charEl = document.getElementById('wlf-reg-reason-char');
+    if (charEl) charEl.textContent = reason.length;
+
+    // wallet validation for blackwallet type
+    var walletErrEl = document.getElementById('wlf-reg-wallet-err');
+    var walletOk = true;
+    if (type === 'blackwallet' && _wlfRegWallets.length === 0) {
+      if (walletErrEl) walletErrEl.style.display = 'block';
+      walletOk = false;
+    } else { if (walletErrEl) walletErrEl.style.display = 'none'; }
+
+    var baseOk = nameKR.trim() && nameEN.trim() && reason.trim() && nation && walletOk;
+    var editOk = _wlfMode !== 'edit' || editReason.trim();
+    var btn = document.getElementById('wlf-reg-submit-btn');
+    if (btn) btn.disabled = !(baseOk && editOk);
+  }
+
+  function _wlfRegProceed() {
+    var titleMap = { register:'등록 기안', edit:'수정', resubmit:'재기안' };
+    var title = titleMap[_wlfMode] || '기안';
+    openOTPModal('WLF ' + title, function() {
+      _wlfRegSubmit();
+    });
+  }
+
+  function _wlfRegSubmit() {
+    var type     = document.querySelector('input[name="wlf-reg-type"]:checked').value;
+    var client   = document.querySelector('input[name="wlf-reg-client"]:checked').value;
+    var nameKR   = document.getElementById('wlf-reg-name-kr').value.trim();
+    var nameEN   = document.getElementById('wlf-reg-name-en').value.trim().toUpperCase();
+    var idNumRaw = document.getElementById('wlf-reg-idnum').value.replace(/-/g,'').replace(/\*/g,'');
+    var dob      = document.getElementById('wlf-reg-dob').value;
+    var gender   = (document.querySelector('input[name="wlf-reg-gender"]:checked')||{}).value || 'U';
+    var nation   = document.getElementById('wlf-reg-nation').value;
+    var address  = document.getElementById('wlf-reg-address').value.trim();
+    var reason   = document.getElementById('wlf-reg-reason').value.trim();
+    var now      = '2026-04-09 ' + (function(){ var d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0'); })();
+
+    if (_wlfMode === 'register' || _wlfMode === 'resubmit') {
+      var newId = 'WL-' + String(_wlfNextId++).padStart(4,'0');
+      if (_wlfMode === 'resubmit' && _wlfCurrentId) {
+        var old = _WLF_DATA.find(function(x){ return x.id===_wlfCurrentId; });
+        if (old) old.status = 'superseded'; // keep old in history
+      }
+      _WLF_DATA.push({
+        id: newId, type: type, clientType: client,
+        nameKR: nameKR, nameEN: nameEN,
+        idNum: idNumRaw || null,
+        nationality: nation, address: address, gender: gender, dob: dob || null,
+        wallets: _wlfRegWallets.slice(),
+        reason: reason,
+        status: 'pending',
+        drafter: '현재 담당자 (AML 담당자)', draftAt: now,
+        approver: null, approveAt: null, approveNote: null,
+        rejectAt: null, rejectBy: null, rejectNote: null,
+        deleteDrafter: null, deleteDraftAt: null, deleteReason: null,
+        history: []
+      });
+      showToast(_wlfMode === 'resubmit' ? '재기안이 제출되었습니다.' : '등록 기안이 제출되었습니다.');
+    } else if (_wlfMode === 'edit') {
+      var d = _WLF_DATA.find(function(x){ return x.id===_wlfCurrentId; });
+      if (d) {
+        var editNote = document.getElementById('wlf-edit-reason').value.trim();
+        d.history.push({at: now, type:'정보 수정', desc: editNote, actor:'현재 담당자'});
+        d.nameKR = nameKR; d.nameEN = nameEN; d.type = type; d.clientType = client;
+        d.nationality = nation; d.address = address; d.gender = gender; d.dob = dob || d.dob;
+        d.reason = reason; d.wallets = _wlfRegWallets.slice();
+      }
+      showToast('수정이 저장되었습니다.');
+    }
+    closeWLFRegister();
+    renderPEP();
+  }
+
+  // ── 삭제 기안 ──
+  function openWLFDeleteDraft(id) {
+    var d = _WLF_DATA.find(function(x){ return x.id===id; });
+    if (!d) return;
+    _wlfCurrentId = id;
+    document.getElementById('wlf-del-id').textContent = d.id;
+    document.getElementById('wlf-del-type').textContent = _WLF_TYPE_LABEL[d.type]||d.type;
+    document.getElementById('wlf-del-name-kr').textContent = d.nameKR;
+    document.getElementById('wlf-del-name-en').textContent = d.nameEN;
+    document.getElementById('wlf-del-status').innerHTML = _wlfStatusBadge(d.status);
+    document.getElementById('wlf-del-reason-text').value = '';
+    document.getElementById('wlf-del-submit-btn').disabled = true;
+    openModal('modal-wlf-delete');
+  }
+
+  function _wlfDelValidate() {
+    var reason = document.getElementById('wlf-del-reason-text').value.trim();
+    document.getElementById('wlf-del-submit-btn').disabled = !reason;
+  }
+
+  function _wlfDelProceed() {
+    var id = _wlfCurrentId;
+    var reason = document.getElementById('wlf-del-reason-text').value.trim();
+    closeModal('modal-wlf-delete');
+    setTimeout(function() {
+      openOTPModal('삭제 기안', function() {
+        var d = _WLF_DATA.find(function(x){ return x.id===id; });
+        if (!d) return;
+        d.status = 'delete_pending';
+        d.deleteDrafter = '현재 담당자 (AML 담당자)';
+        d.deleteDraftAt = '2026-04-09 ' + (function(){ var n=new Date(); return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'); })();
+        d.deleteReason = reason;
+        d.history.push({at: d.deleteDraftAt, type:'삭제 기안', desc:'삭제 기안 제출', actor:'현재 담당자'});
+        showToast('삭제 기안이 제출되었습니다.');
+        renderPEP();
+      });
+    }, 200);
+  }
+
+  // ── 결재: 승인 ──
+  function _wlfApproveProceed(id) {
+    var d = _WLF_DATA.find(function(x){ return x.id===(id||_wlfCurrentId); });
+    if (!d) return;
+    var opinion = (document.getElementById('wlfd-approve-opinion')||{}).value || '';
+    openOTPModal('결재 승인', function() {
+      var now = '2026-04-09 ' + (function(){ var n=new Date(); return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'); })();
+      if (d.status === 'pending') {
+        d.status = 'registered';
+        d.approver = '현재 관리자 (AML 관리자)';
+        d.approveAt = now;
+        d.approveNote = opinion;
+        d.history.push({at: now, type:'등록 승인', desc: opinion || '승인 처리', actor:'현재 관리자'});
+        showToast('등록 기안이 승인되었습니다. RM05 감지 대상에 포함되었습니다.');
+      } else if (d.status === 'delete_pending') {
+        d.history.push({at: now, type:'삭제 승인', desc: '삭제 처리 완료', actor:'현재 관리자'});
+        var idx = _WLF_DATA.indexOf(d);
+        if (idx > -1) _WLF_DATA.splice(idx, 1);
+        showToast('삭제 기안이 승인되었습니다. RM05 감지 대상에서 제외되었습니다.');
+      }
+      closeWLFDetail();
+      renderPEP();
+    });
+  }
+
+  // ── 결재: 거절 ──
+  function openWLFRejectModal(id) {
+    var d = _WLF_DATA.find(function(x){ return x.id===id; });
+    if (!d) return;
+    _wlfCurrentId = id;
+    document.getElementById('wlf-rej-id').textContent = d.id;
+    document.getElementById('wlf-rej-name').textContent = d.nameKR + ' (' + d.nameEN + ')';
+    document.getElementById('wlf-rej-reason').value = '';
+    document.getElementById('wlf-rej-submit-btn').disabled = true;
+    openModal('modal-wlf-reject');
+  }
+
+  function _wlfRejValidate() {
+    var r = document.getElementById('wlf-rej-reason').value.trim();
+    document.getElementById('wlf-rej-submit-btn').disabled = !r;
+  }
+
+  function _wlfRejProceed() {
+    var id = _wlfCurrentId;
+    var reason = document.getElementById('wlf-rej-reason').value.trim();
+    closeModal('modal-wlf-reject');
+    setTimeout(function() {
+      openOTPModal('결재 거절', function() {
+        var d = _WLF_DATA.find(function(x){ return x.id===id; });
+        if (!d) return;
+        var now = '2026-04-09 ' + (function(){ var n=new Date(); return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'); })();
+        d.status = 'rejected';
+        d.rejectBy = '현재 관리자 (AML 관리자)';
+        d.rejectAt = now;
+        d.rejectNote = reason;
+        d.history.push({at: now, type:'거절', desc: reason, actor:'현재 관리자'});
+        showToast('결재가 거절되었습니다.');
+        closeWLFDetail();
+        renderPEP();
+      });
+    }, 200);
   }
 
   /* ════════════════════════════════════
