@@ -5775,6 +5775,11 @@
       initTxPage();
     }
 
+    // 콜드월렛 테이블 재렌더 (처리/비활성화 버튼 권한 반영)
+    if (document.getElementById('cw-walletreq-tbody')) renderCWRequests();
+    if (document.getElementById('cw-coin-tbody')) renderCoinAddRequests();
+    if (document.getElementById('cw-allwallets-tbody')) renderCWAllWallets();
+
     // PW/MFA Setting 역할별 UI 갱신
     applyPWMFARoleUI();
   }
