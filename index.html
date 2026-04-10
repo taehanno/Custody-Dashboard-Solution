@@ -2279,28 +2279,76 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     MODAL: Delete Account
+     MODAL: Delete Account — Blocked (3-5-1)
 ══════════════════════════════════════ -->
-<div class="modal" id="modal-delete-account" style="max-width:420px;">
+<div class="modal" id="modal-delete-blocked" style="max-width:540px;">
   <div class="modal-header">
-    <span class="modal-title">&#128465; 계정 삭제</span>
-    <button class="modal-close" onclick="closeModal('modal-delete-account')">&#10005;</button>
+    <span class="modal-title">계정을 삭제할 수 없습니다.</span>
+    <button class="modal-close" onclick="closeModal('modal-delete-blocked')">&#10005;</button>
   </div>
   <div class="modal-body">
-    <div id="delete-acct-signer-warn" class="alert alert-warning" style="margin-bottom:14px; font-size:12.5px; display:none;">
-      &#9888; <strong id="delete-acct-strategy-msg">이 계정은 출금 정책에 포함되어 있습니다.</strong><br>
-      삭제 전 Strategy Engine에서 관련 정책을 재설정하세요.
+    <p style="font-size:13px; margin-bottom:14px;">
+      <strong id="blocked-acct-label">—</strong> 계정은 현재 서명 대기 중인<br>
+      출금 건의 서명자로 지정되어 있어 삭제할 수 없습니다.
+    </p>
+    <div style="font-size:13px; font-weight:600; margin-bottom:8px;">
+      서명 대기 출금 건: <span id="blocked-signer-count">0</span>건
     </div>
-    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">다음 계정을 삭제합니다. 이 작업은 취소할 수 없습니다.</p>
-    <div style="background:#F8FAFC; border-radius:8px; padding:14px; margin-bottom:8px;">
-      <div style="font-weight:700; font-size:14px; margin-bottom:4px;" id="delete-acct-name-display">—</div>
-      <div style="font-size:12px; color:var(--text-secondary);" id="delete-acct-email-display">—</div>
-      <div style="margin-top:8px;" id="delete-acct-role-display"></div>
+    <div class="table-wrap" style="margin-bottom:14px;">
+      <table style="font-size:12px;">
+        <thead>
+          <tr>
+            <th>신청 ID</th>
+            <th>지갑명</th>
+            <th>서명 현황</th>
+          </tr>
+        </thead>
+        <tbody id="blocked-signer-table"></tbody>
+      </table>
+    </div>
+    <div class="alert alert-info" style="font-size:12px; margin-bottom:0;">
+      &#9432; 위 출금 건이 모두 완료되거나 거절된 후에 계정을 삭제할 수 있습니다.
     </div>
   </div>
   <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-delete-blocked'); showPage('workflows');">Workflows에서 확인 &#8594;</button>
+    <button class="btn btn-primary" onclick="closeModal('modal-delete-blocked')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Delete Account — Confirm + OTP (3-5-3)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-delete-account" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">계정 삭제 확인</span>
+    <button class="modal-close" onclick="closeModal('modal-delete-account')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <p style="font-size:14px; font-weight:600; margin-bottom:16px;" id="delete-acct-name-display">—</p>
+    <div class="alert alert-warning" style="font-size:12.5px; margin-bottom:16px;">
+      <div style="font-weight:700; margin-bottom:6px;">&#9888; 삭제 시 유의 사항</div>
+      <ul style="margin:0; padding-left:16px; line-height:1.9;">
+        <li>삭제된 계정은 즉시 로그인이 차단됩니다.</li>
+        <li>진행 중인 출금 신청 건은 기존 정책대로 계속 진행됩니다.</li>
+        <li>신규 출금 건에서는 해당 계정이 자동으로 제외됩니다.</li>
+        <li>이 작업은 되돌릴 수 없습니다.</li>
+      </ul>
+    </div>
+    <div style="font-size:13px; font-weight:600; margin-bottom:10px;">OTP 6자리를 입력하세요.</div>
+    <div id="delete-acct-otp-boxes" style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;">
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,0,'delete-acct-otp-boxes')" onkeydown="otpBack(event,this,0,'delete-acct-otp-boxes')" onpaste="otpPaste(event,'delete-acct-otp-boxes')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,1,'delete-acct-otp-boxes')" onkeydown="otpBack(event,this,1,'delete-acct-otp-boxes')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,2,'delete-acct-otp-boxes')" onkeydown="otpBack(event,this,2,'delete-acct-otp-boxes')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,3,'delete-acct-otp-boxes')" onkeydown="otpBack(event,this,3,'delete-acct-otp-boxes')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,4,'delete-acct-otp-boxes')" onkeydown="otpBack(event,this,4,'delete-acct-otp-boxes')" />
+      <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,5,'delete-acct-otp-boxes')" onkeydown="otpBack(event,this,5,'delete-acct-otp-boxes')" />
+    </div>
+    <div id="delete-acct-otp-err" style="display:none; color:var(--danger); font-size:12px; text-align:center; margin-bottom:4px;"></div>
+  </div>
+  <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-delete-account')">취소</button>
-    <button class="btn btn-danger" onclick="proceedDeleteAccount()">삭제 진행 &#8594; OTP 인증</button>
+    <button class="btn btn-danger" onclick="proceedDeleteAccount()">삭제 확인</button>
   </div>
 </div>
 
@@ -9207,11 +9255,14 @@
   ════════════════════════════════════ */
   // status: 'active' | 'pw_locked' | 'otp_locked' | 'manual_inactive' | 'pending'
   let _ACCOUNTS = [
-    { idx: 0, name: '김철수', email: 'kim@infiniteblock.io',  dept: '자산운용팀', title: '팀장',   phone: '010-1234-5678', role: 'master',  roleLabel: 'Master', status: 'active',          lastLogin: '2026-04-10 14:30', isSelf: true,  strategyCount: 0 },
-    { idx: 1, name: '이영희', email: 'lee@infiniteblock.io',  dept: '자산운용팀', title: '매니저', phone: '010-2345-6789', role: 'general', roleLabel: '일반',   status: 'active',          lastLogin: '2026-04-10 11:15', isSelf: false, strategyCount: 2 },
-    { idx: 2, name: '박민준', email: 'park@infiniteblock.io', dept: '자산운용팀', title: '대리',   phone: '010-3456-7890', role: 'general', roleLabel: '일반',   status: 'otp_locked',      lastLogin: '2026-04-08 09:12', isSelf: false, strategyCount: 1 },
-    { idx: 3, name: '최진호', email: 'choi@infiniteblock.io', dept: '준법감시팀', title: '과장',   phone: '010-4567-8901', role: 'general', roleLabel: '일반',   status: 'manual_inactive', lastLogin: '2026-03-30 16:44', isSelf: false, strategyCount: 0 },
-    { idx: 4, name: '안소연', email: 'an@infiniteblock.io',   dept: '준법감시팀', title: '주임',   phone: '',             role: 'general', roleLabel: '일반',   status: 'pending',         lastLogin: '—',                isSelf: false, strategyCount: 0 },
+    { idx: 0, name: '김철수', email: 'kim@infiniteblock.io',  dept: '자산운용팀', title: '팀장',   phone: '010-1234-5678', role: 'master',  roleLabel: 'Master', status: 'active',          lastLogin: '2026-04-10 14:30', isSelf: true,  strategyCount: 0, pendingSignerCount: 0, pendingSignerItems: [] },
+    { idx: 1, name: '이영희', email: 'lee@infiniteblock.io',  dept: '자산운용팀', title: '매니저', phone: '010-2345-6789', role: 'general', roleLabel: '일반',   status: 'active',          lastLogin: '2026-04-10 11:15', isSelf: false, strategyCount: 2, pendingSignerCount: 2, pendingSignerItems: [
+        { id: 'INF-20260409-00123', wallet: '운영 지갑 A', sigCurrent: 1, sigTotal: 2, signed: true  },
+        { id: 'INF-20260409-00124', wallet: '운영 지갑 B', sigCurrent: 0, sigTotal: 1, signed: false },
+      ]},
+    { idx: 2, name: '박민준', email: 'park@infiniteblock.io', dept: '자산운용팀', title: '대리',   phone: '010-3456-7890', role: 'general', roleLabel: '일반',   status: 'otp_locked',      lastLogin: '2026-04-08 09:12', isSelf: false, strategyCount: 1, pendingSignerCount: 0, pendingSignerItems: [] },
+    { idx: 3, name: '최진호', email: 'choi@infiniteblock.io', dept: '준법감시팀', title: '과장',   phone: '010-4567-8901', role: 'general', roleLabel: '일반',   status: 'manual_inactive', lastLogin: '2026-03-30 16:44', isSelf: false, strategyCount: 0, pendingSignerCount: 0, pendingSignerItems: [] },
+    { idx: 4, name: '안소연', email: 'an@infiniteblock.io',   dept: '준법감시팀', title: '주임',   phone: '',             role: 'general', roleLabel: '일반',   status: 'pending',         lastLogin: '—',                isSelf: false, strategyCount: 0, pendingSignerCount: 0, pendingSignerItems: [] },
   ];
 
   let _deleteAcctIdx = null;
@@ -9268,24 +9319,39 @@
     tbody.innerHTML = rows.map(a => {
       const selfTag = a.isSelf
         ? `<span style="font-size:10px; color:var(--primary); margin-left:6px; font-weight:500;">(나)</span>` : '';
-      // Per PRD: Master shows [수정][삭제] for non-self active/inactive; [초대 취소] for pending
-      const canManage = _IS_MASTER && !a.isSelf && a.status !== 'pending';
-      const isPending = _IS_MASTER && !a.isSelf && a.status === 'pending';
-      const actionBtns = _IS_MASTER
-        ? (canManage
-            ? `<button class="btn btn-outline btn-xs" onclick="_acctEditOpen(${a.idx})">수정</button>
-               <button class="btn btn-outline btn-xs" style="color:var(--danger);border-color:rgba(239,68,68,0.3);" onclick="deleteAccountConfirm(${a.idx})">삭제</button>`
-            : isPending
-              ? `<button class="btn btn-outline btn-xs" onclick="cancelInvite(${a.idx})">초대 취소</button>`
-              : '')
-        : '';
+
+      let actionBtns = '';
+      if (_IS_MASTER) {
+        if (a.isSelf) {
+          // Master 본인 행: 액션 없음
+          actionBtns = '';
+        } else if (a.status === 'pending') {
+          actionBtns = `<button class="btn btn-outline btn-xs" onclick="cancelInvite(${a.idx})">초대 취소</button>`;
+        } else {
+          // 서명 대기 건 서명자 여부에 따라 [삭제] / [삭제 불가 🔒] 분기
+          const editBtn = `<button class="btn btn-outline btn-xs" onclick="_acctEditOpen(${a.idx})">수정</button>`;
+          if (a.pendingSignerCount > 0) {
+            const deleteBlockedBtn = `<button class="btn btn-outline btn-xs"
+              style="color:#94A3B8; border-color:#CBD5E1; cursor:not-allowed;"
+              title="서명 대기 중인 출금 건의 서명자입니다. 출금 건 처리 후 삭제할 수 있습니다."
+              onclick="deleteAccountConfirm(${a.idx})">삭제 불가 &#128274;</button>`;
+            actionBtns = editBtn + ' ' + deleteBlockedBtn;
+          } else {
+            const deleteBtn = `<button class="btn btn-outline btn-xs"
+              style="color:var(--danger);border-color:rgba(239,68,68,0.3);"
+              onclick="deleteAccountConfirm(${a.idx})">삭제</button>`;
+            actionBtns = editBtn + ' ' + deleteBtn;
+          }
+        }
+      }
+
       return `
         <tr>
           <td style="font-weight:600;">${a.name}${selfTag}</td>
           <td style="color:var(--text-secondary);font-size:12px;">${a.email}</td>
           <td>${roleBadge(a.role, a.roleLabel)}</td>
           <td>${acctStatusBadge(a.status)}</td>
-          <td style="display:flex; gap:6px;">${actionBtns}</td>
+          <td style="display:flex; gap:6px; align-items:center;">${actionBtns}</td>
         </tr>`;
     }).join('');
   }
@@ -9517,28 +9583,80 @@
   }
 
   // ── Delete Account ──
+  let _deleteAcctOtpErrors = 0;
+
   function deleteAccountConfirm(idx) {
     const a = _ACCOUNTS[idx];
     if (!a) return;
     _deleteAcctIdx = idx;
-    document.getElementById('delete-acct-name-display').textContent  = a.name;
-    document.getElementById('delete-acct-email-display').textContent = a.email;
-    document.getElementById('delete-acct-role-display').innerHTML    = roleBadge(a.role, a.roleLabel);
-    const inStrategy = a.strategyCount > 0;
-    document.getElementById('delete-acct-signer-warn').style.display = inStrategy ? '' : 'none';
-    if (inStrategy) {
-      document.getElementById('delete-acct-strategy-msg').textContent =
-        `이 계정은 ${a.strategyCount}개 지갑의 출금 정책에 포함되어 있습니다.`;
+
+    // 3-5-0: 서명 대기 건 서명자 차단
+    if (a.pendingSignerCount > 0) {
+      document.getElementById('blocked-acct-label').textContent = `${a.name} (${a.email})`;
+      document.getElementById('blocked-signer-count').textContent = a.pendingSignerCount;
+      document.getElementById('blocked-signer-table').innerHTML = a.pendingSignerItems.map(item => `
+        <tr>
+          <td style="font-size:12px;">${item.id}</td>
+          <td style="font-size:12px;">${item.wallet}</td>
+          <td style="font-size:12px;">${item.sigCurrent} / ${item.sigTotal}&nbsp;
+            <span style="color:${item.signed ? '#065F46' : '#92400E'}; font-weight:600;">
+              (${item.signed ? '서명 완료' : '서명 대기'})
+            </span>
+          </td>
+        </tr>`).join('');
+      openModal('modal-delete-blocked');
+      return;
     }
+
+    // 3-5-2: 정상 삭제 플로우 → 삭제 확인 모달 (OTP 포함)
+    document.getElementById('delete-acct-name-display').textContent =
+      `${a.name} (${a.email}) 계정을 삭제하시겠습니까?`;
+    // OTP 초기화
+    _deleteAcctOtpErrors = 0;
+    const boxes = document.querySelectorAll('#delete-acct-otp-boxes .otp-box');
+    boxes.forEach(b => { b.value = ''; b.classList.remove('err'); b.disabled = false; });
+    document.getElementById('delete-acct-otp-err').style.display = 'none';
     openModal('modal-delete-account');
+    setTimeout(() => boxes[0]?.focus(), 120);
   }
 
   function proceedDeleteAccount() {
+    const boxes = document.querySelectorAll('#delete-acct-otp-boxes .otp-box');
+    const otp = Array.from(boxes).map(b => b.value).join('');
+
+    if (otp.length < 6) {
+      document.getElementById('delete-acct-otp-err').textContent = 'OTP 6자리를 모두 입력해주세요.';
+      document.getElementById('delete-acct-otp-err').style.display = '';
+      return;
+    }
+
+    // Mock OTP validation: any non-"000000" is treated as correct for demo
+    if (otp === '000000') {
+      _deleteAcctOtpErrors++;
+      boxes.forEach(b => { b.classList.add('err'); b.value = ''; });
+      if (_deleteAcctOtpErrors >= 5) {
+        document.getElementById('delete-acct-otp-err').textContent =
+          'OTP 오류 횟수 초과. 관리자에게 문의하세요.';
+        document.getElementById('delete-acct-otp-err').style.display = '';
+        boxes.forEach(b => b.disabled = true);
+      } else {
+        document.getElementById('delete-acct-otp-err').textContent =
+          `OTP가 올바르지 않습니다. 남은 시도: ${5 - _deleteAcctOtpErrors}회`;
+        document.getElementById('delete-acct-otp-err').style.display = '';
+        boxes[0]?.focus();
+      }
+      return;
+    }
+
+    // 삭제 완료
     closeModal('modal-delete-account');
-    openOTPModal('계정 삭제 확인', function() {
+    if (_deleteAcctIdx !== null) {
+      _ACCOUNTS.splice(_deleteAcctIdx, 1);
+      _ACCOUNTS.forEach((x, i) => { x.idx = i; });
+      renderAccountTable();
       showToast('계정이 삭제되었습니다.');
       _deleteAcctIdx = null;
-    });
+    }
   }
 
   // ── My Profile: 기본정보 save ──
