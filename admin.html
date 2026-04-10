@@ -5659,11 +5659,11 @@
     'nav-vasp':           ['master', 'general'],
     'nav-client-ip':      ['master', 'general'],
     'nav-pwmfa':          ['master', 'general'],  // master: 저장 가능 / general: VIEW 전용
-    // ── AML
-    'nav-str':            ['master', 'aml_officer', 'aml_manager'],
-    'nav-pep':            ['master', 'aml_officer', 'aml_manager'],
-    'nav-country':        ['master', 'aml_officer', 'aml_manager'],
-    'nav-strparam':       ['master', 'aml_officer', 'aml_manager'],
+    // ── AML (AML 담당자·관리자 전용 — 마스터 포함 타 역할 접근 불가)
+    'nav-str':            ['aml_officer', 'aml_manager'],
+    'nav-pep':            ['aml_officer', 'aml_manager'],
+    'nav-country':        ['aml_officer', 'aml_manager'],
+    'nav-strparam':       ['aml_officer', 'aml_manager'],
     // ── 시스템
     'nav-admin-accounts': ['master'],
     // nav-activitylog: 전 역할 접근 (범위는 renderActLog 에서 분기)
@@ -5765,7 +5765,7 @@
     // 국가위험정책 상단 버튼 가시성 직접 갱신 (renderCountry는 init 이후에만 안전하게 호출 가능)
     var ctyBtns = document.getElementById('cty-manager-btns');
     if (ctyBtns) {
-      var isCtyMgr = (_ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master');
+      var isCtyMgr = (_ADMIN_ROLE === 'aml_manager');
       ctyBtns.style.display = isCtyMgr ? 'flex' : 'none';
     }
 
