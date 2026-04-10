@@ -698,6 +698,52 @@
     .strategy-empty-title { font-size: 15px; font-weight: 700; }
     .strategy-empty-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-width: 300px; }
 
+    /* ── Strategy Engine v2 ── */
+    .se-progress { display:flex; align-items:center; gap:0; margin-bottom:28px; }
+    .se-progress-step { display:flex; flex-direction:column; align-items:center; gap:5px; flex:1; cursor:default; }
+    .se-progress-step.clickable { cursor:pointer; }
+    .se-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; border:2px solid #CBD5E1; background:#fff; color:#94A3B8; transition:all .2s; }
+    .se-dot.done { background:var(--primary); border-color:var(--primary); color:#fff; }
+    .se-dot.active { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 0 0 3px #DBEAFE; }
+    .se-dot-label { font-size:10px; color:var(--text-secondary); font-weight:500; text-align:center; white-space:nowrap; }
+    .se-dot-label.active { color:var(--primary); font-weight:700; }
+    .se-progress-line { flex:1; height:2px; background:#E2E8F0; margin:0; margin-bottom:16px; transition:background .2s; }
+    .se-progress-line.done { background:var(--primary); }
+
+    .se-policy-card { border:1px solid var(--border); border-radius:12px; background:#fff; padding:0; transition:box-shadow .15s, background .15s; cursor:pointer; overflow:hidden; }
+    .se-policy-card:hover { box-shadow:0 2px 12px rgba(0,0,0,.08); background:#F8FAFC; }
+    .se-policy-card.unset { border-color:#F59E0B; border-width:1.5px; background:#FFFBEB; }
+    .se-policy-card.unset:hover { background:#FEF3C7; }
+    .se-card-head { padding:14px 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); gap:10px; }
+    .se-card-body { padding:14px 18px; display:grid; grid-template-columns:1fr 1fr; gap:10px 20px; }
+    .se-card-foot { padding:10px 18px; background:#F8FAFC; border-top:1px solid var(--border); display:flex; gap:8px; align-items:center; }
+    .se-kv { display:flex; flex-direction:column; gap:2px; }
+    .se-kv-label { font-size:10px; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+    .se-kv-val { font-size:12.5px; font-weight:600; color:var(--text-primary); }
+
+    .se-chk-list { border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .se-chk-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid #F1F5F9; cursor:pointer; transition:background .1s; }
+    .se-chk-item:last-child { border-bottom:none; }
+    .se-chk-item:hover:not(.locked) { background:#F8FAFC; }
+    .se-chk-item.locked { cursor:default; opacity:.85; background:#F8FAFC; }
+    .se-chk-item input[type=checkbox] { width:15px; height:15px; flex-shrink:0; cursor:pointer; }
+    .se-chk-item.locked input { cursor:default; }
+    .se-chk-name { font-size:13px; font-weight:600; flex:1; }
+    .se-chk-role { font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:#F1F5F9; color:var(--text-secondary); }
+    .se-chk-role.master { background:#F5F3FF; color:#8B5CF6; }
+    .se-chk-lock { font-size:13px; color:#94A3B8; }
+    .se-sel-summary { font-size:12px; color:var(--primary); font-weight:600; margin-top:6px; }
+
+    .se-n-radios { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .se-n-radio-label { border:2px solid var(--border); border-radius:8px; padding:8px 16px; font-size:14px; font-weight:700; cursor:pointer; transition:all .15s; color:var(--text-secondary); }
+    .se-n-radio-label.selected { border-color:var(--primary); background:#EFF6FF; color:var(--primary); }
+
+    .se-summary-box { border:1px solid var(--border); border-radius:10px; padding:16px 18px; background:#F8FAFC; margin-bottom:16px; }
+    .se-summary-row { display:flex; gap:12px; padding:6px 0; border-bottom:1px solid #F1F5F9; font-size:13px; }
+    .se-summary-row:last-child { border-bottom:none; }
+    .se-summary-key { font-weight:600; min-width:80px; color:var(--text-secondary); font-size:12px; }
+    .se-summary-val { font-weight:500; color:var(--text-primary); flex:1; }
+
     /* ══════════════════════════
        SECTION 3: ACCOUNT MANAGEMENT
     ══════════════════════════ */
@@ -1691,91 +1737,175 @@
 <!-- ══════════════════════════════════════
      SLIDE-OVER: Edit / Create Strategy Policy
 ══════════════════════════════════════ -->
-<div class="slideover" id="so-edit-strategy" style="width:540px;">
-  <div class="so-header">
-    <div>
-      <div class="so-title" id="sp-so-title">&#43; 출금 정책 설정</div>
-      <div style="font-size:11px; color:var(--text-secondary); margin-top:3px;" id="sp-so-wallet">지갑: BTC 보관 지갑 #1 &nbsp;<span style="color:#94A3B8;">(읽기 전용)</span></div>
-    </div>
-    <button class="modal-close" onclick="closeSO('so-edit-strategy')">&#10005;</button>
+<!-- ══════════════════════════
+     MODAL: Strategy Engine Wizard (3-Step)
+══════════════════════════ -->
+<div class="modal" id="modal-se-wizard" style="max-width:580px; max-height:90vh; overflow:hidden; display:flex; flex-direction:column;">
+  <!-- Header -->
+  <div class="modal-header" style="flex-shrink:0;">
+    <span class="modal-title" id="se-wiz-title">출금 정책 설정</span>
+    <button class="modal-close" onclick="closeStrategyWizard()">&#10005;</button>
   </div>
-  <div class="so-body">
 
-    <div class="alert alert-info" style="font-size:12px; margin-bottom:20px;" id="sp-so-notice">
-      &#8505; 계정 목록의 역할(Master / 일반)과 <strong>별개로</strong>, 각 지갑마다 독립적으로 출금 요청자 / 서명자를 지정합니다.<br>
-      저장 후 요청자는 출금 신청이 활성화되고, 서명자는 Workflows에서 서명할 수 있습니다.
-    </div>
+  <!-- Body (scrollable) -->
+  <div style="flex:1; overflow-y:auto; padding:22px 24px 0;">
 
-    <!-- ── STEP 1: Initiator ── -->
-    <div class="sp-step">
-      <div class="sp-step-header">
-        <div class="step-num">1</div>
-        <span>출금 요청자 / Initiator <span class="req">*</span></span>
+    <!-- Progress bar -->
+    <div class="se-progress" id="se-progress-bar">
+      <div class="se-progress-step clickable" onclick="_seNavDot(1)" id="se-dot-wrap-1">
+        <div class="se-dot active" id="se-dot-1">1</div>
+        <div class="se-dot-label active" id="se-dot-lbl-1">지갑+요청자</div>
       </div>
-      <div class="sp-acct-box">
-        <div class="sp-acct-add-row">
-          <select id="sp-init-sel">
-            <option value="">계정 검색 또는 선택 ▾</option>
-          </select>
-          <button class="sp-acct-add-btn" onclick="spAddInitiator()">추가</button>
-        </div>
-        <div class="sp-acct-list" id="sp-init-list">
-          <div class="sp-acct-empty" id="sp-init-empty">추가된 요청자가 없습니다</div>
-        </div>
+      <div class="se-progress-line" id="se-line-1"></div>
+      <div class="se-progress-step" id="se-dot-wrap-2">
+        <div class="se-dot" id="se-dot-2">2</div>
+        <div class="se-dot-label" id="se-dot-lbl-2">서명자</div>
       </div>
-      <div class="form-hint" style="margin-top:6px;">출금 신청서를 작성할 수 있는 계정. (1명 이상 필수)</div>
-    </div>
-
-    <!-- ── STEP 2: Signers ── -->
-    <div class="sp-step">
-      <div class="sp-step-header">
-        <div class="step-num">2</div>
-        <span>출금 서명자 / Signers <span class="req">*</span></span>
+      <div class="se-progress-line" id="se-line-2"></div>
+      <div class="se-progress-step" id="se-dot-wrap-3">
+        <div class="se-dot" id="se-dot-3">3</div>
+        <div class="se-dot-label" id="se-dot-lbl-3">N of M</div>
       </div>
-      <div class="sp-acct-box">
-        <div class="sp-acct-add-row">
-          <select id="sp-sign-sel">
-            <option value="">계정 검색 또는 선택 ▾</option>
-          </select>
-          <button class="sp-acct-add-btn" onclick="spAddSigner()">추가</button>
-        </div>
-        <div class="sp-acct-list" id="sp-sign-list">
-          <div class="sp-acct-empty" id="sp-sign-empty">추가된 서명자가 없습니다</div>
-        </div>
-        <div class="sp-acct-count" id="sp-sign-count" style="display:none;"></div>
-      </div>
-      <div class="form-hint" style="margin-top:6px;">출금에 서명(승인)할 계정. (1명 이상 필수)</div>
-    </div>
-
-    <!-- ── STEP 3: N of M ── -->
-    <div class="sp-step" style="margin-bottom:0;">
-      <div class="sp-step-header">
-        <div class="step-num">3</div>
-        <span>최소 서명 수 / Min Approvals</span>
-      </div>
-      <div style="border:1px solid var(--border); border-radius:8px; padding:18px 20px;">
-        <div class="sp-n-row">
-          <button class="counter-btn" onclick="changeNSP(-1)">&#8722;</button>
-          <span class="counter-val sp-n-display" id="sp-nVal">1</span>
-          <button class="counter-btn" onclick="changeNSP(1)">+</button>
-          <span style="font-size:15px; color:var(--text-secondary); font-weight:600;">of&nbsp;<strong id="sp-mVal" style="color:var(--text-primary);">0</strong>&nbsp;명</span>
-        </div>
-        <div style="margin-top:10px; font-size:13px; font-weight:600; color:var(--primary);" id="sp-n-summary">서명자 0명 중 최소 1명 서명 시 출금이 실행됩니다.</div>
-        <div class="sp-n-err" id="sp-n-err" style="margin-top:6px;">&#10005; 최소 서명 수는 서명자 수를 초과할 수 없습니다.</div>
-        <div style="margin-top:8px; font-size:11px; color:var(--text-secondary);">ⓘ N은 M 이하여야 합니다.</div>
+      <div class="se-progress-line" id="se-line-3"></div>
+      <div class="se-progress-step" id="se-dot-wrap-4">
+        <div class="se-dot" id="se-dot-4">&#128274;</div>
+        <div class="se-dot-label" id="se-dot-lbl-4">OTP 인증</div>
       </div>
     </div>
 
+    <!-- STEP 1: 지갑 선택 + 요청자 -->
+    <div id="se-step-1">
+      <div style="font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text-primary);">STEP 1 — 지갑 선택 + 출금 요청자 지정</div>
+
+      <!-- Wallet selector -->
+      <div style="margin-bottom:20px;">
+        <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.4px;">대상 지갑 <span style="color:var(--danger);">*</span></label>
+        <select class="form-control" id="se-wallet-sel" style="width:100%;" onchange="_seOnWalletChange()">
+          <option value="">지갑을 선택하세요</option>
+        </select>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">ⓘ 이미 정책이 설정된 지갑은 [정책 수정]으로 변경하세요.</div>
+      </div>
+
+      <!-- Initiator checkboxes -->
+      <div>
+        <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.4px;">출금 요청자 (Initiator) <span style="color:var(--danger);">*</span></label>
+        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">ⓘ 출금 신청을 생성할 수 있는 계정입니다. Master는 자동 포함됩니다.</div>
+        <div class="se-chk-list" id="se-init-chk-list"></div>
+        <div class="se-sel-summary" id="se-init-summary"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: 서명자 -->
+    <div id="se-step-2" style="display:none;">
+      <div style="font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text-primary);">STEP 2 — 출금 서명자 지정</div>
+      <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px; background:#F0F9FF; border:1px solid #BAE6FD; border-radius:6px; padding:8px 12px;">
+        요청자: <span id="se-step2-initiator-ref" style="font-weight:600; color:var(--primary);"></span>
+      </div>
+      <div>
+        <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.4px;">출금 서명자 (Signer) <span style="color:var(--danger);">*</span></label>
+        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">ⓘ 출금 요청에 서명(승인)할 계정입니다. Master는 자동 포함됩니다. 요청자와 중복 가능.</div>
+        <div class="se-chk-list" id="se-sign-chk-list"></div>
+        <div class="se-sel-summary" id="se-sign-summary"></div>
+      </div>
+    </div>
+
+    <!-- STEP 3: N of M -->
+    <div id="se-step-3" style="display:none;">
+      <div style="font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text-primary);">STEP 3 — 최소 서명 수 (N of M) 설정</div>
+
+      <div style="margin-bottom:16px; background:#F0F9FF; border:1px solid #BAE6FD; border-radius:6px; padding:10px 14px; font-size:12px; color:var(--text-secondary);">
+        서명자 (M): <strong id="se-step3-m-ref" style="color:var(--text-primary);">0</strong>명 &nbsp;·&nbsp; <span id="se-step3-signers-ref"></span>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:8px; text-transform:uppercase; letter-spacing:.4px;">최소 서명 수 (N) <span style="color:var(--danger);">*</span></label>
+        <div class="se-n-radios" id="se-n-radios"></div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:12px;">
+          <span style="font-size:12px; color:var(--text-secondary);">또는 직접 입력:</span>
+          <input type="number" id="se-n-direct" style="width:70px; text-align:center; font-weight:700; font-size:15px;" class="form-control" min="1" oninput="_seOnNInput()" />
+        </div>
+        <div id="se-n-err" style="display:none; font-size:12px; color:var(--danger); margin-top:6px;"></div>
+      </div>
+
+      <!-- Preview -->
+      <div style="border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:16px;">
+        <div style="font-size:11px; color:var(--text-secondary); font-weight:600; margin-bottom:6px; text-transform:uppercase;">서명 정책 요약</div>
+        <div style="font-size:22px; font-weight:800; color:var(--primary); margin-bottom:4px;" id="se-nom-preview">— of —</div>
+        <div style="font-size:13px; color:var(--text-secondary);" id="se-nom-desc">—</div>
+      </div>
+
+      <!-- Advanced Strategy toggle -->
+      <label style="display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border:1px solid var(--border); border-radius:8px; cursor:pointer; background:#FAFAFA;">
+        <input type="checkbox" id="se-adv-chk" style="margin-top:2px;" onchange="_seOnAdvChk()">
+        <div>
+          <div style="font-size:13px; font-weight:600;">Advanced Strategy 사용 (금액 조건별 N of M)</div>
+          <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">출금 금액에 따라 서로 다른 N of M을 적용합니다. 저장 후 Advanced 탭에서 조건을 추가할 수 있습니다.</div>
+        </div>
+      </label>
+    </div>
+
+    <!-- STEP 4: OTP -->
+    <div id="se-step-4" style="display:none;">
+      <div style="font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text-primary);">OTP 인증 — 정책 설정 확인</div>
+
+      <!-- Summary -->
+      <div class="se-summary-box" id="se-otp-summary">
+        <div class="se-summary-row"><span class="se-summary-key">지갑</span><span class="se-summary-val" id="se-sum-wallet">—</span></div>
+        <div class="se-summary-row"><span class="se-summary-key">요청자</span><span class="se-summary-val" id="se-sum-initiators">—</span></div>
+        <div class="se-summary-row"><span class="se-summary-key">서명자</span><span class="se-summary-val" id="se-sum-signers">—</span></div>
+        <div class="se-summary-row"><span class="se-summary-key">서명 정책</span><span class="se-summary-val" id="se-sum-nom">—</span></div>
+        <div class="se-summary-row"><span class="se-summary-key">Advanced</span><span class="se-summary-val" id="se-sum-adv">미사용</span></div>
+      </div>
+
+      <div class="alert" style="background:#FFF7ED; border:1px solid #FED7AA; color:#92400E; font-size:12px; margin-bottom:16px; padding:10px 14px; border-radius:8px;">
+        &#9888; 정책 설정 후 즉시 적용됩니다. 출금 신청 시 위 정책에 따라 서명이 진행됩니다.
+      </div>
+
+      <div style="font-size:13px; font-weight:600; margin-bottom:10px;">OTP 6자리를 입력하세요.</div>
+      <div style="display:flex; gap:8px; justify-content:center;" id="se-otp-boxes">
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,0,'se-otp-boxes')" onkeydown="otpBack(event,this,0,'se-otp-boxes')" onpaste="otpPaste(event,'se-otp-boxes')" style="width:46px;height:52px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,1,'se-otp-boxes')" onkeydown="otpBack(event,this,1,'se-otp-boxes')" style="width:46px;height:52px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,2,'se-otp-boxes')" onkeydown="otpBack(event,this,2,'se-otp-boxes')" style="width:46px;height:52px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,3,'se-otp-boxes')" onkeydown="otpBack(event,this,3,'se-otp-boxes')" style="width:46px;height:52px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,4,'se-otp-boxes')" onkeydown="otpBack(event,this,4,'se-otp-boxes')" style="width:46px;height:52px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,5,'se-otp-boxes')" onkeydown="otpBack(event,this,5,'se-otp-boxes')" style="width:46px;height:52px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+      </div>
+      <div id="se-otp-err" style="display:none; color:var(--danger); font-size:12px; text-align:center; margin-top:8px;"></div>
+      <div id="se-otp-attempts" style="font-size:11px; color:var(--text-secondary); text-align:center; margin-top:6px;"></div>
+    </div>
+
+    <div style="height:22px;"></div>
+  </div><!-- /body -->
+
+  <!-- Footer -->
+  <div style="flex-shrink:0; padding:14px 24px; border-top:1px solid var(--border); display:flex; gap:8px; background:#fff;">
+    <button class="btn btn-outline" id="se-btn-prev" onclick="_sePrev()" style="display:none;">← 이전</button>
+    <div style="flex:1;"></div>
+    <button class="btn btn-primary" id="se-btn-next" onclick="_seNext()" style="min-width:140px;">다음 →</button>
   </div>
-  <div class="so-footer">
-    <div style="padding:10px 0 4px; font-size:11px; color:var(--text-secondary); line-height:1.6;">
-      &#8505; 저장 후 즉시 적용됩니다. 진행 중인 출금이 있을 경우 기존 정책이 유지됩니다.
+</div>
+
+<!-- ══════════════════════════
+     MODAL: Strategy Detail (Read-Only)
+══════════════════════════ -->
+<div class="modal" id="modal-se-detail" style="max-width:480px;">
+  <div class="modal-header">
+    <span class="modal-title">출금 정책 상세</span>
+    <button class="modal-close" onclick="closeStrategyDetail()">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="se-summary-box" id="se-detail-body">
+      <div class="se-summary-row"><span class="se-summary-key">지갑</span><span class="se-summary-val" id="se-det-wallet">—</span></div>
+      <div class="se-summary-row"><span class="se-summary-key">서명 정책</span><span class="se-summary-val" id="se-det-nom">—</span></div>
+      <div class="se-summary-row"><span class="se-summary-key">요청자</span><span class="se-summary-val" id="se-det-initiators">—</span></div>
+      <div class="se-summary-row"><span class="se-summary-key">서명자</span><span class="se-summary-val" id="se-det-signers">—</span></div>
+      <div class="se-summary-row"><span class="se-summary-key">Advanced</span><span class="se-summary-val" id="se-det-adv">—</span></div>
+      <div class="se-summary-row"><span class="se-summary-key">마지막 변경</span><span class="se-summary-val" id="se-det-changed">—</span></div>
     </div>
-    <div style="display:flex; gap:8px; margin-top:8px;">
-      <button class="btn btn-outline" style="flex:1;" onclick="closeSO('so-edit-strategy')">취소</button>
-      <button class="btn btn-primary" style="flex:2;" id="sp-save-btn"
-        onclick="saveStrategyPolicy()">&#128274; 정책 저장 &#8594; OTP 인증</button>
-    </div>
+    <div class="alert alert-info" style="font-size:12px;">ⓘ 정책 수정은 Master 계정만 가능합니다.</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeStrategyDetail()">닫기</button>
   </div>
 </div>
 
@@ -3526,151 +3656,35 @@
            PAGE: STRATEGY ENGINE
       ══════════════════════════ -->
       <div class="page" id="page-strategy">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">Strategy Engine</h1>
-            <div style="font-size:13px; color:var(--text-secondary); margin-top:2px;">출금 정책 설정 — N of M 서명 규칙 (Master 전용)</div>
-          </div>
-        </div>
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Strategy Engine</h1>
+      <div style="font-size:13px; color:var(--text-secondary); margin-top:2px;">지갑별 출금 서명 정책 (N of M) 설정 — Master 전용</div>
+    </div>
+    <span class="role-tip-wrap" id="wrap-se-new">
+      <button class="btn btn-primary" id="btn-se-new" onclick="openStrategyWizard('create',null)">+ 출금 정책 설정하기</button>
+      <span class="role-tip">Master 계정만 사용 가능합니다.</span>
+    </span>
+  </div>
 
-        <!-- Wallet selector -->
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
-          <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">지갑 선택</span>
-          <select class="form-control" style="width:280px;" id="strategy-wallet-sel" onchange="selectStrategyWallet(this.value)">
-            <option value="BTC">BTC 보관 지갑 #1</option>
-            <option value="ETH">ETH 보관 지갑</option>
-          </select>
-          <!-- Policy status badge next to selector -->
-          <span id="strategy-policy-badge"
-            style="font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; background:#DCFCE7; color:#166534;">
-            &#10003; 정책 설정 완료
-          </span>
-        </div>
+  <!-- Warning banner -->
+  <div id="se-warn-banner" style="display:none; margin-bottom:16px;">
+    <div class="alert" style="background:#FEF3C7; border:1px solid #FDE68A; color:#92400E; padding:12px 16px; border-radius:10px; display:flex; align-items:center; gap:12px;">
+      <span style="font-size:20px;">&#9888;</span>
+      <div style="flex:1; font-size:13px;" id="se-warn-text"></div>
+    </div>
+  </div>
 
-        <div class="card" style="padding:0;">
-          <!-- Tabs: 2 only per PRD -->
-          <div style="padding:16px 20px 0;">
-            <div class="tabs">
-              <div class="tab active" id="strategy-tab-basic" onclick="switchStrategyTab(this,'basic')">Basic Strategy</div>
-              <div class="tab" id="strategy-tab-advanced" onclick="switchStrategyTab(this,'advanced')">Advanced Strategy</div>
-            </div>
-          </div>
+  <!-- Cards grid -->
+  <div id="se-cards-grid" style="display:flex; flex-direction:column; gap:12px;"></div>
 
-          <!-- ── Basic Strategy ── -->
-          <div id="strategy-basic" style="padding:24px;">
-
-            <!-- Case 1: No policy -->
-            <div id="strategy-empty-state" style="display:none;">
-              <div style="border:1.5px dashed #FCA5A5; border-radius:12px; background:#FFF5F5; padding:32px 24px; text-align:center;">
-                <div style="font-size:32px; margin-bottom:12px;">&#9888;&#65039;</div>
-                <div style="font-size:15px; font-weight:700; color:#991B1B; margin-bottom:8px;">아직 출금 정책이 설정되지 않았습니다.</div>
-                <div style="font-size:13px; color:#B91C1C; margin-bottom:20px; line-height:1.6;">
-                  정책을 설정해야 출금 신청이 가능합니다.<br>지갑별로 독립적으로 설정됩니다.
-                </div>
-                <button class="btn btn-primary" style="min-width:180px;" onclick="openStrategyPolicy('create')">
-                  &#43; 출금 정책 설정하기
-                </button>
-              </div>
-              <div class="alert" style="margin-top:14px; font-size:12px; background:#FFF7ED; border:1px solid #FED7AA; color:#92400E; padding:10px 14px; border-radius:8px;">
-                &#9888; 정책이 설정되지 않은 지갑은 출금 신청 버튼이 비활성화됩니다.
-              </div>
-            </div>
-
-            <!-- Case 2: Policy set -->
-            <div id="strategy-set-state">
-              <div style="border:1px solid var(--border); border-radius:12px; overflow:hidden;">
-                <!-- Card header -->
-                <div style="padding:16px 20px; background:#F8FAFC; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                  <div>
-                    <div style="font-size:15px; font-weight:800;" id="strategy-card-wallet">BTC 보관 지갑 #1</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-top:3px;" id="strategy-policy-meta">현재 정책 &nbsp;·&nbsp; 적용일: 2024-01-01 &nbsp;·&nbsp; ID: WBS-20240101-001</div>
-                  </div>
-                  <span class="badge badge-success" style="font-size:11px;">&#10003; 정책 활성</span>
-                </div>
-                <!-- Rows -->
-                <div style="padding:0 20px;">
-                  <div class="info-row" style="padding:14px 0;">
-                    <span class="info-label" style="font-size:12px; min-width:110px;">출금 요청자</span>
-                    <div style="display:flex; gap:6px; flex-wrap:wrap;" id="strategy-initiators-display">
-                      <span class="signer-chip">&#128100; 김철수</span>
-                      <span class="signer-chip">&#128100; 이영희</span>
-                    </div>
-                  </div>
-                  <div class="info-row" style="padding:14px 0;">
-                    <span class="info-label" style="font-size:12px; min-width:110px;">출금 서명자</span>
-                    <div style="display:flex; gap:6px; flex-wrap:wrap;" id="strategy-signers-display">
-                      <span class="signer-chip">&#128100; 김철수</span>
-                      <span class="signer-chip">&#128100; 이영희</span>
-                      <span class="signer-chip">&#128100; 박민준</span>
-                    </div>
-                  </div>
-                  <div class="info-row" style="padding:14px 0; border-bottom:none;">
-                    <span class="info-label" style="font-size:12px; min-width:110px;">최소 서명 수</span>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                      <span style="font-size:20px; font-weight:800; color:var(--primary);" id="strategy-nom-display">2</span>
-                      <span style="font-size:13px; color:var(--text-secondary);">of</span>
-                      <span style="font-size:16px; font-weight:700;" id="strategy-m-display">3</span>
-                      <span style="font-size:12px; color:var(--text-secondary);">명 서명 필요</span>
-                    </div>
-                  </div>
-                </div>
-                <!-- Action buttons -->
-                <div style="padding:14px 20px; background:#F8FAFC; border-top:1px solid var(--border); display:flex; gap:8px; flex-wrap:wrap;">
-                  <span class="role-tip-wrap" id="wrap-strategy-edit">
-                    <button class="btn btn-primary btn-sm" id="btn-strategy-edit" style="min-width:130px;" onclick="openStrategyPolicy('edit')">&#9998; 정책 수정 Edit</button>
-                    <span class="role-tip">Master 계정만 사용 가능합니다.</span>
-                  </span>
-                  <button class="btn btn-outline btn-sm" style="min-width:130px;" onclick="openStrategyRecords()">&#128196; 승인 기록 보기</button>
-                </div>
-              </div>
-
-              <div class="alert alert-warning" style="margin-top:14px; font-size:12px;">
-                &#9888; 별도 고급 조건 미설정 시 모든 출금에 이 기본 정책이 적용됩니다.
-              </div>
-            </div>
-          </div>
-
-          <!-- ── Advanced Strategy ── -->
-          <div id="strategy-advanced" style="display:none; padding:24px;">
-            <!-- No policy warning -->
-            <div id="adv-no-policy-warn" style="display:none;">
-              <div class="alert alert-warning" style="font-size:13px;">
-                &#9888; Advanced Strategy는 Basic 정책이 설정된 후 사용할 수 있습니다.
-                <button class="btn btn-primary btn-sm" style="margin-left:10px;" onclick="switchStrategyTab(document.getElementById('strategy-tab-basic'),'basic'); setTimeout(()=>openStrategyPolicy('create'),200)">Basic 정책 설정하기 →</button>
-              </div>
-            </div>
-            <!-- Conditions (shown when policy exists) -->
-            <div id="adv-has-policy">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <div style="font-size:13px; color:var(--text-secondary);">기본 정책에 출금 금액 조건을 추가합니다. 조건 미해당 시 Basic 정책이 적용됩니다.</div>
-                <button class="btn btn-primary btn-sm" onclick="openAddCondition()">&#43; 조건 추가</button>
-              </div>
-              <div id="adv-conditions-list">
-                <div class="adv-cond-card" id="adv-cond-0">
-                  <div class="adv-cond-card-header">
-                    <div class="adv-cond-title">조건 1: 출금 금액 ≥ <span class="adv-cond-amount">₩69,000,000</span> 이상</div>
-                    <div style="display:flex; gap:6px;">
-                      <button class="btn btn-outline btn-xs" onclick="openEditCondition(0)">수정</button>
-                      <button class="btn btn-xs" style="color:var(--danger); border:1px solid rgba(239,68,68,0.3); background:transparent;" onclick="openDeleteCondition(0)">삭제</button>
-                    </div>
-                  </div>
-                  <div class="adv-cond-detail">서명 요건: <strong style="color:var(--text-primary);">3 of 3</strong>&nbsp; (모든 서명자 동의 필요)</div>
-                </div>
-              </div>
-              <div id="adv-conditions-empty" style="display:none;">
-                <div class="strategy-empty-state" style="padding:28px 16px;">
-                  <div style="font-size:24px;">&#128196;</div>
-                  <div class="strategy-empty-desc">조건이 없습니다. [&#43; 조건 추가]로 금액별 서명 정책을 설정하세요.</div>
-                </div>
-              </div>
-              <div class="alert alert-info" style="font-size:12px; margin-top:12px;" id="adv-basic-fallback">
-                &#8505; 조건 미해당 시 Basic 정책이 적용됩니다.
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
+  <!-- All set state (no wallets) -->
+  <div id="se-all-set" style="display:none; text-align:center; padding:48px; color:var(--text-secondary);">
+    <div style="font-size:32px; margin-bottom:12px;">&#10003;</div>
+    <div style="font-size:15px; font-weight:700; color:var(--text-primary);">모든 지갑에 정책이 설정되어 있습니다.</div>
+  </div>
+</div>
 
       <!-- ══════════════════════════
            PAGE: SETTINGS — ACCOUNTS
@@ -3885,6 +3899,7 @@
     // Page-specific init
     if (pageId === 'transactions') renderTransactions();
     if (pageId === 'workflows')    renderWorkflows();
+    if (pageId === 'strategy')     renderStrategyDashboard();
   }
 
   function openWalletDetail(walletId) {
@@ -4034,24 +4049,9 @@
     openModal('modal-withdrawal-detail');
   }
 
-  function switchStrategyTab(el, tabId) {
-    document.querySelectorAll('#page-strategy .tab').forEach(t => t.classList.remove('active'));
-    if (el && el.classList) el.classList.add('active');
-    document.getElementById('strategy-basic').style.display    = tabId === 'basic'    ? 'block' : 'none';
-    document.getElementById('strategy-advanced').style.display = tabId === 'advanced' ? 'block' : 'none';
-    // Advanced: show/hide no-policy warning based on wallet state
-    if (tabId === 'advanced') {
-      const hasPolicy = _walletPolicyState[_strategyWallet] !== false;
-      document.getElementById('adv-no-policy-warn').style.display = hasPolicy ? 'none'  : 'block';
-      document.getElementById('adv-has-policy').style.display     = hasPolicy ? 'block' : 'none';
-    }
-  }
+  function switchStrategyTab() {}
 
-  function openStrategyRecords() {
-    const walletName = _strategyWallet === 'BTC' ? 'BTC 보관 지갑 #1' : 'ETH 보관 지갑';
-    document.getElementById('records-wallet-label').textContent = '지갑: ' + walletName;
-    openModal('modal-strategy-records');
-  }
+  function openStrategyRecords() {}
 
   /* ════════════════════════════════════
      MODALS
@@ -7075,16 +7075,13 @@
   }
 
   /* ════════════════════════════════════
-     STRATEGY ENGINE — POLICY
+     STRATEGY ENGINE v2
   ════════════════════════════════════ */
-  /* ── Strategy Policy state ── */
-  let _spMode = 'edit';        // 'create' | 'edit'
-  let _spNVal = 1;
-  let _strategyWallet = 'BTC';
-  const _walletPolicyState = { BTC: true, ETH: false };
 
-  // Demo account pool — roles are Master / 일반 only.
-  // Requester/Signer is assigned per wallet via Strategy Engine, not in account management.
+  // Master account name (always auto-included)
+  const _SE_MASTER = '김철수';
+
+  // Account pool (same as before)
   const _SP_ACCOUNTS = [
     { value: '김철수', label: '김철수', role: 'Master' },
     { value: '이영희', label: '이영희', role: '일반' },
@@ -7093,327 +7090,516 @@
     { value: '안소연', label: '안소연', role: '일반' },
   ];
 
-  let _spInitiators = []; // array of account value strings
-  let _spSigners    = [];
+  // Policy per wallet (null = no policy)
+  let _STRATEGY_POLICIES = {
+    wallet1: {
+      initiators: ['김철수', '이영희'],
+      signers: ['김철수', '이영희', '박민준'],
+      n: 2, m: 3,
+      advanced: false, advancedCount: 0,
+      changedAt: '2026-04-08 14:30', changedBy: '김철수'
+    },
+    wallet2: {
+      initiators: ['김철수'],
+      signers: ['김철수'],
+      n: 1, m: 1,
+      advanced: true, advancedCount: 1,
+      changedAt: '2026-04-05 10:00', changedBy: '김철수'
+    },
+    wallet3: null
+  };
 
-  function selectStrategyWallet(val) {
-    _strategyWallet = val;
-    const hasPolicy = _walletPolicyState[val] !== false;
-    const walletName = val === 'BTC' ? 'BTC 보관 지갑 #1' : 'ETH 보관 지갑';
+  // Wizard state
+  let _seMode = 'create';      // 'create' | 'edit'
+  let _seEditWalletId = null;  // walletId being edited
+  let _seStep = 1;
+  let _seWizWalletId = null;
+  let _seWizInitiators = [];
+  let _seWizSigners = [];
+  let _seNVal = 1;
+  let _seUseAdv = false;
+  let _seOTPAttempts = 0;
 
-    // Toggle empty / set state
-    document.getElementById('strategy-empty-state').style.display = hasPolicy ? 'none' : 'block';
-    document.getElementById('strategy-set-state').style.display   = hasPolicy ? 'block' : 'none';
-
-    // Policy badge next to selector
-    const badge = document.getElementById('strategy-policy-badge');
-    if (badge) {
-      badge.textContent = hasPolicy ? '✓ 정책 설정 완료' : '⚠ 정책 미설정';
-      badge.style.background = hasPolicy ? '#DCFCE7' : '#FEF3C7';
-      badge.style.color      = hasPolicy ? '#166534' : '#92400E';
+  /* ── Dashboard render ── */
+  function renderStrategyDashboard() {
+    const m = _IS_MASTER;
+    const newBtn = document.getElementById('btn-se-new');
+    if (newBtn) {
+      newBtn.disabled = !m;
+      newBtn.style.opacity = m ? '' : '0.5';
     }
 
-    // Update card wallet name label
-    const cardWallet = document.getElementById('strategy-card-wallet');
-    if (cardWallet) cardWallet.textContent = walletName;
+    const wallets = _WALLET_DATA || [];
+    const unset = wallets.filter(w => !_STRATEGY_POLICIES[w.id]);
+    const set   = wallets.filter(w =>  _STRATEGY_POLICIES[w.id]);
 
-    // If currently on advanced tab, refresh its state
-    if (document.getElementById('strategy-advanced').style.display !== 'none') {
-      document.getElementById('adv-no-policy-warn').style.display = hasPolicy ? 'none'  : 'block';
-      document.getElementById('adv-has-policy').style.display     = hasPolicy ? 'block' : 'none';
+    // Warning banner
+    const banner = document.getElementById('se-warn-banner');
+    const warnTxt = document.getElementById('se-warn-text');
+    if (banner) {
+      if (wallets.length === 0) {
+        banner.style.display = 'none';
+      } else if (unset.length === wallets.length) {
+        banner.style.display = '';
+        warnTxt.innerHTML = '<strong>⚠ 출금 정책이 설정되지 않았습니다.</strong> 출금을 신청하려면 먼저 서명 정책을 설정해야 합니다.';
+      } else if (unset.length > 0) {
+        banner.style.display = '';
+        warnTxt.innerHTML = '<strong>⚠ 출금 정책이 미설정된 지갑이 ' + unset.length + '개 있습니다.</strong> 정책이 설정되지 않은 지갑은 출금이 차단됩니다.';
+      } else {
+        banner.style.display = 'none';
+      }
     }
+
+    // Cards: unset first, then set sorted alphabetically
+    const grid = document.getElementById('se-cards-grid');
+    if (!grid) return;
+
+    const allSet = document.getElementById('se-all-set');
+    if (wallets.length === 0) {
+      grid.innerHTML = '';
+      if (allSet) allSet.style.display = '';
+      return;
+    }
+    if (allSet) allSet.style.display = 'none';
+
+    const sorted = [...unset.sort((a,b) => a.name.localeCompare(b.name,'ko')),
+                     ...set.sort((a,b) => a.name.localeCompare(b.name,'ko'))];
+
+    grid.innerHTML = sorted.map(w => {
+      const p = _STRATEGY_POLICIES[w.id];
+      if (!p) {
+        return '<div class="se-policy-card unset" onclick="event.stopPropagation()">' +
+          '<div class="se-card-head">' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<span style="font-size:15px;font-weight:800;">' + w.name + '</span>' +
+          '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF3C7;color:#92400E;">⚠ 미설정</span>' +
+          '</div>' +
+          '<span class="role-tip-wrap">' +
+          '<button class="btn btn-primary btn-sm" onclick="openStrategyWizard(\'create\',\'' + w.id + '\')" ' + (m?'':'disabled style="opacity:.5;cursor:not-allowed;"') + '>+ 정책 설정</button>' +
+          (m?'':'<span class="role-tip">Master 계정만 사용 가능합니다.</span>') +
+          '</span>' +
+          '</div>' +
+          '</div>';
+      }
+      const advLabel = p.advanced ? '적용 중 (' + p.advancedCount + '건)' : '없음';
+      const initStr  = p.initiators.join(', ');
+      const signStr  = p.signers.join(', ');
+      return '<div class="se-policy-card" onclick="openStrategyDetail(\'' + w.id + '\')">' +
+        '<div class="se-card-head">' +
+        '<div>' +
+        '<div style="font-size:15px;font-weight:800;">' + w.name + '</div>' +
+        '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">마지막 변경: ' + p.changedAt + ' (' + p.changedBy + ')</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;align-items:center;" onclick="event.stopPropagation()">' +
+        '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#166534;">&#10003; 정책 활성</span>' +
+        '<span class="role-tip-wrap">' +
+        '<button class="btn btn-outline btn-sm" onclick="openStrategyWizard(\'edit\',\'' + w.id + '\')" ' + (m?'':'disabled style="opacity:.5;cursor:not-allowed;"') + '>정책 수정</button>' +
+        (m?'':'<span class="role-tip">Master 계정만 사용 가능합니다.</span>') +
+        '</span>' +
+        '</div>' +
+        '</div>' +
+        '<div class="se-card-body">' +
+        '<div class="se-kv"><div class="se-kv-label">서명 정책</div><div class="se-kv-val" style="font-size:16px;font-weight:800;color:var(--primary);">' + p.n + ' of ' + p.m + '</div></div>' +
+        '<div class="se-kv"><div class="se-kv-label">최소 서명 수</div><div class="se-kv-val">' + p.n + '명</div></div>' +
+        '<div class="se-kv se-kv-full" style="grid-column:span 2;"><div class="se-kv-label">요청자</div><div class="se-kv-val">' + initStr + '</div></div>' +
+        '<div class="se-kv se-kv-full" style="grid-column:span 2;"><div class="se-kv-label">서명자</div><div class="se-kv-val">' + signStr + '</div></div>' +
+        '<div class="se-kv"><div class="se-kv-label">Advanced</div><div class="se-kv-val">' + advLabel + '</div></div>' +
+        '</div>' +
+        '</div>';
+    }).join('');
   }
 
-  /* populate a <select> with accounts not yet in the given list */
-  function _spPopulateSelect(selId, usedList) {
-    const sel = document.getElementById(selId);
-    const prev = sel.value;
-    sel.innerHTML = '<option value="">계정 검색 또는 선택 ▾</option>';
-    _SP_ACCOUNTS.forEach(a => {
-      if (!usedList.includes(a.value)) {
+  /* ── Wizard open/close ── */
+  function openStrategyWizard(mode, walletId) {
+    if (!_IS_MASTER) { showToast('Master 계정만 사용 가능합니다.'); return; }
+    _seMode = mode;
+    _seEditWalletId = walletId;
+    _seStep = 1;
+    _seOTPAttempts = 0;
+
+    const titleEl = document.getElementById('se-wiz-title');
+    if (titleEl) titleEl.textContent = mode === 'create' ? '출금 정책 설정' : '출금 정책 수정';
+
+    // Pre-fill for edit
+    if (mode === 'edit' && walletId && _STRATEGY_POLICIES[walletId]) {
+      const p = _STRATEGY_POLICIES[walletId];
+      _seWizWalletId  = walletId;
+      _seWizInitiators = [...p.initiators];
+      _seWizSigners    = [...p.signers];
+      _seNVal = p.n;
+      _seUseAdv = p.advanced;
+    } else {
+      _seWizWalletId  = walletId || null;
+      _seWizInitiators = [_SE_MASTER];
+      _seWizSigners    = [_SE_MASTER];
+      _seNVal = 1;
+      _seUseAdv = false;
+    }
+
+    _seRenderStep(1);
+    _seUpdateProgress();
+    openModal('modal-se-wizard');
+  }
+
+  function closeStrategyWizard() {
+    closeModal('modal-se-wizard');
+  }
+
+  /* ── Step rendering ── */
+  function _seRenderStep(step) {
+    _seStep = step;
+    [1,2,3,4].forEach(s => {
+      const el = document.getElementById('se-step-' + s);
+      if (el) el.style.display = (s === step) ? '' : 'none';
+    });
+
+    const prevBtn = document.getElementById('se-btn-prev');
+    const nextBtn = document.getElementById('se-btn-next');
+
+    if (prevBtn) prevBtn.style.display = step > 1 ? '' : 'none';
+    if (nextBtn) {
+      if (step < 3) nextBtn.textContent = '다음 →';
+      else if (step === 3) nextBtn.textContent = 'OTP 인증 →';
+      else nextBtn.textContent = '정책 설정 완료';
+    }
+
+    if (step === 1) _seRenderStep1();
+    if (step === 2) _seRenderStep2();
+    if (step === 3) _seRenderStep3();
+    if (step === 4) _seRenderStep4();
+    _seUpdateProgress();
+  }
+
+  function _seRenderStep1() {
+    // Wallet selector
+    const sel = document.getElementById('se-wallet-sel');
+    if (!sel) return;
+    if (_seMode === 'edit') {
+      // Show selected wallet read-only
+      sel.innerHTML = '';
+      const w = (_WALLET_DATA||[]).find(x => x.id === _seEditWalletId);
+      if (w) {
         const o = document.createElement('option');
-        o.value = a.value;
-        // Show (Master) or (일반) — not requester/signer (those are wallet-level roles)
-        o.textContent = a.label + ' (' + a.role + ')';
-        sel.appendChild(o);
+        o.value = w.id; o.textContent = w.name; sel.appendChild(o);
       }
-    });
-    // restore previous selection if still available
-    if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
-  }
-
-  function _spRenderList(listId, emptyId, countId, arr, type) {
-    const list  = document.getElementById(listId);
-    const empty = document.getElementById(emptyId);
-    const count = countId ? document.getElementById(countId) : null;
-    // remove all rows (leave empty placeholder)
-    list.querySelectorAll('.sp-acct-row').forEach(r => r.remove());
-    if (arr.length === 0) {
-      empty.style.display = 'block';
-      if (count) count.style.display = 'none';
+      sel.disabled = true;
+      _seWizWalletId = _seEditWalletId;
     } else {
-      empty.style.display = 'none';
-      arr.forEach(val => {
-        const acct = _SP_ACCOUNTS.find(a => a.value === val) || { value: val, label: val, role: '' };
-        const row  = document.createElement('div');
-        row.className = 'sp-acct-row';
-        const roleClass = acct.role === 'Master' ? 'master' : '';
-        row.innerHTML =
-          '<span class="sp-acct-check">&#10003;</span>' +
-          '<span class="sp-acct-label">&#128100; ' + acct.label + '</span>' +
-          '<span class="sp-acct-role ' + roleClass + '">' + (acct.role || '일반') + '</span>' +
-          '<button class="sp-acct-remove" onclick="spRemove(\'' + type + '\',\'' + val + '\')" title="제거">&#10005;</button>';
-        list.appendChild(row);
+      sel.disabled = false;
+      const unset = (_WALLET_DATA||[]).filter(w => !_STRATEGY_POLICIES[w.id]);
+      sel.innerHTML = '<option value="">지갑을 선택하세요</option>';
+      unset.forEach(w => {
+        const o = document.createElement('option');
+        o.value = w.id; o.textContent = w.name; sel.appendChild(o);
       });
-      if (count) {
-        count.style.display = 'block';
-        count.textContent = '총 ' + arr.length + '명 선택됨';
+      if (_seWizWalletId) sel.value = _seWizWalletId;
+      if (unset.length === 0) {
+        sel.innerHTML = '<option value="">모든 지갑에 정책이 설정되어 있습니다.</option>';
+        sel.disabled = true;
       }
     }
+    _seRenderCheckboxes('se-init-chk-list', _seWizInitiators);
+    _seUpdateInitSummary();
   }
 
-  function _spRefreshAll() {
-    _spPopulateSelect('sp-init-sel', _spInitiators);
-    _spPopulateSelect('sp-sign-sel', _spSigners);
-    _spRenderList('sp-init-list', 'sp-init-empty', null, _spInitiators, 'init');
-    _spRenderList('sp-sign-list', 'sp-sign-empty', 'sp-sign-count', _spSigners, 'sign');
-    _spUpdateN();
+  function _seRenderStep2() {
+    // Show initiator reference
+    const ref = document.getElementById('se-step2-initiator-ref');
+    if (ref) ref.textContent = _seWizInitiators.join(', ') + ' (' + _seWizInitiators.length + '명)';
+    _seRenderCheckboxes('se-sign-chk-list', _seWizSigners);
+    _seUpdateSignSummary();
   }
 
-  function spAddInitiator() {
-    const sel = document.getElementById('sp-init-sel');
-    const val = sel.value;
-    if (!val) return;
-    if (!_spInitiators.includes(val)) { _spInitiators.push(val); _spRefreshAll(); }
-  }
+  function _seRenderStep3() {
+    const m = _seWizSigners.length;
+    const mRef = document.getElementById('se-step3-m-ref');
+    const sigRef = document.getElementById('se-step3-signers-ref');
+    if (mRef) mRef.textContent = m;
+    if (sigRef) sigRef.textContent = _seWizSigners.join(', ');
 
-  function spAddSigner() {
-    const sel = document.getElementById('sp-sign-sel');
-    const val = sel.value;
-    if (!val) return;
-    if (!_spSigners.includes(val)) {
-      _spSigners.push(val);
-      _spNVal = Math.min(_spNVal + (_spNVal === 0 ? 1 : 0), _spSigners.length);
-      if (_spNVal === 0) _spNVal = 1;
-      _spRefreshAll();
-    }
-  }
+    // Clamp N
+    _seNVal = Math.max(1, Math.min(_seNVal, m || 1));
 
-  function spRemove(type, val) {
-    if (type === 'init') {
-      _spInitiators = _spInitiators.filter(v => v !== val);
-    } else {
-      _spSigners = _spSigners.filter(v => v !== val);
-      _spNVal = Math.max(1, Math.min(_spNVal, _spSigners.length || 1));
-    }
-    _spRefreshAll();
-  }
-
-  function _spUpdateN() {
-    const m = _spSigners.length;
-    if (m > 0) _spNVal = Math.max(1, Math.min(_spNVal, m));
-    document.getElementById('sp-nVal').textContent = _spNVal;
-    document.getElementById('sp-mVal').textContent = m;
-    const err  = document.getElementById('sp-n-err');
-    const summ = document.getElementById('sp-n-summary');
-    if (m === 0) {
-      err.style.display = 'none';
-      summ.textContent  = '서명자를 먼저 추가해주세요.';
-      summ.style.color  = 'var(--text-secondary)';
-    } else if (_spNVal > m) {
-      err.style.display = 'block';
-      summ.textContent  = '';
-    } else {
-      err.style.display = 'none';
-      summ.textContent  = '서명자 ' + m + '명 중 최소 ' + _spNVal + '명 서명 시 출금이 실행됩니다.';
-      summ.style.color  = 'var(--primary)';
-    }
-  }
-
-  function changeNSP(delta) {
-    const m = Math.max(1, _spSigners.length);
-    _spNVal = Math.max(1, Math.min(m, _spNVal + delta));
-    _spUpdateN();
-  }
-
-  function openStrategyPolicy(mode) {
-    _spMode = mode;
-    const walletName = _strategyWallet === 'BTC' ? 'BTC 보관 지갑 #1' : 'ETH 보관 지갑';
-
-    // Title & notice
-    if (mode === 'create') {
-      document.getElementById('sp-so-title').innerHTML = '&#43; 출금 정책 설정 / Set Withdrawal Policy';
-      document.getElementById('sp-so-notice').innerHTML =
-        '&#8505; 출금 정책을 설정하면 해당 지갑의 출금 신청이 활성화됩니다. 지갑별로 독립적으로 설정됩니다.';
-      _spInitiators = [];
-      _spSigners    = [];
-      _spNVal       = 1;
-    } else {
-      document.getElementById('sp-so-title').innerHTML = '&#9998; 기본 정책 수정 / Edit Basic Strategy';
-      document.getElementById('sp-so-notice').innerHTML =
-        '&#8505; 변경 사항은 다음 출금 건부터 적용됩니다. 진행 중인 건은 영향 없음.';
-      // Pre-fill with current demo policy
-      _spInitiators = ['김철수', '이영희'];
-      _spSigners    = ['김철수', '이영희', '박민준'];
-      _spNVal       = 2;
-    }
-
-    document.getElementById('sp-so-wallet').innerHTML =
-      '지갑: ' + walletName + ' &nbsp;<span style="color:#94A3B8;">(읽기 전용)</span>';
-
-    _spRefreshAll();
-    openSO('so-edit-strategy');
-  }
-
-  function saveStrategyPolicy() {
-    if (_spInitiators.length === 0) { showToast('출금 요청자를 1명 이상 지정해주세요.'); return; }
-    if (_spSigners.length === 0)    { showToast('출금 서명자를 1명 이상 지정해주세요.'); return; }
-    if (_spNVal === 0)              { showToast('최소 서명 수는 1 이상이어야 합니다.'); return; }
-    if (_spNVal > _spSigners.length){ showToast('최소 서명 수는 서명자 수를 초과할 수 없습니다.'); return; }
-
-    openOTPModal(_spMode === 'create' ? '출금 정책 저장 OTP' : '정책 수정 OTP', function() {
-      closeSO('so-edit-strategy');
-
-      // Update dashboard display
-      const iDisplay = document.getElementById('strategy-initiators-display');
-      if (iDisplay) iDisplay.innerHTML = _spInitiators.map(v =>
-        '<span class="signer-chip">&#128100; ' + v + '</span>').join('');
-
-      const sDisplay = document.getElementById('strategy-signers-display');
-      if (sDisplay) sDisplay.innerHTML = _spSigners.map(v =>
-        '<span class="signer-chip"><span class="signer-check">✓</span> ' + v + '</span>').join('');
-
-      const nomDisplay = document.getElementById('strategy-nom-display');
-      if (nomDisplay) nomDisplay.textContent = _spNVal;
-      const mDisplay = document.getElementById('strategy-m-display');
-      if (mDisplay) mDisplay.textContent = _spSigners.length;
-
-      if (_spMode === 'create') {
-        _walletPolicyState[_strategyWallet] = true;
-        document.getElementById('strategy-empty-state').style.display = 'none';
-        document.getElementById('strategy-set-state').style.display   = 'block';
-        document.getElementById('strategy-policy-meta').textContent   = '적용일: 2026-04-07 | 신규 생성';
+    // Radio pills
+    const radiosEl = document.getElementById('se-n-radios');
+    if (radiosEl) {
+      radiosEl.innerHTML = '';
+      for (let i = 1; i <= m; i++) {
+        const lbl = document.createElement('label');
+        lbl.className = 'se-n-radio-label' + (i === _seNVal ? ' selected' : '');
+        lbl.textContent = i;
+        lbl.onclick = (function(n) { return function() { _seSetN(n); }; })(i);
+        radiosEl.appendChild(lbl);
       }
+    }
+    const direct = document.getElementById('se-n-direct');
+    if (direct) direct.value = _seNVal;
+    const advChk = document.getElementById('se-adv-chk');
+    if (advChk) advChk.checked = _seUseAdv;
+    _seUpdateNPreview();
+  }
 
-      const initiatorNames = _spInitiators.join(', ');
-      const signerNames    = _spSigners.join(', ');
-      const msg = _spMode === 'create'
-        ? `출금 정책이 설정되었습니다. 요청자(${initiatorNames})는 출금 신청이 활성화되고, 서명자(${signerNames})는 Workflows에서 서명할 수 있습니다.`
-        : `정책이 수정되었습니다. 변경된 요청자/서명자에게 알림이 발송됩니다.`;
-      showToast(msg);
+  function _seRenderStep4() {
+    // Fill summary
+    const w = (_WALLET_DATA||[]).find(x => x.id === _seWizWalletId);
+    const wName = w ? w.name : '—';
+    _seSet('se-sum-wallet', wName);
+    _seSet('se-sum-initiators', _seWizInitiators.join(', ') + ' (' + _seWizInitiators.length + '명)');
+    _seSet('se-sum-signers', _seWizSigners.join(', ') + ' (' + _seWizSigners.length + '명)');
+    _seSet('se-sum-nom', _seNVal + ' of ' + _seWizSigners.length);
+    _seSet('se-sum-adv', _seUseAdv ? '사용' : '미사용');
+    // Clear OTP
+    const boxes = document.querySelectorAll('#se-otp-boxes .otp-box');
+    boxes.forEach(b => { b.value = ''; b.classList.remove('err'); });
+    if (boxes[0]) boxes[0].focus();
+    const err = document.getElementById('se-otp-err');
+    if (err) err.style.display = 'none';
+    const att = document.getElementById('se-otp-attempts');
+    if (att) att.textContent = '';
+    _seOTPAttempts = 0;
+  }
+
+  function _seSet(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  /* ── Checkbox rendering ── */
+  function _seRenderCheckboxes(containerId, selectedArr) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = _SP_ACCOUNTS.map(a => {
+      const isLocked = (a.value === _SE_MASTER);
+      const isChecked = selectedArr.includes(a.value);
+      const disAttr = isLocked ? 'disabled' : '';
+      const roleClass = a.role === 'Master' ? 'master' : '';
+      const lockIcon = isLocked ? '<span class="se-chk-lock">&#128274;</span>' : '';
+      return '<label class="se-chk-item' + (isLocked?' locked':'') + '" onclick="' + (isLocked?'':'_seToggleAcct(event,\''+containerId+'\',\''+a.value+'\')') + '">' +
+        '<input type="checkbox" ' + disAttr + ' ' + (isChecked?'checked':'') + ' onclick="event.preventDefault()">' +
+        '<span class="se-chk-name">&#128100; ' + a.label + '</span>' +
+        '<span class="se-chk-role ' + roleClass + '">' + a.role + '</span>' +
+        lockIcon +
+        '</label>';
+    }).join('');
+  }
+
+  function _seToggleAcct(e, containerId, val) {
+    e.preventDefault();
+    const isInit = containerId === 'se-init-chk-list';
+    const arr = isInit ? _seWizInitiators : _seWizSigners;
+    const idx = arr.indexOf(val);
+    if (idx === -1) arr.push(val);
+    else arr.splice(idx, 1);
+    _seRenderCheckboxes(containerId, arr);
+    if (isInit) _seUpdateInitSummary();
+    else _seUpdateSignSummary();
+  }
+
+  function _seUpdateInitSummary() {
+    const el = document.getElementById('se-init-summary');
+    if (el) el.textContent = '선택된 요청자: ' + _seWizInitiators.join(', ') + ' (' + _seWizInitiators.length + '명)';
+  }
+  function _seUpdateSignSummary() {
+    const el = document.getElementById('se-sign-summary');
+    if (el) el.textContent = '선택된 서명자: ' + _seWizSigners.join(', ') + ' (' + _seWizSigners.length + '명)';
+  }
+
+  /* ── N of M ── */
+  function _seSetN(n) {
+    const m = _seWizSigners.length;
+    _seNVal = Math.max(1, Math.min(n, m));
+    document.querySelectorAll('.se-n-radio-label').forEach((lbl, idx) => {
+      lbl.classList.toggle('selected', idx + 1 === _seNVal);
+    });
+    const direct = document.getElementById('se-n-direct');
+    if (direct) direct.value = _seNVal;
+    _seUpdateNPreview();
+  }
+
+  function _seOnNInput() {
+    const v = parseInt(document.getElementById('se-n-direct').value, 10);
+    if (!isNaN(v)) _seSetN(v);
+  }
+
+  function _seUpdateNPreview() {
+    const m = _seWizSigners.length;
+    const err = document.getElementById('se-n-err');
+    const prev = document.getElementById('se-nom-preview');
+    const desc = document.getElementById('se-nom-desc');
+    const nextBtn = document.getElementById('se-btn-next');
+
+    let valid = true;
+    let errMsg = '';
+    if (_seNVal < 1) { errMsg = '최소 서명 수는 1명 이상이어야 합니다.'; valid = false; }
+    if (_seNVal > m) { errMsg = '최소 서명 수는 서명자 수(' + m + '명)를 초과할 수 없습니다.'; valid = false; }
+
+    if (err) { err.textContent = errMsg; err.style.display = errMsg ? '' : 'none'; }
+    if (prev) prev.textContent = (valid && m > 0) ? _seNVal + ' of ' + m : '— of —';
+    if (desc) desc.textContent = (valid && m > 0)
+      ? '출금 신청 시 서명자 ' + m + '명 중 최소 ' + _seNVal + '명이 서명해야 처리됩니다.'
+      : '';
+    if (nextBtn && _seStep === 3) nextBtn.disabled = !valid;
+  }
+
+  function _seOnAdvChk() {
+    _seUseAdv = document.getElementById('se-adv-chk').checked;
+  }
+
+  /* ── Wallet selector change ── */
+  function _seOnWalletChange() {
+    _seWizWalletId = document.getElementById('se-wallet-sel').value || null;
+  }
+
+  /* ── Progress bar update ── */
+  function _seUpdateProgress() {
+    [1,2,3,4].forEach(s => {
+      const dot = document.getElementById('se-dot-' + s);
+      const lbl = document.getElementById('se-dot-lbl-' + s);
+      const wrap = document.getElementById('se-dot-wrap-' + s);
+      if (!dot) return;
+      dot.classList.remove('done','active');
+      if (lbl) lbl.classList.remove('active');
+      if (s < _seStep) { dot.classList.add('done'); if (wrap) wrap.classList.add('clickable'); }
+      else if (s === _seStep) { dot.classList.add('active'); if (lbl) lbl.classList.add('active'); if (wrap) wrap.classList.remove('clickable'); }
+      else { if (wrap) wrap.classList.remove('clickable'); }
+    });
+    [1,2,3].forEach(s => {
+      const line = document.getElementById('se-line-' + s);
+      if (line) line.classList.toggle('done', s < _seStep);
     });
   }
 
-  // Kept for cond-modal N counter reference
-  function getSignerCount() { return _spSigners.length; }
-  function onSignerChange() {}
+  function _seNavDot(step) {
+    if (step >= _seStep) return; // only go back to completed steps
+    _seRenderStep(step);
+  }
 
-  /* ── Advanced Strategy Conditions ── */
-  let _condMode = 'add'; // 'add' | 'edit'
+  /* ── Navigation ── */
+  function _sePrev() {
+    if (_seStep > 1) _seRenderStep(_seStep - 1);
+  }
+
+  function _seNext() {
+    if (_seStep === 1) {
+      if (!_seWizWalletId) { showToast('지갑을 선택하세요.'); return; }
+      if (_seWizInitiators.length === 0) { showToast('출금 요청자를 1명 이상 선택하세요.'); return; }
+      _seRenderStep(2);
+    } else if (_seStep === 2) {
+      if (_seWizSigners.length === 0) { showToast('출금 서명자를 1명 이상 선택하세요.'); return; }
+      _seRenderStep(3);
+    } else if (_seStep === 3) {
+      const m = _seWizSigners.length;
+      if (_seNVal < 1 || _seNVal > m) { showToast('올바른 최소 서명 수를 입력하세요.'); return; }
+      _seRenderStep(4);
+    } else if (_seStep === 4) {
+      _seCompleteOTP();
+    }
+  }
+
+  /* ── OTP completion ── */
+  function _seCompleteOTP() {
+    const boxes = document.querySelectorAll('#se-otp-boxes .otp-box');
+    const otp = [...boxes].map(b => b.value).join('');
+    if (otp.length < 6) { showToast('OTP 6자리를 모두 입력하세요.'); return; }
+
+    // Demo: any 6-digit code accepted (simulate 777777 as wrong for testing)
+    _seOTPAttempts++;
+    if (otp === '777777') {
+      const errEl = document.getElementById('se-otp-err');
+      const attEl = document.getElementById('se-otp-attempts');
+      if (_seOTPAttempts >= 5) {
+        if (errEl) { errEl.textContent = 'OTP 오류 횟수 초과. 관리자에게 문의하세요.'; errEl.style.display = ''; }
+        document.getElementById('se-btn-next').disabled = true;
+      } else {
+        if (errEl) { errEl.textContent = 'OTP가 올바르지 않습니다.'; errEl.style.display = ''; }
+        if (attEl) attEl.textContent = '남은 시도: ' + (5 - _seOTPAttempts) + '회';
+      }
+      boxes.forEach(b => b.classList.add('err'));
+      return;
+    }
+
+    // Save policy
+    const w = (_WALLET_DATA||[]).find(x => x.id === _seWizWalletId);
+    const now = new Date();
+    const dt = now.getFullYear() + '-' +
+      String(now.getMonth()+1).padStart(2,'0') + '-' +
+      String(now.getDate()).padStart(2,'0') + ' ' +
+      String(now.getHours()).padStart(2,'0') + ':' +
+      String(now.getMinutes()).padStart(2,'0');
+
+    _STRATEGY_POLICIES[_seWizWalletId] = {
+      initiators: [..._seWizInitiators],
+      signers: [..._seWizSigners],
+      n: _seNVal, m: _seWizSigners.length,
+      advanced: _seUseAdv,
+      advancedCount: (_seMode === 'edit' && _STRATEGY_POLICIES[_seWizWalletId]) ? (_STRATEGY_POLICIES[_seWizWalletId].advancedCount || 0) : 0,
+      changedAt: dt, changedBy: _SE_MASTER
+    };
+
+    closeStrategyWizard();
+    renderStrategyDashboard();
+    const wName = w ? w.name : '';
+    const msg = _seMode === 'create'
+      ? wName + ' 출금 정책이 설정되었습니다.'
+      : wName + ' 출금 정책이 수정되었습니다.';
+    showToast(msg);
+
+    // Highlight newly-set card briefly
+    setTimeout(() => {
+      const cards = document.querySelectorAll('#se-cards-grid .se-policy-card');
+      cards.forEach(c => {
+        if (c.innerHTML.includes(wName)) {
+          c.style.transition = 'box-shadow .3s';
+          c.style.boxShadow = '0 0 0 3px var(--primary)';
+          setTimeout(() => { c.style.boxShadow = ''; }, 3000);
+        }
+      });
+    }, 100);
+  }
+
+  /* ── Detail modal (read-only) ── */
+  function openStrategyDetail(walletId) {
+    const p = _STRATEGY_POLICIES[walletId];
+    if (!p) return;
+    const w = (_WALLET_DATA||[]).find(x => x.id === walletId);
+    _seSet('se-det-wallet', w ? w.name : walletId);
+    _seSet('se-det-nom', p.n + ' of ' + p.m);
+    _seSet('se-det-initiators', p.initiators.join(', ') + ' (' + p.initiators.length + '명)');
+    _seSet('se-det-signers', p.signers.join(', ') + ' (' + p.signers.length + '명)');
+    _seSet('se-det-adv', p.advanced ? '적용 중 (' + p.advancedCount + '건)' : '없음');
+    _seSet('se-det-changed', p.changedAt + ' (' + p.changedBy + ')');
+    openModal('modal-se-detail');
+  }
+
+  function closeStrategyDetail() {
+    closeModal('modal-se-detail');
+  }
+
+  // Legacy stubs (prevent errors from old references)
+  function selectStrategyWallet() {}
+  function openStrategyPolicy(mode) {
+    if (mode === 'edit') openStrategyWizard('edit', 'wallet1');
+    else openStrategyWizard('create', null);
+  }
+  function openStrategyRecords() {}
+  function switchStrategyTab() {}
+  function saveStrategyPolicy() {}
+  function spRemove() {}
+  function changeNSP() {}
+
+  /* Advanced condition stubs (keep these functional) */
+  let _condMode = 'add';
   let _condIdx  = -1;
   let _condNVal = 3;
-  let _condCount = 1; // demo: 1 condition exists
-
-  function openAddCondition() {
-    _condMode = 'add';
-    _condIdx  = -1;
-    _condNVal = 3;
-    document.getElementById('cond-modal-title').textContent = '+ 조건 추가 / Add Condition';
-    document.getElementById('cond-save-btn').textContent = '추가 → OTP ↗';
-    document.getElementById('cond-amount').value = '';
-    const m = Math.max(1, getSignerCount());
-    document.getElementById('cond-mVal').textContent = m;
-    _condNVal = m;
-    document.getElementById('cond-nVal').textContent = m;
-    document.getElementById('cond-n-desc').textContent = '서명자 ' + m + '명 중 최소 ' + m + '명 서명 필요';
-    document.getElementById('cond-wallet-label').textContent =
-      _strategyWallet === 'BTC' ? 'BTC 보관 지갑 #1' : 'ETH 보관 지갑';
-    openModal('modal-add-condition');
-  }
-
-  function openEditCondition(idx) {
-    _condMode = 'edit';
-    _condIdx  = idx;
-    document.getElementById('cond-modal-title').textContent = '✎ 조건 수정 / Edit Condition';
-    document.getElementById('cond-save-btn').textContent = '저장 → OTP ↗';
-    // pre-fill demo values
-    document.getElementById('cond-amount').value = '50000';
-    const m = Math.max(1, getSignerCount());
-    _condNVal = Math.min(3, m);
-    document.getElementById('cond-mVal').textContent = m;
-    document.getElementById('cond-nVal').textContent = _condNVal;
-    document.getElementById('cond-n-desc').textContent = '서명자 ' + m + '명 중 최소 ' + _condNVal + '명 서명 필요';
-    document.getElementById('cond-wallet-label').textContent =
-      _strategyWallet === 'BTC' ? 'BTC 보관 지갑 #1' : 'ETH 보관 지갑';
-    openModal('modal-add-condition');
-  }
-
-  function changeNCondition(delta) {
-    const m = parseInt(document.getElementById('cond-mVal').textContent) || 1;
-    _condNVal = Math.max(1, Math.min(m, _condNVal + delta));
-    document.getElementById('cond-nVal').textContent = _condNVal;
-    document.getElementById('cond-n-desc').textContent = '서명자 ' + m + '명 중 최소 ' + _condNVal + '명 서명 필요';
-  }
-
-  function saveCondition() {
-    const amountVal = document.getElementById('cond-amount').value;
-    if (!amountVal || parseFloat(amountVal) <= 0) {
-      showToast('출금 금액 조건을 입력해주세요.'); return;
-    }
-    const amount = parseFloat(amountVal).toLocaleString('en-US');
-    const label = _condMode === 'add' ? '조건 추가 OTP' : '조건 수정 OTP';
-    openOTPModal(label, function() {
-      closeModal('modal-add-condition');
-      if (_condMode === 'add') {
-        _condCount++;
-        const list = document.getElementById('adv-conditions-list');
-        const newCard = document.createElement('div');
-        newCard.className = 'adv-cond-card';
-        newCard.id = 'adv-cond-' + (_condCount - 1);
-        const idx = _condCount - 1;
-        newCard.innerHTML = '<div class="adv-cond-card-header">' +
-          '<div class="adv-cond-title">조건 ' + _condCount + ': 출금 금액 ≥ <span class="adv-cond-amount">$' + amount + '</span> 이상</div>' +
-          '<div style="display:flex;gap:6px;">' +
-          '<button class="btn btn-outline btn-xs" onclick="openEditCondition(' + idx + ')">수정</button>' +
-          '<button class="btn btn-xs" style="color:var(--danger);border:1px solid rgba(239,68,68,0.3);background:transparent;" onclick="openDeleteCondition(' + idx + ')">삭제</button>' +
-          '</div></div>' +
-          '<div class="adv-cond-detail">서명 요건: <strong style="color:var(--text-primary);">' + _condNVal + ' of ' + document.getElementById('cond-mVal').textContent + '</strong></div>';
-        list.appendChild(newCard);
-        showToast('조건이 추가되었습니다.');
-      } else {
-        // Edit: update the card
-        const card = document.getElementById('adv-cond-' + _condIdx);
-        if (card) {
-          card.querySelector('.adv-cond-title').innerHTML = '조건 ' + (_condIdx + 1) + ': 출금 금액 ≥ <span class="adv-cond-amount">$' + amount + '</span> 이상';
-          card.querySelector('.adv-cond-detail').innerHTML = '서명 요건: <strong style="color:var(--text-primary);">' + _condNVal + ' of ' + document.getElementById('cond-mVal').textContent + '</strong>';
-        }
-        showToast('조건이 수정되었습니다.');
-      }
-    });
-  }
-
-  function openDeleteCondition(idx) {
-    _condIdx = idx;
-    const card = document.getElementById('adv-cond-' + idx);
-    const titleEl = card ? card.querySelector('.adv-cond-title') : null;
-    document.getElementById('cond-delete-label').textContent =
-      titleEl ? titleEl.textContent.trim() : '해당 조건';
-    openModal('modal-delete-condition');
-  }
-
-  function deleteConditionOTP() {
-    closeModal('modal-delete-condition');
-    openOTPModal('조건 삭제 OTP', function() {
-      const card = document.getElementById('adv-cond-' + _condIdx);
-      if (card) card.remove();
-      _condCount = Math.max(0, _condCount - 1);
-      const remaining = document.querySelectorAll('#adv-conditions-list .adv-cond-card').length;
-      document.getElementById('adv-conditions-empty').style.display  = remaining === 0 ? 'block' : 'none';
-      document.getElementById('adv-conditions-list').style.display   = remaining === 0 ? 'none' : 'block';
-      document.getElementById('adv-basic-fallback').style.display    = remaining === 0 ? 'none' : 'block';
-      showToast('조건이 삭제되었습니다.');
-    });
-  }
+  let _condCount = 1;
+  function getSignerCount() { return 3; }
+  function onSignerChange() {}
+  function openAddCondition() {}
+  function openEditCondition() {}
+  function changeNCondition() {}
+  function saveCondition() { showToast('Advanced 조건 기능은 현재 버전에서 지원되지 않습니다.'); }
+  function openDeleteCondition() {}
+  function deleteConditionOTP() {}
 
   /* ════════════════════════════════════
      OTP INPUT HELPERS
