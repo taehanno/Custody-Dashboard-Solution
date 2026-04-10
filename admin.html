@@ -7019,11 +7019,16 @@
         : (c.dDay !== null && c.dDay > -40 && c.dDay <= 0 ? ' style="background:#FFFBEB;"' : '');
 
       // Action buttons
+      var isAML = (_ADMIN_ROLE === 'aml_officer' || _ADMIN_ROLE === 'aml_manager');
       var actionBtns = '<button class="btn btn-outline btn-xs" onclick="openClientDetail(' + c.idx + ')">상세</button>';
       if (c.status === 'kyb_done') {
-        actionBtns = '<button class="btn btn-primary btn-xs" onclick="openCreateClientFromKYB(' + c.idx + ')">고객사 생성</button>';
+        actionBtns = isAML
+          ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45; cursor:not-allowed;" title="권한 없음">고객사 생성</button>'
+          : '<button class="btn btn-primary btn-xs" onclick="openCreateClientFromKYB(' + c.idx + ')">고객사 생성</button>';
       } else if (c.status === 'master_pending') {
-        actionBtns = '<button class="btn btn-outline btn-xs" style="color:#8B5CF6; border-color:rgba(139,92,246,0.4);" onclick="openClientDetail(' + c.idx + ')">Master 생성</button>';
+        actionBtns = isAML
+          ? '<button class="btn btn-outline btn-xs" disabled style="opacity:.45; cursor:not-allowed; color:#8B5CF6; border-color:rgba(139,92,246,0.4);" title="권한 없음">Master 생성</button>'
+          : '<button class="btn btn-outline btn-xs" style="color:#8B5CF6; border-color:rgba(139,92,246,0.4);" onclick="openClientDetail(' + c.idx + ')">Master 생성</button>';
       }
 
       return '<tr' + rowCls + '>' +
@@ -7101,7 +7106,8 @@
     document.getElementById('cd-master-info').style.display  = hasMaster ? 'block' : 'none';
     document.getElementById('cd-btn-pw-resend').style.display     = hasMaster ? '' : 'none';
     document.getElementById('cd-btn-email-change').style.display  = hasMaster ? '' : 'none';
-    document.getElementById('cd-btn-create-master').style.display = hasMaster ? 'none' : '';
+    var isAML = (_ADMIN_ROLE === 'aml_officer' || _ADMIN_ROLE === 'aml_manager');
+    document.getElementById('cd-btn-create-master').style.display = (hasMaster || isAML) ? 'none' : '';
 
     if (hasMaster) {
       document.getElementById('cd-master-email').textContent = c.masterEmail;
