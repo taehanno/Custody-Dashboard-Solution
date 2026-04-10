@@ -1586,23 +1586,31 @@
           </div>
         </div>
 
-        <!-- 통계 카드 -->
-        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px;">
+        <!-- 통계 카드 — 국가위험평가결과_20260220 기준 / 11개 지표 직합산 -->
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:16px;">
           <div class="card" style="padding:14px 16px;">
-            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">전체</div>
-            <div id="cty-stat-total" style="font-size:24px; font-weight:700; color:var(--primary);">0</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:6px;">전체</div>
+            <div id="cty-stat-total" style="font-size:22px; font-weight:700; color:var(--primary);">0</div>
           </div>
-          <div class="card" style="padding:14px 16px;">
-            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9679; 고위험 (61~100점)</div>
-            <div id="cty-stat-high" style="font-size:24px; font-weight:700; color:#EF4444;">0</div>
+          <div class="card" style="padding:14px 16px; border-left:3px solid #7C2D12;">
+            <div style="font-size:11px; color:#7C2D12; margin-bottom:6px; font-weight:600;">&#9679; 당연초고위험</div>
+            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">FATF·UN·EU 제재 해당</div>
+            <div id="cty-stat-super" style="font-size:22px; font-weight:700; color:#7C2D12;">0</div>
           </div>
-          <div class="card" style="padding:14px 16px;">
-            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9679; 중위험 (31~60점)</div>
-            <div id="cty-stat-mid" style="font-size:24px; font-weight:700; color:#F97316;">0</div>
+          <div class="card" style="padding:14px 16px; border-left:3px solid #EF4444;">
+            <div style="font-size:11px; color:#EF4444; margin-bottom:6px; font-weight:600;">&#9679; 고위험</div>
+            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">합계 11점 이상</div>
+            <div id="cty-stat-high" style="font-size:22px; font-weight:700; color:#EF4444;">0</div>
           </div>
-          <div class="card" style="padding:14px 16px;">
-            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9679; 저위험 (0~30점)</div>
-            <div id="cty-stat-low" style="font-size:24px; font-weight:700; color:#10B981;">0</div>
+          <div class="card" style="padding:14px 16px; border-left:3px solid #F97316;">
+            <div style="font-size:11px; color:#F97316; margin-bottom:6px; font-weight:600;">&#9679; 중위험</div>
+            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">합계 7~10점</div>
+            <div id="cty-stat-mid" style="font-size:22px; font-weight:700; color:#F97316;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px; border-left:3px solid #10B981;">
+            <div style="font-size:11px; color:#10B981; margin-bottom:6px; font-weight:600;">&#9679; 저위험</div>
+            <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">합계 6점 이하</div>
+            <div id="cty-stat-low" style="font-size:22px; font-weight:700; color:#10B981;">0</div>
           </div>
         </div>
 
@@ -1610,6 +1618,7 @@
           <!-- 탭 -->
           <div id="cty-tabs" class="kyb-tabs" style="margin-bottom:0; padding:0 16px;">
             <div class="kyb-tab active" onclick="_ctySetTab('all',this)">전체</div>
+            <div class="kyb-tab" onclick="_ctySetTab('super',this)" style="color:#7C2D12;">&#9679; 당연초고위험</div>
             <div class="kyb-tab" onclick="_ctySetTab('high',this)">&#9679; 고위험</div>
             <div class="kyb-tab" onclick="_ctySetTab('mid',this)">&#9679; 중위험</div>
             <div class="kyb-tab" onclick="_ctySetTab('low',this)">&#9679; 저위험</div>
@@ -4805,12 +4814,16 @@
         <div id="cty-d-override-note" style="display:none; background:#FFF7ED; border:1px solid #F97316; border-radius:6px; padding:8px 12px; font-size:12px; color:#9A3412; flex:1;">
           수동 강제등급 적용 중
         </div>
+        <div style="margin-left:auto; text-align:right;">
+          <div style="font-size:10px; color:var(--text-secondary);">CPI 원점수</div>
+          <div id="cty-d-cpi-raw" style="font-size:13px; font-weight:700; color:var(--text-secondary);">-</div>
+        </div>
       </div>
     </div>
 
-    <!-- 12개 지표 평가 (수정 가능) -->
+    <!-- 11개 지표 평가 (수정 가능) -->
     <div class="card" style="margin-bottom:14px; padding:16px;">
-      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px;">12개 지표 평가</div>
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px;">11개 지표 평가 <span style="font-weight:400; font-size:11px;">(국가위험평가결과_20260220 기준)</span></div>
       <div id="cty-indicator-form" style="display:grid; gap:10px;"></div>
       <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:12px; color:var(--text-secondary);">산출 점수</span>
@@ -11973,37 +11986,274 @@
 
   var _ctyTab = 'all';
 
+  // 지표 체계 — 국가별위험평가.xlsx 국가위험평가결과_20260220 기준
+  // (6)번 지표는 해당 시트에 미포함, (7)OECD가 그 다음
   var _CTY_INDICATORS = [
-    { key:'fatf',   label:'FATF 성명서 지정',          weight:15 },
-    { key:'un',     label:'UN 제재 대상',               weight:15 },
-    { key:'terror', label:'테러자금조달 위험',           weight:12 },
-    { key:'ml',     label:'자금세탁 위험',               weight:12 },
-    { key:'corrupt',label:'부패인식지수(CPI) 역산',      weight:10 },
-    { key:'tran',   label:'금융투명성 수준',             weight:8  },
-    { key:'tax',    label:'조세 비협조 지역',            weight:8  },
-    { key:'str',    label:'STR 비율 / 내부 위험지표',   weight:7  },
-    { key:'sanction',label:'자체 제재 국가',             weight:5  },
-    { key:'embassy',label:'외교관계 단절',               weight:3  },
-    { key:'ngo',    label:'NGO 국제 평판 지수',         weight:3  },
-    { key:'other',  label:'기타 종합 위험요인',          weight:2  }
+    { key:'i1',  label:'(1) FATF 회원국 여부',       max:3,  note:'회원국=1 / 비회원단체=2 / 비회원국=3',            superTrigger:false },
+    { key:'i2',  label:'(2) FATF 고위험 성명서',     max:5,  note:'Public Statement 발표 국가 해당 시 5점',           superTrigger:true  },
+    { key:'i3',  label:'(3) FATF 이행취약국',        max:5,  note:'Non-compliance 발표 국가 해당 시 5점',             superTrigger:true  },
+    { key:'i4',  label:'(4) UN 제재국가',             max:5,  note:'UN 안보리 제재 해당 시 5점',                       superTrigger:true  },
+    { key:'i5',  label:'(5) EU 조세 비협조국',       max:5,  note:'EU 조세 비협조 리스트 해당 시 5점',               superTrigger:true  },
+    { key:'i7',  label:'(7) OECD 조세정보 등급',     max:5,  note:'등급에 따라 0·1·3·5점',                           superTrigger:false },
+    { key:'i8',  label:'(8) CPI 위험점수',           max:5,  note:'부패인식지수 기반 위험점수 (0·3·5점)',             superTrigger:false },
+    { key:'i9',  label:'(9) OFAC 제재국가',          max:3,  note:'미국 재무성 OFAC 제재 해당 시 3점',               superTrigger:false },
+    { key:'i10', label:'(10) FinCEN 특별조치',       max:3,  note:'FinCEN 특별조치 해당 지역 시 3점',                superTrigger:false },
+    { key:'i11', label:'(11) INCSR 자금세탁위험국',  max:3,  note:'마약통제전략보고서 자금세탁위험국 해당 시 3점',    superTrigger:false },
+    { key:'i12', label:'(12) 국제테러지원국',         max:3,  note:'미국 수출관리법 테러지원국 해당 시 3점',           superTrigger:false }
   ];
 
   var _COUNTRY_DATA = [
-    { code:'AF', nameKR:'아프가니스탄', nameEN:'Afghanistan',   fatf:'high',   un:'yes', indicators:{ fatf:10,un:10,terror:10,ml:9,corrupt:8,tran:3,tax:7,str:6,sanction:8,embassy:2,ngo:7,other:5 }, override:null, updatedAt:'2026-02-20' },
-    { code:'IR', nameKR:'이란',         nameEN:'Iran',          fatf:'high',   un:'yes', indicators:{ fatf:10,un:10,terror:10,ml:9,corrupt:7,tran:2,tax:8,str:7,sanction:10,embassy:3,ngo:6,other:6 }, override:null, updatedAt:'2026-02-20' },
-    { code:'KP', nameKR:'북한',         nameEN:'North Korea',   fatf:'high',   un:'yes', indicators:{ fatf:10,un:10,terror:9,ml:9,corrupt:9,tran:1,tax:9,str:8,sanction:10,embassy:3,ngo:8,other:7 }, override:null, updatedAt:'2026-02-20' },
-    { code:'SY', nameKR:'시리아',       nameEN:'Syria',         fatf:'high',   un:'yes', indicators:{ fatf:9,un:9,terror:9,ml:8,corrupt:8,tran:2,tax:6,str:6,sanction:9,embassy:3,ngo:7,other:5 }, override:null, updatedAt:'2026-02-20' },
-    { code:'MM', nameKR:'미얀마',       nameEN:'Myanmar',       fatf:'weak',   un:'no',  indicators:{ fatf:7,un:3,terror:5,ml:8,corrupt:7,tran:3,tax:5,str:5,sanction:4,embassy:1,ngo:5,other:4 }, override:'high', updatedAt:'2026-02-20' },
-    { code:'RU', nameKR:'러시아',       nameEN:'Russia',        fatf:'member', un:'no',  indicators:{ fatf:3,un:4,terror:5,ml:6,corrupt:6,tran:4,tax:4,str:5,sanction:7,embassy:2,ngo:4,other:4 }, override:null, updatedAt:'2026-02-20' },
-    { code:'CN', nameKR:'중국',         nameEN:'China',         fatf:'member', un:'no',  indicators:{ fatf:2,un:2,terror:3,ml:5,corrupt:5,tran:4,tax:3,str:4,sanction:2,embassy:0,ngo:3,other:3 }, override:null, updatedAt:'2026-02-20' },
-    { code:'VN', nameKR:'베트남',       nameEN:'Vietnam',       fatf:'weak',   un:'no',  indicators:{ fatf:5,un:1,terror:2,ml:5,corrupt:5,tran:4,tax:3,str:3,sanction:1,embassy:0,ngo:3,other:3 }, override:null, updatedAt:'2026-02-20' },
-    { code:'PH', nameKR:'필리핀',       nameEN:'Philippines',   fatf:'member', un:'no',  indicators:{ fatf:2,un:1,terror:3,ml:4,corrupt:4,tran:5,tax:2,str:3,sanction:1,embassy:0,ngo:2,other:2 }, override:null, updatedAt:'2026-02-20' },
-    { code:'TH', nameKR:'태국',         nameEN:'Thailand',      fatf:'member', un:'no',  indicators:{ fatf:1,un:1,terror:2,ml:3,corrupt:4,tran:5,tax:2,str:2,sanction:0,embassy:0,ngo:2,other:2 }, override:null, updatedAt:'2026-02-20' },
-    { code:'SG', nameKR:'싱가포르',     nameEN:'Singapore',     fatf:'member', un:'no',  indicators:{ fatf:0,un:0,terror:0,ml:1,corrupt:1,tran:9,tax:1,str:1,sanction:0,embassy:0,ngo:1,other:0 }, override:null, updatedAt:'2026-02-20' },
-    { code:'JP', nameKR:'일본',         nameEN:'Japan',         fatf:'member', un:'no',  indicators:{ fatf:0,un:0,terror:0,ml:1,corrupt:1,tran:9,tax:0,str:1,sanction:0,embassy:0,ngo:0,other:0 }, override:null, updatedAt:'2026-02-20' },
-    { code:'US', nameKR:'미국',         nameEN:'United States', fatf:'member', un:'no',  indicators:{ fatf:0,un:0,terror:0,ml:1,corrupt:1,tran:9,tax:0,str:1,sanction:0,embassy:0,ngo:0,other:0 }, override:null, updatedAt:'2026-02-20' },
-    { code:'DE', nameKR:'독일',         nameEN:'Germany',       fatf:'member', un:'no',  indicators:{ fatf:0,un:0,terror:0,ml:0,corrupt:0,tran:10,tax:0,str:0,sanction:0,embassy:0,ngo:0,other:0 }, override:null, updatedAt:'2026-02-20' },
-    { code:'KR', nameKR:'대한민국',     nameEN:'Korea, Republic of', fatf:'member', un:'no', indicators:{ fatf:0,un:0,terror:0,ml:1,corrupt:1,tran:8,tax:0,str:1,sanction:0,embassy:0,ngo:0,other:0 }, override:null, updatedAt:'2026-02-20' }
+    { code:'AD', nameKR:'안도라', nameEN:'Andorra', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AE', nameKR:'아랍에미리트', nameEN:'United Arab Emirates', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:67 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AF', nameKR:'아프가니스탄', nameEN:'Afghanistan', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:3, i12:0, cpiRaw:24 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AG', nameKR:'앤티가 바부다', nameEN:'Antigua And Barbuda', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:3, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AI', nameKR:'앵귈라', nameEN:'Anguilla', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:3, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AL', nameKR:'알바니아', nameEN:'Albania', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:36 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AM', nameKR:'아르메니아', nameEN:'Armenia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:46 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AN', nameKR:'네덜란드령 안틸레스', nameEN:'Netherlands Antilles', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AO', nameKR:'앙골라', nameEN:'Angola', fatf:'weak', un:'yes', indicators:{ i1:3, i2:0, i3:5, i4:5, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:33 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AQ', nameKR:'남극', nameEN:'Antarctica', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AR', nameKR:'아르헨티나', nameEN:'Argentina', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:38 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AS', nameKR:'아메리칸사모아', nameEN:'American Samoa', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AT', nameKR:'오스트리아', nameEN:'Austria', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:71 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AU', nameKR:'오스트레일리아', nameEN:'Australia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:75 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AW', nameKR:'아루바', nameEN:'Aruba', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AX', nameKR:'올란드 제도', nameEN:'Aland', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'AZ', nameKR:'아제르바이잔', nameEN:'Azerbaijan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:23 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BA', nameKR:'보스니아 헤르체고비나', nameEN:'Bosnia Hercegovina', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:34 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BB', nameKR:'바베이도스', nameEN:'Barbados', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:65 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BD', nameKR:'방글라데시', nameEN:'Bangladesh', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:25 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BE', nameKR:'벨기에', nameEN:'Belgium', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:73 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BF', nameKR:'부르키나파소', nameEN:'Burkina Faso', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:42 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BG', nameKR:'불가리아', nameEN:'Bulgaria', fatf:'weak', un:'no', indicators:{ i1:1, i2:0, i3:5, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:43 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BH', nameKR:'바레인', nameEN:'Bahrain', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:44 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BI', nameKR:'부룬디', nameEN:'Burundi', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:17 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BJ', nameKR:'베냉', nameEN:'Benin', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:43 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BM', nameKR:'버뮤다', nameEN:'Bermuda', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BN', nameKR:'브루나이', nameEN:'Brunei', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BO', nameKR:'볼리비아', nameEN:'Bolivia', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:31 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BR', nameKR:'브라질', nameEN:'Brazil', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:38 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BS', nameKR:'바하마', nameEN:'Bahamas', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:64 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BT', nameKR:'부탄', nameEN:'Bhutan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:68 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BV', nameKR:'부베 섬', nameEN:'Bouvet Island', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BW', nameKR:'보츠와나', nameEN:'Botswana', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:3, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:60 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BY', nameKR:'벨라루스', nameEN:'Belarus', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:39 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BZ', nameKR:'벨리즈', nameEN:'Belize', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:3, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CA', nameKR:'캐나다', nameEN:'Canada', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:74 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CC', nameKR:'코코스 제도', nameEN:'Cocos Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CD', nameKR:'콩고 민주 공화국', nameEN:'COD', fatf:'weak', un:'yes', indicators:{ i1:3, i2:0, i3:5, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:20 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CF', nameKR:'중앙아프리카 공화국', nameEN:'Central African Republic', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:24 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CG', nameKR:'콩고 공화국', nameEN:'Congo', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:21 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CH', nameKR:'스위스', nameEN:'Switzerland', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:82 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CI', nameKR:'코트디부아르', nameEN:'Cote D'ivoire', fatf:'weak', un:'yes', indicators:{ i1:3, i2:0, i3:5, i4:5, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:37 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CK', nameKR:'쿡 제도', nameEN:'Cook Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CL', nameKR:'칠레', nameEN:'Chile', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:67 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CM', nameKR:'카메룬', nameEN:'Cameroon', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:26 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CN', nameKR:'중화인민공화국', nameEN:'China', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:3, i10:0, i11:3, i12:0, cpiRaw:45 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CO', nameKR:'콜롬비아', nameEN:'Colombia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:39 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CR', nameKR:'코스타리카', nameEN:'Costa Rica', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:54 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CU', nameKR:'쿠바', nameEN:'Cuba', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:3, i10:0, i11:3, i12:3, cpiRaw:45 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CV', nameKR:'카보베르데', nameEN:'Cape Verde', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:60 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CX', nameKR:'크리스마스 섬', nameEN:'Christmas Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CY', nameKR:'키프로스(사이프러스)', nameEN:'Cyprus', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:52 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CZ', nameKR:'체코', nameEN:'Czech', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:56 }, override:null, updatedAt:'2026-02-20' },
+    { code:'DE', nameKR:'독일', nameEN:'Germany', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:79 }, override:null, updatedAt:'2026-02-20' },
+    { code:'DJ', nameKR:'지부티', nameEN:'Djibouti', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:30 }, override:null, updatedAt:'2026-02-20' },
+    { code:'DK', nameKR:'덴마크', nameEN:'Denmark', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:90 }, override:null, updatedAt:'2026-02-20' },
+    { code:'DM', nameKR:'도미니카 연방', nameEN:'Commonwealth of Dominica', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:3, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:55 }, override:null, updatedAt:'2026-02-20' },
+    { code:'DO', nameKR:'도미니카 공화국', nameEN:'Dominican Republic', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:32 }, override:null, updatedAt:'2026-02-20' },
+    { code:'DZ', nameKR:'알제리', nameEN:'Algeria', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:33 }, override:null, updatedAt:'2026-02-20' },
+    { code:'EC', nameKR:'에콰도르', nameEN:'Ecuador', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:36 }, override:null, updatedAt:'2026-02-20' },
+    { code:'EE', nameKR:'에스토니아', nameEN:'Estonia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:74 }, override:null, updatedAt:'2026-02-20' },
+    { code:'EG', nameKR:'이집트', nameEN:'Egypt', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:30 }, override:null, updatedAt:'2026-02-20' },
+    { code:'EH', nameKR:'서사하라', nameEN:'Western Sahara', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ER', nameKR:'에리트레아', nameEN:'Eritrea', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:22 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ES', nameKR:'스페인', nameEN:'Spain', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:60 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ET', nameKR:'에티오피아', nameEN:'Ethiopia', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:38 }, override:null, updatedAt:'2026-02-20' },
+    { code:'FI', nameKR:'핀란드', nameEN:'Finland', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:87 }, override:null, updatedAt:'2026-02-20' },
+    { code:'FJ', nameKR:'피지', nameEN:'Fiji', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:53 }, override:null, updatedAt:'2026-02-20' },
+    { code:'FK', nameKR:'포클랜드 제도', nameEN:'Falkland Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'FM', nameKR:'미크로네시아 연방', nameEN:'Micronesia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'FO', nameKR:'페로 제도', nameEN:'Faroe Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'FR', nameKR:'프랑스', nameEN:'France', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:72 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GA', nameKR:'가봉', nameEN:'Gabon', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:29 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GB', nameKR:'영국', nameEN:'United Kingdom', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:73 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GD', nameKR:'그레나다', nameEN:'Grenada', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:52 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GE', nameKR:'조지아(그루지야)', nameEN:'Georgia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:56 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GF', nameKR:'프랑스령 기아나', nameEN:'French Guiana', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GG', nameKR:'건지 섬', nameEN:'Guernsey Island', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GH', nameKR:'가나', nameEN:'Ghana', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:3, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:43 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GI', nameKR:'지브롤터', nameEN:'Gibraltar', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GL', nameKR:'그린란드', nameEN:'Greenland', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GM', nameKR:'감비아', nameEN:'Gambia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:34 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GN', nameKR:'기니', nameEN:'Guinea', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:25 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GP', nameKR:'과들루프', nameEN:'Guadeloupe', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GQ', nameKR:'적도 기니', nameEN:'Equatorial Guinea', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:17 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GR', nameKR:'그리스', nameEN:'Greece', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:52 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GS', nameKR:'사우스조지아 사우스샌드위치 제도', nameEN:'South Georgia And The South Sandwich Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GT', nameKR:'과테말라', nameEN:'Guatemala', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:5, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:24 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GU', nameKR:'괌', nameEN:'Guam', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GW', nameKR:'기니비사우', nameEN:'Guinea-Bissau', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:21 }, override:null, updatedAt:'2026-02-20' },
+    { code:'GY', nameKR:'가이아나', nameEN:'Guyana', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:40 }, override:null, updatedAt:'2026-02-20' },
+    { code:'HK', nameKR:'홍콩', nameEN:'Hong Kong', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:3, i10:0, i11:3, i12:0, cpiRaw:76 }, override:null, updatedAt:'2026-02-20' },
+    { code:'HM', nameKR:'허드 맥도널드 제도', nameEN:'Heard And Mc Donald Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'HN', nameKR:'온두라스', nameEN:'Honduras', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:23 }, override:null, updatedAt:'2026-02-20' },
+    { code:'HR', nameKR:'크로아티아', nameEN:'Croatia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:50 }, override:null, updatedAt:'2026-02-20' },
+    { code:'HT', nameKR:'아이티', nameEN:'Haiti', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:17 }, override:null, updatedAt:'2026-02-20' },
+    { code:'HU', nameKR:'헝가리', nameEN:'Hungary', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:42 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ID', nameKR:'인도네시아', nameEN:'Indonesia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:34 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IE', nameKR:'아일랜드', nameEN:'Ireland', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:77 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IL', nameKR:'이스라엘', nameEN:'Israel', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:63 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IM', nameKR:'맨 섬', nameEN:'Isle of Man', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IN', nameKR:'인도', nameEN:'India', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:40 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IO', nameKR:'영국령 인도양 지역', nameEN:'British Indian Ocean Territory', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IQ', nameKR:'이라크', nameEN:'Iraq', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:23 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IR', nameKR:'이란', nameEN:'Iran', fatf:'high', un:'yes', indicators:{ i1:3, i2:5, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:3, i11:3, i12:3, cpiRaw:25 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IS', nameKR:'아이슬란드', nameEN:'Iceland', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:74 }, override:null, updatedAt:'2026-02-20' },
+    { code:'IT', nameKR:'이탈리아', nameEN:'Italy', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:56 }, override:null, updatedAt:'2026-02-20' },
+    { code:'JE', nameKR:'저지 섬', nameEN:'Jersey', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'JM', nameKR:'자메이카', nameEN:'Jamaica', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:44 }, override:null, updatedAt:'2026-02-20' },
+    { code:'JO', nameKR:'요르단', nameEN:'Jordan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:47 }, override:null, updatedAt:'2026-02-20' },
+    { code:'JP', nameKR:'일본', nameEN:'Japan', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:73 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KE', nameKR:'케냐', nameEN:'Kenya', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:32 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KG', nameKR:'키르기스스탄', nameEN:'Kyrgyzstan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:27 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KH', nameKR:'캄보디아', nameEN:'Cambodia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:24 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KI', nameKR:'키리바시', nameEN:'Kiribati', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KM', nameKR:'코모로', nameEN:'Comoros', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:19 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KN', nameKR:'세인트키츠 네비스', nameEN:'Saint Kitts And Nevis', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KP', nameKR:'조선민주주의인민공화국', nameEN:'Democratic People's Republic of Korea', fatf:'high', un:'yes', indicators:{ i1:3, i2:5, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:3, i11:0, i12:3, cpiRaw:17 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KR', nameKR:'대한민국', nameEN:'Republic of Korea', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:63 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KW', nameKR:'쿠웨이트', nameEN:'Kuwait', fatf:'weak', un:'no', indicators:{ i1:1, i2:0, i3:5, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:42 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KY', nameKR:'케이맨 제도', nameEN:'Cayman Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'KZ', nameKR:'카자흐스탄', nameEN:'Kazakhstan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:3, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:36 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LA', nameKR:'라오스', nameEN:'Laos', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:31 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LB', nameKR:'레바논', nameEN:'Lebanon', fatf:'weak', un:'yes', indicators:{ i1:3, i2:0, i3:5, i4:5, i5:0, i7:1, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:24 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LC', nameKR:'세인트루시아', nameEN:'Saint Lucia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:54 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LI', nameKR:'리히텐슈타인', nameEN:'Liechtenstein', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LK', nameKR:'스리랑카', nameEN:'Sri Lanka', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:36 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LR', nameKR:'라이베리아(리베리아) ', nameEN:'Liberia', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:3, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:26 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LS', nameKR:'레소토', nameEN:'Lesotho', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:37 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LT', nameKR:'리투아니아', nameEN:'Lithuania', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:62 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LU', nameKR:'룩셈부르크', nameEN:'Luxembourg', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:77 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LV', nameKR:'라트비아', nameEN:'Latvia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:59 }, override:null, updatedAt:'2026-02-20' },
+    { code:'LY', nameKR:'리비아', nameEN:'Libya', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:17 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MA', nameKR:'모로코', nameEN:'Morocco', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:38 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MC', nameKR:'모나코', nameEN:'Monaco', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MD', nameKR:'몰도바', nameEN:'Moldova', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:39 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ME', nameKR:'몬테네그로', nameEN:'Montenegro', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:45 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MG', nameKR:'마다가스카르', nameEN:'Madagascar', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:26 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MH', nameKR:'마셜 제도', nameEN:'Marshall Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MK', nameKR:'마케도니아 공화국', nameEN:'Macedonia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:40 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ML', nameKR:'말리', nameEN:'Mali', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:28 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MM', nameKR:'미얀마', nameEN:'Myanmar', fatf:'high', un:'no', indicators:{ i1:3, i2:5, i3:0, i4:0, i5:0, i7:0, i8:5, i9:3, i10:3, i11:3, i12:0, cpiRaw:23 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MN', nameKR:'몽골', nameEN:'Mongolia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:33 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MO', nameKR:'마카오', nameEN:'Macau', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MP', nameKR:'북마리아나 제도', nameEN:'Northern Mariana Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MQ', nameKR:'마르티니크', nameEN:'Martinique', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MR', nameKR:'모리타니', nameEN:'Mauritania', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:30 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MS', nameKR:'몬트세랫', nameEN:'Montserrat', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MT', nameKR:'몰타', nameEN:'Malta', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:3, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:51 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MU', nameKR:'모리셔스', nameEN:'Mauritius', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:50 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MV', nameKR:'몰디브', nameEN:'Maldives', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:40 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MW', nameKR:'말라위', nameEN:'Malawi', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:34 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MX', nameKR:'멕시코', nameEN:'Mexico', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:31 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MY', nameKR:'말레이시아', nameEN:'Malaysia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:47 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MZ', nameKR:'모잠비크', nameEN:'Mozambique', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:26 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NA', nameKR:'나미비아', nameEN:'Namibia', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:49 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NC', nameKR:'뉴칼레도니아(누벨칼레도니)', nameEN:'New Caledonia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NE', nameKR:'니제르', nameEN:'Niger', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:32 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NF', nameKR:'노퍽 섬', nameEN:'Norfolk Island', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NG', nameKR:'나이지리아', nameEN:'Nigeria', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:24 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NI', nameKR:'니카라과', nameEN:'Nicaragua', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:3, i10:0, i11:3, i12:0, cpiRaw:19 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NL', nameKR:'네덜란드', nameEN:'Netherlands', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:80 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NO', nameKR:'노르웨이', nameEN:'Norway', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:84 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NP', nameKR:'네팔', nameEN:'Nepal', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:34 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NR', nameKR:'나우루', nameEN:'Nauru', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NU', nameKR:'니우에', nameEN:'Niue', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'NZ', nameKR:'뉴질랜드', nameEN:'New Zealand', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:87 }, override:null, updatedAt:'2026-02-20' },
+    { code:'OM', nameKR:'오만', nameEN:'Oman', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:44 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PA', nameKR:'파나마', nameEN:'Panama', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:3, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:36 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PE', nameKR:'페루', nameEN:'Peru', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:36 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PF', nameKR:'프랑스령 폴리네시아', nameEN:'French Polynesia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PG', nameKR:'파푸아 뉴기니', nameEN:'Papua New Guinea', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:30 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PH', nameKR:'필리핀', nameEN:'Philippines', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:33 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PK', nameKR:'파키스탄', nameEN:'Pakistan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:27 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PL', nameKR:'폴란드', nameEN:'Poland', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:55 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PM', nameKR:'생피에르 미클롱', nameEN:'Saint-Pierre-et-miquelon', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PN', nameKR:'핏케언 제도', nameEN:'Pitcairn', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PR', nameKR:'푸에르토리코', nameEN:'Puerto Rico', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PS', nameKR:'팔레스타인', nameEN:'Palestine', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PT', nameKR:'포르투갈', nameEN:'Portugal', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:62 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PW', nameKR:'팔라우', nameEN:'Palau', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'PY', nameKR:'파라과이', nameEN:'Paraguay', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:28 }, override:null, updatedAt:'2026-02-20' },
+    { code:'QA', nameKR:'카타르', nameEN:'Qatar', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:58 }, override:null, updatedAt:'2026-02-20' },
+    { code:'RE', nameKR:'레위니옹', nameEN:'Reunion', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'RO', nameKR:'루마니아', nameEN:'Romania', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:46 }, override:null, updatedAt:'2026-02-20' },
+    { code:'RS', nameKR:'세르비아', nameEN:'Serbia', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:36 }, override:null, updatedAt:'2026-02-20' },
+    { code:'RU', nameKR:'러시아', nameEN:'Russia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:5, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:28 }, override:null, updatedAt:'2026-02-20' },
+    { code:'RW', nameKR:'르완다', nameEN:'Rwanda', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:51 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SA', nameKR:'사우디아라비아', nameEN:'Saudi Arabia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:51 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SB', nameKR:'솔로몬 제도', nameEN:'Solomon Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:42 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SC', nameKR:'세이셸', nameEN:'Seychelles', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:3, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:70 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SD', nameKR:'수단', nameEN:'Sudan', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:22 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SE', nameKR:'스웨덴', nameEN:'Sweden', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:83 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SG', nameKR:'싱가포르', nameEN:'Singapore', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:83 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SH', nameKR:'세인트헬레나', nameEN:'Saint Helena', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SI', nameKR:'슬로베니아', nameEN:'Slovenia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:56 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SJ', nameKR:'스발바르 얀마옌', nameEN:'Svabard And Jam Mayen Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SK', nameKR:'슬로바키아', nameEN:'Slovakia', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:53 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SL', nameKR:'시에라리온', nameEN:'Sierra Leone', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:34 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SM', nameKR:'산마리노', nameEN:'San Marino', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SN', nameKR:'세네갈', nameEN:'Senegal', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:43 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SO', nameKR:'소말리아', nameEN:'Somalia', fatf:'nonmember', un:'yes', indicators:{ i1:3, i2:0, i3:0, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:12 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SR', nameKR:'수리남', nameEN:'Suriname', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:40 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SS', nameKR:'남수단 ', nameEN:'South Sudan', fatf:'weak', un:'yes', indicators:{ i1:3, i2:0, i3:5, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:13 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ST', nameKR:'상투메 프린시페', nameEN:'Sao Tome And Principe', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:45 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SV', nameKR:'엘살바도르', nameEN:'El Salvador', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:33 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SY', nameKR:'시리아', nameEN:'Syria', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:3, cpiRaw:13 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SZ', nameKR:'에스와티니', nameEN:'Eswatini', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:30 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TC', nameKR:'터크스 케이커스 제도', nameEN:'Turks And Caicos Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TD', nameKR:'차드', nameEN:'Chad', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:19 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TF', nameKR:'프랑스령 남부와 남극 지역', nameEN:'French Southern Territories', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TG', nameKR:'토고', nameEN:'Togo', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:30 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TH', nameKR:'타이(태국)', nameEN:'Thailand', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:36 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TJ', nameKR:'타지키스탄', nameEN:'Tajikistan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:24 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TK', nameKR:'토켈라우', nameEN:'Tokelau', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TL', nameKR:'동티모르', nameEN:'East Timor', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:42 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TM', nameKR:'투르크메니스탄', nameEN:'Turkmenistan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:19 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TN', nameKR:'튀니지', nameEN:'Tunisia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:40 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TO', nameKR:'통가', nameEN:'Tonga', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TR', nameKR:'튀르키예', nameEN:'Türkiye', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:36 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TT', nameKR:'트리니다드 토바고', nameEN:'Trinidad And Tobago', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:5, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:42 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TV', nameKR:'투발루', nameEN:'Tuvalu', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TW', nameKR:'중화민국(대만)', nameEN:'Taiwan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:68 }, override:null, updatedAt:'2026-02-20' },
+    { code:'TZ', nameKR:'탄자니아', nameEN:'Tanzania', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:38 }, override:null, updatedAt:'2026-02-20' },
+    { code:'UA', nameKR:'우크라이나', nameEN:'Ukraine', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:3, i10:0, i11:3, i12:0, cpiRaw:33 }, override:null, updatedAt:'2026-02-20' },
+    { code:'UG', nameKR:'우간다', nameEN:'Uganda', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:26 }, override:null, updatedAt:'2026-02-20' },
+    { code:'UM', nameKR:'미국령 군소 제도', nameEN:'United States Minor Outlying Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'US', nameKR:'미국', nameEN:'USA, United States of America', fatf:'member', un:'no', indicators:{ i1:1, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:69 }, override:null, updatedAt:'2026-02-20' },
+    { code:'UY', nameKR:'우루과이', nameEN:'Uruguay', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:74 }, override:null, updatedAt:'2026-02-20' },
+    { code:'UZ', nameKR:'우즈베키스탄', nameEN:'Uzbekistan', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:3, i12:0, cpiRaw:31 }, override:null, updatedAt:'2026-02-20' },
+    { code:'VA', nameKR:'바티칸 시국', nameEN:'Vatican City State', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'VC', nameKR:'세인트빈센트 그레나딘', nameEN:'Saint Vincent And The Grenadines', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:60 }, override:null, updatedAt:'2026-02-20' },
+    { code:'VE', nameKR:'베네수엘라', nameEN:'Venezuela', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:5, i9:3, i10:0, i11:3, i12:0, cpiRaw:14 }, override:null, updatedAt:'2026-02-20' },
+    { code:'VG', nameKR:'영국령 버진아일랜드', nameEN:'British Virgin Islands', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:3, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'VI', nameKR:'미국령 버진아일랜드', nameEN:'US Virgin Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'VN', nameKR:'베트남', nameEN:'Vietnam', fatf:'weak', un:'no', indicators:{ i1:3, i2:0, i3:5, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:3, i12:0, cpiRaw:42 }, override:null, updatedAt:'2026-02-20' },
+    { code:'VU', nameKR:'바누아투', nameEN:'Vanuatu', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:3, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:48 }, override:null, updatedAt:'2026-02-20' },
+    { code:'WF', nameKR:'왈리스 퓌튀나', nameEN:'Wallis And Futuna Islands', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'WS', nameKR:'사모아', nameEN:'Samoa', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:5, i7:1, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'YE', nameKR:'예멘', nameEN:'Yemen', fatf:'weak', un:'yes', indicators:{ i1:3, i2:0, i3:5, i4:5, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:16 }, override:null, updatedAt:'2026-02-20' },
+    { code:'YT', nameKR:'마요트', nameEN:'Mayotte', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ZA', nameKR:'남아프리카 공화국', nameEN:'South Africa', fatf:'member', un:'yes', indicators:{ i1:1, i2:0, i3:0, i4:5, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:43 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ZM', nameKR:'잠비아', nameEN:'Zambia', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:0, i10:0, i11:0, i12:0, cpiRaw:33 }, override:null, updatedAt:'2026-02-20' },
+    { code:'ZW', nameKR:'짐바브웨', nameEN:'Zimbabwe', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:5, i9:3, i10:0, i11:0, i12:0, cpiRaw:23 }, override:null, updatedAt:'2026-02-20' },
+    { code:'XK', nameKR:'코소보', nameEN:'Kosovo', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:3, i9:0, i10:0, i11:0, i12:0, cpiRaw:41 }, override:null, updatedAt:'2026-02-20' },
+    { code:'CW', nameKR:'퀴라소', nameEN:'Curacao', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:1, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'SX', nameKR:'신트마르턴', nameEN:'Sint Maarten', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:3, i8:0, i9:0, i10:0, i11:3, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BQ', nameKR:'BES 제도', nameEN:'Bonaire, Sint Eustatius and Saba', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'BL', nameKR:'생바르텔레미', nameEN:'Saint Barthelemy', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' },
+    { code:'MF', nameKR:'세인트마틴', nameEN:'Saint Martin', fatf:'nonmember', un:'no', indicators:{ i1:3, i2:0, i3:0, i4:0, i5:0, i7:0, i8:0, i9:0, i10:0, i11:0, i12:0, cpiRaw:0 }, override:null, updatedAt:'2026-02-20' }
   ];
 
   var _FATF_EXCLUDED = [
@@ -12018,44 +12268,55 @@
 
   var _ctyCurrentCode = null;
 
+  // 11개 지표 직합산 (가중치 없음, Excel 기준)
   function _ctyComputeScore(indicators) {
-    var total = 0;
-    _CTY_INDICATORS.forEach(function(ind) {
-      var val = indicators[ind.key] || 0;
-      total += (val / 10) * ind.weight;
-    });
-    return Math.round(total);
+    return (indicators.i1||0)+(indicators.i2||0)+(indicators.i3||0)+(indicators.i4||0)+
+           (indicators.i5||0)+(indicators.i7||0)+(indicators.i8||0)+(indicators.i9||0)+
+           (indicators.i10||0)+(indicators.i11||0)+(indicators.i12||0);
   }
 
-  function _ctyScoreToGrade(score, override) {
+  // 당연초고위험: FATF 성명서/이행취약, UN 제재, EU 비협조 중 하나라도 해당
+  function _ctyIsSuper(indicators) {
+    return (indicators.i2||0)>0 || (indicators.i3||0)>0 || (indicators.i4||0)>0 || (indicators.i5||0)>0;
+  }
+
+  function _ctyScoreToGrade(score, override, indicators) {
     if (override) return override;
-    if (score >= 61) return 'high';
-    if (score >= 31) return 'mid';
+    if (indicators && _ctyIsSuper(indicators)) return 'super';
+    if (score >= 11) return 'high';
+    if (score >= 7)  return 'mid';
     return 'low';
   }
 
   function _ctyGradeBadge(grade) {
-    var map = { high: ['고위험', '#EF4444'], mid: ['중위험', '#F97316'], low: ['저위험', '#10B981'] };
+    var map = {
+      super: ['당연초고위험', '#7C2D12', '#FEF2F2'],
+      high:  ['고위험',       '#DC2626', '#FEF2F2'],
+      mid:   ['중위험',       '#EA580C', '#FFF7ED'],
+      low:   ['저위험',       '#059669', '#F0FDF4']
+    };
     var g = map[grade] || map['low'];
-    return '<span style="display:inline-block; padding:3px 10px; border-radius:12px; background:' + g[1] + '22; color:' + g[1] + '; font-size:12px; font-weight:700;">' + g[0] + '</span>';
+    return '<span style="display:inline-block; padding:3px 10px; border-radius:12px; background:'+g[2]+'; color:'+g[1]+'; font-size:12px; font-weight:700; border:1px solid '+g[1]+'44;">'+g[0]+'</span>';
   }
 
   function _ctyFATFLabel(fatf) {
-    var map = { member: '회원국', high: '고위험 성명서', weak: '이행취약국' };
+    var map = { member: '회원국', high: '고위험 성명서', weak: '이행취약국', nonmember: '비회원국', none: '비해당' };
     return map[fatf] || fatf;
   }
 
   function _ctyUpdateStats() {
     var total = _COUNTRY_DATA.length;
-    var high = 0, mid = 0, low = 0;
+    var sup = 0, high = 0, mid = 0, low = 0;
     _COUNTRY_DATA.forEach(function(c) {
       var score = _ctyComputeScore(c.indicators);
-      var grade = _ctyScoreToGrade(score, c.override);
-      if (grade === 'high') high++;
-      else if (grade === 'mid') mid++;
-      else low++;
+      var grade = _ctyScoreToGrade(score, c.override, c.indicators);
+      if      (grade === 'super') sup++;
+      else if (grade === 'high')  high++;
+      else if (grade === 'mid')   mid++;
+      else                        low++;
     });
     document.getElementById('cty-stat-total').textContent = total;
+    document.getElementById('cty-stat-super').textContent = sup;
     document.getElementById('cty-stat-high').textContent  = high;
     document.getElementById('cty-stat-mid').textContent   = mid;
     document.getElementById('cty-stat-low').textContent   = low;
@@ -12068,7 +12329,7 @@
     var unF    = (document.getElementById('cty-un-filter') || {value:''}).value;
     return _COUNTRY_DATA.filter(function(c) {
       var score = _ctyComputeScore(c.indicators);
-      var grade = _ctyScoreToGrade(score, c.override);
+      var grade = _ctyScoreToGrade(score, c.override, c.indicators);
       if (_ctyTab !== 'all' && grade !== _ctyTab) return false;
       if (search && !(c.code.toLowerCase().includes(search) || c.nameKR.includes(search) || c.nameEN.toLowerCase().includes(search))) return false;
       if (fatfF && c.fatf !== fatfF) return false;
@@ -12112,15 +12373,16 @@
 
     tbody.innerHTML = data.map(function(c, i) {
       var score = _ctyComputeScore(c.indicators);
-      var grade = _ctyScoreToGrade(score, c.override);
+      var grade = _ctyScoreToGrade(score, c.override, c.indicators);
       var overrideMark = c.override ? ' <span title="강제등급" style="font-size:10px; color:#F97316;">★</span>' : '';
+      var superIcon = (grade==='super') ? '<span title="FATF·UN·EU 제재 해당" style="font-size:10px; color:#7C2D12; margin-left:4px;">⚠</span>' : '';
       return '<tr>' +
         '<td>' + (i+1) + '</td>' +
         '<td><code style="background:var(--bg-secondary); padding:2px 6px; border-radius:4px; font-size:12px;">' + c.code + '</code></td>' +
         '<td>' + c.nameKR + '</td>' +
         '<td style="color:var(--text-secondary); font-size:12px;">' + c.nameEN + '</td>' +
-        '<td>' + _ctyGradeBadge(grade) + overrideMark + '</td>' +
-        '<td style="text-align:center; font-weight:700; color:var(--primary);">' + score + '</td>' +
+        '<td>' + _ctyGradeBadge(grade) + overrideMark + superIcon + '</td>' +
+        '<td style="text-align:center; font-weight:700; color:var(--primary);">' + score + '점</td>' +
         '<td style="font-size:12px; color:var(--text-secondary);">' + c.updatedAt + '</td>' +
         '<td><button class="btn btn-outline btn-sm" onclick="openCountryDetail(\'' + c.code + '\')" style="font-size:11px;">상세보기</button></td>' +
       '</tr>';
@@ -12132,31 +12394,53 @@
     if (!c) return;
     _ctyCurrentCode = code;
     var score = _ctyComputeScore(c.indicators);
-    var grade = _ctyScoreToGrade(score, c.override);
+    var grade = _ctyScoreToGrade(score, c.override, c.indicators);
+    var isSuper = _ctyIsSuper(c.indicators);
     document.getElementById('cty-d-code').textContent = c.code;
     document.getElementById('cty-d-name-kr').textContent = c.nameKR;
     document.getElementById('cty-d-name-en').textContent = c.nameEN;
     document.getElementById('cty-d-fatf').textContent = _ctyFATFLabel(c.fatf);
     document.getElementById('cty-d-un').textContent = c.un === 'yes' ? 'UN 제재 해당' : '해당 없음';
     document.getElementById('cty-d-updated').textContent = c.updatedAt;
-    document.getElementById('cty-d-score').textContent = score;
+    document.getElementById('cty-d-score').textContent = score + '점';
     document.getElementById('cty-d-grade-badge').innerHTML = _ctyGradeBadge(grade);
-    document.getElementById('cty-d-override-note').style.display = c.override ? '' : 'none';
+    var overNote = document.getElementById('cty-d-override-note');
+    overNote.style.display = (c.override || isSuper) ? '' : 'none';
+    overNote.textContent = isSuper ? '당연초고위험 (FATF·UN·EU 제재 해당 — 점수와 무관)' : '수동 강제등급 적용 중';
+    overNote.style.background = isSuper ? '#FEF2F2' : '#FFF7ED';
+    overNote.style.borderColor = isSuper ? '#DC2626' : '#F97316';
+    overNote.style.color       = isSuper ? '#7C2D12' : '#9A3412';
     document.getElementById('cty-override-select').value = c.override || '';
     document.getElementById('cty-edit-reason').value = '';
     // 라디오 버튼 초기화
     var radios = document.querySelectorAll('input[name="cty-override-radio"]');
     radios.forEach(function(r) { r.checked = r.value === (c.override || ''); });
+    // CPI 원점수 표시
+    var cpiEl = document.getElementById('cty-d-cpi-raw');
+    if(cpiEl) cpiEl.textContent = (c.indicators.cpiRaw||0) > 0 ? 'CPI ' + c.indicators.cpiRaw + '점' : '-';
     _ctyCheckEditBtn();
 
-    // 지표 폼
+    // 지표 폼 — 직관적 점수 입력 (범위 슬라이더 + 점수/최대 표시)
     var form = document.getElementById('cty-indicator-form');
     form.innerHTML = _CTY_INDICATORS.map(function(ind) {
       var val = c.indicators[ind.key] || 0;
-      return '<div style="display:grid; grid-template-columns:1fr 80px 40px; gap:8px; align-items:center;">' +
-        '<label style="font-size:12.5px;">' + ind.label + ' <span style="color:var(--text-secondary); font-size:11px;">(가중치 ' + ind.weight + '%)</span></label>' +
-        '<input type="range" min="0" max="10" value="' + val + '" data-ind="' + ind.key + '" oninput="_ctyIndicatorInput(this)" style="width:100%;">' +
-        '<span id="cty-ind-val-' + ind.key + '" style="font-size:13px; font-weight:700; text-align:center;">' + val + '</span>' +
+      var pct = ind.max > 0 ? Math.round(val/ind.max*100) : 0;
+      var isSuperTrig = ind.superTrigger;
+      var barColor = isSuperTrig ? (val>0?'#DC2626':'#E5E7EB') : (val>0?'var(--primary)':'#E5E7EB');
+      var bgRow = isSuperTrig ? 'background:#FFF5F5; border-radius:6px; padding:8px 10px;' : 'padding:6px 0;';
+      var trigBadge = isSuperTrig ? '<span style="font-size:9px; background:#FEE2E2; color:#DC2626; padding:1px 5px; border-radius:10px; margin-left:6px; font-weight:600;">당연초고위험 트리거</span>' : '';
+      return '<div style="'+bgRow+'">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">' +
+          '<label style="font-size:12px; font-weight:500; color:var(--text-primary);">' + ind.label + trigBadge + '</label>' +
+          '<div style="display:flex; align-items:center; gap:6px;">' +
+            '<input type="number" min="0" max="'+ind.max+'" value="'+val+'" data-ind="'+ind.key+'" data-max="'+ind.max+'" oninput="_ctyIndicatorInput(this)" style="width:52px; text-align:center; font-weight:700; font-size:13px; border:1px solid var(--border); border-radius:4px; padding:2px 4px;">' +
+            '<span style="font-size:11px; color:var(--text-secondary);">/ '+ind.max+'점</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="height:6px; background:#F1F5F9; border-radius:3px; overflow:hidden;">' +
+          '<div id="cty-ind-bar-'+ind.key+'" style="height:100%; width:'+pct+'%; background:'+barColor+'; border-radius:3px; transition:width .2s;"></div>' +
+        '</div>' +
+        '<div style="font-size:10px; color:var(--text-secondary); margin-top:3px;">'+ind.note+'</div>' +
       '</div>';
     }).join('');
     _ctyUpdateCalcScore(c.indicators);
@@ -12169,20 +12453,33 @@
 
   function _ctyIndicatorInput(el) {
     var key = el.getAttribute('data-ind');
-    var val = parseInt(el.value, 10);
-    var valEl = document.getElementById('cty-ind-val-' + key);
-    if (valEl) valEl.textContent = val;
-    // collect all current values
-    var inputs = document.querySelectorAll('#cty-indicator-form input[type=range]');
+    var maxVal = parseInt(el.getAttribute('data-max') || el.max || '5', 10);
+    var val = Math.max(0, Math.min(maxVal, parseInt(el.value, 10) || 0));
+    el.value = val;
+    // 프로그레스 바 업데이트
+    var bar = document.getElementById('cty-ind-bar-' + key);
+    if (bar) {
+      var pct = maxVal > 0 ? Math.round(val/maxVal*100) : 0;
+      bar.style.width = pct + '%';
+      bar.style.background = val > 0 ? (bar.style.background.includes('DC2626') ? '#DC2626' : 'var(--primary)') : '#E5E7EB';
+    }
+    // 전체 지표 수집
+    var inputs = document.querySelectorAll('#cty-indicator-form input[type=number]');
     var inds = {};
-    inputs.forEach(function(inp) { inds[inp.getAttribute('data-ind')] = parseInt(inp.value, 10); });
+    inputs.forEach(function(inp) { inds[inp.getAttribute('data-ind')] = parseInt(inp.value, 10) || 0; });
     _ctyUpdateCalcScore(inds);
   }
 
   function _ctyUpdateCalcScore(indicators) {
     var score = _ctyComputeScore(indicators);
+    var isSuper = _ctyIsSuper(indicators);
+    var grade = _ctyScoreToGrade(score, null, indicators);
     var calcEl = document.getElementById('cty-calc-score');
-    if (calcEl) calcEl.textContent = score + '점';
+    if (calcEl) {
+      var gradeMap = { super:'당연초고위험', high:'고위험', mid:'중위험', low:'저위험' };
+      var colorMap = { super:'#7C2D12', high:'#DC2626', mid:'#EA580C', low:'#059669' };
+      calcEl.innerHTML = '<span style="color:'+colorMap[grade]+';">'+score+'점 — '+gradeMap[grade]+'</span>';
+    }
   }
 
   function _ctyCheckEditBtn() {
@@ -12217,21 +12514,22 @@
     openOTPModal('국가위험 평가 수정', function() {
       var c = _COUNTRY_DATA.find(function(x) { return x.code === _ctyCurrentCode; });
       if (!c) return;
-      var inputs = document.querySelectorAll('#cty-indicator-form input[type=range]');
-      inputs.forEach(function(inp) { c.indicators[inp.getAttribute('data-ind')] = parseInt(inp.value, 10); });
-      var override = document.getElementById('cty-override-select').value || null;
+      var inputs = document.querySelectorAll('#cty-indicator-form input[type=number]');
+      inputs.forEach(function(inp) { c.indicators[inp.getAttribute('data-ind')] = parseInt(inp.value, 10) || 0; });
       var prevScore = _ctyComputeScore(c.indicators);
-      var prevGrade = _ctyScoreToGrade(prevScore, c.override);
+      var prevGrade = _ctyScoreToGrade(prevScore, c.override, c.indicators);
+      var override = document.getElementById('cty-override-select').value || null;
       c.override = override;
-      c.updatedAt = '2026-04-09';
+      c.updatedAt = '2026-04-10';
       var newScore = _ctyComputeScore(c.indicators);
-      var newGrade = _ctyScoreToGrade(newScore, c.override);
+      var newGrade = _ctyScoreToGrade(newScore, c.override, c.indicators);
+      var gradeLabel = { super:'당연초고위험', high:'고위험', mid:'중위험', low:'저위험' };
       _COUNTRY_HISTORY.unshift({
         id: 'CH-' + String(_COUNTRY_HISTORY.length + 1).padStart(3,'0'),
         type: 'edit', code: c.code, nameKR: c.nameKR,
-        changeFrom: ['high','mid','low'].indexOf(prevGrade) >= 0 ? { high:'고위험', mid:'중위험', low:'저위험' }[prevGrade] : prevGrade,
-        changeTo:   ['high','mid','low'].indexOf(newGrade) >= 0  ? { high:'고위험', mid:'중위험', low:'저위험' }[newGrade]  : newGrade,
-        reason: reason, changedAt: '2026-04-09', changedBy: '현재 관리자'
+        changeFrom: gradeLabel[prevGrade] || prevGrade,
+        changeTo:   gradeLabel[newGrade]  || newGrade,
+        reason: reason, changedAt: '2026-04-10', changedBy: '현재 관리자'
       });
       closeCountryDetail();
       renderCountry();
