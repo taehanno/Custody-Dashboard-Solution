@@ -4851,7 +4851,7 @@
     </div>
 
     <!-- ── 수동 강제등급 + 수정 사유 통합 카드 ── -->
-    <div class="card" style="margin-bottom:0; padding:0; border:2px solid var(--border); border-radius:10px; overflow:hidden;">
+    <div id="cty-edit-section" class="card" style="margin-bottom:0; padding:0; border:2px solid var(--border); border-radius:10px; overflow:hidden;">
 
       <!-- 섹션 타이틀 바 -->
       <div style="background:var(--bg-secondary); padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px;">
@@ -5762,6 +5762,7 @@
 
     // Re-render KYB table to update action buttons per role
     if (document.getElementById('kyb-tbody')) { renderKYBTable(); renderKYBLog(); }
+    if (document.getElementById('cty-tbody')) renderCountry();
 
     // Re-init transactions page if visible
     if (document.getElementById('page-transactions') &&
@@ -12451,6 +12452,7 @@
     // CPI 원점수 표시
     var cpiEl = document.getElementById('cty-d-cpi-raw');
     if(cpiEl) cpiEl.textContent = (c.indicators.cpiRaw||0) > 0 ? 'CPI ' + c.indicators.cpiRaw + '점' : '-';
+    var isMgr = (_ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master');
     _ctyCheckEditBtn();
 
     // 지표 폼 — 직관적 점수 입력 (범위 슬라이더 + 점수/최대 표시)
@@ -12462,11 +12464,13 @@
       var barColor = isSuperTrig ? (val>0?'#DC2626':'#E5E7EB') : (val>0?'var(--primary)':'#E5E7EB');
       var bgRow = isSuperTrig ? 'background:#FFF5F5; border-radius:6px; padding:8px 10px;' : 'padding:6px 0;';
       var trigBadge = isSuperTrig ? '<span style="font-size:9px; background:#FEE2E2; color:#DC2626; padding:1px 5px; border-radius:10px; margin-left:6px; font-weight:600;">당연초고위험 트리거</span>' : '';
+      var inputDisabled = isMgr ? '' : ' disabled';
+      var inputStyle = 'width:52px; text-align:center; font-weight:700; font-size:13px; border:1px solid var(--border); border-radius:4px; padding:2px 4px;' + (isMgr ? '' : ' background:var(--bg-secondary); color:var(--text-secondary); cursor:default;');
       return '<div style="'+bgRow+'">' +
         '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">' +
           '<label style="font-size:12px; font-weight:500; color:var(--text-primary);">' + ind.label + trigBadge + '</label>' +
           '<div style="display:flex; align-items:center; gap:6px;">' +
-            '<input type="number" min="0" max="'+ind.max+'" value="'+val+'" data-ind="'+ind.key+'" data-max="'+ind.max+'" oninput="_ctyIndicatorInput(this)" style="width:52px; text-align:center; font-weight:700; font-size:13px; border:1px solid var(--border); border-radius:4px; padding:2px 4px;">' +
+            '<input type="number" min="0" max="'+ind.max+'" value="'+val+'" data-ind="'+ind.key+'" data-max="'+ind.max+'"' + inputDisabled + ' oninput="_ctyIndicatorInput(this)" style="'+inputStyle+'">' +
             '<span style="font-size:11px; color:var(--text-secondary);">/ '+ind.max+'점</span>' +
           '</div>' +
         '</div>' +
@@ -12477,6 +12481,12 @@
       '</div>';
     }).join('');
     _ctyUpdateCalcScore(c.indicators);
+
+    // 역할별 편집 영역 제어
+    var editSection = document.getElementById('cty-edit-section');
+    var submitBtn   = document.getElementById('cty-edit-submit-btn');
+    if (editSection) editSection.style.display = isMgr ? '' : 'none';
+    if (submitBtn)   submitBtn.style.display   = isMgr ? '' : 'none';
 
     var so = document.getElementById('country-detail-so');
     var bd = document.getElementById('country-detail-backdrop');
