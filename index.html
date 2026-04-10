@@ -72,6 +72,18 @@
     .main-header-title { font-size: 16px; font-weight: 600; }
     .breadcrumb { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
     .breadcrumb .bc-link { cursor: pointer; color: var(--primary); }
+    /* ── Session Timer ── */
+    #session-timer { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 4px 10px; border-radius: 20px; background: rgba(100,116,139,0.08); color: #64748B; transition: color 0.3s, background 0.3s; white-space: nowrap; }
+    #session-timer.warn  { color: #F59E0B; background: rgba(245,158,11,0.1); }
+    #session-timer.danger { color: #DC2626; background: rgba(220,38,38,0.1); }
+    @keyframes session-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    #session-timer.danger { animation: session-blink 1s step-end infinite; }
+    /* ── Session Extend Modal ── */
+    #modal-session-extend { max-width: 380px; }
+    #modal-session-extend .session-expire-icon { font-size: 36px; text-align: center; margin-bottom: 10px; }
+    #modal-session-extend .session-expire-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+    #modal-session-extend .session-expire-desc { font-size: 13px; color: var(--text-secondary); text-align: center; line-height: 1.6; margin-bottom: 14px; }
+    #modal-session-extend .session-countdown { font-size: 22px; font-weight: 700; text-align: center; color: #DC2626; font-variant-numeric: tabular-nums; margin-bottom: 18px; }
     .breadcrumb .bc-link:hover { text-decoration: underline; }
     .main-content { flex: 1; overflow-y: auto; padding: 24px; }
     /* Notification bell */
@@ -906,6 +918,30 @@
      GLOBAL OVERLAY
 ══════════════════════════════════════ -->
 <div class="overlay" id="globalOverlay" onclick="closeAll()"></div>
+
+<!-- ══════════════════════════════════════
+     SESSION EXTEND MODAL (1-4-2)
+══════════════════════════════════════ -->
+<div class="overlay" id="session-extend-overlay" style="display:none; z-index:9999;"></div>
+<div class="modal" id="modal-session-extend" style="display:none; z-index:10000; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);">
+  <div class="modal-header" style="border-bottom:none; padding-bottom:4px;">
+    <span></span>
+    <button class="modal-close" onclick="_sessionLogout()" title="로그아웃">&#10005;</button>
+  </div>
+  <div class="modal-body" style="padding-top:8px;">
+    <div class="session-expire-icon">&#9200;</div>
+    <div class="session-expire-title">세션이 곧 만료됩니다</div>
+    <div class="session-expire-desc">
+      로그인 세션이 곧 만료됩니다.<br>
+      계속 사용하시려면 '세션 연장'을 눌러주세요.
+    </div>
+    <div class="session-countdown" id="session-popup-countdown">5:00</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" style="color:var(--danger); border-color:rgba(239,68,68,0.3);" onclick="_sessionLogout()">로그아웃</button>
+    <button class="btn btn-primary" onclick="_sessionExtend()">세션 연장하기</button>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════
      MODAL: Cold Wallet Creation Request
@@ -3203,7 +3239,7 @@
     </nav>
     <div class="sidebar-footer">
       <button class="btn-admin" onclick="window.open('admin.html','_blank')">&#9881; Admin Console</button>
-      <button class="btn-logout" onclick="window.location.href='login.html'">&#8592; 로그아웃</button>
+      <button class="btn-logout" onclick="_sessionLogout()">&#8592; 로그아웃</button>
     </div>
   </aside>
 
@@ -3214,6 +3250,7 @@
       <span id="headerTitle" class="main-header-title">Dashboard</span>
       <span id="headerBreadcrumb"></span>
       <div style="flex:1;"></div>
+      <div id="session-timer" title="세션 남은 시간">&#128336; <span id="session-timer-text">60:00</span></div>
     </div>
     <div class="main-content">
 
@@ -10073,6 +10110,152 @@
       showToast('주소가 삭제되었습니다.');
     });
   }
+
+  /* ════════════════════════════════════
+     SESSION MANAGEMENT (1-4)
+  ════════════════════════════════════ */
+  const _SESSION_TOTAL   = 3600;        // 60분
+  const _SESSION_WARN    = 300;         // 5분 — 팝업 트리거
+  const _SESSION_ORANGE  = 600;         // 10분 — 주황색
+  const _SESSION_LS_KEY  = 'sessionExpireAt'; // localStorage 다중 탭 동기화 키
+
+  let _sessionRemaining  = _SESSION_TOTAL;
+  let _sessionInterval   = null;
+  let _sessionPopupShown = false;
+
+  /* ── 타이머 텍스트 포맷 ── */
+  function _fmtTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  /* ── 타이머 UI 갱신 ── */
+  function _updateTimerUI(sec) {
+    const el = document.getElementById('session-timer');
+    const txt = document.getElementById('session-timer-text');
+    if (!el || !txt) return;
+    txt.textContent = _fmtTime(sec);
+    el.classList.remove('warn', 'danger');
+    if (sec <= _SESSION_WARN) el.classList.add('danger');
+    else if (sec <= _SESSION_ORANGE) el.classList.add('warn');
+  }
+
+  /* ── 팝업 카운트다운 텍스트 갱신 ── */
+  function _updatePopupCountdown(sec) {
+    const el = document.getElementById('session-popup-countdown');
+    if (el) el.textContent = _fmtTime(sec);
+  }
+
+  /* ── 세션 연장 팝업 열기 ── */
+  function _openSessionPopup() {
+    document.getElementById('session-extend-overlay').style.display = '';
+    document.getElementById('modal-session-extend').style.display   = '';
+    _updatePopupCountdown(_sessionRemaining);
+  }
+
+  /* ── 세션 연장 팝업 닫기 ── */
+  function _closeSessionPopup() {
+    document.getElementById('session-extend-overlay').style.display = 'none';
+    document.getElementById('modal-session-extend').style.display   = 'none';
+  }
+
+  /* ── 강제 로그아웃 ── */
+  function _sessionLogout() {
+    clearInterval(_sessionInterval);
+    _closeSessionPopup();
+    localStorage.removeItem(_SESSION_LS_KEY);
+    showToast('로그아웃되었습니다.');
+    setTimeout(() => { window.location.href = 'login.html'; }, 800);
+  }
+
+  /* ── 세션 만료 ── */
+  function _sessionExpire() {
+    clearInterval(_sessionInterval);
+    _closeSessionPopup();
+    localStorage.removeItem(_SESSION_LS_KEY);
+    showToast('세션이 만료되어 로그아웃되었습니다.');
+    setTimeout(() => { window.location.href = 'login.html'; }, 900);
+  }
+
+  /* ── 세션 연장 (3-5-2: OTP 불필요) ── */
+  function _sessionExtend() {
+    // Mock API call: POST /auth/session/extend
+    // 성공으로 간주 (실제 환경에서는 fetch 후 처리)
+    const success = true;
+    if (success) {
+      _sessionRemaining  = _SESSION_TOTAL;
+      _sessionPopupShown = false;
+      _closeSessionPopup();
+      // localStorage로 다중 탭 동기화
+      const expireAt = Date.now() + _SESSION_TOTAL * 1000;
+      localStorage.setItem(_SESSION_LS_KEY, String(expireAt));
+      _updateTimerUI(_sessionRemaining);
+      showToast('세션이 연장되었습니다.');
+    } else {
+      showToast('세션 연장에 실패했습니다. 다시 시도해주세요.');
+    }
+  }
+
+  /* ── 1초마다 실행되는 타이머 틱 ── */
+  function _sessionTick() {
+    // 다중 탭: localStorage 기준으로 남은 시간 재계산
+    const expireAt = parseInt(localStorage.getItem(_SESSION_LS_KEY) || '0', 10);
+    if (expireAt) {
+      const remaining = Math.max(0, Math.round((expireAt - Date.now()) / 1000));
+      _sessionRemaining = remaining;
+    } else {
+      _sessionRemaining = Math.max(0, _sessionRemaining - 1);
+    }
+
+    _updateTimerUI(_sessionRemaining);
+
+    // 팝업 카운트다운 갱신 (팝업이 열려있을 때)
+    if (_sessionPopupShown) {
+      _updatePopupCountdown(_sessionRemaining);
+    }
+
+    // 5분 진입 시 팝업 1회 표시
+    if (_sessionRemaining <= _SESSION_WARN && !_sessionPopupShown) {
+      _sessionPopupShown = true;
+      _openSessionPopup();
+    }
+
+    // 00:00 → 강제 로그아웃
+    if (_sessionRemaining <= 0) {
+      _sessionExpire();
+    }
+  }
+
+  /* ── 세션 시작 ── */
+  function _sessionStart() {
+    _sessionRemaining  = _SESSION_TOTAL;
+    _sessionPopupShown = false;
+    // localStorage에 만료 시각 저장 (다중 탭 동기화 기준)
+    const expireAt = Date.now() + _SESSION_TOTAL * 1000;
+    localStorage.setItem(_SESSION_LS_KEY, String(expireAt));
+    _updateTimerUI(_sessionRemaining);
+    clearInterval(_sessionInterval);
+    _sessionInterval = setInterval(_sessionTick, 1000);
+  }
+
+  /* ── 다중 탭: 다른 탭에서 세션 연장 시 이 탭도 동기화 ── */
+  window.addEventListener('storage', function(e) {
+    if (e.key !== _SESSION_LS_KEY) return;
+    if (!e.newValue) return; // 로그아웃된 경우
+    const expireAt = parseInt(e.newValue, 10);
+    const remaining = Math.max(0, Math.round((expireAt - Date.now()) / 1000));
+    _sessionRemaining = remaining;
+    // 팝업이 열려 있었다면 닫기 (다른 탭에서 연장됨)
+    if (remaining > _SESSION_WARN && _sessionPopupShown) {
+      _sessionPopupShown = false;
+      _closeSessionPopup();
+    }
+    _updateTimerUI(_sessionRemaining);
+  });
+
+  /* ── 페이지 로드 시 세션 시작 ── */
+  _sessionStart();
 </script>
 </body>
 </html>
