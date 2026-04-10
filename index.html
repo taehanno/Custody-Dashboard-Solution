@@ -6167,6 +6167,9 @@
     document.getElementById('crj-requested').textContent  = c.requestedAt;
     document.getElementById('crj-rejected-at').textContent = c.rejectedAt || '—';
     document.getElementById('crj-reason').textContent     = c.rejectedReason || '사유 없음';
+    // 일반 계정은 재요청하기 버튼 비활성화
+    const rrBtn = document.getElementById('crj-rerequest-btn');
+    if (rrBtn) { rrBtn.disabled = !_IS_MASTER; rrBtn.style.opacity = _IS_MASTER ? '' : '0.45'; rrBtn.style.cursor = _IS_MASTER ? '' : 'not-allowed'; }
     openModal('modal-coin-rejected');
   }
 
