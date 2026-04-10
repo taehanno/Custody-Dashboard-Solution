@@ -1760,7 +1760,7 @@
   <!-- Header -->
   <div class="modal-header" style="flex-shrink:0;">
     <span class="modal-title" id="se-wiz-title">출금 정책 설정</span>
-    <button class="modal-close" onclick="closeStrategyWizard()">&#10005;</button>
+    <button class="modal-close" onclick="_seRequestClose()">&#10005;</button>
   </div>
 
   <!-- Body (scrollable) -->
@@ -1897,7 +1897,10 @@
 
       <!-- Add condition button -->
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-        <button class="btn btn-outline btn-sm" id="se-adv-add-btn" onclick="_seAdvAddCond()">+ 조건 추가</button>
+        <span class="role-tip-wrap">
+          <button class="btn btn-outline btn-sm" id="se-adv-add-btn" onclick="_seAdvAddCond()">+ 조건 추가</button>
+          <span class="role-tip" id="se-adv-add-tip" style="display:none;">조건은 최대 5개까지 설정할 수 있습니다.</span>
+        </span>
         <span id="se-adv-slot-label" style="font-size:12px; color:var(--text-secondary);"></span>
       </div>
 
@@ -1959,8 +1962,9 @@
   </div><!-- /body -->
 
   <!-- Footer -->
-  <div style="flex-shrink:0; padding:14px 24px; border-top:1px solid var(--border); display:flex; gap:8px; background:#fff;">
-    <button class="btn btn-outline" id="se-btn-prev" onclick="_sePrev()" style="display:none;">← 이전</button>
+  <div style="flex-shrink:0; padding:14px 24px; border-top:1px solid var(--border); display:flex; gap:8px; align-items:center; background:#fff;">
+    <button id="se-btn-delete" onclick="_seOpenDeletePolicy()" style="display:none; color:#EF4444; background:none; border:none; font-size:12px; font-weight:600; cursor:pointer; padding:0; text-decoration:underline;">🗑 정책 삭제</button>
+    <button class="btn btn-outline" id="se-btn-prev" onclick="_sePrev()" style="display:none; margin-left:8px;">← 이전</button>
     <div style="flex:1;"></div>
     <button class="btn btn-primary" id="se-btn-next" onclick="_seNext()" style="min-width:160px;">다음 →</button>
   </div>
@@ -1983,6 +1987,87 @@
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-adv-del')">취소</button>
     <button class="btn btn-danger" onclick="_seAdvConfirmDelete()">삭제</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     MODAL: Wizard Close Confirmation
+══════════════════════════ -->
+<div class="modal" id="modal-se-close-confirm" style="max-width:380px; z-index:1200;">
+  <div class="modal-header">
+    <span class="modal-title">설정 중단 확인</span>
+    <button class="modal-close" onclick="closeModal('modal-se-close-confirm')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <p style="font-size:13px; margin-bottom:0;">설정 중인 내용이 저장되지 않습니다. 닫으시겠습니까?</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-se-close-confirm')">계속 설정</button>
+    <button class="btn btn-danger" onclick="_seConfirmClose()">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     MODAL: Policy Delete Blocked (pending withdrawals exist)
+══════════════════════════ -->
+<div class="modal" id="modal-se-del-blocked" style="max-width:440px; z-index:1200;">
+  <div class="modal-header">
+    <span class="modal-title">정책을 삭제할 수 없습니다.</span>
+    <button class="modal-close" onclick="closeModal('modal-se-del-blocked')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <p style="font-size:13px; margin-bottom:14px;" id="se-del-blocked-desc"></p>
+    <div id="se-del-blocked-list" style="font-size:12px; color:var(--text-secondary); margin-bottom:0;"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline btn-sm" onclick="showPage('p-workflows'); closeModal('modal-se-del-blocked');">Workflows에서 확인 →</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-se-del-blocked')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     MODAL: Policy Delete Confirmation (with wallet name input + OTP)
+══════════════════════════ -->
+<div class="modal" id="modal-se-del-confirm" style="max-width:460px; z-index:1200;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:#EF4444;">⚠ 정책 삭제 확인</span>
+    <button class="modal-close" onclick="closeModal('modal-se-del-confirm')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <p id="se-del-confirm-desc" style="font-size:13px; font-weight:600; margin-bottom:14px;"></p>
+    <div style="font-size:12px; background:#FEF2F2; border:1px solid #FCA5A5; border-radius:8px; padding:12px 14px; margin-bottom:16px; line-height:1.8;">
+      <div style="font-weight:700; margin-bottom:6px;">삭제 시 영향:</div>
+      <div>· 해당 지갑의 출금이 즉시 차단됩니다.</div>
+      <div>· 출금 요청자 및 서명자 지정이 해제됩니다.</div>
+      <div>· Advanced Strategy 조건이 모두 삭제됩니다.</div>
+      <div>· 새로운 정책을 설정할 때까지 출금 신청이 불가합니다.</div>
+    </div>
+    <div style="font-size:12px; color:#EF4444; font-weight:600; margin-bottom:6px; background:#FEF2F2; border-radius:6px; padding:8px 12px;">
+      이 작업은 되돌릴 수 없습니다.
+    </div>
+    <div style="margin-top:16px;">
+      <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:6px;">확인을 위해 지갑명을 입력하세요: <span id="se-del-confirm-wallet-hint" style="color:var(--text-primary);"></span></label>
+      <input type="text" class="form-control" id="se-del-wallet-input" placeholder="지갑명을 정확히 입력하세요" oninput="_seDelNameInput()" style="margin-bottom:12px;" />
+    </div>
+
+    <!-- OTP section (shown after name matches) -->
+    <div id="se-del-otp-section" style="display:none;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:8px;">OTP 6자리를 입력하세요.</div>
+      <div style="display:flex; gap:8px; justify-content:center;" id="se-del-otp-boxes">
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,0,'se-del-otp-boxes')" onkeydown="otpBack(event,this,0,'se-del-otp-boxes')" onpaste="otpPaste(event,'se-del-otp-boxes')" style="width:42px;height:48px;text-align:center;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,1,'se-del-otp-boxes')" onkeydown="otpBack(event,this,1,'se-del-otp-boxes')" style="width:42px;height:48px;text-align:center;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,2,'se-del-otp-boxes')" onkeydown="otpBack(event,this,2,'se-del-otp-boxes')" style="width:42px;height:48px;text-align:center;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,3,'se-del-otp-boxes')" onkeydown="otpBack(event,this,3,'se-del-otp-boxes')" style="width:42px;height:48px;text-align:center;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,4,'se-del-otp-boxes')" onkeydown="otpBack(event,this,4,'se-del-otp-boxes')" style="width:42px;height:48px;text-align:center;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+        <input class="otp-box" maxlength="1" oninput="otpMove(this,5,'se-del-otp-boxes')" onkeydown="otpBack(event,this,5,'se-del-otp-boxes')" style="width:42px;height:48px;text-align:center;font-size:20px;font-weight:700;border:2px solid var(--border);border-radius:8px;outline:none;" />
+      </div>
+      <div id="se-del-otp-err" style="display:none; color:var(--danger); font-size:12px; text-align:center; margin-top:8px;"></div>
+      <div id="se-del-otp-att" style="font-size:11px; color:var(--text-secondary); text-align:center; margin-top:6px;"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-se-del-confirm')">취소</button>
+    <button class="btn btn-danger" id="se-del-otp-btn" onclick="_seDeletePolicyOTP()" disabled>OTP 인증 후 삭제 →</button>
   </div>
 </div>
 
@@ -7420,6 +7505,20 @@
 
   function closeStrategyWizard() {
     closeModal('modal-se-wizard');
+    closeModal('modal-se-close-confirm');
+  }
+
+  function _seRequestClose() {
+    // Show confirmation if user has made progress
+    if (_seStep > 1) {
+      openModal('modal-se-close-confirm');
+    } else {
+      closeStrategyWizard();
+    }
+  }
+
+  function _seConfirmClose() {
+    closeStrategyWizard();
   }
 
   /* ── Step rendering ── */
@@ -7452,6 +7551,10 @@
         else nextBtn.disabled = false;
       }
     }
+
+    // Show delete button only in edit mode, steps 1-3 only
+    const delBtn = document.getElementById('se-btn-delete');
+    if (delBtn) delBtn.style.display = (_seMode === 'edit' && step <= 3) ? '' : 'none';
 
     if (step === 1) _seRenderStep1();
     if (step === 2) _seRenderStep2();
@@ -7491,6 +7594,11 @@
     }
     _seRenderCheckboxes('se-init-chk-list', _seWizInitiators);
     _seUpdateInitSummary();
+    // Disable Next if no wallet selected (create mode)
+    const nextBtn = document.getElementById('se-btn-next');
+    if (nextBtn && _seMode === 'create') {
+      nextBtn.disabled = !_seWizWalletId;
+    }
   }
 
   function _seRenderStep2() {
@@ -7551,14 +7659,7 @@
     // Render condition cards
     _seAdvRenderConds();
 
-    // Slot count
-    const slotLbl = document.getElementById('se-adv-slot-label');
-    const remaining = 5 - _seAdvConditions.length;
-    if (slotLbl) slotLbl.textContent = '남은 슬롯: ' + remaining + '개';
-
-    const addBtn = document.getElementById('se-adv-add-btn');
-    if (addBtn) addBtn.disabled = (_seAdvConditions.length >= 5);
-
+    _seAdvUpdateAddBtn();
     _seAdvUpdateSim();
   }
 
@@ -7667,9 +7768,12 @@
 
   function _seAdvUpdateAddBtn() {
     const addBtn = document.getElementById('se-adv-add-btn');
+    const addTip = document.getElementById('se-adv-add-tip');
     const slotLbl = document.getElementById('se-adv-slot-label');
+    const maxed = (_seAdvConditions.length >= 5);
     const remaining = 5 - _seAdvConditions.length;
-    if (addBtn) addBtn.disabled = (_seAdvConditions.length >= 5);
+    if (addBtn) addBtn.disabled = maxed;
+    if (addTip) addTip.style.display = maxed ? '' : 'none';
     if (slotLbl) slotLbl.textContent = '남은 슬롯: ' + remaining + '개';
   }
 
@@ -7963,6 +8067,8 @@
   /* ── Wallet selector change ── */
   function _seOnWalletChange() {
     _seWizWalletId = document.getElementById('se-wallet-sel').value || null;
+    const nextBtn = document.getElementById('se-btn-next');
+    if (nextBtn && _seStep === 1) nextBtn.disabled = !_seWizWalletId;
   }
 
   /* ── Progress bar update ── */
@@ -8046,6 +8152,99 @@
       }
       _seCompleteOTP();
     }
+  }
+
+  /* ── Policy Delete flow (9-9) ── */
+  let _seDelOTPAttempts = 0;
+
+  function _seOpenDeletePolicy() {
+    const walletId = _seEditWalletId;
+    const w = (_WALLET_DATA||[]).find(x => x.id === walletId);
+    const wName = w ? w.name : walletId;
+
+    // Check for pending withdrawals (simulated)
+    if (_sePendingCount > 0) {
+      // Show blocked modal
+      const desc = document.getElementById('se-del-blocked-desc');
+      const list = document.getElementById('se-del-blocked-list');
+      if (desc) desc.textContent = '현재 서명 대기/처리 중/출금 중 상태의 출금 건이 ' + _sePendingCount + '건 존재합니다. 모든 출금 건이 완료되거나 거절된 후에 정책을 삭제할 수 있습니다.';
+      if (list) list.innerHTML =
+        '<div>· 서명 대기: ' + _sePendingCount + '건</div>' +
+        '<div>· 처리 중: 0건</div>' +
+        '<div>· 출금 중: 0건</div>';
+      openModal('modal-se-del-blocked');
+      return;
+    }
+
+    // Show delete confirmation modal
+    const desc = document.getElementById('se-del-confirm-desc');
+    const hint = document.getElementById('se-del-confirm-wallet-hint');
+    const inp  = document.getElementById('se-del-wallet-input');
+    const otpSec = document.getElementById('se-del-otp-section');
+    const otpBtn = document.getElementById('se-del-otp-btn');
+    const otpErr = document.getElementById('se-del-otp-err');
+    const otpAtt = document.getElementById('se-del-otp-att');
+    const boxes  = document.querySelectorAll('#se-del-otp-boxes .otp-box');
+
+    if (desc) desc.textContent = wName + '의 출금 정책을 삭제하시겠습니까?';
+    if (hint) hint.textContent = '"' + wName + '"';
+    if (inp)  inp.value = '';
+    if (otpSec) otpSec.style.display = 'none';
+    if (otpBtn) otpBtn.disabled = true;
+    if (otpErr) otpErr.style.display = 'none';
+    if (otpAtt) otpAtt.textContent = '';
+    boxes.forEach(b => { b.value = ''; b.classList.remove('err'); });
+    _seDelOTPAttempts = 0;
+
+    openModal('modal-se-del-confirm');
+  }
+
+  function _seDelNameInput() {
+    const inp  = document.getElementById('se-del-wallet-input');
+    const w    = (_WALLET_DATA||[]).find(x => x.id === _seEditWalletId);
+    const wName = w ? w.name : '';
+    const matches = inp && inp.value === wName;
+    const otpSec = document.getElementById('se-del-otp-section');
+    const otpBtn = document.getElementById('se-del-otp-btn');
+    if (otpSec) otpSec.style.display = matches ? '' : 'none';
+    if (otpBtn) otpBtn.disabled = !matches;
+    if (matches) {
+      const boxes = document.querySelectorAll('#se-del-otp-boxes .otp-box');
+      if (boxes[0]) setTimeout(() => boxes[0].focus(), 50);
+    }
+  }
+
+  function _seDeletePolicyOTP() {
+    const boxes = document.querySelectorAll('#se-del-otp-boxes .otp-box');
+    const otp = [...boxes].map(b => b.value).join('');
+    if (otp.length < 6) { showToast('OTP 6자리를 모두 입력하세요.'); return; }
+
+    _seDelOTPAttempts++;
+    if (otp === '777777') {
+      const errEl = document.getElementById('se-del-otp-err');
+      const attEl = document.getElementById('se-del-otp-att');
+      const otpBtn = document.getElementById('se-del-otp-btn');
+      if (_seDelOTPAttempts >= 5) {
+        if (errEl) { errEl.textContent = 'OTP 오류 횟수 초과. 계정이 잠겼습니다.'; errEl.style.display = ''; }
+        if (otpBtn) otpBtn.disabled = true;
+      } else {
+        if (errEl) { errEl.textContent = 'OTP가 올바르지 않습니다. 남은 시도: ' + (5 - _seDelOTPAttempts) + '회'; errEl.style.display = ''; }
+        if (attEl) attEl.textContent = '';
+      }
+      boxes.forEach(b => b.classList.add('err'));
+      return;
+    }
+
+    // Delete policy
+    const walletId = _seEditWalletId;
+    const w = (_WALLET_DATA||[]).find(x => x.id === walletId);
+    const wName = w ? w.name : '';
+    _STRATEGY_POLICIES[walletId] = null;
+
+    closeModal('modal-se-del-confirm');
+    closeStrategyWizard();
+    renderStrategyDashboard();
+    showToast(wName + ' 출금 정책이 삭제되었습니다.', 'danger');
   }
 
   /* ── OTP completion ── */
@@ -8193,7 +8392,7 @@
   function showToast(msg, type) {
     const t = document.getElementById('toast');
     t.textContent = msg;
-    t.style.background = (type === 'success') ? '#16A34A' : '';
+    t.style.background = (type === 'success') ? '#16A34A' : (type === 'danger') ? '#DC2626' : '';
     t.style.opacity = '1';
     t.style.transform = 'translateX(-50%) translateY(0)';
     clearTimeout(toastTimer);
