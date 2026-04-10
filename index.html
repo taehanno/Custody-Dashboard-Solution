@@ -2151,44 +2151,33 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     SLIDE-OVER: Add Account
+     MODAL: 계정 초대 (Account Invite)
 ══════════════════════════════════════ -->
-<div class="slideover" id="so-add-account">
-  <div class="so-header">
-    <span class="so-title">+ 계정 추가 / Invite</span>
-    <button class="modal-close" onclick="closeSO('so-add-account')">&#10005;</button>
+<div class="modal" id="modal-acct-invite" style="max-width:500px;">
+  <div class="modal-header">
+    <span class="modal-title">+ 계정 초대</span>
+    <button class="modal-close" onclick="closeModal('modal-acct-invite')">&#10005;</button>
   </div>
-  <div class="so-body">
-    <div class="alert alert-info" style="margin-bottom:16px; font-size:12px;">
-      &#8505; 초대되는 모든 계정은 <strong>일반</strong> 역할로 생성됩니다.<br>
+  <div class="modal-body" style="padding:20px 24px;">
+    <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px; padding:12px 14px; font-size:12px; color:#1E40AF; margin-bottom:18px; line-height:1.7;">
+      ℹ 초대된 계정은 모두 <strong>일반</strong> 역할로 생성됩니다.<br>
       출금 요청자 / 서명자 지정은 <strong>Strategy Engine</strong>에서 지갑별로 설정합니다.<br>
-      쉼표(,)로 구분하여 최대 10개 동시 초대 가능.
+      최대 <strong>10개</strong> 이메일을 동시에 초대할 수 있습니다.
     </div>
-    <div class="form-group">
-      <label class="form-label">이메일 <span class="req">*</span></label>
-      <input type="email" class="form-control" placeholder="name@company.com" />
-      <div class="form-hint">여러 명: 쉼표로 구분 (최대 10개)</div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">이름 <span class="req">*</span></label>
-      <input type="text" class="form-control" placeholder="담당자 이름" maxlength="50" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">소속 (부서)</label>
-      <input type="text" class="form-control" placeholder="예: 자산운용팀" maxlength="50" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">직책</label>
-      <input type="text" class="form-control" placeholder="예: 팀장" maxlength="50" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">휴대전화번호</label>
-      <input type="tel" class="form-control" placeholder="010-0000-0000" />
-    </div>
+
+    <label class="form-label" style="margin-bottom:8px;">초대할 이메일 주소 <span class="req">*</span></label>
+    <div id="acct-invite-rows" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+    <button id="acct-invite-add-btn" onclick="_acctAddEmailRow()"
+      style="margin-top:10px; background:none; border:1px dashed var(--border); border-radius:8px; width:100%; padding:9px; font-size:13px; color:var(--primary); cursor:pointer;">
+      + 이메일 추가
+    </button>
+
+    <div id="acct-invite-err" style="display:none; margin-top:10px; padding:10px 12px; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; font-size:12px; color:#B91C1C;"></div>
   </div>
-  <div class="so-footer">
-    <button class="btn btn-primary btn-full" style="height:44px;"
-      onclick="openInviteOTP()">&#9993; 초대 보내기 →</button>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-acct-invite')">취소</button>
+    <button class="btn btn-primary" onclick="_acctSendInvite()">&#9993; 초대 발송 →</button>
   </div>
 </div>
 
@@ -3987,7 +3976,7 @@
               <option value="inactive">비활성화</option>
             </select>
             <span class="role-tip-wrap" id="wrap-add-account" style="margin-left:auto;">
-              <button class="btn btn-primary" id="btn-add-account" onclick="openSO('so-add-account')" style="white-space:nowrap;">+ 계정 추가</button>
+              <button class="btn btn-primary" id="btn-add-account" onclick="_acctInviteOpen()" style="white-space:nowrap;">+ 계정 초대</button>
               <span class="role-tip">Master 계정만 사용 가능합니다.</span>
             </span>
           </div>
@@ -3998,8 +3987,7 @@
               <table>
                 <thead>
                   <tr>
-                    <th>이름</th><th>이메일</th><th>소속/직책</th><th>역할</th>
-                    <th>상태</th><th>마지막 로그인</th><th>관리</th>
+                    <th>이름</th><th>이메일</th><th>역할</th><th>상태</th><th>액션</th>
                   </tr>
                 </thead>
                 <tbody id="acct-table-body"></tbody>
@@ -9187,11 +9175,13 @@
   /* ════════════════════════════════════
      SECTION 3: ACCOUNT MANAGEMENT
   ════════════════════════════════════ */
-  const _ACCOUNTS = [
-    { idx: 0, name: '김철수',  email: 'kim@infiniteblock.io',  dept: '자산운용팀', title: '팀장',   phone: '010-1234-5678', role: 'master',  roleLabel: 'Master', status: 'active',   lastLogin: '2025-11-20 14:30', isSelf: true,  strategyCount: 0 },
-    { idx: 1, name: '이영희',  email: 'lee@infiniteblock.io',  dept: '자산운용팀', title: '매니저', phone: '010-2345-6789', role: 'general', roleLabel: '일반',   status: 'active',   lastLogin: '2025-11-20 11:15', isSelf: false, strategyCount: 2 },
-    { idx: 2, name: '박민준',  email: 'park@infiniteblock.io', dept: '자산운용팀', title: '대리',   phone: '010-3456-7890', role: 'general', roleLabel: '일반',   status: 'active',   lastLogin: '2025-11-19 09:12', isSelf: false, strategyCount: 1 },
-    { idx: 3, name: '안소연',  email: 'an@infiniteblock.io',   dept: '준법감시팀', title: '과장',   phone: '010-4567-8901', role: 'general', roleLabel: '일반',   status: 'inactive', lastLogin: '2025-10-30 16:44', isSelf: false, strategyCount: 0 },
+  // status: 'active' | 'pw_locked' | 'otp_locked' | 'manual_inactive' | 'pending'
+  let _ACCOUNTS = [
+    { idx: 0, name: '김철수', email: 'kim@infiniteblock.io',  dept: '자산운용팀', title: '팀장',   phone: '010-1234-5678', role: 'master',  roleLabel: 'Master', status: 'active',          lastLogin: '2026-04-10 14:30', isSelf: true,  strategyCount: 0 },
+    { idx: 1, name: '이영희', email: 'lee@infiniteblock.io',  dept: '자산운용팀', title: '매니저', phone: '010-2345-6789', role: 'general', roleLabel: '일반',   status: 'active',          lastLogin: '2026-04-10 11:15', isSelf: false, strategyCount: 2 },
+    { idx: 2, name: '박민준', email: 'park@infiniteblock.io', dept: '자산운용팀', title: '대리',   phone: '010-3456-7890', role: 'general', roleLabel: '일반',   status: 'otp_locked',      lastLogin: '2026-04-08 09:12', isSelf: false, strategyCount: 1 },
+    { idx: 3, name: '최진호', email: 'choi@infiniteblock.io', dept: '준법감시팀', title: '과장',   phone: '010-4567-8901', role: 'general', roleLabel: '일반',   status: 'manual_inactive', lastLogin: '2026-03-30 16:44', isSelf: false, strategyCount: 0 },
+    { idx: 4, name: '안소연', email: 'an@infiniteblock.io',   dept: '준법감시팀', title: '주임',   phone: '',             role: 'general', roleLabel: '일반',   status: 'pending',         lastLogin: '—',                isSelf: false, strategyCount: 0 },
   ];
 
   let _deleteAcctIdx = null;
@@ -9201,6 +9191,19 @@
     return `<span class="badge ${cls[role] || 'badge-gray'}">${label}</span>`;
   }
 
+  /* ── Account status badge ── */
+  function acctStatusBadge(status) {
+    const cfg = {
+      active:          { bg: '#D1FAE5', color: '#065F46', text: '● 활성화' },
+      pw_locked:       { bg: '#FEE2E2', color: '#991B1B', text: '⊘ 비활성화 (PW 잠금)' },
+      otp_locked:      { bg: '#FEE2E2', color: '#991B1B', text: '⊘ 비활성화 (OTP 잠금)' },
+      manual_inactive: { bg: '#FEF3C7', color: '#92400E', text: '⚠ 비활성화 (수동)' },
+      pending:         { bg: '#EFF6FF', color: '#1D4ED8', text: '✉ 초대 대기' },
+    };
+    const s = cfg[status] || cfg.manual_inactive;
+    return `<span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:${s.bg};color:${s.color};">${s.text}</span>`;
+  }
+
   function renderAccountTable() {
     const q       = (document.getElementById('acct-search')?.value || '').toLowerCase();
     const fRole   = document.getElementById('acct-filter-role')?.value || '';
@@ -9208,45 +9211,172 @@
     const tbody   = document.getElementById('acct-table-body');
     if (!tbody) return;
 
+    // Filter
     let rows = _ACCOUNTS.filter(a => {
-      if (q && !a.name.includes(q) && !a.email.toLowerCase().includes(q)) return false;
-      if (fRole   && a.role   !== fRole)   return false;
-      if (fStatus && a.status !== fStatus) return false;
+      if (q && !a.name.toLowerCase().includes(q) && !a.email.toLowerCase().includes(q)) return false;
+      if (fRole && a.role !== fRole) return false;
+      if (fStatus) {
+        // Map filter value to status groups
+        if (fStatus === 'active'   && a.status !== 'active')   return false;
+        if (fStatus === 'inactive' && !['pw_locked','otp_locked','manual_inactive'].includes(a.status)) return false;
+      }
       return true;
     });
 
+    // Stats
     const active   = _ACCOUNTS.filter(a => a.status === 'active').length;
-    const inactive = _ACCOUNTS.length - active;
-    document.getElementById('acct-stat-total').textContent   = _ACCOUNTS.length;
-    document.getElementById('acct-stat-active').textContent  = active;
-    document.getElementById('acct-stat-inactive').textContent= inactive;
+    const inactive = _ACCOUNTS.filter(a => ['pw_locked','otp_locked','manual_inactive'].includes(a.status)).length;
+    document.getElementById('acct-stat-total').textContent    = _ACCOUNTS.length;
+    document.getElementById('acct-stat-active').textContent   = active;
+    document.getElementById('acct-stat-inactive').textContent = inactive;
 
     if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-secondary); padding:40px;">검색 결과가 없습니다.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-secondary); padding:40px;">검색 결과가 없습니다.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = rows.map(a => {
-      const dotCls  = a.status === 'active' ? 'dot-green' : 'dot-gray';
-      const statusTxt = a.status === 'active' ? '활성화' : '비활성화';
-      const canDelete = !a.isSelf;
-      const isMaster  = a.role === 'master';
-      const selfTag   = a.isSelf ? `<span style="font-size:10px; color:var(--primary); margin-left:6px; font-weight:500;">(나)</span>` : '';
+      const selfTag = a.isSelf
+        ? `<span style="font-size:10px; color:var(--primary); margin-left:6px; font-weight:500;">(나)</span>` : '';
+      // Per PRD: Master shows [삭제] for all non-self non-pending; general: no actions
+      const canDelete = _IS_MASTER && !a.isSelf && a.status !== 'pending';
+      const deletePending = _IS_MASTER && !a.isSelf && a.status === 'pending';
       const actionBtns = _IS_MASTER
-        ? `<button class="btn btn-outline btn-xs" onclick="openEditAccount(${a.idx})">수정</button>` +
-          (canDelete ? `<button class="btn btn-outline btn-xs" style="color:var(--danger); border-color:rgba(239,68,68,0.3);" onclick="deleteAccountConfirm(${a.idx})">삭제</button>` : '')
+        ? (canDelete
+            ? `<button class="btn btn-outline btn-xs" style="color:var(--danger);border-color:rgba(239,68,68,0.3);" onclick="deleteAccountConfirm(${a.idx})">삭제</button>`
+            : deletePending
+              ? `<button class="btn btn-outline btn-xs" onclick="cancelInvite(${a.idx})">초대 취소</button>`
+              : '')
         : '';
       return `
         <tr>
           <td style="font-weight:600;">${a.name}${selfTag}</td>
-          <td>${a.email}</td>
-          <td style="font-size:12px; color:var(--text-secondary);">${a.dept} / ${a.title}</td>
+          <td style="color:var(--text-secondary);font-size:12px;">${a.email}</td>
           <td>${roleBadge(a.role, a.roleLabel)}</td>
-          <td><span class="dot-status ${dotCls}"></span>${statusTxt}</td>
-          <td style="font-size:12px; color:var(--text-secondary);">${a.lastLogin}</td>
+          <td>${acctStatusBadge(a.status)}</td>
           <td style="display:flex; gap:6px;">${actionBtns}</td>
         </tr>`;
     }).join('');
+  }
+
+  function cancelInvite(idx) {
+    const a = _ACCOUNTS[idx];
+    if (!a || a.status !== 'pending') return;
+    if (!confirm(a.email + '에 대한 초대를 취소하시겠습니까?')) return;
+    _ACCOUNTS.splice(idx, 1);
+    // Re-index
+    _ACCOUNTS.forEach((x, i) => { x.idx = i; });
+    renderAccountTable();
+    showToast('초대가 취소되었습니다.');
+  }
+
+  /* ── 계정 초대 (Invite) ── */
+  function _acctInviteOpen() {
+    const rows = document.getElementById('acct-invite-rows');
+    const err  = document.getElementById('acct-invite-err');
+    rows.innerHTML = '';
+    err.style.display = 'none';
+    _acctAddEmailRow();           // start with one empty row
+    document.getElementById('acct-invite-add-btn').style.display = '';
+    openModal('modal-acct-invite');
+  }
+
+  function _acctAddEmailRow() {
+    const rows = document.getElementById('acct-invite-rows');
+    const count = rows.children.length;
+    if (count >= 10) return;
+
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; gap:6px; align-items:center;';
+    const rowIdx = Date.now();   // unique key
+    row.dataset.rowid = rowIdx;
+    row.innerHTML = `
+      <input type="email" class="form-control acct-invite-email" placeholder="name@company.com"
+        style="flex:1;" oninput="_acctClearInviteErr()" />
+      <button onclick="_acctRemoveEmailRow(this)"
+        style="flex-shrink:0; background:none; border:1px solid var(--border); border-radius:6px;
+               width:34px; height:36px; cursor:pointer; font-size:16px; color:var(--text-secondary); display:${count === 0 ? 'none' : 'flex'}; align-items:center; justify-content:center;">
+        −
+      </button>`;
+    rows.appendChild(row);
+
+    // Show add-btn only if < 10
+    document.getElementById('acct-invite-add-btn').style.display =
+      rows.children.length >= 10 ? 'none' : '';
+  }
+
+  function _acctRemoveEmailRow(btn) {
+    const rows = document.getElementById('acct-invite-rows');
+    if (rows.children.length <= 1) return;  // keep at least one
+    btn.closest('div[data-rowid]').remove();
+    document.getElementById('acct-invite-add-btn').style.display = '';
+    _acctClearInviteErr();
+  }
+
+  function _acctClearInviteErr() {
+    const err = document.getElementById('acct-invite-err');
+    err.style.display = 'none';
+  }
+
+  function _acctShowInviteErr(msg) {
+    const err = document.getElementById('acct-invite-err');
+    err.textContent = msg;
+    err.style.display = '';
+  }
+
+  function _acctSendInvite() {
+    // Collect & validate emails
+    const inputs = document.querySelectorAll('#acct-invite-rows .acct-invite-email');
+    const emails = [];
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    for (const inp of inputs) {
+      const v = inp.value.trim().toLowerCase();
+      if (!v) continue;
+      if (!emailRe.test(v)) {
+        _acctShowInviteErr(`유효하지 않은 이메일 주소: ${inp.value.trim()}`);
+        inp.focus(); return;
+      }
+      if (emails.includes(v)) {
+        _acctShowInviteErr(`중복된 이메일: ${v}`);
+        inp.focus(); return;
+      }
+      const exists = _ACCOUNTS.find(a => a.email.toLowerCase() === v);
+      if (exists) {
+        _acctShowInviteErr(`이미 등록된 이메일: ${v}`);
+        inp.focus(); return;
+      }
+      emails.push(v);
+    }
+
+    if (emails.length === 0) {
+      _acctShowInviteErr('초대할 이메일을 1개 이상 입력해주세요.'); return;
+    }
+    if (emails.length > 10) {
+      _acctShowInviteErr('최대 10개까지 초대할 수 있습니다.'); return;
+    }
+
+    // OTP step
+    openOTPModal('계정 초대 발송', function() {
+      // OTP complete → add pending entries
+      emails.forEach(email => {
+        const name = email.split('@')[0];    // placeholder name
+        _ACCOUNTS.push({
+          idx: _ACCOUNTS.length,
+          name: name,
+          email: email,
+          dept: '', title: '', phone: '',
+          role: '일반', roleLabel: '일반',
+          status: 'pending',
+          isSelf: false,
+        });
+      });
+      _ACCOUNTS.forEach((x, i) => { x.idx = i; });
+
+      closeModal('modal-acct-invite');
+      renderAccountTable();
+      showToast(`${emails.length}명에게 초대 이메일을 발송했습니다.`, 'success');
+    });
   }
 
   // ── Switch account top-level tabs ──
