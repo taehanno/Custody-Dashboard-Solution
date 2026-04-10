@@ -743,6 +743,22 @@
     .se-summary-row:last-child { border-bottom:none; }
     .se-summary-key { font-weight:600; min-width:80px; color:var(--text-secondary); font-size:12px; }
     .se-summary-val { font-weight:500; color:var(--text-primary); flex:1; }
+    .se-dot.skipped { opacity:.35; }
+    .se-adv-cond-card { border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:10px; background:#fff; }
+    .se-adv-cond-card.base-card { border-color:#BAE6FD; background:#F0F9FF; }
+    .se-adv-amount-wrap { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .se-adv-amount-input { flex:1; font-weight:700; font-size:14px; text-align:right; }
+    .se-adv-unit { font-size:12px; color:var(--text-secondary); min-width:80px; }
+    .se-adv-n-row { display:flex; align-items:center; gap:8px; font-size:12px; }
+    .se-adv-n-row select { width:70px; }
+    .se-adv-sim { border:1px solid #BAE6FD; border-radius:8px; padding:10px 14px; background:#F0F9FF; margin-top:10px; font-size:12px; }
+    .se-adv-sim-row { padding:4px 0; color:var(--text-secondary); display:flex; gap:8px; }
+    .se-adv-sim-row strong { color:var(--text-primary); }
+    .se-diff-table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:12px; }
+    .se-diff-table th { padding:6px 10px; background:#F1F5F9; text-align:left; font-size:11px; font-weight:700; color:var(--text-secondary); }
+    .se-diff-table td { padding:8px 10px; border-bottom:1px solid #F1F5F9; vertical-align:top; }
+    .se-diff-changed { color:var(--primary); font-weight:700; }
+    .se-diff-badge { font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px; background:#DBEAFE; color:var(--primary); margin-left:4px; }
 
     /* ══════════════════════════
        SECTION 3: ACCOUNT MANAGEMENT
@@ -1768,9 +1784,19 @@
       </div>
       <div class="se-progress-line" id="se-line-3"></div>
       <div class="se-progress-step" id="se-dot-wrap-4">
-        <div class="se-dot" id="se-dot-4">&#128274;</div>
-        <div class="se-dot-label" id="se-dot-lbl-4">OTP 인증</div>
+        <div class="se-dot" id="se-dot-4">4</div>
+        <div class="se-dot-label" id="se-dot-lbl-4">Advanced</div>
       </div>
+      <div class="se-progress-line" id="se-line-4"></div>
+      <div class="se-progress-step" id="se-dot-wrap-5">
+        <div class="se-dot" id="se-dot-5">&#128274;</div>
+        <div class="se-dot-label" id="se-dot-lbl-5">OTP 인증</div>
+      </div>
+    </div>
+
+    <!-- Pending withdrawal warning (edit mode) -->
+    <div id="se-pending-banner" style="display:none; background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:10px 14px; font-size:12px; color:#92400E; margin-bottom:16px;">
+      <strong>⚠</strong> <span id="se-pending-text"></span>
     </div>
 
     <!-- STEP 1: 지갑 선택 + 요청자 -->
@@ -1839,25 +1865,80 @@
         <input type="checkbox" id="se-adv-chk" style="margin-top:2px;" onchange="_seOnAdvChk()">
         <div>
           <div style="font-size:13px; font-weight:600;">Advanced Strategy 사용 (금액 조건별 N of M)</div>
-          <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">출금 금액에 따라 서로 다른 N of M을 적용합니다. 저장 후 Advanced 탭에서 조건을 추가할 수 있습니다.</div>
+          <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">출금 금액에 따라 서로 다른 N of M을 적용합니다. 다음 단계에서 조건을 설정합니다.</div>
         </div>
       </label>
     </div>
 
-    <!-- STEP 4: OTP -->
+    <!-- STEP 4: Advanced Conditions -->
     <div id="se-step-4" style="display:none;">
-      <div style="font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text-primary);">OTP 인증 — 정책 설정 확인</div>
-
-      <!-- Summary -->
-      <div class="se-summary-box" id="se-otp-summary">
-        <div class="se-summary-row"><span class="se-summary-key">지갑</span><span class="se-summary-val" id="se-sum-wallet">—</span></div>
-        <div class="se-summary-row"><span class="se-summary-key">요청자</span><span class="se-summary-val" id="se-sum-initiators">—</span></div>
-        <div class="se-summary-row"><span class="se-summary-key">서명자</span><span class="se-summary-val" id="se-sum-signers">—</span></div>
-        <div class="se-summary-row"><span class="se-summary-key">서명 정책</span><span class="se-summary-val" id="se-sum-nom">—</span></div>
-        <div class="se-summary-row"><span class="se-summary-key">Advanced</span><span class="se-summary-val" id="se-sum-adv">미사용</span></div>
+      <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:var(--text-primary);">STEP 4 — Advanced Strategy 설정</div>
+      <div style="font-size:12px; color:var(--text-secondary); margin-bottom:16px; background:#F0F9FF; border:1px solid #BAE6FD; border-radius:6px; padding:8px 12px;">
+        ⓘ 출금 금액(원화 환산 기준)에 따라 서로 다른 서명 정책을 적용할 수 있습니다.<br>조건은 금액 내림차순으로 매칭되며, 조건에 해당하지 않는 출금에는 기본 정책이 적용됩니다.
       </div>
 
-      <div class="alert" style="background:#FFF7ED; border:1px solid #FED7AA; color:#92400E; font-size:12px; margin-bottom:16px; padding:10px 14px; border-radius:8px;">
+      <!-- Base policy card (always present, cannot delete) -->
+      <div class="se-adv-cond-card base-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <div style="font-size:12px; font-weight:700; color:#0369A1;">기본 정책 (금액 조건 없음)</div>
+          <div style="font-size:10px; color:#94A3B8;">&#128274; 삭제 불가</div>
+        </div>
+        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">모든 출금에 적용 (아래 조건에 해당하지 않는 경우)</div>
+        <div class="se-adv-n-row">
+          <span>서명 정책:</span>
+          <select class="form-control se-adv-n-row" id="se-adv-base-n" style="width:70px;" onchange="_seAdvBaseNChange()">
+          </select>
+          <span id="se-adv-base-m-label">of —</span>
+        </div>
+      </div>
+
+      <!-- Dynamic condition cards -->
+      <div id="se-adv-cond-list"></div>
+
+      <!-- Add condition button -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <button class="btn btn-outline btn-sm" id="se-adv-add-btn" onclick="_seAdvAddCond()">+ 조건 추가</button>
+        <span id="se-adv-slot-label" style="font-size:12px; color:var(--text-secondary);"></span>
+      </div>
+
+      <!-- Simulation -->
+      <div class="se-adv-sim" id="se-adv-sim-box">
+        <div style="font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; text-transform:uppercase;">적용 시뮬레이션</div>
+        <div id="se-adv-sim-rows"></div>
+      </div>
+    </div>
+
+    <!-- STEP 5: OTP -->
+    <div id="se-step-5" style="display:none;">
+      <div style="font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text-primary);" id="se-step5-title">OTP 인증 — 정책 설정 확인</div>
+
+      <!-- Create mode: simple summary -->
+      <div id="se-sum-create-wrap">
+        <div class="se-summary-box" id="se-otp-summary">
+          <div class="se-summary-row"><span class="se-summary-key">지갑</span><span class="se-summary-val" id="se-sum-wallet">—</span></div>
+          <div class="se-summary-row"><span class="se-summary-key">요청자</span><span class="se-summary-val" id="se-sum-initiators">—</span></div>
+          <div class="se-summary-row"><span class="se-summary-key">서명자</span><span class="se-summary-val" id="se-sum-signers">—</span></div>
+          <div class="se-summary-row"><span class="se-summary-key">서명 정책</span><span class="se-summary-val" id="se-sum-nom">—</span></div>
+          <div class="se-summary-row"><span class="se-summary-key">Advanced</span><span class="se-summary-val" id="se-sum-adv">미사용</span></div>
+        </div>
+      </div>
+
+      <!-- Edit mode: before/after comparison table -->
+      <div id="se-sum-diff-wrap" style="display:none; margin-bottom:16px;">
+        <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">정책 수정 요약 <span style="font-size:10px; color:var(--primary);">파란색 = 변경됨</span></div>
+        <table class="se-diff-table">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>변경 전</th>
+              <th>변경 후</th>
+            </tr>
+          </thead>
+          <tbody id="se-diff-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="alert" style="background:#FFF7ED; border:1px solid #FED7AA; color:#92400E; font-size:12px; margin-bottom:16px; padding:10px 14px; border-radius:8px;" id="se-step5-warning">
         &#9888; 정책 설정 후 즉시 적용됩니다. 출금 신청 시 위 정책에 따라 서명이 진행됩니다.
       </div>
 
@@ -1881,7 +1962,27 @@
   <div style="flex-shrink:0; padding:14px 24px; border-top:1px solid var(--border); display:flex; gap:8px; background:#fff;">
     <button class="btn btn-outline" id="se-btn-prev" onclick="_sePrev()" style="display:none;">← 이전</button>
     <div style="flex:1;"></div>
-    <button class="btn btn-primary" id="se-btn-next" onclick="_seNext()" style="min-width:140px;">다음 →</button>
+    <button class="btn btn-primary" id="se-btn-next" onclick="_seNext()" style="min-width:160px;">다음 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     MODAL: Advanced Condition Delete Confirm
+══════════════════════════ -->
+<div class="modal" id="modal-adv-del" style="max-width:400px; z-index:1100;">
+  <div class="modal-header">
+    <span class="modal-title">조건 삭제 확인</span>
+    <button class="modal-close" onclick="closeModal('modal-adv-del')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <p id="modal-adv-del-desc" style="font-size:13px; margin-bottom:12px;"></p>
+    <div style="font-size:12px; color:#92400E; background:#FFF7ED; border:1px solid #FED7AA; border-radius:6px; padding:10px; margin-bottom:0;">
+      ⚠ <span id="modal-adv-del-warn"></span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-adv-del')">취소</button>
+    <button class="btn btn-danger" onclick="_seAdvConfirmDelete()">삭제</button>
   </div>
 </div>
 
@@ -7081,7 +7182,7 @@
   // Master account name (always auto-included)
   const _SE_MASTER = '김철수';
 
-  // Account pool (same as before)
+  // Account pool
   const _SP_ACCOUNTS = [
     { value: '김철수', label: '김철수', role: 'Master' },
     { value: '이영희', label: '이영희', role: '일반' },
@@ -7091,34 +7192,57 @@
   ];
 
   // Policy per wallet (null = no policy)
+  // advancedConditions: [{amount: KRW number, n: number}] sorted by amount asc
   let _STRATEGY_POLICIES = {
     wallet1: {
       initiators: ['김철수', '이영희'],
       signers: ['김철수', '이영희', '박민준'],
-      n: 2, m: 3,
-      advanced: false, advancedCount: 0,
+      n: 1, m: 3,
+      advanced: true, advancedCount: 2,
+      advancedConditions: [{ amount: 100000000, n: 2 }, { amount: 1000000000, n: 3 }],
       changedAt: '2026-04-08 14:30', changedBy: '김철수'
     },
     wallet2: {
       initiators: ['김철수'],
-      signers: ['김철수'],
-      n: 1, m: 1,
-      advanced: true, advancedCount: 1,
+      signers: ['김철수', '이영희', '박민준'],
+      n: 1, m: 3,
+      advanced: false, advancedCount: 0,
+      advancedConditions: [],
       changedAt: '2026-04-05 10:00', changedBy: '김철수'
     },
     wallet3: null
   };
 
   // Wizard state
-  let _seMode = 'create';      // 'create' | 'edit'
-  let _seEditWalletId = null;  // walletId being edited
+  let _seMode = 'create';
+  let _seEditWalletId = null;
   let _seStep = 1;
   let _seWizWalletId = null;
   let _seWizInitiators = [];
   let _seWizSigners = [];
   let _seNVal = 1;
   let _seUseAdv = false;
+  let _seAdvConditions = [];   // [{amount, n}] working copy
+  let _seAdvBaseN = 1;         // base N (no-condition)
+  let _seAdvDelIdx = -1;       // pending delete index
+  let _seOrigPolicy = null;    // snapshot for change detection (edit mode)
+  let _sePendingCount = 2;     // simulated pending withdrawals
   let _seOTPAttempts = 0;
+
+  /* ── Amount formatting helpers ── */
+  function _seFormatAmt(n) {
+    if (!n && n !== 0) return '';
+    return n.toLocaleString('ko-KR');
+  }
+  function _seAmtLabel(n) {
+    if (!n) return '';
+    const eok = Math.floor(n / 100000000);
+    const man = Math.floor((n % 100000000) / 10000);
+    if (eok > 0 && man > 0) return '(' + eok + '억 ' + man + '만 원)';
+    if (eok > 0) return '(' + eok + '억 원)';
+    if (man > 0) return '(' + man + '만 원)';
+    return '(' + n.toLocaleString('ko-KR') + ' 원)';
+  }
 
   /* ── Dashboard render ── */
   function renderStrategyDashboard() {
@@ -7181,16 +7305,40 @@
           '</div>' +
           '</div>';
       }
-      const advLabel = p.advanced ? '적용 중 (' + p.advancedCount + '건)' : '없음';
-      const initStr  = p.initiators.join(', ');
-      const signStr  = p.signers.join(', ');
+
+      // Advanced conditions display
+      let advHtml = '';
+      if (p.advanced && p.advancedConditions && p.advancedConditions.length > 0) {
+        const conds = [...p.advancedConditions].sort((a,b) => a.amount - b.amount);
+        const MAX_SHOW = 2;
+        const showAll = (conds.length <= MAX_SHOW);
+        const visible = showAll ? conds : conds.slice(conds.length - MAX_SHOW);
+        let rows = '';
+        if (!showAll) rows += '<div style="font-size:11px;color:var(--text-secondary);padding:2px 0;">...</div>';
+        visible.forEach(c => {
+          rows += '<div style="font-size:11px;color:var(--text-secondary);padding:2px 0;">' +
+            '· ≥ ₩' + _seFormatAmt(c.amount) + ' → <strong style="color:var(--text-primary);">' + c.n + ' of ' + p.m + '</strong></div>';
+        });
+        advHtml = '<div class="se-kv" style="grid-column:span 2;">' +
+          '<div class="se-kv-label">Advanced 조건</div>' +
+          '<div class="se-kv-val">' + rows + '</div></div>';
+      }
+
+      const advBadge = p.advanced
+        ? '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#EDE9FE;color:#7C3AED;">Advanced ' + p.advancedCount + '건</span>'
+        : '';
+      const initStr = p.initiators.join(', ');
+      const signStr = p.signers.join(', ');
+      const nomBase = p.advanced ? p.n + ' of ' + p.m + '  (기본)' : p.n + ' of ' + p.m;
+
       return '<div class="se-policy-card" onclick="openStrategyDetail(\'' + w.id + '\')">' +
         '<div class="se-card-head">' +
         '<div>' +
         '<div style="font-size:15px;font-weight:800;">' + w.name + '</div>' +
         '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">마지막 변경: ' + p.changedAt + ' (' + p.changedBy + ')</div>' +
         '</div>' +
-        '<div style="display:flex;gap:8px;align-items:center;" onclick="event.stopPropagation()">' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;" onclick="event.stopPropagation()">' +
+        advBadge +
         '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#166534;">&#10003; 정책 활성</span>' +
         '<span class="role-tip-wrap">' +
         '<button class="btn btn-outline btn-sm" onclick="openStrategyWizard(\'edit\',\'' + w.id + '\')" ' + (m?'':'disabled style="opacity:.5;cursor:not-allowed;"') + '>정책 수정</button>' +
@@ -7199,11 +7347,11 @@
         '</div>' +
         '</div>' +
         '<div class="se-card-body">' +
-        '<div class="se-kv"><div class="se-kv-label">서명 정책</div><div class="se-kv-val" style="font-size:16px;font-weight:800;color:var(--primary);">' + p.n + ' of ' + p.m + '</div></div>' +
+        '<div class="se-kv"><div class="se-kv-label">서명 정책</div><div class="se-kv-val" style="font-size:15px;font-weight:800;color:var(--primary);">' + nomBase + '</div></div>' +
         '<div class="se-kv"><div class="se-kv-label">최소 서명 수</div><div class="se-kv-val">' + p.n + '명</div></div>' +
-        '<div class="se-kv se-kv-full" style="grid-column:span 2;"><div class="se-kv-label">요청자</div><div class="se-kv-val">' + initStr + '</div></div>' +
-        '<div class="se-kv se-kv-full" style="grid-column:span 2;"><div class="se-kv-label">서명자</div><div class="se-kv-val">' + signStr + '</div></div>' +
-        '<div class="se-kv"><div class="se-kv-label">Advanced</div><div class="se-kv-val">' + advLabel + '</div></div>' +
+        '<div class="se-kv" style="grid-column:span 2;"><div class="se-kv-label">요청자</div><div class="se-kv-val">' + initStr + '</div></div>' +
+        '<div class="se-kv" style="grid-column:span 2;"><div class="se-kv-label">서명자</div><div class="se-kv-val">' + signStr + '</div></div>' +
+        advHtml +
         '</div>' +
         '</div>';
     }).join('');
@@ -7216,24 +7364,53 @@
     _seEditWalletId = walletId;
     _seStep = 1;
     _seOTPAttempts = 0;
+    _seOrigPolicy = null;
 
+    const w = (_WALLET_DATA||[]).find(x => x.id === walletId);
+    const wName = w ? w.name : '';
     const titleEl = document.getElementById('se-wiz-title');
-    if (titleEl) titleEl.textContent = mode === 'create' ? '출금 정책 설정' : '출금 정책 수정';
+    if (titleEl) titleEl.textContent = mode === 'create'
+      ? '출금 정책 설정'
+      : '출금 정책 수정 — ' + wName;
 
     // Pre-fill for edit
     if (mode === 'edit' && walletId && _STRATEGY_POLICIES[walletId]) {
       const p = _STRATEGY_POLICIES[walletId];
-      _seWizWalletId  = walletId;
+      _seWizWalletId   = walletId;
       _seWizInitiators = [...p.initiators];
       _seWizSigners    = [...p.signers];
-      _seNVal = p.n;
-      _seUseAdv = p.advanced;
+      _seNVal          = p.n;
+      _seAdvBaseN      = p.n;
+      _seUseAdv        = p.advanced;
+      _seAdvConditions = (p.advancedConditions || []).map(c => ({ amount: c.amount, n: c.n }));
+      // Snapshot for change detection
+      _seOrigPolicy = {
+        initiators: [...p.initiators],
+        signers: [...p.signers],
+        n: p.n,
+        advanced: p.advanced,
+        advancedConditions: (p.advancedConditions || []).map(c => ({ amount: c.amount, n: c.n }))
+      };
     } else {
-      _seWizWalletId  = walletId || null;
+      _seWizWalletId   = walletId || null;
       _seWizInitiators = [_SE_MASTER];
       _seWizSigners    = [_SE_MASTER];
-      _seNVal = 1;
-      _seUseAdv = false;
+      _seNVal          = 1;
+      _seAdvBaseN      = 1;
+      _seUseAdv        = false;
+      _seAdvConditions = [];
+    }
+
+    // Pending withdrawal banner (edit mode only, simulate 2 pending)
+    const pendBanner = document.getElementById('se-pending-banner');
+    const pendText   = document.getElementById('se-pending-text');
+    if (pendBanner) {
+      if (mode === 'edit' && _sePendingCount > 0) {
+        pendBanner.style.display = '';
+        pendText.textContent = '현재 서명 대기 중인 출금 건 ' + _sePendingCount + '개가 있습니다. 정책 변경 시 기존 대기 건에는 영향이 없으며, 변경 후 신규 출금 건부터 새 정책이 적용됩니다.';
+      } else {
+        pendBanner.style.display = 'none';
+      }
     }
 
     _seRenderStep(1);
@@ -7248,7 +7425,7 @@
   /* ── Step rendering ── */
   function _seRenderStep(step) {
     _seStep = step;
-    [1,2,3,4].forEach(s => {
+    [1,2,3,4,5].forEach(s => {
       const el = document.getElementById('se-step-' + s);
       if (el) el.style.display = (s === step) ? '' : 'none';
     });
@@ -7258,15 +7435,29 @@
 
     if (prevBtn) prevBtn.style.display = step > 1 ? '' : 'none';
     if (nextBtn) {
-      if (step < 3) nextBtn.textContent = '다음 →';
-      else if (step === 3) nextBtn.textContent = 'OTP 인증 →';
-      else nextBtn.textContent = '정책 설정 완료';
+      if (step < 3) {
+        nextBtn.textContent = '다음 →';
+        nextBtn.disabled = false;
+      } else if (step === 3) {
+        nextBtn.textContent = _seUseAdv ? 'Advanced 설정 →' : 'OTP 인증 →';
+        nextBtn.disabled = false;
+      } else if (step === 4) {
+        nextBtn.textContent = 'OTP 인증 →';
+        nextBtn.disabled = false;
+      } else {
+        // step 5 (OTP)
+        const isEdit = (_seMode === 'edit');
+        nextBtn.textContent = isEdit ? '정책 수정 완료' : '정책 설정 완료';
+        if (isEdit && !_seHasChanges()) nextBtn.disabled = true;
+        else nextBtn.disabled = false;
+      }
     }
 
     if (step === 1) _seRenderStep1();
     if (step === 2) _seRenderStep2();
     if (step === 3) _seRenderStep3();
     if (step === 4) _seRenderStep4();
+    if (step === 5) _seRenderStep5();
     _seUpdateProgress();
   }
 
@@ -7340,23 +7531,343 @@
   }
 
   function _seRenderStep4() {
-    // Fill summary
+    // Advanced conditions editor
+    const m = _seWizSigners.length;
+
+    // Base N select
+    const baseNSel = document.getElementById('se-adv-base-n');
+    if (baseNSel) {
+      baseNSel.innerHTML = '';
+      for (let i = 1; i <= m; i++) {
+        const o = document.createElement('option');
+        o.value = i; o.textContent = i;
+        if (i === _seAdvBaseN) o.selected = true;
+        baseNSel.appendChild(o);
+      }
+    }
+    const mLbl = document.getElementById('se-adv-base-m-label');
+    if (mLbl) mLbl.textContent = 'of ' + m;
+
+    // Render condition cards
+    _seAdvRenderConds();
+
+    // Slot count
+    const slotLbl = document.getElementById('se-adv-slot-label');
+    const remaining = 5 - _seAdvConditions.length;
+    if (slotLbl) slotLbl.textContent = '남은 슬롯: ' + remaining + '개';
+
+    const addBtn = document.getElementById('se-adv-add-btn');
+    if (addBtn) addBtn.disabled = (_seAdvConditions.length >= 5);
+
+    _seAdvUpdateSim();
+  }
+
+  function _seAdvBaseNChange() {
+    const sel = document.getElementById('se-adv-base-n');
+    if (sel) _seAdvBaseN = parseInt(sel.value, 10) || 1;
+    _seAdvUpdateSim();
+  }
+
+  function _seAdvRenderConds() {
+    const m = _seWizSigners.length;
+    const container = document.getElementById('se-adv-cond-list');
+    if (!container) return;
+
+    // Sort by amount asc for display
+    const sorted = [..._seAdvConditions].sort((a,b) => a.amount - b.amount);
+    _seAdvConditions = sorted; // keep sorted
+
+    container.innerHTML = sorted.map((c, idx) => {
+      const amtFormatted = c.amount ? _seFormatAmt(c.amount) : '';
+      const amtLabel = c.amount ? _seAmtLabel(c.amount) : '';
+
+      // N select for this condition
+      let nOpts = '';
+      for (let i = 1; i <= m; i++) {
+        nOpts += '<option value="' + i + '"' + (i === c.n ? ' selected' : '') + '>' + i + '</option>';
+      }
+
+      return '<div class="se-adv-cond-card" id="se-cond-card-' + idx + '">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">' +
+        '<div style="font-size:12px;font-weight:700;">조건 ' + (idx+1) + '</div>' +
+        '<button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="_seAdvOpenDelete(' + idx + ')">삭제</button>' +
+        '</div>' +
+        '<div class="se-adv-amount-wrap">' +
+        '<span style="font-size:12px;color:var(--text-secondary);">출금 금액 ≥</span>' +
+        '<span style="font-size:13px;color:var(--text-secondary);">₩</span>' +
+        '<input type="text" class="form-control se-adv-amount-input" id="se-cond-amt-' + idx + '" ' +
+        'value="' + amtFormatted + '" ' +
+        'placeholder="금액 입력" ' +
+        'oninput="_seAdvOnAmtInput(' + idx + ',this)" ' +
+        'onblur="_seAdvOnAmtBlur(' + idx + ',this)" />' +
+        '<span class="se-adv-unit" id="se-cond-unit-' + idx + '">' + amtLabel + '</span>' +
+        '</div>' +
+        '<div id="se-cond-err-' + idx + '" style="display:none;font-size:11px;color:var(--danger);margin-bottom:6px;"></div>' +
+        '<div class="se-adv-n-row">' +
+        '<span>서명 정책:</span>' +
+        '<select class="form-control" style="width:70px;" onchange="_seAdvOnNChange(' + idx + ',this)">' + nOpts + '</select>' +
+        '<span>of ' + m + '</span>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function _seAdvOnAmtInput(idx, el) {
+    // Strip non-digits, reformat with commas
+    const raw = el.value.replace(/[^\d]/g, '');
+    const num = parseInt(raw, 10) || 0;
+    const formatted = num ? num.toLocaleString('ko-KR') : '';
+    // Keep cursor position
+    const sel = el.selectionStart;
+    const oldLen = el.value.length;
+    el.value = formatted;
+    const newLen = formatted.length;
+    el.setSelectionRange(sel + (newLen - oldLen), sel + (newLen - oldLen));
+
+    if (_seAdvConditions[idx] !== undefined) {
+      _seAdvConditions[idx].amount = num;
+    }
+    // Validate
+    _seAdvValidateAmt(idx, num);
+    _seAdvUpdateSim();
+  }
+
+  function _seAdvOnAmtBlur(idx, el) {
+    const raw = el.value.replace(/[^\d]/g, '');
+    const num = parseInt(raw, 10) || 0;
+    // Show unit label
+    const unitEl = document.getElementById('se-cond-unit-' + idx);
+    if (unitEl) unitEl.textContent = num ? _seAmtLabel(num) : '';
+    // Re-sort and re-render
+    if (_seAdvConditions[idx]) _seAdvConditions[idx].amount = num;
+    _seAdvRenderConds();
+    _seAdvUpdateAddBtn();
+    _seAdvUpdateSim();
+  }
+
+  function _seAdvOnNChange(idx, sel) {
+    if (_seAdvConditions[idx]) {
+      _seAdvConditions[idx].n = parseInt(sel.value, 10) || 1;
+    }
+    _seAdvUpdateSim();
+  }
+
+  function _seAdvValidateAmt(idx, num) {
+    const errEl = document.getElementById('se-cond-err-' + idx);
+    if (!errEl) return;
+    let err = '';
+    if (num < 1000 && num > 0) err = '최소 금액은 ₩1,000 이상이어야 합니다.';
+    if (num >= 1000000000000) err = '최대 금액은 ₩999,999,999,999 미만이어야 합니다.';
+    // Check duplicates
+    const dupe = _seAdvConditions.some((c, i) => i !== idx && c.amount === num && num > 0);
+    if (dupe) err = '이미 동일한 금액 조건이 있습니다.';
+    errEl.textContent = err;
+    errEl.style.display = err ? '' : 'none';
+  }
+
+  function _seAdvUpdateAddBtn() {
+    const addBtn = document.getElementById('se-adv-add-btn');
+    const slotLbl = document.getElementById('se-adv-slot-label');
+    const remaining = 5 - _seAdvConditions.length;
+    if (addBtn) addBtn.disabled = (_seAdvConditions.length >= 5);
+    if (slotLbl) slotLbl.textContent = '남은 슬롯: ' + remaining + '개';
+  }
+
+  function _seAdvAddCond() {
+    if (_seAdvConditions.length >= 5) return;
+    _seAdvConditions.push({ amount: 0, n: 1 });
+    _seAdvRenderConds();
+    _seAdvUpdateAddBtn();
+    _seAdvUpdateSim();
+
+    // Disable OTP next button until all conditions have amounts
+    _seAdvCheckAllFilled();
+  }
+
+  function _seAdvCheckAllFilled() {
+    const nextBtn = document.getElementById('se-btn-next');
+    if (!nextBtn || _seStep !== 4) return;
+    const allFilled = _seAdvConditions.every(c => c.amount >= 1000);
+    nextBtn.disabled = !allFilled;
+  }
+
+  function _seAdvOpenDelete(idx) {
+    _seAdvDelIdx = idx;
+    const c = _seAdvConditions[idx];
+    const m = _seWizSigners.length;
+    const descEl = document.getElementById('modal-adv-del-desc');
+    const warnEl = document.getElementById('modal-adv-del-warn');
+    if (descEl) descEl.textContent = '이 금액 조건을 삭제하시겠습니까? 조건: 출금 금액 ≥ ₩' +
+      (c.amount ? _seFormatAmt(c.amount) : '미입력') + ' → ' + c.n + ' of ' + m;
+    if (warnEl) warnEl.textContent = '삭제 후 해당 금액 범위 출금은 기본 정책(' +
+      _seAdvBaseN + ' of ' + m + ')이 적용됩니다.';
+    openModal('modal-adv-del');
+  }
+
+  function _seAdvConfirmDelete() {
+    if (_seAdvDelIdx >= 0 && _seAdvDelIdx < _seAdvConditions.length) {
+      _seAdvConditions.splice(_seAdvDelIdx, 1);
+      _seAdvDelIdx = -1;
+    }
+    closeModal('modal-adv-del');
+    _seAdvRenderConds();
+    _seAdvUpdateAddBtn();
+    _seAdvUpdateSim();
+    _seAdvCheckAllFilled();
+  }
+
+  function _seAdvUpdateSim() {
+    const simBox = document.getElementById('se-adv-sim-rows');
+    if (!simBox) return;
+    const m = _seWizSigners.length;
+
+    // Build sorted conditions (desc for matching)
+    const conds = [..._seAdvConditions].filter(c => c.amount > 0).sort((a,b) => b.amount - a.amount);
+
+    // Sample amounts for simulation
+    const samples = [
+      { amt: 50000000,    label: '5천만 원' },
+      { amt: 300000000,   label: '3억 원' },
+      { amt: 1500000000,  label: '15억 원' }
+    ];
+
+    simBox.innerHTML = samples.map(s => {
+      // Find first matching condition
+      const matched = conds.find(c => s.amt >= c.amount);
+      const policy = matched
+        ? { n: matched.n, label: '조건 (≥₩' + _seAmtLabel(matched.amount) + ')' }
+        : { n: _seAdvBaseN, label: '기본 정책' };
+      return '<div class="se-adv-sim-row">· <strong>' + s.label + '</strong> 출금 → ' +
+        policy.label + ': <strong>' + policy.n + ' of ' + m + '</strong></div>';
+    }).join('');
+  }
+
+  function _seRenderStep5() {
+    const isEdit = (_seMode === 'edit');
     const w = (_WALLET_DATA||[]).find(x => x.id === _seWizWalletId);
     const wName = w ? w.name : '—';
-    _seSet('se-sum-wallet', wName);
-    _seSet('se-sum-initiators', _seWizInitiators.join(', ') + ' (' + _seWizInitiators.length + '명)');
-    _seSet('se-sum-signers', _seWizSigners.join(', ') + ' (' + _seWizSigners.length + '명)');
-    _seSet('se-sum-nom', _seNVal + ' of ' + _seWizSigners.length);
-    _seSet('se-sum-adv', _seUseAdv ? '사용' : '미사용');
+    const m = _seWizSigners.length;
+
+    // Update title and warning text
+    const titleEl = document.getElementById('se-step5-title');
+    const warnEl  = document.getElementById('se-step5-warning');
+    if (titleEl) titleEl.textContent = isEdit ? 'OTP 인증 — 정책 수정 확인' : 'OTP 인증 — 정책 설정 확인';
+    if (warnEl) warnEl.innerHTML = isEdit
+      ? '&#9888; 정책 수정 후 즉시 적용됩니다. 기존 서명 대기 건에는 영향 없으며, 신규 출금 건부터 새 정책이 적용됩니다.'
+      : '&#9888; 정책 설정 후 즉시 적용됩니다. 출금 신청 시 위 정책에 따라 서명이 진행됩니다.';
+
+    const createWrap = document.getElementById('se-sum-create-wrap');
+    const diffWrap   = document.getElementById('se-sum-diff-wrap');
+
+    if (isEdit && _seOrigPolicy) {
+      if (createWrap) createWrap.style.display = 'none';
+      if (diffWrap)   diffWrap.style.display = '';
+
+      // Build before/after diff table
+      const orig = _seOrigPolicy;
+      const tbody = document.getElementById('se-diff-tbody');
+      if (tbody) {
+        const rows = [];
+
+        // 서명 정책 (N of M)
+        const nomBefore = orig.n + ' of ' + orig.signers.length;
+        const nomAfter  = _seNVal + ' of ' + m;
+        const nomChg    = nomBefore !== nomAfter;
+        rows.push(_seDiffRow('서명 정책', nomBefore, nomAfter, nomChg));
+
+        // 요청자
+        const initBefore = orig.initiators.join(', ');
+        const initAfter  = _seWizInitiators.join(', ');
+        const initChg    = initBefore !== initAfter;
+        const initAfterLabel = initChg ? _seDiffLabel(orig.initiators, _seWizInitiators) : '변경 없음';
+        rows.push(_seDiffRow('요청자', initBefore, initChg ? initAfter : '변경 없음', initChg));
+
+        // 서명자
+        const signBefore = orig.signers.join(', ');
+        const signAfter  = _seWizSigners.join(', ');
+        const signChg    = signBefore !== signAfter;
+        const signAfterLabel = signChg ? _seDiffLabel(orig.signers, _seWizSigners) : '변경 없음';
+        rows.push(_seDiffRow('서명자', signBefore, signChg ? signAfter : '변경 없음', signChg));
+
+        // Advanced
+        const advBefore = orig.advanced ? '사용' : '미사용';
+        const advAfter  = _seUseAdv ? '사용' : '미사용';
+        const advChg    = advBefore !== advAfter;
+        rows.push(_seDiffRow('Advanced', advBefore, advChg ? advAfter : '변경 없음', advChg));
+
+        // Advanced conditions (if used)
+        if (_seUseAdv || orig.advanced) {
+          const condBefore = (orig.advancedConditions||[]).map(c => '≥₩' + _seFormatAmt(c.amount) + '→' + c.n + 'of' + orig.signers.length).join(', ') || '없음';
+          const condAfter  = _seAdvConditions.map(c => '≥₩' + _seFormatAmt(c.amount) + '→' + c.n + 'of' + m).join(', ') || '없음';
+          const condChg    = condBefore !== condAfter;
+          rows.push(_seDiffRow('Advanced 조건', condBefore, condChg ? condAfter : '변경 없음', condChg));
+        }
+
+        tbody.innerHTML = rows.join('');
+      }
+    } else {
+      // Create mode: simple summary
+      if (createWrap) createWrap.style.display = '';
+      if (diffWrap)   diffWrap.style.display = 'none';
+      _seSet('se-sum-wallet', wName);
+      _seSet('se-sum-initiators', _seWizInitiators.join(', ') + ' (' + _seWizInitiators.length + '명)');
+      _seSet('se-sum-signers', _seWizSigners.join(', ') + ' (' + m + '명)');
+      _seSet('se-sum-nom', _seNVal + ' of ' + m);
+      _seSet('se-sum-adv', _seUseAdv ? '사용' : '미사용');
+    }
+
     // Clear OTP
     const boxes = document.querySelectorAll('#se-otp-boxes .otp-box');
     boxes.forEach(b => { b.value = ''; b.classList.remove('err'); });
-    if (boxes[0]) boxes[0].focus();
+    if (boxes[0]) setTimeout(() => boxes[0].focus(), 100);
     const err = document.getElementById('se-otp-err');
     if (err) err.style.display = 'none';
     const att = document.getElementById('se-otp-attempts');
     if (att) att.textContent = '';
     _seOTPAttempts = 0;
+
+    // Update complete button state
+    const nextBtn = document.getElementById('se-btn-next');
+    if (nextBtn) {
+      nextBtn.textContent = isEdit ? '정책 수정 완료' : '정책 설정 완료';
+      if (isEdit && !_seHasChanges()) {
+        nextBtn.disabled = true;
+      } else {
+        nextBtn.disabled = false;
+      }
+    }
+  }
+
+  function _seDiffRow(label, before, after, changed) {
+    const afterClass = changed ? ' class="se-diff-changed"' : '';
+    const badge = changed ? '<span class="se-diff-badge">변경</span>' : '';
+    return '<tr><td style="font-weight:600;color:var(--text-secondary);font-size:11px;">' + label + '</td>' +
+      '<td>' + before + '</td>' +
+      '<td' + afterClass + '>' + after + badge + '</td></tr>';
+  }
+
+  function _seDiffLabel(before, after) {
+    const added   = after.filter(x => !before.includes(x));
+    const removed = before.filter(x => !after.includes(x));
+    let label = after.join(', ');
+    if (added.length)   label += ' <span style="color:var(--success);font-size:10px;">+' + added.join(', ') + '</span>';
+    if (removed.length) label += ' <span style="color:var(--danger);font-size:10px;">-' + removed.join(', ') + '</span>';
+    return label;
+  }
+
+  function _seHasChanges() {
+    if (!_seOrigPolicy) return true; // create mode: always has changes
+    const orig = _seOrigPolicy;
+    const m = _seWizSigners.length;
+    if (_seNVal !== orig.n) return true;
+    if (_seUseAdv !== orig.advanced) return true;
+    if (_seWizInitiators.slice().sort().join() !== orig.initiators.slice().sort().join()) return true;
+    if (_seWizSigners.slice().sort().join() !== orig.signers.slice().sort().join()) return true;
+    // Compare advanced conditions
+    const origConds = JSON.stringify((orig.advancedConditions||[]).map(c => ({amount:c.amount,n:c.n})).sort((a,b)=>a.amount-b.amount));
+    const newConds  = JSON.stringify(_seAdvConditions.map(c => ({amount:c.amount,n:c.n})).sort((a,b)=>a.amount-b.amount));
+    if (origConds !== newConds) return true;
+    return false;
   }
 
   function _seSet(id, val) {
@@ -7443,6 +7954,10 @@
 
   function _seOnAdvChk() {
     _seUseAdv = document.getElementById('se-adv-chk').checked;
+    const nextBtn = document.getElementById('se-btn-next');
+    if (nextBtn && _seStep === 3) {
+      nextBtn.textContent = _seUseAdv ? 'Advanced 설정 →' : 'OTP 인증 →';
+    }
   }
 
   /* ── Wallet selector change ── */
@@ -7452,31 +7967,46 @@
 
   /* ── Progress bar update ── */
   function _seUpdateProgress() {
-    [1,2,3,4].forEach(s => {
-      const dot = document.getElementById('se-dot-' + s);
-      const lbl = document.getElementById('se-dot-lbl-' + s);
+    // Logical step numbers shown (step 4=Advanced may be skipped)
+    [1,2,3,4,5].forEach(s => {
+      const dot  = document.getElementById('se-dot-' + s);
+      const lbl  = document.getElementById('se-dot-lbl-' + s);
       const wrap = document.getElementById('se-dot-wrap-' + s);
       if (!dot) return;
-      dot.classList.remove('done','active');
+      dot.classList.remove('done','active','skipped');
       if (lbl) lbl.classList.remove('active');
-      if (s < _seStep) { dot.classList.add('done'); if (wrap) wrap.classList.add('clickable'); }
-      else if (s === _seStep) { dot.classList.add('active'); if (lbl) lbl.classList.add('active'); if (wrap) wrap.classList.remove('clickable'); }
-      else { if (wrap) wrap.classList.remove('clickable'); }
+      if (wrap) wrap.classList.remove('clickable');
+
+      if (s === 4 && !_seUseAdv) {
+        // Advanced step skipped
+        dot.classList.add('skipped');
+      } else if (s < _seStep) {
+        dot.classList.add('done');
+        if (wrap) wrap.classList.add('clickable');
+      } else if (s === _seStep) {
+        dot.classList.add('active');
+        if (lbl) lbl.classList.add('active');
+      }
     });
-    [1,2,3].forEach(s => {
+    [1,2,3,4].forEach(s => {
       const line = document.getElementById('se-line-' + s);
       if (line) line.classList.toggle('done', s < _seStep);
     });
   }
 
   function _seNavDot(step) {
-    if (step >= _seStep) return; // only go back to completed steps
+    if (step >= _seStep) return;
+    if (step === 4 && !_seUseAdv) return; // can't nav to skipped step
     _seRenderStep(step);
   }
 
   /* ── Navigation ── */
   function _sePrev() {
-    if (_seStep > 1) _seRenderStep(_seStep - 1);
+    if (_seStep === 5 && !_seUseAdv) {
+      _seRenderStep(3); // skip step 4 backwards
+    } else if (_seStep > 1) {
+      _seRenderStep(_seStep - 1);
+    }
   }
 
   function _seNext() {
@@ -7490,8 +8020,30 @@
     } else if (_seStep === 3) {
       const m = _seWizSigners.length;
       if (_seNVal < 1 || _seNVal > m) { showToast('올바른 최소 서명 수를 입력하세요.'); return; }
-      _seRenderStep(4);
+      _seAdvBaseN = _seNVal; // sync base N
+      if (_seUseAdv) {
+        _seRenderStep(4); // go to Advanced conditions
+      } else {
+        _seAdvConditions = []; // clear any previous conditions
+        _seRenderStep(5); // skip to OTP
+      }
     } else if (_seStep === 4) {
+      // Validate: all conditions must have valid amounts
+      let valid = true;
+      for (let i = 0; i < _seAdvConditions.length; i++) {
+        const c = _seAdvConditions[i];
+        if (!c.amount || c.amount < 1000) { showToast('모든 조건의 금액을 올바르게 입력하세요.'); valid = false; break; }
+        if (c.amount >= 1000000000000) { showToast('금액이 유효 범위를 초과했습니다.'); valid = false; break; }
+        const dupe = _seAdvConditions.some((d, di) => di !== i && d.amount === c.amount);
+        if (dupe) { showToast('중복된 금액 조건이 있습니다.'); valid = false; break; }
+      }
+      if (!valid) return;
+      _seRenderStep(5);
+    } else if (_seStep === 5) {
+      if (_seMode === 'edit' && !_seHasChanges()) {
+        showToast('변경된 내용이 없습니다.');
+        return;
+      }
       _seCompleteOTP();
     }
   }
@@ -7502,7 +8054,7 @@
     const otp = [...boxes].map(b => b.value).join('');
     if (otp.length < 6) { showToast('OTP 6자리를 모두 입력하세요.'); return; }
 
-    // Demo: any 6-digit code accepted (simulate 777777 as wrong for testing)
+    // Demo: 777777 = wrong OTP for testing
     _seOTPAttempts++;
     if (otp === '777777') {
       const errEl = document.getElementById('se-otp-err');
@@ -7527,12 +8079,15 @@
       String(now.getHours()).padStart(2,'0') + ':' +
       String(now.getMinutes()).padStart(2,'0');
 
+    const sortedConds = [..._seAdvConditions].sort((a,b) => a.amount - b.amount);
+
     _STRATEGY_POLICIES[_seWizWalletId] = {
       initiators: [..._seWizInitiators],
       signers: [..._seWizSigners],
-      n: _seNVal, m: _seWizSigners.length,
+      n: _seAdvBaseN, m: _seWizSigners.length,
       advanced: _seUseAdv,
-      advancedCount: (_seMode === 'edit' && _STRATEGY_POLICIES[_seWizWalletId]) ? (_STRATEGY_POLICIES[_seWizWalletId].advancedCount || 0) : 0,
+      advancedCount: _seUseAdv ? sortedConds.length : 0,
+      advancedConditions: sortedConds,
       changedAt: dt, changedBy: _SE_MASTER
     };
 
@@ -7542,7 +8097,7 @@
     const msg = _seMode === 'create'
       ? wName + ' 출금 정책이 설정되었습니다.'
       : wName + ' 출금 정책이 수정되었습니다.';
-    showToast(msg);
+    showToast(msg, 'success');
 
     // Highlight newly-set card briefly
     setTimeout(() => {
@@ -7563,10 +8118,20 @@
     if (!p) return;
     const w = (_WALLET_DATA||[]).find(x => x.id === walletId);
     _seSet('se-det-wallet', w ? w.name : walletId);
-    _seSet('se-det-nom', p.n + ' of ' + p.m);
+
+    const nomBase = p.advanced ? p.n + ' of ' + p.m + ' (기본)' : p.n + ' of ' + p.m;
+    _seSet('se-det-nom', nomBase);
     _seSet('se-det-initiators', p.initiators.join(', ') + ' (' + p.initiators.length + '명)');
     _seSet('se-det-signers', p.signers.join(', ') + ' (' + p.signers.length + '명)');
-    _seSet('se-det-adv', p.advanced ? '적용 중 (' + p.advancedCount + '건)' : '없음');
+
+    let advDetail = '없음';
+    if (p.advanced && p.advancedConditions && p.advancedConditions.length > 0) {
+      advDetail = '적용 중 (' + p.advancedCount + '건): ' +
+        p.advancedConditions.map(c => '≥₩' + _seFormatAmt(c.amount) + '→' + c.n + ' of ' + p.m).join(', ');
+    } else if (p.advanced) {
+      advDetail = '사용 (조건 없음)';
+    }
+    _seSet('se-det-adv', advDetail);
     _seSet('se-det-changed', p.changedAt + ' (' + p.changedBy + ')');
     openModal('modal-se-detail');
   }
@@ -7575,7 +8140,7 @@
     closeModal('modal-se-detail');
   }
 
-  // Legacy stubs (prevent errors from old references)
+  // Legacy stubs
   function selectStrategyWallet() {}
   function openStrategyPolicy(mode) {
     if (mode === 'edit') openStrategyWizard('edit', 'wallet1');
@@ -7586,18 +8151,12 @@
   function saveStrategyPolicy() {}
   function spRemove() {}
   function changeNSP() {}
-
-  /* Advanced condition stubs (keep these functional) */
-  let _condMode = 'add';
-  let _condIdx  = -1;
-  let _condNVal = 3;
-  let _condCount = 1;
   function getSignerCount() { return 3; }
   function onSignerChange() {}
   function openAddCondition() {}
   function openEditCondition() {}
   function changeNCondition() {}
-  function saveCondition() { showToast('Advanced 조건 기능은 현재 버전에서 지원되지 않습니다.'); }
+  function saveCondition() {}
   function openDeleteCondition() {}
   function deleteConditionOTP() {}
 
