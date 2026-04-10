@@ -2153,31 +2153,71 @@
 <!-- ══════════════════════════════════════
      MODAL: 계정 초대 (Account Invite)
 ══════════════════════════════════════ -->
-<div class="modal" id="modal-acct-invite" style="max-width:500px;">
+<div class="modal" id="modal-acct-invite" style="max-width:560px;">
   <div class="modal-header">
-    <span class="modal-title">+ 계정 초대</span>
+    <span class="modal-title">계정 초대</span>
     <button class="modal-close" onclick="closeModal('modal-acct-invite')">&#10005;</button>
   </div>
-  <div class="modal-body" style="padding:20px 24px;">
-    <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px; padding:12px 14px; font-size:12px; color:#1E40AF; margin-bottom:18px; line-height:1.7;">
-      ℹ 초대된 계정은 모두 <strong>일반</strong> 역할로 생성됩니다.<br>
-      출금 요청자 / 서명자 지정은 <strong>Strategy Engine</strong>에서 지갑별로 설정합니다.<br>
-      최대 <strong>10개</strong> 이메일을 동시에 초대할 수 있습니다.
-    </div>
+  <div class="modal-body" style="padding:20px 24px; max-height:66vh; overflow-y:auto;">
+    <div id="acct-invite-cards" style="display:flex; flex-direction:column; gap:12px;"></div>
 
-    <label class="form-label" style="margin-bottom:8px;">초대할 이메일 주소 <span class="req">*</span></label>
-    <div id="acct-invite-rows" style="display:flex; flex-direction:column; gap:8px;"></div>
-
-    <button id="acct-invite-add-btn" onclick="_acctAddEmailRow()"
-      style="margin-top:10px; background:none; border:1px dashed var(--border); border-radius:8px; width:100%; padding:9px; font-size:13px; color:var(--primary); cursor:pointer;">
-      + 이메일 추가
+    <button id="acct-invite-add-btn" onclick="_acctAddCard()"
+      style="margin-top:12px; background:none; border:1px dashed var(--border); border-radius:8px;
+             width:100%; padding:10px; font-size:13px; color:var(--primary); cursor:pointer; font-weight:600;">
+      + 계정 추가
     </button>
 
-    <div id="acct-invite-err" style="display:none; margin-top:10px; padding:10px 12px; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; font-size:12px; color:#B91C1C;"></div>
+    <div id="acct-invite-err" style="display:none; margin-top:10px; padding:10px 12px;
+         background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; font-size:12px; color:#B91C1C;"></div>
+
+    <div style="margin-top:16px; font-size:12px; color:var(--text-secondary); line-height:1.9;
+                padding:12px 14px; background:#F8FAFC; border-radius:8px; border:1px solid var(--border);">
+      ⓘ 초대된 계정은 <strong>"일반"</strong> 역할로 생성됩니다.<br>
+      ⓘ 초대 이메일의 임시 비밀번호로 로그인 후 비밀번호 재설정 및 OTP 등록이 강제 진행됩니다.<br>
+      ⓘ 초대 링크는 <strong>72시간</strong> 유효합니다.
+    </div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-acct-invite')">취소</button>
-    <button class="btn btn-primary" onclick="_acctSendInvite()">&#9993; 초대 발송 →</button>
+    <button class="btn btn-primary" id="acct-invite-send-btn" onclick="_acctSendInvite()">&#9993; 초대 발송 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 계정 정보 수정 (Edit Account)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-edit-acct" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title" id="ema-modal-title">계정 정보 수정</span>
+    <button class="modal-close" onclick="closeModal('modal-edit-acct')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="padding:20px 24px;">
+    <div class="form-group">
+      <label class="form-label">이메일</label>
+      <input type="email" id="ema-email" class="form-control" readonly
+        style="background:#F8FAFC; color:var(--text-secondary);" />
+      <div class="form-hint">이메일(로그인 ID)은 수정할 수 없습니다.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">이름 <span class="req">*</span></label>
+      <input type="text" id="ema-name" class="form-control" placeholder="담당자 이름" maxlength="50" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">휴대전화번호 <span style="font-size:11px;color:var(--text-secondary);">(선택)</span></label>
+      <input type="tel" id="ema-phone" class="form-control" placeholder="010-0000-0000" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">직무 <span style="font-size:11px;color:var(--text-secondary);">(선택)</span></label>
+      <input type="text" id="ema-dept" class="form-control" placeholder="예: 재무, 운영, 법무" maxlength="50" />
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">직책 <span style="font-size:11px;color:var(--text-secondary);">(선택)</span></label>
+      <input type="text" id="ema-title" class="form-control" placeholder="예: 과장, 대리, 이사" maxlength="50" />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-edit-acct')">취소</button>
+    <button class="btn btn-primary" onclick="_acctEditSave()">저장</button>
   </div>
 </div>
 
@@ -9238,13 +9278,14 @@
     tbody.innerHTML = rows.map(a => {
       const selfTag = a.isSelf
         ? `<span style="font-size:10px; color:var(--primary); margin-left:6px; font-weight:500;">(나)</span>` : '';
-      // Per PRD: Master shows [삭제] for all non-self non-pending; general: no actions
-      const canDelete = _IS_MASTER && !a.isSelf && a.status !== 'pending';
-      const deletePending = _IS_MASTER && !a.isSelf && a.status === 'pending';
+      // Per PRD: Master shows [수정][삭제] for non-self active/inactive; [초대 취소] for pending
+      const canManage = _IS_MASTER && !a.isSelf && a.status !== 'pending';
+      const isPending = _IS_MASTER && !a.isSelf && a.status === 'pending';
       const actionBtns = _IS_MASTER
-        ? (canDelete
-            ? `<button class="btn btn-outline btn-xs" style="color:var(--danger);border-color:rgba(239,68,68,0.3);" onclick="deleteAccountConfirm(${a.idx})">삭제</button>`
-            : deletePending
+        ? (canManage
+            ? `<button class="btn btn-outline btn-xs" onclick="_acctEditOpen(${a.idx})">수정</button>
+               <button class="btn btn-outline btn-xs" style="color:var(--danger);border-color:rgba(239,68,68,0.3);" onclick="deleteAccountConfirm(${a.idx})">삭제</button>`
+            : isPending
               ? `<button class="btn btn-outline btn-xs" onclick="cancelInvite(${a.idx})">초대 취소</button>`
               : '')
         : '';
@@ -9272,111 +9313,178 @@
 
   /* ── 계정 초대 (Invite) ── */
   function _acctInviteOpen() {
-    const rows = document.getElementById('acct-invite-rows');
-    const err  = document.getElementById('acct-invite-err');
-    rows.innerHTML = '';
-    err.style.display = 'none';
-    _acctAddEmailRow();           // start with one empty row
+    const cards = document.getElementById('acct-invite-cards');
+    cards.innerHTML = '';
+    document.getElementById('acct-invite-err').style.display = 'none';
     document.getElementById('acct-invite-add-btn').style.display = '';
+    _acctAddCard();   // start with one card
     openModal('modal-acct-invite');
   }
 
-  function _acctAddEmailRow() {
-    const rows = document.getElementById('acct-invite-rows');
-    const count = rows.children.length;
+  function _acctAddCard() {
+    const cards = document.getElementById('acct-invite-cards');
+    const count = cards.children.length;
     if (count >= 10) return;
+    const n = count + 1;
+    const uid = Date.now();
 
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex; gap:6px; align-items:center;';
-    const rowIdx = Date.now();   // unique key
-    row.dataset.rowid = rowIdx;
-    row.innerHTML = `
-      <input type="email" class="form-control acct-invite-email" placeholder="name@company.com"
-        style="flex:1;" oninput="_acctClearInviteErr()" />
-      <button onclick="_acctRemoveEmailRow(this)"
-        style="flex-shrink:0; background:none; border:1px solid var(--border); border-radius:6px;
-               width:34px; height:36px; cursor:pointer; font-size:16px; color:var(--text-secondary); display:${count === 0 ? 'none' : 'flex'}; align-items:center; justify-content:center;">
-        −
-      </button>`;
-    rows.appendChild(row);
+    const card = document.createElement('div');
+    card.dataset.cardid = uid;
+    card.style.cssText = 'border:1px solid var(--border); border-radius:10px; padding:14px 16px; background:#fff;';
+    card.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+        <span style="font-size:13px; font-weight:700; color:var(--text-secondary);">계정 ${n}</span>
+        ${count > 0 ? `<button onclick="_acctRemoveCard(this)"
+          style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 10px;
+                 font-size:12px;cursor:pointer;color:var(--text-secondary);">행 삭제</button>` : ''}
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label class="form-label" style="font-size:12px;">이메일 <span class="req">*</span></label>
+        <input type="email" class="form-control inv-email" placeholder="user@company.com"
+          oninput="_acctClearInviteErr()" style="height:36px; font-size:13px;" />
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label class="form-label" style="font-size:12px;">이름 <span class="req">*</span></label>
+        <input type="text" class="form-control inv-name" placeholder="홍길동"
+          oninput="_acctClearInviteErr()" style="height:36px; font-size:13px;" maxlength="50" />
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+        <div>
+          <label class="form-label" style="font-size:12px;">휴대전화번호 <span style="font-size:10px;color:var(--text-secondary);">(선택)</span></label>
+          <input type="tel" class="form-control inv-phone" placeholder="010-0000-0000" style="height:36px; font-size:12px;" />
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px;">직무 <span style="font-size:10px;color:var(--text-secondary);">(선택)</span></label>
+          <input type="text" class="form-control inv-dept" placeholder="예: 재무" style="height:36px; font-size:12px;" maxlength="30" />
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px;">직책 <span style="font-size:10px;color:var(--text-secondary);">(선택)</span></label>
+          <input type="text" class="form-control inv-title" placeholder="예: 과장" style="height:36px; font-size:12px;" maxlength="30" />
+        </div>
+      </div>`;
+    cards.appendChild(card);
 
-    // Show add-btn only if < 10
     document.getElementById('acct-invite-add-btn').style.display =
-      rows.children.length >= 10 ? 'none' : '';
+      cards.children.length >= 10 ? 'none' : '';
   }
 
-  function _acctRemoveEmailRow(btn) {
-    const rows = document.getElementById('acct-invite-rows');
-    if (rows.children.length <= 1) return;  // keep at least one
-    btn.closest('div[data-rowid]').remove();
+  function _acctRemoveCard(btn) {
+    const cards = document.getElementById('acct-invite-cards');
+    if (cards.children.length <= 1) return;
+    btn.closest('div[data-cardid]').remove();
+    // Relabel remaining cards
+    Array.from(cards.children).forEach((c, i) => {
+      const label = c.querySelector('span');
+      if (label) label.textContent = `계정 ${i + 1}`;
+    });
     document.getElementById('acct-invite-add-btn').style.display = '';
     _acctClearInviteErr();
   }
 
   function _acctClearInviteErr() {
-    const err = document.getElementById('acct-invite-err');
-    err.style.display = 'none';
+    document.getElementById('acct-invite-err').style.display = 'none';
   }
 
   function _acctShowInviteErr(msg) {
     const err = document.getElementById('acct-invite-err');
     err.textContent = msg;
     err.style.display = '';
+    err.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   function _acctSendInvite() {
-    // Collect & validate emails
-    const inputs = document.querySelectorAll('#acct-invite-rows .acct-invite-email');
-    const emails = [];
+    const cards = document.getElementById('acct-invite-cards');
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const entries = [];
+    const seenEmails = [];
 
-    for (const inp of inputs) {
-      const v = inp.value.trim().toLowerCase();
-      if (!v) continue;
-      if (!emailRe.test(v)) {
-        _acctShowInviteErr(`유효하지 않은 이메일 주소: ${inp.value.trim()}`);
-        inp.focus(); return;
+    for (const card of cards.children) {
+      const emailEl = card.querySelector('.inv-email');
+      const nameEl  = card.querySelector('.inv-name');
+      const email = emailEl.value.trim().toLowerCase();
+      const name  = nameEl.value.trim();
+
+      if (!email) {
+        _acctShowInviteErr('이메일을 입력해주세요.');
+        emailEl.focus(); return;
       }
-      if (emails.includes(v)) {
-        _acctShowInviteErr(`중복된 이메일: ${v}`);
-        inp.focus(); return;
+      if (!emailRe.test(email)) {
+        _acctShowInviteErr('올바른 이메일 형식이 아닙니다.');
+        emailEl.focus(); return;
       }
-      const exists = _ACCOUNTS.find(a => a.email.toLowerCase() === v);
-      if (exists) {
-        _acctShowInviteErr(`이미 등록된 이메일: ${v}`);
-        inp.focus(); return;
+      if (seenEmails.includes(email)) {
+        _acctShowInviteErr(`중복된 이메일입니다: ${email}`);
+        emailEl.focus(); return;
       }
-      emails.push(v);
+      if (_ACCOUNTS.find(a => a.email.toLowerCase() === email)) {
+        _acctShowInviteErr(`이미 등록된 계정입니다: ${email}`);
+        emailEl.focus(); return;
+      }
+      if (!name) {
+        _acctShowInviteErr('이름을 입력해주세요.');
+        nameEl.focus(); return;
+      }
+
+      seenEmails.push(email);
+      entries.push({
+        email,
+        name,
+        phone: card.querySelector('.inv-phone').value.trim(),
+        dept:  card.querySelector('.inv-dept').value.trim(),
+        title: card.querySelector('.inv-title').value.trim(),
+      });
     }
 
-    if (emails.length === 0) {
-      _acctShowInviteErr('초대할 이메일을 1개 이상 입력해주세요.'); return;
-    }
-    if (emails.length > 10) {
-      _acctShowInviteErr('최대 10개까지 초대할 수 있습니다.'); return;
+    if (entries.length === 0) {
+      _acctShowInviteErr('초대할 계정을 1개 이상 입력해주세요.'); return;
     }
 
-    // OTP step
     openOTPModal('계정 초대 발송', function() {
-      // OTP complete → add pending entries
-      emails.forEach(email => {
-        const name = email.split('@')[0];    // placeholder name
+      entries.forEach(e => {
         _ACCOUNTS.push({
           idx: _ACCOUNTS.length,
-          name: name,
-          email: email,
-          dept: '', title: '', phone: '',
-          role: '일반', roleLabel: '일반',
+          name: e.name, email: e.email,
+          dept: e.dept, title: e.title, phone: e.phone,
+          role: 'general', roleLabel: '일반',
           status: 'pending',
-          isSelf: false,
+          lastLogin: '—', isSelf: false, strategyCount: 0,
         });
       });
       _ACCOUNTS.forEach((x, i) => { x.idx = i; });
-
       closeModal('modal-acct-invite');
       renderAccountTable();
-      showToast(`${emails.length}명에게 초대 이메일을 발송했습니다.`, 'success');
+      showToast(`${entries.length}명에게 초대 이메일을 발송했습니다.`, 'success');
     });
+  }
+
+  /* ── 계정 정보 수정 (Edit Account) ── */
+  let _editAcctIdx = null;
+
+  function _acctEditOpen(idx) {
+    const a = _ACCOUNTS[idx];
+    if (!a) return;
+    _editAcctIdx = idx;
+    document.getElementById('ema-modal-title').textContent = `계정 정보 수정 — ${a.name}`;
+    document.getElementById('ema-email').value = a.email;
+    document.getElementById('ema-name').value  = a.name;
+    document.getElementById('ema-phone').value = a.phone || '';
+    document.getElementById('ema-dept').value  = a.dept  || '';
+    document.getElementById('ema-title').value = a.title || '';
+    openModal('modal-edit-acct');
+  }
+
+  function _acctEditSave() {
+    const name = document.getElementById('ema-name').value.trim();
+    if (!name) { showToast('이름을 입력해주세요.'); return; }
+    const a = _ACCOUNTS[_editAcctIdx];
+    if (!a) return;
+    a.name  = name;
+    a.phone = document.getElementById('ema-phone').value.trim();
+    a.dept  = document.getElementById('ema-dept').value.trim();
+    a.title = document.getElementById('ema-title').value.trim();
+    closeModal('modal-edit-acct');
+    renderAccountTable();
+    showToast('계정 정보가 수정되었습니다.', 'success');
   }
 
   // ── Switch account top-level tabs ──
