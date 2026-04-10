@@ -13237,343 +13237,342 @@
 
 var _STR_PARAM_RULES = [
   {
-    code:'RM01', name:'고액 현금성 거래', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'단일 거래에서 현금성 자산이 기준금액 이상인 경우 STR 탐지 대상으로 분류합니다.',
+    no:1, code:'RD01', name:'인증번호변경후입고', category:'기간', active:true, updatedAt:'2026-02-01',
+    description:'인증번호(비밀번호) 변경 직후 일정 기간 이내에 입고 거래가 발생하는 경우 계정 탈취 또는 자금세탁 목적의 거래로 의심합니다.',
     params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:1000000, max:100000000 }
+      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:30 }
     ],
-    previewTpl:'{threshold}원 이상 단일 거래 감지'
+    previewTpl:'인증번호 변경 후 {period}일 이내 입고 감지'
   },
   {
-    code:'RM02', name:'단기 분할 입금 (스트럭처링)', category:'횟수', active:true, updatedAt:'2026-04-09',
-    description:'짧은 기간 내 여러 건으로 분산 입금하여 보고 임계금액을 회피하려는 스트럭처링 패턴을 탐지합니다.',
+    no:2, code:'RW01', name:'인증번호변경후출고', category:'기간', active:true, updatedAt:'2026-02-01',
+    description:'인증번호(비밀번호) 변경 직후 일정 기간 이내에 출고 거래가 발생하는 경우 계정 탈취 또는 자금세탁 목적의 거래로 의심합니다.',
     params:[
-      { key:'count', label:'횟수', type:'number', unit:'회', value:3, default:3, min:2, max:10 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:30 }
+    ],
+    previewTpl:'인증번호 변경 후 {period}일 이내 출고 감지'
+  },
+  {
+    no:3, code:'RM01', name:'단기고액입고후출고', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'단기간 내 고액 자산을 입고한 후 대부분을 출고하는 패턴으로, 자금세탁 목적의 단기 자금 경유 거래를 탐지합니다.',
+    params:[
       { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
-      { key:'perAmount', label:'건당금액', type:'amount', unit:'원', value:1000000, default:1000000, min:100000, max:5000000 }
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:3000000000, default:3000000000, min:100000000, max:10000000000 },
+      { key:'ratio', label:'출고비율', type:'number', unit:'%', value:90, default:90, min:10, max:100 }
     ],
-    previewTpl:'{period}일 내 {count}회 이상, 건당 {perAmount}원 이상 분산 입금 감지'
+    previewTpl:'{period}일 내 {threshold}원 이상 입고 후 {ratio}% 이상 출고 감지'
   },
   {
-    code:'RM03', name:'단기 대량 분산 출금', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'단기간 내 여러 주소로 분산 출금하여 추적을 회피하는 패턴을 탐지합니다.',
+    no:4, code:'RM02', name:'당일고액입후출', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'당일 고액 입고 후 즉시 대부분을 출고하는 패턴으로, 당일 자금 경유를 통한 세탁 행위를 탐지합니다.',
     params:[
-      { key:'count', label:'횟수', type:'number', unit:'회', value:5, default:5, min:2, max:20 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:1000000000, default:1000000000, min:100000000, max:10000000000 },
+      { key:'ratio', label:'출고비율', type:'number', unit:'%', value:90, default:90, min:10, max:100 }
+    ],
+    previewTpl:'당일 {threshold}원 이상 입고 후 {ratio}% 이상 즉시 출고 감지'
+  },
+  {
+    no:5, code:'RD02', name:'단기고액입고', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'단기간 내 거액의 가상자산이 입고되는 경우로, 출처 불명 고액 자산의 유입을 탐지합니다.',
+    params:[
       { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
-      { key:'totalAmount', label:'총금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000000, default:10000000000, min:1000000000, max:100000000000 }
     ],
-    previewTpl:'{period}일 내 {count}회 이상, 총 {totalAmount}원 이상 분산 출금 감지'
+    previewTpl:'{period}일 내 {threshold}원 이상 입고 감지'
   },
   {
-    code:'RM04', name:'신규 고객 고액 거래', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'신규 가입 직후 고액 거래를 시도하는 경우 자금세탁 위험이 높습니다.',
+    no:6, code:'RW02', name:'단기고액출고', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'단기간 내 거액의 가상자산이 출고되는 경우로, 자금 은닉 목적의 고액 자산 유출을 탐지합니다.',
     params:[
-      { key:'joinPeriod', label:'가입후기간', type:'number', unit:'일', value:30, default:30, min:1, max:90 },
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000000, default:10000000000, min:1000000000, max:100000000000 }
     ],
-    previewTpl:'가입 {joinPeriod}일 이내 {threshold}원 이상 거래 감지'
+    previewTpl:'{period}일 내 {threshold}원 이상 출고 감지'
   },
   {
-    code:'RM05', name:'WLF 해당 고객 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
-    description:'내부 요주의인물(WLF) 목록에 등재된 고객이 거래하는 경우 즉시 탐지합니다.',
+    no:7, code:'RD03', name:'STR이력자입고', category:'기간', active:true, updatedAt:'2026-02-01',
+    description:'과거 STR(의심거래보고) 이력이 있는 고객이 일정 기간 내 입고 거래를 하는 경우 재탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:3, default:3, min:1, max:30 }
+    ],
+    previewTpl:'STR 이력자의 {period}일 이내 입고 감지'
+  },
+  {
+    no:8, code:'RW03', name:'STR이력자출고', category:'기간', active:true, updatedAt:'2026-02-01',
+    description:'과거 STR(의심거래보고) 이력이 있는 고객이 일정 기간 내 출고 거래를 하는 경우 재탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:3, default:3, min:1, max:30 }
+    ],
+    previewTpl:'STR 이력자의 {period}일 이내 출고 감지'
+  },
+  {
+    no:9, code:'RM03', name:'다수지갑분산입출고', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'단기간 내 다수의 지갑으로 자산을 분산 입출고하는 패턴으로, 추적 회피를 위한 분산 거래를 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'count', label:'지갑수', type:'number', unit:'개', value:5, default:5, min:2, max:20 },
+      { key:'ratio', label:'비율', type:'number', unit:'%', value:90, default:90, min:10, max:100 }
+    ],
+    previewTpl:'{period}일 내 {count}개 이상 지갑 분산 거래 비율 {ratio}% 이상 감지'
+  },
+  {
+    no:10, code:'RW04', name:'다수지갑분산출고', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'단기간 내 다수의 지갑으로 자산을 분산 출고하는 패턴으로, 추적 회피를 위한 분산 출금을 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'count', label:'지갑수', type:'number', unit:'개', value:5, default:5, min:2, max:20 }
+    ],
+    previewTpl:'{period}일 내 {count}개 이상 지갑으로 분산 출고 감지'
+  },
+  {
+    no:11, code:'RD04', name:'다수지갑분산입고', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'단기간 내 다수의 지갑으로부터 자산을 분산 입고하는 패턴으로, 추적 회피를 위한 분산 입금을 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'count', label:'지갑수', type:'number', unit:'개', value:5, default:5, min:2, max:20 }
+    ],
+    previewTpl:'{period}일 내 {count}개 이상 지갑으로부터 분산 입고 감지'
+  },
+  {
+    no:12, code:'RD05', name:'신규지갑입고', category:'기간', active:true, updatedAt:'2026-02-01',
+    description:'신규 생성된 지갑으로부터 입고가 발생하는 경우로, 추적 회피 목적의 신규 지갑 활용 패턴을 탐지합니다.',
+    params:[
+      { key:'period', label:'지갑생성기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 }
+    ],
+    previewTpl:'생성 {period}일 이내 신규 지갑으로부터 입고 감지'
+  },
+  {
+    no:13, code:'RW05', name:'신규지갑출고', category:'기간', active:true, updatedAt:'2026-02-01',
+    description:'신규 생성된 지갑으로 출고가 발생하는 경우로, 추적 회피 목적의 신규 지갑 활용 패턴을 탐지합니다.',
+    params:[
+      { key:'period', label:'지갑생성기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 }
+    ],
+    previewTpl:'생성 {period}일 이내 신규 지갑으로 출고 감지'
+  },
+  {
+    no:14, code:'RD06', name:'동일지갑반복입고', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'동일한 지갑에서 단기간 내 반복적으로 입고가 발생하는 경우로, 분할 입금을 통한 스트럭처링을 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:3, default:3, min:1, max:30 },
+      { key:'count', label:'횟수', type:'number', unit:'회', value:10, default:10, min:2, max:50 }
+    ],
+    previewTpl:'{period}일 내 동일 지갑에서 {count}회 이상 반복 입고 감지'
+  },
+  {
+    no:15, code:'RW06', name:'동일지갑반복출고', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'동일한 지갑으로 단기간 내 반복적으로 출고가 발생하는 경우로, 분할 출금을 통한 자금 세탁을 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:3, default:3, min:1, max:30 },
+      { key:'count', label:'횟수', type:'number', unit:'회', value:10, default:10, min:2, max:50 }
+    ],
+    previewTpl:'{period}일 내 동일 지갑으로 {count}회 이상 반복 출고 감지'
+  },
+  {
+    no:16, code:'RD07', name:'빈번입출고(당일)', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'당일 입출고 거래가 비정상적으로 빈번하게 발생하는 경우로, 이상 거래 패턴을 탐지합니다.',
+    params:[
+      { key:'count', label:'횟수', type:'number', unit:'회', value:10, default:10, min:2, max:50 }
+    ],
+    previewTpl:'당일 {count}회 이상 빈번 입출고 감지'
+  },
+  {
+    no:17, code:'RD08', name:'빈번입출고(주간)', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'주간 입출고 거래가 비정상적으로 빈번하게 발생하는 경우로, 지속적인 이상 거래 패턴을 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'count', label:'횟수', type:'number', unit:'회', value:30, default:30, min:5, max:100 }
+    ],
+    previewTpl:'{period}일 내 {count}회 이상 빈번 입출고 감지'
+  },
+  {
+    no:18, code:'RD09', name:'빈번입출고(월간)', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'월간 입출고 거래가 비정상적으로 빈번하게 발생하는 경우로, 장기 지속 이상 거래 패턴을 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:30, default:30, min:7, max:90 },
+      { key:'count', label:'횟수', type:'number', unit:'회', value:100, default:100, min:10, max:500 }
+    ],
+    previewTpl:'{period}일 내 {count}회 이상 빈번 입출고 감지'
+  },
+  {
+    no:19, code:'RD10', name:'장기미사용해제거액입고', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'장기간 미사용 상태로 잠겨 있던 계좌가 해제된 직후 거액의 자산이 입고되는 경우를 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:3, default:3, min:1, max:30 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:1000000000, default:1000000000, min:100000000, max:10000000000 }
+    ],
+    previewTpl:'장기 미사용 해제 후 {period}일 내 {threshold}원 이상 입고 감지'
+  },
+  {
+    no:20, code:'RW07', name:'장기미사용해제거액출고', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'장기간 미사용 상태로 잠겨 있던 계좌가 해제된 직후 거액의 자산이 출고되는 경우를 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:3, default:3, min:1, max:30 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:1000000000, default:1000000000, min:100000000, max:10000000000 }
+    ],
+    previewTpl:'장기 미사용 해제 후 {period}일 내 {threshold}원 이상 출고 감지'
+  },
+  {
+    no:21, code:'RW08', name:'장기미사용해제당일입고', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'장기간 미사용으로 잠겨 있던 계좌가 해제된 당일 입고 거래가 발생하는 경우 즉시 탐지합니다.',
     params:[],
-    previewTpl:'WLF 등재 고객의 모든 거래 즉시 감지'
+    previewTpl:'장기 미사용 계좌 해제 당일 입고 즉시 감지'
   },
   {
-    code:'RM06', name:'제재대상 고객 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
-    description:'금융당국 또는 국제기구의 제재 대상으로 등록된 고객의 거래를 탐지합니다.',
+    no:22, code:'RD11', name:'장기미사용해제당일출고', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'장기간 미사용으로 잠겨 있던 계좌가 해제된 당일 출고 거래가 발생하는 경우 즉시 탐지합니다.',
     params:[],
-    previewTpl:'제재대상 고객의 모든 거래 즉시 감지'
+    previewTpl:'장기 미사용 계좌 해제 당일 출고 즉시 감지'
   },
   {
-    code:'RM07', name:'FATF 고위험국 고객 거래', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'FATF 고위험국 또는 블랙리스트 국가 고객과의 거래를 탐지합니다.',
+    no:23, code:'RD12', name:'특정자산당일집중', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'당일 특정 가상자산에 거래가 집중되는 비정상적인 패턴을 탐지합니다.',
     params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
+      { key:'count', label:'횟수', type:'number', unit:'회', value:5, default:5, min:2, max:20 }
     ],
-    previewTpl:'FATF 고위험국 고객 {threshold}원 이상 거래 감지'
+    previewTpl:'당일 특정 자산에 {count}회 이상 집중 거래 감지'
   },
   {
-    code:'RM08', name:'UN 제재국 고객 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
-    description:'UN 안보리 제재 대상 국가의 고객이 거래하는 경우 즉시 탐지합니다.',
+    no:24, code:'RW09', name:'특정자산단기집중', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'단기간 내 특정 가상자산에 거래가 집중되는 비정상적인 패턴을 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'count', label:'횟수', type:'number', unit:'회', value:30, default:30, min:5, max:100 }
+    ],
+    previewTpl:'{period}일 내 특정 자산에 {count}회 이상 집중 거래 감지'
+  },
+  {
+    no:25, code:'RD13', name:'1일평균대비입고', category:'비율', active:true, updatedAt:'2026-02-01',
+    description:'1일 평균 입고량 대비 일정 비율 이상 급증하는 입고 거래를 탐지합니다.',
+    params:[
+      { key:'ratio', label:'기준비율', type:'number', unit:'%', value:300, default:300, min:100, max:1000 }
+    ],
+    previewTpl:'1일 평균 대비 {ratio}% 이상 입고 급증 감지'
+  },
+  {
+    no:26, code:'RW10', name:'1일평균대비출고', category:'비율', active:true, updatedAt:'2026-02-01',
+    description:'1일 평균 출고량 대비 일정 비율 이상 급증하는 출고 거래를 탐지합니다.',
+    params:[
+      { key:'ratio', label:'기준비율', type:'number', unit:'%', value:300, default:300, min:100, max:1000 }
+    ],
+    previewTpl:'1일 평균 대비 {ratio}% 이상 출고 급증 감지'
+  },
+  {
+    no:27, code:'RD14', name:'월중평균대비입고', category:'비율', active:true, updatedAt:'2026-02-01',
+    description:'월중 평균 입고량 대비 일정 비율 이상 급증하는 입고 거래를 탐지합니다.',
+    params:[
+      { key:'ratio', label:'기준비율', type:'number', unit:'%', value:300, default:300, min:100, max:1000 }
+    ],
+    previewTpl:'월중 평균 대비 {ratio}% 이상 입고 급증 감지'
+  },
+  {
+    no:28, code:'RW11', name:'월중평균대비출고', category:'비율', active:true, updatedAt:'2026-02-01',
+    description:'월중 평균 출고량 대비 일정 비율 이상 급증하는 출고 거래를 탐지합니다.',
+    params:[
+      { key:'ratio', label:'기준비율', type:'number', unit:'%', value:300, default:300, min:100, max:1000 }
+    ],
+    previewTpl:'월중 평균 대비 {ratio}% 이상 출고 급증 감지'
+  },
+  {
+    no:29, code:'RW12', name:'거액거래후계약종료', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'거액의 거래가 발생한 직후 계약 또는 계정이 종료되는 패턴으로, 세탁 후 이탈을 탐지합니다.',
+    params:[
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:1000000000, default:1000000000, min:100000000, max:10000000000 }
+    ],
+    previewTpl:'{period}일 내 {threshold}원 이상 거래 후 계약 종료 감지'
+  },
+  {
+    no:30, code:'RM01', name:'위험업종', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'카지노, 환전소 등 자금세탁 위험이 높은 업종에 종사하는 법인 고객의 거래를 탐지합니다.',
     params:[],
-    previewTpl:'UN 제재국 고객의 모든 거래 즉시 감지'
+    previewTpl:'위험 업종 고객 거래 즉시 감지'
   },
   {
-    code:'RM09', name:'비정상 시간대 고액 출금', category:'금액', active:false, updatedAt:'2026-02-01',
-    description:'업무 외 시간대(오전 0~6시)에 고액 출금이 발생하는 경우를 탐지합니다.',
-    params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:1000000, max:100000000 }
-    ],
-    previewTpl:'비정상 시간대(0~6시) {threshold}원 이상 출금 감지'
-  },
-  {
-    code:'RM10', name:'고위험국가 고객 거래', category:'금액', active:true, updatedAt:'2026-03-10',
-    description:'고위험 국가로 분류된 국적의 고객이 기준금액 이상 거래하는 경우 탐지합니다.',
-    params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
-    ],
-    previewTpl:'고위험국가 고객 {threshold}원 이상 거래 감지'
-  },
-  {
-    code:'RM11', name:'단기 반복 소액 출금', category:'횟수', active:true, updatedAt:'2026-02-01',
-    description:'하루에 소액 출금을 반복하는 패턴을 탐지합니다.',
-    params:[
-      { key:'count', label:'횟수', type:'number', unit:'회', value:10, default:10, min:5, max:50 },
-      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 }
-    ],
-    previewTpl:'{period}일 내 {count}회 이상 소액 출금 감지'
-  },
-  {
-    code:'RM12', name:'다수 출금 주소 분산', category:'횟수', active:true, updatedAt:'2026-02-01',
-    description:'다수의 서로 다른 출금 주소로 분산 전송하는 패턴을 탐지합니다.',
-    params:[
-      { key:'addrCount', label:'주소수', type:'number', unit:'개', value:10, default:10, min:3, max:50 }
-    ],
-    previewTpl:'{addrCount}개 이상 출금 주소 분산 감지'
-  },
-  {
-    code:'RM13', name:'믹서/토네이도 연계 거래', category:'횟수', active:true, updatedAt:'2026-02-01',
-    description:'믹서 또는 토네이도 캐시와 연계된 주소로부터 지정된 홉 이내에 거래가 발생하는 경우를 탐지합니다.',
-    params:[
-      { key:'hops', label:'홉수', type:'number', unit:'홉', value:3, default:3, min:1, max:10 }
-    ],
-    previewTpl:'믹서/토네이도 주소로부터 {hops}홉 이내 거래 감지'
-  },
-  {
-    code:'RM14', name:'VPN/TOR 접속 후 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
-    description:'VPN 또는 TOR 네트워크를 통한 접속 직후 거래가 발생하는 경우를 탐지합니다.',
+    no:31, code:'RM02', name:'비상장/비영리', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'비상장 법인 또는 비영리 단체 고객의 거래를 탐지합니다. 투명성이 낮아 자금세탁 위험이 높습니다.',
     params:[],
-    previewTpl:'VPN/TOR 접속 후 모든 거래 즉시 감지'
+    previewTpl:'비상장/비영리 법인 고객 거래 즉시 감지'
   },
   {
-    code:'RM15', name:'단기 대량 출금', category:'금액', active:false, updatedAt:'2026-02-01',
-    description:'단기간 내 대량의 출금이 발생하는 경우를 탐지합니다.',
-    params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:50000000, default:50000000, min:10000000, max:500000000 },
-      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 }
-    ],
-    previewTpl:'{period}일 내 {threshold}원 이상 대량 출금 감지'
-  },
-  {
-    code:'RM16', name:'급격한 자산 증가', category:'비율', active:true, updatedAt:'2025-12-20',
-    description:'단기간 내 자산이 급격히 증가하는 경우 비정상적인 자금 유입을 의심합니다.',
-    params:[
-      { key:'rate', label:'증가율', type:'number', unit:'%', value:300, default:300, min:50, max:1000 },
-      { key:'period', label:'기간', type:'number', unit:'시간', value:24, default:24, min:1, max:72 }
-    ],
-    previewTpl:'{period}시간 내 {rate}% 이상 자산 증가 감지'
-  },
-  {
-    code:'RM17', name:'급격한 자산 감소', category:'비율', active:true, updatedAt:'2026-02-01',
-    description:'단기간 내 자산이 급격히 감소하는 경우 자금 은닉 또는 탈취를 의심합니다.',
-    params:[
-      { key:'rate', label:'감소율', type:'number', unit:'%', value:70, default:70, min:30, max:100 },
-      { key:'period', label:'기간', type:'number', unit:'시간', value:24, default:24, min:1, max:72 }
-    ],
-    previewTpl:'{period}시간 내 {rate}% 이상 자산 감소 감지'
-  },
-  {
-    code:'RM18', name:'동일 수취인 반복 송금', category:'횟수', active:true, updatedAt:'2026-02-01',
-    description:'동일한 수취인 주소로 짧은 기간 내 반복 송금하는 패턴을 탐지합니다.',
-    params:[
-      { key:'count', label:'횟수', type:'number', unit:'회', value:5, default:5, min:2, max:20 },
-      { key:'period', label:'기간', type:'number', unit:'일', value:30, default:30, min:1, max:90 }
-    ],
-    previewTpl:'{period}일 내 동일 수취인 {count}회 이상 반복 송금 감지'
-  },
-  {
-    code:'RM19', name:'장기 미거래 후 고액 거래', category:'기간', active:true, updatedAt:'2026-02-01',
-    description:'장기간 거래가 없다가 갑작스럽게 고액 거래가 발생하는 경우를 탐지합니다.',
-    params:[
-      { key:'dormantPeriod', label:'미거래기간', type:'number', unit:'일', value:180, default:180, min:30, max:730 },
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:1000000, max:100000000 }
-    ],
-    previewTpl:'{dormantPeriod}일 이상 미거래 후 {threshold}원 이상 거래 감지'
-  },
-  {
-    code:'RM20', name:'입금 직후 즉시 전액 출금', category:'비율', active:true, updatedAt:'2026-02-01',
-    description:'입금 직후 대부분의 자금을 즉시 출금하는 자금 세탁 패턴을 탐지합니다.',
-    params:[
-      { key:'rate', label:'출금비율', type:'number', unit:'%', value:90, default:90, min:50, max:100 },
-      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 }
-    ],
-    previewTpl:'입금 후 {period}일 이내 {rate}% 이상 즉시 출금 감지'
-  },
-  {
-    code:'RM21', name:'다국가 분산 출금', category:'횟수', active:false, updatedAt:'2026-02-01',
-    description:'여러 국가의 주소로 분산 출금하는 패턴을 탐지합니다.',
-    params:[
-      { key:'countryCount', label:'국가수', type:'number', unit:'개', value:3, default:3, min:2, max:10 },
-      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 }
-    ],
-    previewTpl:'{period}일 내 {countryCount}개국 이상 분산 출금 감지'
-  },
-  {
-    code:'RM22', name:'의심스러운 IP 접속 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
-    description:'블랙리스트 또는 의심 IP로부터 접속하여 거래하는 경우를 탐지합니다.',
+    no:32, code:'RM03', name:'설립1년이하', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'설립 후 1년 이하의 신생 법인 고객의 거래를 탐지합니다. 유령 법인 활용 가능성이 높습니다.',
     params:[],
-    previewTpl:'의심 IP 접속 후 모든 거래 즉시 감지'
+    previewTpl:'설립 1년 이하 신생 법인 고객 거래 즉시 감지'
   },
   {
-    code:'RM23', name:'계좌 개설 직후 고액 거래', category:'기간', active:true, updatedAt:'2026-02-01',
-    description:'계좌 개설 직후 고액 거래를 시도하는 경우를 탐지합니다.',
-    params:[
-      { key:'openPeriod', label:'개설후기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
-    ],
-    previewTpl:'계좌 개설 {openPeriod}일 이내 {threshold}원 이상 거래 감지'
-  },
-  {
-    code:'RM24', name:'환전 후 즉시 해외송금', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'환전 직후 해외로 즉시 송금하는 자금 세탁 패턴을 탐지합니다.',
-    params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:3000000, default:3000000, min:1000000, max:30000000 }
-    ],
-    previewTpl:'환전 후 즉시 {threshold}원 이상 해외송금 감지'
-  },
-  {
-    code:'RM25', name:'동일 주소 반복 거래', category:'횟수', active:false, updatedAt:'2026-02-01',
-    description:'동일한 주소와 반복적으로 거래하는 패턴을 탐지합니다.',
-    params:[
-      { key:'count', label:'횟수', type:'number', unit:'회', value:5, default:5, min:2, max:20 },
-      { key:'period', label:'기간', type:'number', unit:'일', value:30, default:30, min:1, max:90 }
-    ],
-    previewTpl:'{period}일 내 동일 주소 {count}회 이상 반복 거래 감지'
-  },
-  {
-    code:'RM26', name:'비정상 수수료 패턴', category:'비율', active:true, updatedAt:'2026-02-01',
-    description:'정상 범위를 벗어난 비정상적인 수수료 패턴을 탐지합니다.',
-    params:[
-      { key:'feeRate', label:'수수료비율', type:'number', unit:'%', value:5, default:5, min:1, max:20 }
-    ],
-    previewTpl:'정상 수수료 대비 {feeRate}% 초과 비정상 수수료 감지'
-  },
-  {
-    code:'RM27', name:'법인 고객 고액 현금성 거래', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'법인 고객의 고액 현금성 거래를 탐지합니다.',
-    params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:30000000, default:30000000, min:10000000, max:500000000 }
-    ],
-    previewTpl:'법인 고객 {threshold}원 이상 현금성 거래 감지'
-  },
-  {
-    code:'RM28', name:'복수 계좌 분산 입금', category:'횟수', active:true, updatedAt:'2026-02-01',
-    description:'여러 계좌로 분산 입금하는 스트럭처링 패턴을 탐지합니다.',
-    params:[
-      { key:'acctCount', label:'계좌수', type:'number', unit:'개', value:5, default:5, min:2, max:20 },
-      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 },
-      { key:'perAmount', label:'건당금액', type:'amount', unit:'원', value:2000000, default:2000000, min:500000, max:20000000 }
-    ],
-    previewTpl:'{period}일 내 {acctCount}개 이상 계좌, 건당 {perAmount}원 이상 분산 입금 감지'
-  },
-  {
-    code:'RM29', name:'본인인증 미완료 고액 거래', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'본인인증이 완료되지 않은 상태에서 고액 거래를 시도하는 경우를 탐지합니다.',
-    params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:1000000, default:1000000, min:100000, max:5000000 }
-    ],
-    previewTpl:'본인인증 미완료 상태 {threshold}원 이상 거래 감지'
-  },
-  {
-    code:'RM30', name:'다크넷 연계 주소 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
-    description:'다크넷 마켓플레이스와 연계된 주소와의 거래를 탐지합니다.',
+    no:33, code:'RM04', name:'외국인대표자', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'외국인이 대표자로 등록된 법인 고객의 거래를 탐지합니다. 국경 간 자금 세탁 위험이 높습니다.',
     params:[],
-    previewTpl:'다크넷 연계 주소와의 모든 거래 즉시 감지'
+    previewTpl:'외국인 대표자 법인 고객 거래 즉시 감지'
   },
   {
-    code:'RM31', name:'단기 고빈도 소액 거래', category:'횟수', active:true, updatedAt:'2026-02-01',
-    description:'짧은 시간 내 매우 높은 빈도로 소액 거래가 반복되는 패턴을 탐지합니다.',
-    params:[
-      { key:'count', label:'횟수', type:'number', unit:'회', value:50, default:50, min:10, max:200 },
-      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 }
-    ],
-    previewTpl:'{period}일 내 {count}회 이상 고빈도 소액 거래 감지'
-  },
-  {
-    code:'RM32', name:'임계금액 직하 반복 거래', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'보고 임계금액 바로 이하로 반복 거래하는 회피 패턴을 탐지합니다.',
-    params:[
-      { key:'count', label:'횟수', type:'number', unit:'회', value:3, default:3, min:2, max:10 },
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:9900000, default:9900000, min:1000000, max:100000000 }
-    ],
-    previewTpl:'{threshold}원 이하 반복 {count}회 이상 거래 감지'
-  },
-  {
-    code:'RM33', name:'NFT/DeFi 연계 의심 거래', category:'해당없음', active:false, updatedAt:'2026-02-01',
-    description:'NFT 또는 DeFi 프로토콜을 통한 의심스러운 자금 이동을 탐지합니다.',
+    no:34, code:'RM05', name:'WLF경영진', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'내부 요주의인물(WLF) 목록에 등재된 임원이 경영진으로 있는 법인 고객의 거래를 탐지합니다.',
     params:[],
-    previewTpl:'NFT/DeFi 연계 의심 거래 즉시 감지'
+    previewTpl:'WLF 등재 경영진 법인 고객 거래 즉시 감지'
   },
   {
-    code:'RM34', name:'크로스체인 브릿지 대량 거래', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'크로스체인 브릿지를 통한 대량 자산 이동을 탐지합니다.',
+    no:35, code:'RM06', name:'다수Alert', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'일정 기간 내 다수의 STR Alert가 발생한 고객의 거래를 탐지합니다.',
     params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:1000000, max:100000000 }
+      { key:'period', label:'기간', type:'number', unit:'일', value:365, default:365, min:30, max:365 },
+      { key:'count', label:'Alert횟수', type:'number', unit:'회', value:30, default:30, min:5, max:100 }
     ],
-    previewTpl:'크로스체인 브릿지 {threshold}원 이상 대량 이동 감지'
+    previewTpl:'{period}일 내 Alert {count}회 이상 발생 고객 감지'
   },
   {
-    code:'RM35', name:'스테이블코인 대량 전환', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'대량의 자산을 스테이블코인으로 전환하는 자금 세탁 패턴을 탐지합니다.',
+    no:36, code:'RM07', name:'STR보고이력', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'과거 STR 보고 이력이 일정 횟수 이상인 고객의 거래를 탐지합니다.',
     params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:30000000, default:30000000, min:10000000, max:500000000 }
+      { key:'count', label:'보고횟수', type:'number', unit:'회', value:3, default:3, min:1, max:10 }
     ],
-    previewTpl:'스테이블코인 {threshold}원 이상 대량 전환 감지'
+    previewTpl:'STR 보고 이력 {count}회 이상 고객 감지'
   },
   {
-    code:'RM36', name:'거래소간 대량 이동', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'거래소 간 대량 자산 이동을 탐지합니다.',
+    no:37, code:'RM08', name:'고빈도거래고객', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'일정 기간 내 비정상적으로 높은 빈도의 거래를 하는 고객을 탐지합니다.',
     params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:50000000, default:50000000, min:10000000, max:1000000000 }
+      { key:'period', label:'기간', type:'number', unit:'일', value:365, default:365, min:30, max:365 },
+      { key:'count', label:'거래횟수', type:'number', unit:'회', value:50, default:50, min:10, max:200 }
     ],
-    previewTpl:'거래소 간 {threshold}원 이상 대량 이동 감지'
+    previewTpl:'{period}일 내 {count}회 이상 거래 고객 감지'
   },
   {
-    code:'RM37', name:'장기 미사용 후 대량 출금', category:'기간', active:true, updatedAt:'2026-02-01',
-    description:'장기간 미사용 계좌에서 갑작스럽게 대량 출금이 발생하는 경우를 탐지합니다.',
-    params:[
-      { key:'dormantPeriod', label:'미사용기간', type:'number', unit:'일', value:365, default:365, min:90, max:1095 },
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
-    ],
-    previewTpl:'{dormantPeriod}일 이상 미사용 후 {threshold}원 이상 대량 출금 감지'
-  },
-  {
-    code:'RM38', name:'이상 가스비 패턴', category:'비율', active:false, updatedAt:'2026-02-01',
-    description:'정상 대비 비정상적으로 높은 가스비를 지불하는 거래를 탐지합니다.',
-    params:[
-      { key:'rate', label:'정상대비비율', type:'number', unit:'%', value:500, default:500, min:100, max:2000 }
-    ],
-    previewTpl:'정상 가스비 대비 {rate}% 초과 이상 가스비 거래 감지'
-  },
-  {
-    code:'RM39', name:'PEP 관련 계좌 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
-    description:'정치적 주요인물(PEP) 관련 계좌의 거래를 탐지합니다.',
+    no:38, code:'RM09', name:'화이트리스트거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'화이트리스트에 등재되어 있으나 비정상 패턴이 감지된 고객의 거래를 탐지합니다.',
     params:[],
-    previewTpl:'PEP 관련 계좌의 모든 거래 즉시 감지'
+    previewTpl:'화이트리스트 고객 이상 패턴 거래 즉시 감지'
   },
   {
-    code:'RM40', name:'보고 임계금액 거래', category:'금액', active:true, updatedAt:'2026-02-01',
-    description:'금융정보분석원(FIU) 보고 임계금액 이상의 거래를 탐지합니다.',
-    params:[
-      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:5000000, max:50000000 }
-    ],
-    previewTpl:'{threshold}원 이상 보고 임계금액 거래 감지'
-  },
-  {
-    code:'RM41', name:'복합 위험지표 동시 발현', category:'해당없음', active:true, updatedAt:'2026-02-01',
-    description:'두 개 이상의 위험지표가 동시에 발현되는 복합 위험 거래를 탐지합니다.',
+    no:39, code:'RM10', name:'법인-대표자간거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'법인 계좌와 해당 법인 대표자 개인 계좌 간 거래를 탐지합니다. 횡령 및 세탁 위험이 높습니다.',
     params:[],
-    previewTpl:'2개 이상 위험지표 동시 발현 즉시 감지'
+    previewTpl:'법인-대표자 간 거래 즉시 감지'
+  },
+  {
+    no:40, code:'RM11', name:'트래블룰회피', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'트래블룰 적용 기준금액(100 USD) 미만의 거래를 반복적으로 분산하여 신원 정보 제공 의무를 회피하는 패턴을 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'number', unit:'USD', value:100, default:100, min:10, max:1000 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:10, default:10, min:1, max:30 },
+      { key:'count', label:'횟수', type:'number', unit:'회', value:5, default:5, min:2, max:20 }
+    ],
+    previewTpl:'{period}일 내 {threshold}USD 미만 {count}회 이상 분산 거래 (트래블룰 회피) 감지'
+  },
+  {
+    no:41, code:'RM12', name:'위험국가본점소재', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'고위험 국가에 본점을 두고 있는 법인 고객의 거래를 탐지합니다. 국제 제재 및 자금세탁 위험이 높습니다.',
+    params:[],
+    previewTpl:'위험 국가 소재 본점 법인 고객 거래 즉시 감지'
   }
 ];
 
 var _STR_PARAM_HISTORY = [
-  { id:'SPH-001', datetime:'2026-04-09 11:00', code:'RM02', name:'단기 분할 입금', paramLabel:'집계 기간', before:'7일', after:'14일', actor:'최관리자', reason:'탐지 민감도 조정', type:'파라미터수정' },
-  { id:'SPH-002', datetime:'2026-03-10 09:00', code:'RM10', name:'고위험국가 고객 거래', paramLabel:'기준금액', before:'1,000만원', after:'500만원', actor:'최관리자', reason:'정책 강화', type:'파라미터수정' },
-  { id:'SPH-003', datetime:'2026-02-01 10:00', code:'RM05', name:'WLF 해당 고객 거래', paramLabel:'활성상태', before:'OFF', after:'ON', actor:'최관리자', reason:'내부요주의인물 연동 정책 시행', type:'활성화' },
-  { id:'SPH-004', datetime:'2026-01-15 14:30', code:'RM01', name:'고액 현금성 거래', paramLabel:'기준금액', before:'2,000만원', after:'1,000만원', actor:'최관리자', reason:'금융당국 권고 기준 하향 적용', type:'파라미터수정' },
-  { id:'SPH-005', datetime:'2025-12-20 09:15', code:'RM16', name:'급격한 자산 증가', paramLabel:'증가율', before:'500%', after:'300%', actor:'최관리자', reason:'과도한 알림 감소 목적', type:'파라미터수정' }
+  { id:'SPH-001', datetime:'2026-04-09 11:00', code:'RM03', name:'단기고액입고후출고', paramLabel:'기간', before:'7일', after:'14일', actor:'최관리자', reason:'탐지 민감도 조정', type:'파라미터수정' },
+  { id:'SPH-002', datetime:'2026-03-10 09:00', code:'RD13', name:'1일평균대비입고', paramLabel:'기준비율', before:'500%', after:'300%', actor:'최관리자', reason:'과도한 알림 감소 목적', type:'파라미터수정' },
+  { id:'SPH-003', datetime:'2026-02-01 10:00', code:'RM05', name:'WLF경영진', paramLabel:'활성상태', before:'OFF', after:'ON', actor:'최관리자', reason:'내부요주의인물 연동 정책 시행', type:'활성화' },
+  { id:'SPH-004', datetime:'2026-01-15 14:30', code:'RD02', name:'단기고액입고', paramLabel:'기준금액', before:'200억원', after:'100억원', actor:'최관리자', reason:'금융당국 권고 기준 하향 적용', type:'파라미터수정' },
+  { id:'SPH-005', datetime:'2025-12-20 09:15', code:'RM11', name:'트래블룰회피', paramLabel:'기간', before:'7일', after:'10일', actor:'최관리자', reason:'탐지 범위 확대', type:'파라미터수정' }
 ];
 
 var _strParamCurrent = null; // 현재 편집 중인 룰
@@ -13673,12 +13672,12 @@ function renderSTRParam() {
     var manageBtns = '';
     if (isManager) {
       if (r.category === '해당없음') {
-        manageBtns = '<button class="btn btn-outline btn-sm" onclick="openSTRParamToggle(\'' + r.code + '\')">' + (r.active ? 'OFF' : 'ON') + '</button>';
+        manageBtns = '<button class="btn btn-outline btn-sm" onclick="openSTRParamToggle(' + r.no + ')">' + (r.active ? 'OFF' : 'ON') + '</button>';
       } else {
-        manageBtns = '<button class="btn btn-outline btn-sm" onclick="openSTRParamEdit(\'' + r.code + '\')">수정</button>';
+        manageBtns = '<button class="btn btn-outline btn-sm" onclick="openSTRParamEdit(' + r.no + ')">수정</button>';
       }
     } else {
-      manageBtns = '<button class="btn btn-outline btn-sm" onclick="openSTRParamEdit(\'' + r.code + '\')">상세</button>';
+      manageBtns = '<button class="btn btn-outline btn-sm" onclick="openSTRParamEdit(' + r.no + ')">상세</button>';
     }
 
     return '<tr>' +
@@ -13695,13 +13694,13 @@ function renderSTRParam() {
   tbody.innerHTML = rows.join('');
 }
 
-function openSTRParamEdit(code) {
+function openSTRParamEdit(no) {
   var rule = null;
   for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
-    if (_STR_PARAM_RULES[i].code === code) { rule = _STR_PARAM_RULES[i]; break; }
+    if (_STR_PARAM_RULES[i].no === no) { rule = _STR_PARAM_RULES[i]; break; }
   }
   if (!rule) return;
-  _strParamCurrent = code;
+  _strParamCurrent = no;
   var isManager = _strParamIsManager();
 
   document.getElementById('spe-title').textContent = rule.code + ' — ' + rule.name;
@@ -13784,7 +13783,7 @@ function closeSTRParamEdit() {
 function _strParamUpdatePreview() {
   var rule = null;
   for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
-    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+    if (_STR_PARAM_RULES[i].no === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
   }
   if (!rule || rule.params.length === 0) return;
   var values = {};
@@ -13799,7 +13798,7 @@ function _strParamUpdatePreview() {
 function _strParamValidate() {
   var rule = null;
   for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
-    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+    if (_STR_PARAM_RULES[i].no === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
   }
   var btn = document.getElementById('spe-save-btn');
   if (!btn || !rule) return;
@@ -13835,7 +13834,7 @@ function _strParamSaveOTP() {
 function _strParamSave() {
   var rule = null;
   for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
-    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+    if (_STR_PARAM_RULES[i].no === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
   }
   if (!rule) return;
   var reason = document.getElementById('spe-reason').value;
@@ -13872,13 +13871,13 @@ function _strParamSave() {
   showToast(rule.code + ' 파라미터가 저장되었습니다.');
 }
 
-function openSTRParamToggle(code) {
+function openSTRParamToggle(no) {
   var rule = null;
   for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
-    if (_STR_PARAM_RULES[i].code === code) { rule = _STR_PARAM_RULES[i]; break; }
+    if (_STR_PARAM_RULES[i].no === no) { rule = _STR_PARAM_RULES[i]; break; }
   }
   if (!rule) return;
-  _strParamCurrent = code;
+  _strParamCurrent = no;
 
   document.getElementById('spt-title').textContent = rule.code + ' — ' + rule.name;
   document.getElementById('spt-subtitle').textContent = '카테고리: ' + rule.category;
@@ -13939,7 +13938,7 @@ function _strParamToggleSaveOTP() {
 function _strParamToggleSave() {
   var rule = null;
   for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
-    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+    if (_STR_PARAM_RULES[i].no === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
   }
   if (!rule) return;
   var selected = null;
@@ -13974,7 +13973,7 @@ function _strParamToggleSave() {
 function openSTRParamRestore() {
   var rule = null;
   for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
-    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+    if (_STR_PARAM_RULES[i].no === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
   }
   if (!rule) return;
   document.getElementById('restore-reason').value = '';
@@ -14018,7 +14017,7 @@ function _strParamRestoreSaveOTP() {
 function _strParamRestoreSave() {
   var rule = null;
   for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
-    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+    if (_STR_PARAM_RULES[i].no === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
   }
   if (!rule) return;
   var reason = document.getElementById('restore-reason').value;
