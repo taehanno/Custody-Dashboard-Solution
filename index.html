@@ -7268,13 +7268,30 @@
   const _SE_MASTER = '김철수';
 
   // Account pool
+  // status: 'active' | 'inactive' (PW/OTP 잠금, 비활성화)
   const _SP_ACCOUNTS = [
-    { value: '김철수', label: '김철수', role: 'Master' },
-    { value: '이영희', label: '이영희', role: '일반' },
-    { value: '박민준', label: '박민준', role: '일반' },
-    { value: '최진호', label: '최진호', role: '일반' },
-    { value: '안소연', label: '안소연', role: '일반' },
+    { value: '김철수', label: '김철수', role: 'Master',  status: 'active'   },
+    { value: '이영희', label: '이영희', role: '일반',    status: 'active'   },
+    { value: '박민준', label: '박민준', role: '일반',    status: 'inactive' }, // 비활성화 (데모)
+    { value: '최진호', label: '최진호', role: '일반',    status: 'active'   },
+    { value: '안소연', label: '안소연', role: '일반',    status: 'active'   },
   ];
+
+  // Helper: is a named account deactivated?
+  function _seIsInactive(name) {
+    const a = _SP_ACCOUNTS.find(x => x.value === name);
+    return a && a.status === 'inactive';
+  }
+
+  // Render a list of account names with ⚠ badge for inactive ones
+  function _seNamesHtml(names) {
+    return names.map(n => {
+      if (_seIsInactive(n)) {
+        return '<span style="color:#F59E0B;font-weight:600;">⚠ ' + n + ' <span style="font-size:10px;font-weight:500;">(비활성화됨)</span></span>';
+      }
+      return '<span>' + n + '</span>';
+    }).join('<span style="color:var(--text-secondary);"> · </span>');
+  }
 
   // Policy per wallet (null = no policy)
   // advancedConditions: [{amount: KRW number, n: number}] sorted by amount asc
@@ -7409,12 +7426,32 @@
           '<div class="se-kv-val">' + rows + '</div></div>';
       }
 
+      // Detect deactivated accounts in this policy
+      const inactiveSigners    = p.signers.filter(n => _seIsInactive(n));
+      const inactiveInitiators = p.initiators.filter(n => _seIsInactive(n));
+      const hasInactive = inactiveSigners.length > 0 || inactiveInitiators.length > 0;
+
+      // Check if N of M is still achievable (active signers >= N)
+      const activeSignerCount = p.signers.filter(n => !_seIsInactive(n)).length;
+      const canMeetN = activeSignerCount >= p.n;
+
       const advBadge = p.advanced
         ? '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#EDE9FE;color:#7C3AED;">Advanced ' + p.advancedCount + '건</span>'
         : '';
-      const initStr = p.initiators.join(', ');
-      const signStr = p.signers.join(', ');
+      const inactiveBadge = hasInactive
+        ? '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF3C7;color:#92400E;">⚠ 비활성 계정</span>'
+        : '';
       const nomBase = p.advanced ? p.n + ' of ' + p.m + '  (기본)' : p.n + ' of ' + p.m;
+
+      // Warning footer (if any inactive)
+      let warnFooter = '';
+      if (!canMeetN) {
+        warnFooter = '<div style="padding:10px 18px;background:#FEF2F2;border-top:1px solid #FCA5A5;font-size:12px;color:#DC2626;">' +
+          '🔴 비활성화된 서명자로 인해 N of M 충족이 불가능합니다. 정책을 즉시 수정하세요.</div>';
+      } else if (hasInactive) {
+        warnFooter = '<div style="padding:10px 18px;background:#FFFBEB;border-top:1px solid #FDE68A;font-size:12px;color:#92400E;">' +
+          '⚠ 비활성화된 계정이 있습니다. 정책 수정을 검토하세요.</div>';
+      }
 
       return '<div class="se-policy-card" onclick="openStrategyDetail(\'' + w.id + '\')">' +
         '<div class="se-card-head">' +
@@ -7423,7 +7460,7 @@
         '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">마지막 변경: ' + p.changedAt + ' (' + p.changedBy + ')</div>' +
         '</div>' +
         '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;" onclick="event.stopPropagation()">' +
-        advBadge +
+        inactiveBadge + advBadge +
         '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#166534;">&#10003; 정책 활성</span>' +
         '<span class="role-tip-wrap">' +
         '<button class="btn btn-outline btn-sm" onclick="openStrategyWizard(\'edit\',\'' + w.id + '\')" ' + (m?'':'disabled style="opacity:.5;cursor:not-allowed;"') + '>정책 수정</button>' +
@@ -7434,10 +7471,11 @@
         '<div class="se-card-body">' +
         '<div class="se-kv"><div class="se-kv-label">서명 정책</div><div class="se-kv-val" style="font-size:15px;font-weight:800;color:var(--primary);">' + nomBase + '</div></div>' +
         '<div class="se-kv"><div class="se-kv-label">최소 서명 수</div><div class="se-kv-val">' + p.n + '명</div></div>' +
-        '<div class="se-kv" style="grid-column:span 2;"><div class="se-kv-label">요청자</div><div class="se-kv-val">' + initStr + '</div></div>' +
-        '<div class="se-kv" style="grid-column:span 2;"><div class="se-kv-label">서명자</div><div class="se-kv-val">' + signStr + '</div></div>' +
+        '<div class="se-kv" style="grid-column:span 2;"><div class="se-kv-label">요청자</div><div class="se-kv-val" style="line-height:1.8;">' + _seNamesHtml(p.initiators) + '</div></div>' +
+        '<div class="se-kv" style="grid-column:span 2;"><div class="se-kv-label">서명자</div><div class="se-kv-val" style="line-height:1.8;">' + _seNamesHtml(p.signers) + '</div></div>' +
         advHtml +
         '</div>' +
+        warnFooter +
         '</div>';
     }).join('');
   }
@@ -7984,14 +8022,19 @@
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = _SP_ACCOUNTS.map(a => {
-      const isLocked = (a.value === _SE_MASTER);
-      const isChecked = selectedArr.includes(a.value);
-      const disAttr = isLocked ? 'disabled' : '';
-      const roleClass = a.role === 'Master' ? 'master' : '';
-      const lockIcon = isLocked ? '<span class="se-chk-lock">&#128274;</span>' : '';
+      const isLocked   = (a.value === _SE_MASTER);
+      const isInactive = (a.status === 'inactive');
+      const isChecked  = selectedArr.includes(a.value);
+      const disAttr    = isLocked ? 'disabled' : '';
+      const roleClass  = a.role === 'Master' ? 'master' : '';
+      const lockIcon   = isLocked ? '<span class="se-chk-lock">&#128274;</span>' : '';
+      const inactiveBadge = isInactive
+        ? '<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;background:#FEF3C7;color:#92400E;margin-left:4px;">⚠ 비활성화</span>'
+        : '';
+      const nameStyle  = isInactive ? ' style="color:#F59E0B;"' : '';
       return '<label class="se-chk-item' + (isLocked?' locked':'') + '" onclick="' + (isLocked?'':'_seToggleAcct(event,\''+containerId+'\',\''+a.value+'\')') + '">' +
         '<input type="checkbox" ' + disAttr + ' ' + (isChecked?'checked':'') + ' onclick="event.preventDefault()">' +
-        '<span class="se-chk-name">&#128100; ' + a.label + '</span>' +
+        '<span class="se-chk-name"' + nameStyle + '>&#128100; ' + a.label + inactiveBadge + '</span>' +
         '<span class="se-chk-role ' + roleClass + '">' + a.role + '</span>' +
         lockIcon +
         '</label>';
@@ -8244,7 +8287,7 @@
     closeModal('modal-se-del-confirm');
     closeStrategyWizard();
     renderStrategyDashboard();
-    showToast(wName + ' 출금 정책이 삭제되었습니다.', 'danger');
+    showToast(wName + ' 출금 정책이 삭제되었습니다. 기존 요청자·서명자에게 알림이 발송됩니다.', 'danger');
   }
 
   /* ── OTP completion ── */
@@ -8294,8 +8337,8 @@
     renderStrategyDashboard();
     const wName = w ? w.name : '';
     const msg = _seMode === 'create'
-      ? wName + ' 출금 정책이 설정되었습니다.'
-      : wName + ' 출금 정책이 수정되었습니다.';
+      ? wName + ' 출금 정책이 설정되었습니다. 관련 계정에 알림이 발송됩니다.'
+      : wName + ' 출금 정책이 수정되었습니다. 변경 영향 계정에 알림이 발송됩니다.';
     showToast(msg, 'success');
 
     // Highlight newly-set card briefly
@@ -8320,8 +8363,12 @@
 
     const nomBase = p.advanced ? p.n + ' of ' + p.m + ' (기본)' : p.n + ' of ' + p.m;
     _seSet('se-det-nom', nomBase);
-    _seSet('se-det-initiators', p.initiators.join(', ') + ' (' + p.initiators.length + '명)');
-    _seSet('se-det-signers', p.signers.join(', ') + ' (' + p.signers.length + '명)');
+
+    // Use innerHTML for deactivated account highlight
+    const initEl = document.getElementById('se-det-initiators');
+    const signEl = document.getElementById('se-det-signers');
+    if (initEl) initEl.innerHTML = _seNamesHtml(p.initiators) + ' <span style="color:var(--text-secondary);font-size:11px;">(' + p.initiators.length + '명)</span>';
+    if (signEl) signEl.innerHTML = _seNamesHtml(p.signers) + ' <span style="color:var(--text-secondary);font-size:11px;">(' + p.signers.length + '명)</span>';
 
     let advDetail = '없음';
     if (p.advanced && p.advancedConditions && p.advancedConditions.length > 0) {
