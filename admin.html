@@ -7790,7 +7790,11 @@
     var items = [];
     items.push({ label: '상세 보기', fn: 'openCWWalletDetail(' + idx + ')' });
     if (w.status === 'active') {
-      items.push({ label: '비활성화', fn: 'cwDeactivate(' + idx + ')', cls: 'color:#F59E0B;' });
+      if (_ADMIN_ROLE !== 'master') {
+        items.push({ label: '비활성화', fn: 'cwDeactivate(' + idx + ')', cls: 'color:#F59E0B;' });
+      } else {
+        items.push({ label: '비활성화', fn: '', cls: 'color:#F59E0B; opacity:.4; cursor:not-allowed; pointer-events:none;' });
+      }
     }
     if (w.status === 'inactive') {
       items.push({ label: '활성화', fn: 'cwActivate(' + idx + ')', cls: 'color:#10B981;' });
@@ -8026,7 +8030,10 @@
       else if (r.status === 'rejected') statusBadge = '<span class="badge badge-danger">✕ 반려</span>';
       else                              statusBadge = '<span class="badge badge-gray">' + r.status + '</span>';
 
-      var actionBtn = '<button class="btn btn-' + (r.status === 'pending' ? 'primary' : 'outline') + ' btn-xs" onclick="openWalletReqDetail(\'' + row.type + '\',' + r.idx + ')">' + (r.status === 'pending' ? '처리' : '상세') + '</button>';
+      var isMasterRole = (_ADMIN_ROLE === 'master');
+      var actionBtn = r.status === 'pending' && isMasterRole
+        ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45; cursor:not-allowed;" title="권한 없음">처리</button>'
+        : '<button class="btn btn-' + (r.status === 'pending' ? 'primary' : 'outline') + ' btn-xs" onclick="openWalletReqDetail(\'' + row.type + '\',' + r.idx + ')">' + (r.status === 'pending' ? '처리' : '상세') + '</button>';
 
       return '<tr>'
         + '<td>' + r.corp + '</td>'
@@ -8282,7 +8289,9 @@
       var statusBadge, actionBtn;
       if (r.status === 'pending') {
         statusBadge = '<span class="badge badge-warning">처리 대기</span>';
-        actionBtn   = '<button class="btn btn-primary btn-xs" onclick="openCoinAddDetail(' + r.idx + ')">처리</button>';
+        actionBtn   = (_ADMIN_ROLE === 'master')
+          ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45; cursor:not-allowed;" title="권한 없음">처리</button>'
+          : '<button class="btn btn-primary btn-xs" onclick="openCoinAddDetail(' + r.idx + ')">처리</button>';
       } else if (r.status === 'done') {
         statusBadge = '<span class="badge badge-success">처리 완료</span>';
         actionBtn   = '<button class="btn btn-outline btn-xs" onclick="openCoinAddDetail(' + r.idx + ')">상세</button>';
