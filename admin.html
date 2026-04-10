@@ -1671,69 +1671,81 @@
            PAGE: STR 룰 파라미터
       ══════════════════════════ -->
       <div class="page" id="page-strparam">
+        <!-- 페이지 헤더 -->
         <div class="page-header">
-          <h1 class="page-title">STR 룰 파라미터</h1>
+          <div>
+            <h1 class="page-title">STR 룰 파라미터 / STR Rule Parameters</h1>
+            <div id="strparam-subtitle" style="font-size:12px; color:var(--text-secondary); margin-top:4px;"></div>
+          </div>
+          <div id="strparam-history-btn-wrap" style="display:none;">
+            <button class="btn btn-outline btn-sm" onclick="openSTRParamHistory()">&#128203; 변경 이력</button>
+          </div>
         </div>
-        <div class="alert alert-warning">
-          &#128274; 임계값 <strong>[숫자]</strong>는 AML 관리자만 수정 가능. 변경 시 OTP 인증 필수.
+
+        <!-- 통계 카드 -->
+        <div class="stats-row" style="margin-bottom:16px;">
+          <div class="stat-card" style="border-left:4px solid var(--primary);">
+            <span class="stat-label">전체 룰</span>
+            <span class="stat-value stat-blue" id="strparam-stat-total">0</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid var(--success);">
+            <span class="stat-label">활성</span>
+            <span class="stat-value stat-green" id="strparam-stat-active">0</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid var(--text-secondary);">
+            <span class="stat-label">비활성</span>
+            <span class="stat-value stat-gray" id="strparam-stat-inactive">0</span>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #F97316;">
+            <span class="stat-label">오늘 변경</span>
+            <span class="stat-value stat-orange" id="strparam-stat-today">0</span>
+          </div>
         </div>
+
+        <!-- 필터 바 -->
+        <div class="card" style="padding:14px 16px; margin-bottom:14px;">
+          <div class="toolbar" style="flex-wrap:wrap; gap:8px;">
+            <input type="text" class="form-control" id="strparam-filter-search" placeholder="룰코드 / 룰명 검색" style="width:200px;" oninput="renderSTRParam()" />
+            <select class="form-control" id="strparam-filter-category" style="width:130px;" onchange="renderSTRParam()">
+              <option value="">전체 카테고리</option>
+              <option value="금액">금액</option>
+              <option value="기간">기간</option>
+              <option value="횟수">횟수</option>
+              <option value="비율">비율</option>
+              <option value="해당없음">해당없음</option>
+            </select>
+            <select class="form-control" id="strparam-filter-active" style="width:110px;" onchange="renderSTRParam()">
+              <option value="">전체 상태</option>
+              <option value="active">활성</option>
+              <option value="inactive">비활성</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('strparam-filter-search').value=''; document.getElementById('strparam-filter-category').value=''; document.getElementById('strparam-filter-active').value=''; renderSTRParam();">초기화</button>
+          </div>
+        </div>
+
+        <!-- 테이블 -->
         <div class="card" style="padding:0;">
           <div class="table-wrap">
-            <table>
+            <table id="strparam-table">
               <thead>
                 <tr>
-                  <th>룰 ID</th>
+                  <th style="width:44px;">No.</th>
+                  <th style="width:72px;">룰코드</th>
                   <th>룰명</th>
-                  <th>파라미터 설명</th>
-                  <th style="text-align:right;">현재값</th>
-                  <th>수정</th>
+                  <th style="width:80px;">카테고리</th>
+                  <th>파라미터 요약</th>
+                  <th style="width:80px;">활성 상태</th>
+                  <th style="width:100px;">최종수정일</th>
+                  <th style="width:80px;">관리</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td><span class="param-code">RM01</span></td>
-                  <td style="font-weight:600;">고액현금거래</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">단일거래 임계금액 (USD)</td>
-                  <td style="text-align:right;"><span class="param-value">10,000</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">RM02</span></td>
-                  <td style="font-weight:600;">분산입금 패턴</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">시간 내 반복 건수 임계치</td>
-                  <td style="text-align:right;"><span class="param-value">5</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">RD02</span></td>
-                  <td style="font-weight:600;">급격한 자산변동</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">24시간 변동률 임계치 (%)</td>
-                  <td style="text-align:right;"><span class="param-value">300</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">RD13</span></td>
-                  <td style="font-weight:600;">다수 주소 분산</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">출금 주소 다양성 임계치</td>
-                  <td style="text-align:right;"><span class="param-value">10</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">RM35</span></td>
-                  <td style="font-weight:600;">믹서/토네이도 연계</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">믹서 주소 연계 홉(hop) 수</td>
-                  <td style="text-align:right;"><span class="param-value">3</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-                <tr>
-                  <td><span class="param-code">RM40</span></td>
-                  <td style="font-weight:600;">고위험국가 거래</td>
-                  <td style="font-size:12px; color:var(--text-secondary);">거래 누적 임계금액 (USD)</td>
-                  <td style="text-align:right;"><span class="param-value">5,000</span></td>
-                  <td><button class="btn btn-outline btn-xs">수정</button></td>
-                </tr>
-              </tbody>
+              <tbody id="strparam-tbody"></tbody>
             </table>
+          </div>
+          <div id="strparam-empty" style="display:none; padding:48px 16px; text-align:center;">
+            <div style="font-size:32px; margin-bottom:10px;">&#128270;</div>
+            <div style="font-size:14px; font-weight:600; margin-bottom:4px;">검색 결과가 없습니다.</div>
+            <div style="font-size:12px; color:var(--text-secondary);">필터 조건을 변경해 보세요.</div>
           </div>
         </div>
       </div>
@@ -5772,6 +5784,7 @@
     if (pageId === 'str') renderSTR();
     if (pageId === 'pep') renderPEP();
     if (pageId === 'country') renderCountry();
+    if (pageId === 'strparam') renderSTRParam();
 
     closeMobileSidebar();
   }
@@ -13046,6 +13059,1089 @@
     URL.revokeObjectURL(url);
     showToast('CSV 다운로드 완료 (' + data.length + '건)', 'success');
   }
+</script>
+
+<!-- ══════════════════════════════════════
+     STR 룰 파라미터 — 수정 슬라이드오버
+══════════════════════════════════════ -->
+<div class="slideover-backdrop" id="strparam-edit-so-backdrop" onclick="closeSTRParamEdit()"></div>
+<div class="slideover" id="strparam-edit-so" style="max-width:580px;">
+  <div class="so-header">
+    <div>
+      <div class="so-title" id="spe-title">룰 파라미터 수정</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="spe-subtitle"></div>
+    </div>
+    <button class="modal-close" onclick="closeSTRParamEdit()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <!-- 룰 설명 박스 -->
+    <div id="spe-desc-box" style="background:var(--bg-secondary,#F4F6FA); border-radius:8px; padding:12px 14px; margin-bottom:18px; font-size:13px; color:var(--text-secondary); border:1px solid var(--border);"></div>
+
+    <!-- 파라미터 편집 폼 -->
+    <div id="spe-params-form"></div>
+
+    <!-- 변경 후 감지 조건 미리보기 -->
+    <div id="spe-preview-wrap" style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px; padding:12px 14px; margin-bottom:18px; display:none;">
+      <div style="font-size:11px; font-weight:700; color:#2563EB; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">감지 조건 미리보기</div>
+      <div id="spe-preview-text" style="font-size:13px; color:#1E3A8A;"></div>
+    </div>
+
+    <!-- 수정 사유 -->
+    <div class="form-group">
+      <label class="form-label">* 수정 사유 <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(필수 · 최대 500자)</span></label>
+      <textarea class="form-control" id="spe-reason" rows="3" maxlength="500" placeholder="변경 사유를 입력하세요." style="width:100%; resize:vertical;" oninput="_strParamValidate()"></textarea>
+      <div style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:3px;"><span id="spe-reason-count">0</span>/500</div>
+    </div>
+  </div>
+  <div class="so-footer" style="justify-content:space-between;">
+    <button class="btn btn-outline btn-sm" onclick="openSTRParamRestore()">&#8635; 기본값 복원</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-outline btn-sm" onclick="closeSTRParamEdit()">취소</button>
+      <button class="btn btn-primary btn-sm" id="spe-save-btn" disabled onclick="_strParamSaveOTP()">저장 &rarr; OTP ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STR 룰 파라미터 — ON/OFF 슬라이드오버
+══════════════════════════════════════ -->
+<div class="slideover-backdrop" id="strparam-toggle-so-backdrop" onclick="closeSTRParamToggle()"></div>
+<div class="slideover" id="strparam-toggle-so" style="max-width:480px;">
+  <div class="so-header">
+    <div>
+      <div class="so-title" id="spt-title">룰 활성 상태 변경</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="spt-subtitle"></div>
+    </div>
+    <button class="modal-close" onclick="closeSTRParamToggle()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <!-- 현재 상태 -->
+    <div style="border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px;">
+      <div style="font-size:11px; color:var(--text-secondary); font-weight:600; margin-bottom:8px;">현재 상태</div>
+      <div id="spt-current-status" style="font-size:20px; font-weight:700;"></div>
+    </div>
+    <!-- 토글 선택 -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px;">변경할 상태 선택</div>
+      <div style="display:flex; gap:10px;">
+        <label id="spt-on-label" style="flex:1; border:2px solid var(--border); border-radius:10px; padding:14px; cursor:pointer; text-align:center; transition:border-color 0.15s;">
+          <input type="radio" name="spt-toggle" value="active" onchange="_strParamToggleValidate()" style="display:none;">
+          <div style="font-size:24px; margin-bottom:4px;">&#9646;</div>
+          <div style="font-size:13px; font-weight:700; color:var(--success);">활성 (ON)</div>
+        </label>
+        <label id="spt-off-label" style="flex:1; border:2px solid var(--border); border-radius:10px; padding:14px; cursor:pointer; text-align:center; transition:border-color 0.15s;">
+          <input type="radio" name="spt-toggle" value="inactive" onchange="_strParamToggleValidate()" style="display:none;">
+          <div style="font-size:24px; margin-bottom:4px;">&#9645;</div>
+          <div style="font-size:13px; font-weight:700; color:var(--text-secondary);">비활성 (OFF)</div>
+        </label>
+      </div>
+    </div>
+    <!-- 비활성 경고 -->
+    <div id="spt-warning" style="display:none; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:12px 14px; margin-bottom:16px; font-size:12px; color:#DC2626;">
+      &#9888; 이 룰을 비활성화하면 해당 유형의 의심거래가 탐지되지 않습니다. 계속하시겠습니까?
+    </div>
+    <!-- 수정 사유 -->
+    <div class="form-group">
+      <label class="form-label">* 변경 사유 <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(필수 · 최대 500자)</span></label>
+      <textarea class="form-control" id="spt-reason" rows="3" maxlength="500" placeholder="변경 사유를 입력하세요." style="width:100%; resize:vertical;" oninput="_strParamToggleValidate()"></textarea>
+      <div style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:3px;"><span id="spt-reason-count">0</span>/500</div>
+    </div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-outline btn-sm" onclick="closeSTRParamToggle()">취소</button>
+    <button class="btn btn-primary btn-sm" id="spt-save-btn" disabled onclick="_strParamToggleSaveOTP()">저장 &rarr; OTP ›</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STR 룰 파라미터 — 기본값 복원 모달
+══════════════════════════════════════ -->
+<div class="modal" id="modal-strparam-restore">
+  <div class="modal-header">
+    <div class="modal-title">기본값 복원</div>
+    <button class="modal-close" onclick="closeModal('modal-strparam-restore')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="font-size:13px; margin-bottom:14px;">다음 파라미터를 기본값으로 복원합니다.</div>
+    <div id="restore-compare-table" style="margin-bottom:16px;"></div>
+    <div class="form-group">
+      <label class="form-label">* 복원 사유 <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(필수)</span></label>
+      <textarea class="form-control" id="restore-reason" rows="2" maxlength="500" placeholder="복원 사유를 입력하세요." style="width:100%; resize:vertical;" oninput="_strParamRestoreValidate()"></textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline btn-sm" onclick="closeModal('modal-strparam-restore')">취소</button>
+    <button class="btn btn-sm" id="restore-save-btn" disabled style="background:var(--danger); color:#fff; border:none; cursor:pointer;" onclick="_strParamRestoreSaveOTP()">기본값으로 복원</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STR 룰 파라미터 — 변경 이력 슬라이드오버
+══════════════════════════════════════ -->
+<div class="slideover-backdrop" id="strparam-history-so-backdrop" onclick="closeSTRParamHistory()"></div>
+<div class="slideover" id="strparam-history-so" style="max-width:900px;">
+  <div class="so-header">
+    <div class="so-title">STR 룰 파라미터 변경 이력</div>
+    <button class="modal-close" onclick="closeSTRParamHistory()">&#10005;</button>
+  </div>
+  <div class="so-body">
+    <!-- 이력 필터 -->
+    <div class="card" style="padding:12px 14px; margin-bottom:14px;">
+      <div class="toolbar" style="flex-wrap:wrap; gap:8px;">
+        <span style="font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;">기간</span>
+        <input type="date" class="form-control" id="sph-date-from" style="width:140px;" onchange="renderSTRParamHistory()" />
+        <span style="font-size:12px; color:var(--text-secondary);">~</span>
+        <input type="date" class="form-control" id="sph-date-to" style="width:140px;" onchange="renderSTRParamHistory()" />
+        <input type="text" class="form-control" id="sph-search" placeholder="룰코드 / 룰명 검색" style="width:160px;" oninput="renderSTRParamHistory()" />
+        <select class="form-control" id="sph-type" style="width:140px;" onchange="renderSTRParamHistory()">
+          <option value="">전체 유형</option>
+          <option value="파라미터수정">파라미터수정</option>
+          <option value="활성화">활성화</option>
+          <option value="비활성화">비활성화</option>
+          <option value="기본값복원">기본값복원</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="_strParamHistoryCSV()">&#8595; CSV</button>
+      </div>
+    </div>
+    <!-- 이력 테이블 -->
+    <div class="card" style="padding:0;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>일시</th>
+              <th>룰코드</th>
+              <th>룰명</th>
+              <th>파라미터</th>
+              <th>변경 전</th>
+              <th>변경 후</th>
+              <th>수정자</th>
+              <th>사유</th>
+            </tr>
+          </thead>
+          <tbody id="sph-tbody"></tbody>
+        </table>
+      </div>
+      <div id="sph-empty" style="display:none; padding:36px; text-align:center; font-size:13px; color:var(--text-secondary);">이력이 없습니다.</div>
+    </div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-outline btn-sm" onclick="closeSTRParamHistory()">닫기</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   STR 룰 파라미터 — 데이터 & 로직
+════════════════════════════════════════════════ */
+
+var _STR_PARAM_RULES = [
+  {
+    code:'RM01', name:'고액 현금성 거래', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'단일 거래에서 현금성 자산이 기준금액 이상인 경우 STR 탐지 대상으로 분류합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:1000000, max:100000000 }
+    ],
+    previewTpl:'{threshold}원 이상 단일 거래 감지'
+  },
+  {
+    code:'RM02', name:'단기 분할 입금 (스트럭처링)', category:'횟수', active:true, updatedAt:'2026-04-09',
+    description:'짧은 기간 내 여러 건으로 분산 입금하여 보고 임계금액을 회피하려는 스트럭처링 패턴을 탐지합니다.',
+    params:[
+      { key:'count', label:'횟수', type:'number', unit:'회', value:3, default:3, min:2, max:10 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'perAmount', label:'건당금액', type:'amount', unit:'원', value:1000000, default:1000000, min:100000, max:5000000 }
+    ],
+    previewTpl:'{period}일 내 {count}회 이상, 건당 {perAmount}원 이상 분산 입금 감지'
+  },
+  {
+    code:'RM03', name:'단기 대량 분산 출금', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'단기간 내 여러 주소로 분산 출금하여 추적을 회피하는 패턴을 탐지합니다.',
+    params:[
+      { key:'count', label:'횟수', type:'number', unit:'회', value:5, default:5, min:2, max:20 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'totalAmount', label:'총금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
+    ],
+    previewTpl:'{period}일 내 {count}회 이상, 총 {totalAmount}원 이상 분산 출금 감지'
+  },
+  {
+    code:'RM04', name:'신규 고객 고액 거래', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'신규 가입 직후 고액 거래를 시도하는 경우 자금세탁 위험이 높습니다.',
+    params:[
+      { key:'joinPeriod', label:'가입후기간', type:'number', unit:'일', value:30, default:30, min:1, max:90 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
+    ],
+    previewTpl:'가입 {joinPeriod}일 이내 {threshold}원 이상 거래 감지'
+  },
+  {
+    code:'RM05', name:'WLF 해당 고객 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'내부 요주의인물(WLF) 목록에 등재된 고객이 거래하는 경우 즉시 탐지합니다.',
+    params:[],
+    previewTpl:'WLF 등재 고객의 모든 거래 즉시 감지'
+  },
+  {
+    code:'RM06', name:'제재대상 고객 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'금융당국 또는 국제기구의 제재 대상으로 등록된 고객의 거래를 탐지합니다.',
+    params:[],
+    previewTpl:'제재대상 고객의 모든 거래 즉시 감지'
+  },
+  {
+    code:'RM07', name:'FATF 고위험국 고객 거래', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'FATF 고위험국 또는 블랙리스트 국가 고객과의 거래를 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
+    ],
+    previewTpl:'FATF 고위험국 고객 {threshold}원 이상 거래 감지'
+  },
+  {
+    code:'RM08', name:'UN 제재국 고객 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'UN 안보리 제재 대상 국가의 고객이 거래하는 경우 즉시 탐지합니다.',
+    params:[],
+    previewTpl:'UN 제재국 고객의 모든 거래 즉시 감지'
+  },
+  {
+    code:'RM09', name:'비정상 시간대 고액 출금', category:'금액', active:false, updatedAt:'2026-02-01',
+    description:'업무 외 시간대(오전 0~6시)에 고액 출금이 발생하는 경우를 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:1000000, max:100000000 }
+    ],
+    previewTpl:'비정상 시간대(0~6시) {threshold}원 이상 출금 감지'
+  },
+  {
+    code:'RM10', name:'고위험국가 고객 거래', category:'금액', active:true, updatedAt:'2026-03-10',
+    description:'고위험 국가로 분류된 국적의 고객이 기준금액 이상 거래하는 경우 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
+    ],
+    previewTpl:'고위험국가 고객 {threshold}원 이상 거래 감지'
+  },
+  {
+    code:'RM11', name:'단기 반복 소액 출금', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'하루에 소액 출금을 반복하는 패턴을 탐지합니다.',
+    params:[
+      { key:'count', label:'횟수', type:'number', unit:'회', value:10, default:10, min:5, max:50 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 }
+    ],
+    previewTpl:'{period}일 내 {count}회 이상 소액 출금 감지'
+  },
+  {
+    code:'RM12', name:'다수 출금 주소 분산', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'다수의 서로 다른 출금 주소로 분산 전송하는 패턴을 탐지합니다.',
+    params:[
+      { key:'addrCount', label:'주소수', type:'number', unit:'개', value:10, default:10, min:3, max:50 }
+    ],
+    previewTpl:'{addrCount}개 이상 출금 주소 분산 감지'
+  },
+  {
+    code:'RM13', name:'믹서/토네이도 연계 거래', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'믹서 또는 토네이도 캐시와 연계된 주소로부터 지정된 홉 이내에 거래가 발생하는 경우를 탐지합니다.',
+    params:[
+      { key:'hops', label:'홉수', type:'number', unit:'홉', value:3, default:3, min:1, max:10 }
+    ],
+    previewTpl:'믹서/토네이도 주소로부터 {hops}홉 이내 거래 감지'
+  },
+  {
+    code:'RM14', name:'VPN/TOR 접속 후 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'VPN 또는 TOR 네트워크를 통한 접속 직후 거래가 발생하는 경우를 탐지합니다.',
+    params:[],
+    previewTpl:'VPN/TOR 접속 후 모든 거래 즉시 감지'
+  },
+  {
+    code:'RM15', name:'단기 대량 출금', category:'금액', active:false, updatedAt:'2026-02-01',
+    description:'단기간 내 대량의 출금이 발생하는 경우를 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:50000000, default:50000000, min:10000000, max:500000000 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 }
+    ],
+    previewTpl:'{period}일 내 {threshold}원 이상 대량 출금 감지'
+  },
+  {
+    code:'RM16', name:'급격한 자산 증가', category:'비율', active:true, updatedAt:'2025-12-20',
+    description:'단기간 내 자산이 급격히 증가하는 경우 비정상적인 자금 유입을 의심합니다.',
+    params:[
+      { key:'rate', label:'증가율', type:'number', unit:'%', value:300, default:300, min:50, max:1000 },
+      { key:'period', label:'기간', type:'number', unit:'시간', value:24, default:24, min:1, max:72 }
+    ],
+    previewTpl:'{period}시간 내 {rate}% 이상 자산 증가 감지'
+  },
+  {
+    code:'RM17', name:'급격한 자산 감소', category:'비율', active:true, updatedAt:'2026-02-01',
+    description:'단기간 내 자산이 급격히 감소하는 경우 자금 은닉 또는 탈취를 의심합니다.',
+    params:[
+      { key:'rate', label:'감소율', type:'number', unit:'%', value:70, default:70, min:30, max:100 },
+      { key:'period', label:'기간', type:'number', unit:'시간', value:24, default:24, min:1, max:72 }
+    ],
+    previewTpl:'{period}시간 내 {rate}% 이상 자산 감소 감지'
+  },
+  {
+    code:'RM18', name:'동일 수취인 반복 송금', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'동일한 수취인 주소로 짧은 기간 내 반복 송금하는 패턴을 탐지합니다.',
+    params:[
+      { key:'count', label:'횟수', type:'number', unit:'회', value:5, default:5, min:2, max:20 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:30, default:30, min:1, max:90 }
+    ],
+    previewTpl:'{period}일 내 동일 수취인 {count}회 이상 반복 송금 감지'
+  },
+  {
+    code:'RM19', name:'장기 미거래 후 고액 거래', category:'기간', active:true, updatedAt:'2026-02-01',
+    description:'장기간 거래가 없다가 갑작스럽게 고액 거래가 발생하는 경우를 탐지합니다.',
+    params:[
+      { key:'dormantPeriod', label:'미거래기간', type:'number', unit:'일', value:180, default:180, min:30, max:730 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:1000000, max:100000000 }
+    ],
+    previewTpl:'{dormantPeriod}일 이상 미거래 후 {threshold}원 이상 거래 감지'
+  },
+  {
+    code:'RM20', name:'입금 직후 즉시 전액 출금', category:'비율', active:true, updatedAt:'2026-02-01',
+    description:'입금 직후 대부분의 자금을 즉시 출금하는 자금 세탁 패턴을 탐지합니다.',
+    params:[
+      { key:'rate', label:'출금비율', type:'number', unit:'%', value:90, default:90, min:50, max:100 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 }
+    ],
+    previewTpl:'입금 후 {period}일 이내 {rate}% 이상 즉시 출금 감지'
+  },
+  {
+    code:'RM21', name:'다국가 분산 출금', category:'횟수', active:false, updatedAt:'2026-02-01',
+    description:'여러 국가의 주소로 분산 출금하는 패턴을 탐지합니다.',
+    params:[
+      { key:'countryCount', label:'국가수', type:'number', unit:'개', value:3, default:3, min:2, max:10 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 }
+    ],
+    previewTpl:'{period}일 내 {countryCount}개국 이상 분산 출금 감지'
+  },
+  {
+    code:'RM22', name:'의심스러운 IP 접속 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'블랙리스트 또는 의심 IP로부터 접속하여 거래하는 경우를 탐지합니다.',
+    params:[],
+    previewTpl:'의심 IP 접속 후 모든 거래 즉시 감지'
+  },
+  {
+    code:'RM23', name:'계좌 개설 직후 고액 거래', category:'기간', active:true, updatedAt:'2026-02-01',
+    description:'계좌 개설 직후 고액 거래를 시도하는 경우를 탐지합니다.',
+    params:[
+      { key:'openPeriod', label:'개설후기간', type:'number', unit:'일', value:7, default:7, min:1, max:30 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
+    ],
+    previewTpl:'계좌 개설 {openPeriod}일 이내 {threshold}원 이상 거래 감지'
+  },
+  {
+    code:'RM24', name:'환전 후 즉시 해외송금', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'환전 직후 해외로 즉시 송금하는 자금 세탁 패턴을 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:3000000, default:3000000, min:1000000, max:30000000 }
+    ],
+    previewTpl:'환전 후 즉시 {threshold}원 이상 해외송금 감지'
+  },
+  {
+    code:'RM25', name:'동일 주소 반복 거래', category:'횟수', active:false, updatedAt:'2026-02-01',
+    description:'동일한 주소와 반복적으로 거래하는 패턴을 탐지합니다.',
+    params:[
+      { key:'count', label:'횟수', type:'number', unit:'회', value:5, default:5, min:2, max:20 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:30, default:30, min:1, max:90 }
+    ],
+    previewTpl:'{period}일 내 동일 주소 {count}회 이상 반복 거래 감지'
+  },
+  {
+    code:'RM26', name:'비정상 수수료 패턴', category:'비율', active:true, updatedAt:'2026-02-01',
+    description:'정상 범위를 벗어난 비정상적인 수수료 패턴을 탐지합니다.',
+    params:[
+      { key:'feeRate', label:'수수료비율', type:'number', unit:'%', value:5, default:5, min:1, max:20 }
+    ],
+    previewTpl:'정상 수수료 대비 {feeRate}% 초과 비정상 수수료 감지'
+  },
+  {
+    code:'RM27', name:'법인 고객 고액 현금성 거래', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'법인 고객의 고액 현금성 거래를 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:30000000, default:30000000, min:10000000, max:500000000 }
+    ],
+    previewTpl:'법인 고객 {threshold}원 이상 현금성 거래 감지'
+  },
+  {
+    code:'RM28', name:'복수 계좌 분산 입금', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'여러 계좌로 분산 입금하는 스트럭처링 패턴을 탐지합니다.',
+    params:[
+      { key:'acctCount', label:'계좌수', type:'number', unit:'개', value:5, default:5, min:2, max:20 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 },
+      { key:'perAmount', label:'건당금액', type:'amount', unit:'원', value:2000000, default:2000000, min:500000, max:20000000 }
+    ],
+    previewTpl:'{period}일 내 {acctCount}개 이상 계좌, 건당 {perAmount}원 이상 분산 입금 감지'
+  },
+  {
+    code:'RM29', name:'본인인증 미완료 고액 거래', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'본인인증이 완료되지 않은 상태에서 고액 거래를 시도하는 경우를 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:1000000, default:1000000, min:100000, max:5000000 }
+    ],
+    previewTpl:'본인인증 미완료 상태 {threshold}원 이상 거래 감지'
+  },
+  {
+    code:'RM30', name:'다크넷 연계 주소 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'다크넷 마켓플레이스와 연계된 주소와의 거래를 탐지합니다.',
+    params:[],
+    previewTpl:'다크넷 연계 주소와의 모든 거래 즉시 감지'
+  },
+  {
+    code:'RM31', name:'단기 고빈도 소액 거래', category:'횟수', active:true, updatedAt:'2026-02-01',
+    description:'짧은 시간 내 매우 높은 빈도로 소액 거래가 반복되는 패턴을 탐지합니다.',
+    params:[
+      { key:'count', label:'횟수', type:'number', unit:'회', value:50, default:50, min:10, max:200 },
+      { key:'period', label:'기간', type:'number', unit:'일', value:1, default:1, min:1, max:7 }
+    ],
+    previewTpl:'{period}일 내 {count}회 이상 고빈도 소액 거래 감지'
+  },
+  {
+    code:'RM32', name:'임계금액 직하 반복 거래', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'보고 임계금액 바로 이하로 반복 거래하는 회피 패턴을 탐지합니다.',
+    params:[
+      { key:'count', label:'횟수', type:'number', unit:'회', value:3, default:3, min:2, max:10 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:9900000, default:9900000, min:1000000, max:100000000 }
+    ],
+    previewTpl:'{threshold}원 이하 반복 {count}회 이상 거래 감지'
+  },
+  {
+    code:'RM33', name:'NFT/DeFi 연계 의심 거래', category:'해당없음', active:false, updatedAt:'2026-02-01',
+    description:'NFT 또는 DeFi 프로토콜을 통한 의심스러운 자금 이동을 탐지합니다.',
+    params:[],
+    previewTpl:'NFT/DeFi 연계 의심 거래 즉시 감지'
+  },
+  {
+    code:'RM34', name:'크로스체인 브릿지 대량 거래', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'크로스체인 브릿지를 통한 대량 자산 이동을 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:1000000, max:100000000 }
+    ],
+    previewTpl:'크로스체인 브릿지 {threshold}원 이상 대량 이동 감지'
+  },
+  {
+    code:'RM35', name:'스테이블코인 대량 전환', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'대량의 자산을 스테이블코인으로 전환하는 자금 세탁 패턴을 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:30000000, default:30000000, min:10000000, max:500000000 }
+    ],
+    previewTpl:'스테이블코인 {threshold}원 이상 대량 전환 감지'
+  },
+  {
+    code:'RM36', name:'거래소간 대량 이동', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'거래소 간 대량 자산 이동을 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:50000000, default:50000000, min:10000000, max:1000000000 }
+    ],
+    previewTpl:'거래소 간 {threshold}원 이상 대량 이동 감지'
+  },
+  {
+    code:'RM37', name:'장기 미사용 후 대량 출금', category:'기간', active:true, updatedAt:'2026-02-01',
+    description:'장기간 미사용 계좌에서 갑작스럽게 대량 출금이 발생하는 경우를 탐지합니다.',
+    params:[
+      { key:'dormantPeriod', label:'미사용기간', type:'number', unit:'일', value:365, default:365, min:90, max:1095 },
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:5000000, default:5000000, min:1000000, max:50000000 }
+    ],
+    previewTpl:'{dormantPeriod}일 이상 미사용 후 {threshold}원 이상 대량 출금 감지'
+  },
+  {
+    code:'RM38', name:'이상 가스비 패턴', category:'비율', active:false, updatedAt:'2026-02-01',
+    description:'정상 대비 비정상적으로 높은 가스비를 지불하는 거래를 탐지합니다.',
+    params:[
+      { key:'rate', label:'정상대비비율', type:'number', unit:'%', value:500, default:500, min:100, max:2000 }
+    ],
+    previewTpl:'정상 가스비 대비 {rate}% 초과 이상 가스비 거래 감지'
+  },
+  {
+    code:'RM39', name:'PEP 관련 계좌 거래', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'정치적 주요인물(PEP) 관련 계좌의 거래를 탐지합니다.',
+    params:[],
+    previewTpl:'PEP 관련 계좌의 모든 거래 즉시 감지'
+  },
+  {
+    code:'RM40', name:'보고 임계금액 거래', category:'금액', active:true, updatedAt:'2026-02-01',
+    description:'금융정보분석원(FIU) 보고 임계금액 이상의 거래를 탐지합니다.',
+    params:[
+      { key:'threshold', label:'기준금액', type:'amount', unit:'원', value:10000000, default:10000000, min:5000000, max:50000000 }
+    ],
+    previewTpl:'{threshold}원 이상 보고 임계금액 거래 감지'
+  },
+  {
+    code:'RM41', name:'복합 위험지표 동시 발현', category:'해당없음', active:true, updatedAt:'2026-02-01',
+    description:'두 개 이상의 위험지표가 동시에 발현되는 복합 위험 거래를 탐지합니다.',
+    params:[],
+    previewTpl:'2개 이상 위험지표 동시 발현 즉시 감지'
+  }
+];
+
+var _STR_PARAM_HISTORY = [
+  { id:'SPH-001', datetime:'2026-04-09 11:00', code:'RM02', name:'단기 분할 입금', paramLabel:'집계 기간', before:'7일', after:'14일', actor:'최관리자', reason:'탐지 민감도 조정', type:'파라미터수정' },
+  { id:'SPH-002', datetime:'2026-03-10 09:00', code:'RM10', name:'고위험국가 고객 거래', paramLabel:'기준금액', before:'1,000만원', after:'500만원', actor:'최관리자', reason:'정책 강화', type:'파라미터수정' },
+  { id:'SPH-003', datetime:'2026-02-01 10:00', code:'RM05', name:'WLF 해당 고객 거래', paramLabel:'활성상태', before:'OFF', after:'ON', actor:'최관리자', reason:'내부요주의인물 연동 정책 시행', type:'활성화' },
+  { id:'SPH-004', datetime:'2026-01-15 14:30', code:'RM01', name:'고액 현금성 거래', paramLabel:'기준금액', before:'2,000만원', after:'1,000만원', actor:'최관리자', reason:'금융당국 권고 기준 하향 적용', type:'파라미터수정' },
+  { id:'SPH-005', datetime:'2025-12-20 09:15', code:'RM16', name:'급격한 자산 증가', paramLabel:'증가율', before:'500%', after:'300%', actor:'최관리자', reason:'과도한 알림 감소 목적', type:'파라미터수정' }
+];
+
+var _strParamCurrent = null; // 현재 편집 중인 룰
+
+function _strParamIsManager() {
+  return _ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master';
+}
+
+function _strParamFormatAmount(v) {
+  return Number(v).toLocaleString();
+}
+
+function _strParamParamSummary(rule) {
+  if (rule.category === '해당없음') return '—';
+  return rule.params.map(function(p) {
+    var disp = p.type === 'amount' ? _strParamFormatAmount(p.value) + p.unit : p.value + p.unit;
+    return p.label + ': ' + disp;
+  }).join(' / ');
+}
+
+function _strParamPreview(rule, values) {
+  if (!rule.previewTpl) return '';
+  var tpl = rule.previewTpl;
+  rule.params.forEach(function(p) {
+    var v = (values && values[p.key] !== undefined) ? values[p.key] : p.value;
+    var disp = p.type === 'amount' ? _strParamFormatAmount(v) : v;
+    tpl = tpl.replace('{' + p.key + '}', disp);
+  });
+  return tpl;
+}
+
+function renderSTRParam() {
+  var search = (document.getElementById('strparam-filter-search') || {}).value || '';
+  var cat = (document.getElementById('strparam-filter-category') || {}).value || '';
+  var act = (document.getElementById('strparam-filter-active') || {}).value || '';
+
+  var today = new Date().toISOString().slice(0, 10);
+  var totalActive = 0, totalInactive = 0, todayChanged = 0;
+  _STR_PARAM_RULES.forEach(function(r) {
+    if (r.active) totalActive++; else totalInactive++;
+    if (r.updatedAt === today) todayChanged++;
+  });
+
+  var el = document.getElementById('strparam-stat-total');
+  if (el) el.textContent = _STR_PARAM_RULES.length;
+  el = document.getElementById('strparam-stat-active');
+  if (el) el.textContent = totalActive;
+  el = document.getElementById('strparam-stat-inactive');
+  if (el) el.textContent = totalInactive;
+  el = document.getElementById('strparam-stat-today');
+  if (el) el.textContent = todayChanged;
+
+  var sub = document.getElementById('strparam-subtitle');
+  if (sub) sub.textContent = '총 ' + _STR_PARAM_RULES.length + '개 룰 | 활성: ' + totalActive + '개 | 비활성: ' + totalInactive + '개';
+
+  var histBtn = document.getElementById('strparam-history-btn-wrap');
+  if (histBtn) histBtn.style.display = _strParamIsManager() ? '' : 'none';
+
+  var filtered = _STR_PARAM_RULES.filter(function(r) {
+    var q = search.toLowerCase();
+    if (q && r.code.toLowerCase().indexOf(q) === -1 && r.name.toLowerCase().indexOf(q) === -1) return false;
+    if (cat && r.category !== cat) return false;
+    if (act === 'active' && !r.active) return false;
+    if (act === 'inactive' && r.active) return false;
+    return true;
+  });
+
+  var tbody = document.getElementById('strparam-tbody');
+  var empty = document.getElementById('strparam-empty');
+  var tbl = document.getElementById('strparam-table');
+
+  if (!tbody) return;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    if (empty) empty.style.display = '';
+    if (tbl) tbl.style.display = 'none';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (tbl) tbl.style.display = '';
+
+  var isManager = _strParamIsManager();
+  var rows = filtered.map(function(r, i) {
+    var activeBadge = r.active
+      ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:20px;">&#9646; 활성</span>'
+      : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:20px;">&#9645; 비활성</span>';
+
+    var catBadge = {
+      '금액': 'background:#EFF6FF;color:#1D4ED8;',
+      '기간': 'background:#F0FDF4;color:#166534;',
+      '횟수': 'background:#FFF7ED;color:#C2410C;',
+      '비율': 'background:#FDF4FF;color:#7E22CE;',
+      '해당없음': 'background:#F9FAFB;color:#6B7280;'
+    }[r.category] || '';
+
+    var manageBtns = '';
+    if (isManager) {
+      if (r.category === '해당없음') {
+        manageBtns = '<button class="btn btn-outline btn-sm" onclick="openSTRParamToggle(\'' + r.code + '\')">' + (r.active ? 'OFF' : 'ON') + '</button>';
+      } else {
+        manageBtns = '<button class="btn btn-outline btn-sm" onclick="openSTRParamEdit(\'' + r.code + '\')">수정</button>';
+      }
+    } else {
+      manageBtns = '<button class="btn btn-outline btn-sm" onclick="openSTRParamEdit(\'' + r.code + '\')">상세</button>';
+    }
+
+    return '<tr>' +
+      '<td style="color:var(--text-secondary);font-size:12px;">' + (i + 1) + '</td>' +
+      '<td><span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--primary);">' + r.code + '</span></td>' +
+      '<td style="font-weight:600;">' + r.name + '</td>' +
+      '<td><span style="font-size:11px;padding:2px 8px;border-radius:12px;' + catBadge + '">' + r.category + '</span></td>' +
+      '<td style="font-size:12px;color:var(--text-secondary);">' + _strParamParamSummary(r) + '</td>' +
+      '<td>' + activeBadge + '</td>' +
+      '<td style="font-size:12px;color:var(--text-secondary);">' + r.updatedAt + '</td>' +
+      '<td>' + manageBtns + '</td>' +
+      '</tr>';
+  });
+  tbody.innerHTML = rows.join('');
+}
+
+function openSTRParamEdit(code) {
+  var rule = null;
+  for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
+    if (_STR_PARAM_RULES[i].code === code) { rule = _STR_PARAM_RULES[i]; break; }
+  }
+  if (!rule) return;
+  _strParamCurrent = code;
+  var isManager = _strParamIsManager();
+
+  document.getElementById('spe-title').textContent = rule.code + ' — ' + rule.name;
+  document.getElementById('spe-subtitle').textContent = '카테고리: ' + rule.category;
+  document.getElementById('spe-desc-box').textContent = rule.description;
+  document.getElementById('spe-reason').value = '';
+  document.getElementById('spe-reason-count').textContent = '0';
+
+  var reasonTa = document.getElementById('spe-reason');
+  reasonTa.oninput = function() {
+    document.getElementById('spe-reason-count').textContent = this.value.length;
+    _strParamValidate();
+  };
+
+  var formHtml = '';
+  if (rule.params.length === 0) {
+    formHtml = '<div style="color:var(--text-secondary);font-size:13px;margin-bottom:18px;">이 룰은 파라미터 없이 ON/OFF로 제어됩니다.</div>';
+  } else {
+    rule.params.forEach(function(p) {
+      var rangeHint = p.type === 'amount'
+        ? '허용 범위: ' + _strParamFormatAmount(p.min) + '원 ~ ' + _strParamFormatAmount(p.max) + '원'
+        : '허용 범위: ' + p.min + p.unit + ' ~ ' + p.max + p.unit;
+      var inputAttr = isManager ? '' : ' disabled';
+      formHtml += '<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+          '<div style="font-size:13px;font-weight:700;">' + p.label + '</div>' +
+          '<div style="font-size:11px;color:var(--text-secondary);">' + rangeHint + '</div>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;">' +
+          '<div>' +
+            '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">현재값</div>' +
+            '<div style="font-size:16px;font-weight:700;color:var(--primary);">' + (p.type === 'amount' ? _strParamFormatAmount(p.value) : p.value) + ' ' + p.unit + '</div>' +
+          '</div>' +
+          '<div style="color:var(--text-secondary);font-size:18px;">&rarr;</div>' +
+          '<div>' +
+            '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">변경값</div>' +
+            '<div style="display:flex;align-items:center;gap:4px;">' +
+              '<input type="number" class="form-control" id="spe-param-' + p.key + '" value="' + p.value + '" min="' + p.min + '" max="' + p.max + '"' + inputAttr + ' style="width:120px;" oninput="_strParamValidate(); _strParamUpdatePreview();" />' +
+              '<span style="font-size:12px;color:var(--text-secondary);">' + p.unit + '</span>' +
+            '</div>' +
+            '<div id="spe-err-' + p.key + '" style="font-size:11px;color:var(--danger);margin-top:3px;display:none;"></div>' +
+          '</div>' +
+        '</div>' +
+        '</div>';
+    });
+  }
+  document.getElementById('spe-params-form').innerHTML = formHtml;
+
+  var prevWrap = document.getElementById('spe-preview-wrap');
+  var prevText = document.getElementById('spe-preview-text');
+  if (rule.params.length > 0 && rule.previewTpl) {
+    prevWrap.style.display = '';
+    prevText.textContent = _strParamPreview(rule, null);
+  } else {
+    prevWrap.style.display = 'none';
+  }
+
+  var saveBtn = document.getElementById('spe-save-btn');
+  if (saveBtn) {
+    saveBtn.style.display = (isManager && rule.params.length > 0) ? '' : 'none';
+  }
+  var footer = document.querySelector('#strparam-edit-so .so-footer');
+  if (footer) {
+    var restoreBtn = footer.querySelector('button');
+    if (restoreBtn) restoreBtn.style.display = (isManager && rule.params.length > 0) ? '' : 'none';
+  }
+
+  document.getElementById('spe-reason').disabled = !isManager;
+  _strParamValidate();
+
+  document.getElementById('strparam-edit-so-backdrop').classList.add('open');
+  document.getElementById('strparam-edit-so').classList.add('open');
+}
+
+function closeSTRParamEdit() {
+  document.getElementById('strparam-edit-so-backdrop').classList.remove('open');
+  document.getElementById('strparam-edit-so').classList.remove('open');
+}
+
+function _strParamUpdatePreview() {
+  var rule = null;
+  for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
+    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+  }
+  if (!rule || rule.params.length === 0) return;
+  var values = {};
+  rule.params.forEach(function(p) {
+    var inp = document.getElementById('spe-param-' + p.key);
+    if (inp) values[p.key] = inp.value;
+  });
+  var prevText = document.getElementById('spe-preview-text');
+  if (prevText) prevText.textContent = _strParamPreview(rule, values);
+}
+
+function _strParamValidate() {
+  var rule = null;
+  for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
+    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+  }
+  var btn = document.getElementById('spe-save-btn');
+  if (!btn || !rule) return;
+  var reason = (document.getElementById('spe-reason') || {}).value || '';
+  if (!reason.trim()) { btn.disabled = true; return; }
+  var valid = true;
+  rule.params.forEach(function(p) {
+    var inp = document.getElementById('spe-param-' + p.key);
+    var errEl = document.getElementById('spe-err-' + p.key);
+    if (!inp) return;
+    var v = parseFloat(inp.value);
+    if (isNaN(v) || v < p.min || v > p.max) {
+      valid = false;
+      if (errEl) {
+        errEl.style.display = '';
+        errEl.textContent = p.type === 'amount'
+          ? _strParamFormatAmount(p.min) + '원 ~ ' + _strParamFormatAmount(p.max) + '원 범위를 벗어났습니다.'
+          : p.min + p.unit + ' ~ ' + p.max + p.unit + ' 범위를 벗어났습니다.';
+      }
+    } else {
+      if (errEl) errEl.style.display = 'none';
+    }
+  });
+  btn.disabled = !valid;
+}
+
+function _strParamSaveOTP() {
+  openOTPModal('STR 룰 파라미터 수정', function() {
+    _strParamSave();
+  });
+}
+
+function _strParamSave() {
+  var rule = null;
+  for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
+    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+  }
+  if (!rule) return;
+  var reason = document.getElementById('spe-reason').value;
+  var now = new Date();
+  var dtStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') +
+    ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  rule.params.forEach(function(p) {
+    var inp = document.getElementById('spe-param-' + p.key);
+    if (inp) {
+      var newVal = parseFloat(inp.value);
+      var oldDisp = p.type === 'amount' ? _strParamFormatAmount(p.value) + '원' : p.value + p.unit;
+      var newDisp = p.type === 'amount' ? _strParamFormatAmount(newVal) + '원' : newVal + p.unit;
+      if (newVal !== p.value) {
+        _STR_PARAM_HISTORY.unshift({
+          id: 'SPH-' + (Date.now()),
+          datetime: dtStr,
+          code: rule.code,
+          name: rule.name,
+          paramLabel: p.label,
+          before: oldDisp,
+          after: newDisp,
+          actor: '최관리자',
+          reason: reason,
+          type: '파라미터수정'
+        });
+      }
+      p.value = newVal;
+    }
+  });
+  rule.updatedAt = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  closeSTRParamEdit();
+  renderSTRParam();
+  showToast(rule.code + ' 파라미터가 저장되었습니다.');
+}
+
+function openSTRParamToggle(code) {
+  var rule = null;
+  for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
+    if (_STR_PARAM_RULES[i].code === code) { rule = _STR_PARAM_RULES[i]; break; }
+  }
+  if (!rule) return;
+  _strParamCurrent = code;
+
+  document.getElementById('spt-title').textContent = rule.code + ' — ' + rule.name;
+  document.getElementById('spt-subtitle').textContent = '카테고리: ' + rule.category;
+  document.getElementById('spt-reason').value = '';
+  document.getElementById('spt-reason-count').textContent = '0';
+
+  var currentEl = document.getElementById('spt-current-status');
+  if (rule.active) {
+    currentEl.innerHTML = '<span style="color:var(--success);">&#9646; 활성 (ON)</span>';
+  } else {
+    currentEl.innerHTML = '<span style="color:var(--text-secondary);">&#9645; 비활성 (OFF)</span>';
+  }
+
+  document.querySelectorAll('input[name="spt-toggle"]').forEach(function(r) { r.checked = false; });
+  document.getElementById('spt-warning').style.display = 'none';
+  document.getElementById('spt-save-btn').disabled = true;
+
+  var reasonTa = document.getElementById('spt-reason');
+  reasonTa.oninput = function() {
+    document.getElementById('spt-reason-count').textContent = this.value.length;
+    _strParamToggleValidate();
+  };
+
+  document.getElementById('strparam-toggle-so-backdrop').classList.add('open');
+  document.getElementById('strparam-toggle-so').classList.add('open');
+}
+
+function closeSTRParamToggle() {
+  document.getElementById('strparam-toggle-so-backdrop').classList.remove('open');
+  document.getElementById('strparam-toggle-so').classList.remove('open');
+}
+
+function _strParamToggleValidate() {
+  var selected = null;
+  document.querySelectorAll('input[name="spt-toggle"]').forEach(function(r) {
+    if (r.checked) selected = r.value;
+  });
+
+  var onLabel = document.getElementById('spt-on-label');
+  var offLabel = document.getElementById('spt-off-label');
+  if (onLabel) onLabel.style.borderColor = (selected === 'active') ? 'var(--success)' : 'var(--border)';
+  if (offLabel) offLabel.style.borderColor = (selected === 'inactive') ? 'var(--danger)' : 'var(--border)';
+
+  var warning = document.getElementById('spt-warning');
+  if (warning) warning.style.display = (selected === 'inactive') ? '' : 'none';
+
+  var reason = (document.getElementById('spt-reason') || {}).value || '';
+  var btn = document.getElementById('spt-save-btn');
+  if (btn) btn.disabled = !(selected && reason.trim());
+}
+
+function _strParamToggleSaveOTP() {
+  openOTPModal('STR 룰 활성 상태 변경', function() {
+    _strParamToggleSave();
+  });
+}
+
+function _strParamToggleSave() {
+  var rule = null;
+  for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
+    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+  }
+  if (!rule) return;
+  var selected = null;
+  document.querySelectorAll('input[name="spt-toggle"]').forEach(function(r) {
+    if (r.checked) selected = r.value;
+  });
+  var reason = document.getElementById('spt-reason').value;
+  var now = new Date();
+  var dtStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') +
+    ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  var newActive = (selected === 'active');
+  var type = newActive ? '활성화' : '비활성화';
+  _STR_PARAM_HISTORY.unshift({
+    id: 'SPH-' + Date.now(),
+    datetime: dtStr,
+    code: rule.code,
+    name: rule.name,
+    paramLabel: '활성상태',
+    before: rule.active ? 'ON' : 'OFF',
+    after: newActive ? 'ON' : 'OFF',
+    actor: '최관리자',
+    reason: reason,
+    type: type
+  });
+  rule.active = newActive;
+  rule.updatedAt = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  closeSTRParamToggle();
+  renderSTRParam();
+  showToast(rule.code + ' 상태가 ' + (newActive ? '활성' : '비활성') + '으로 변경되었습니다.');
+}
+
+function openSTRParamRestore() {
+  var rule = null;
+  for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
+    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+  }
+  if (!rule) return;
+  document.getElementById('restore-reason').value = '';
+  document.getElementById('restore-save-btn').disabled = true;
+
+  var rows = rule.params.map(function(p) {
+    var curDisp = p.type === 'amount' ? _strParamFormatAmount(p.value) + '원' : p.value + p.unit;
+    var defDisp = p.type === 'amount' ? _strParamFormatAmount(p.default) + '원' : p.default + p.unit;
+    var changed = (p.value !== p.default);
+    return '<tr>' +
+      '<td style="font-weight:600;">' + p.label + '</td>' +
+      '<td style="color:' + (changed ? 'var(--danger)' : 'inherit') + ';">' + curDisp + '</td>' +
+      '<td style="color:var(--success);">' + defDisp + '</td>' +
+      '</tr>';
+  }).join('');
+
+  document.getElementById('restore-compare-table').innerHTML =
+    '<table style="width:100%;border-collapse:collapse;">' +
+    '<thead><tr>' +
+      '<th style="text-align:left;padding:8px 10px;background:var(--bg-secondary,#F4F6FA);font-size:12px;border-bottom:1px solid var(--border);">파라미터</th>' +
+      '<th style="text-align:left;padding:8px 10px;background:var(--bg-secondary,#F4F6FA);font-size:12px;border-bottom:1px solid var(--border);">현재값</th>' +
+      '<th style="text-align:left;padding:8px 10px;background:var(--bg-secondary,#F4F6FA);font-size:12px;border-bottom:1px solid var(--border);">기본값</th>' +
+    '</tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>';
+
+  openModal('modal-strparam-restore');
+}
+
+function _strParamRestoreValidate() {
+  var reason = (document.getElementById('restore-reason') || {}).value || '';
+  var btn = document.getElementById('restore-save-btn');
+  if (btn) btn.disabled = !reason.trim();
+}
+
+function _strParamRestoreSaveOTP() {
+  openOTPModal('STR 룰 기본값 복원', function() {
+    _strParamRestoreSave();
+  });
+}
+
+function _strParamRestoreSave() {
+  var rule = null;
+  for (var i = 0; i < _STR_PARAM_RULES.length; i++) {
+    if (_STR_PARAM_RULES[i].code === _strParamCurrent) { rule = _STR_PARAM_RULES[i]; break; }
+  }
+  if (!rule) return;
+  var reason = document.getElementById('restore-reason').value;
+  var now = new Date();
+  var dtStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') +
+    ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  rule.params.forEach(function(p) {
+    if (p.value !== p.default) {
+      var oldDisp = p.type === 'amount' ? _strParamFormatAmount(p.value) + '원' : p.value + p.unit;
+      var defDisp = p.type === 'amount' ? _strParamFormatAmount(p.default) + '원' : p.default + p.unit;
+      _STR_PARAM_HISTORY.unshift({
+        id: 'SPH-' + Date.now(),
+        datetime: dtStr,
+        code: rule.code,
+        name: rule.name,
+        paramLabel: p.label,
+        before: oldDisp,
+        after: defDisp + ' (기본값)',
+        actor: '최관리자',
+        reason: reason,
+        type: '기본값복원'
+      });
+      p.value = p.default;
+    }
+  });
+  rule.updatedAt = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  closeModal('modal-strparam-restore');
+  closeSTRParamEdit();
+  renderSTRParam();
+  showToast(rule.code + ' 파라미터가 기본값으로 복원되었습니다.');
+}
+
+function openSTRParamHistory() {
+  document.getElementById('sph-date-from').value = '';
+  document.getElementById('sph-date-to').value = '';
+  document.getElementById('sph-search').value = '';
+  document.getElementById('sph-type').value = '';
+  renderSTRParamHistory();
+  document.getElementById('strparam-history-so-backdrop').classList.add('open');
+  document.getElementById('strparam-history-so').classList.add('open');
+}
+
+function closeSTRParamHistory() {
+  document.getElementById('strparam-history-so-backdrop').classList.remove('open');
+  document.getElementById('strparam-history-so').classList.remove('open');
+}
+
+function renderSTRParamHistory() {
+  var from = (document.getElementById('sph-date-from') || {}).value || '';
+  var to = (document.getElementById('sph-date-to') || {}).value || '';
+  var q = ((document.getElementById('sph-search') || {}).value || '').toLowerCase();
+  var type = (document.getElementById('sph-type') || {}).value || '';
+
+  var filtered = _STR_PARAM_HISTORY.filter(function(h) {
+    var d = h.datetime.slice(0, 10);
+    if (from && d < from) return false;
+    if (to && d > to) return false;
+    if (q && h.code.toLowerCase().indexOf(q) === -1 && h.name.toLowerCase().indexOf(q) === -1) return false;
+    if (type && h.type !== type) return false;
+    return true;
+  });
+
+  var tbody = document.getElementById('sph-tbody');
+  var empty = document.getElementById('sph-empty');
+  if (!tbody) return;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(function(h) {
+    var typeBadge = {
+      '파라미터수정': 'background:#EFF6FF;color:#1D4ED8;',
+      '활성화': 'background:#D1FAE5;color:#065F46;',
+      '비활성화': 'background:#FEE2E2;color:#991B1B;',
+      '기본값복원': 'background:#FEF3C7;color:#92400E;'
+    }[h.type] || '';
+    return '<tr>' +
+      '<td style="font-size:12px;white-space:nowrap;">' + h.datetime + '</td>' +
+      '<td><span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--primary);">' + h.code + '</span></td>' +
+      '<td style="font-size:12px;">' + h.name + '</td>' +
+      '<td style="font-size:12px;">' + h.paramLabel + '</td>' +
+      '<td style="font-size:12px;color:var(--danger);">' + h.before + '</td>' +
+      '<td style="font-size:12px;color:var(--success);">' + h.after + '</td>' +
+      '<td style="font-size:12px;">' + h.actor + '</td>' +
+      '<td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + h.reason + '">' + h.reason + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+function _strParamHistoryCSV() {
+  var from = (document.getElementById('sph-date-from') || {}).value || '';
+  var to = (document.getElementById('sph-date-to') || {}).value || '';
+  var q = ((document.getElementById('sph-search') || {}).value || '').toLowerCase();
+  var type = (document.getElementById('sph-type') || {}).value || '';
+
+  var filtered = _STR_PARAM_HISTORY.filter(function(h) {
+    var d = h.datetime.slice(0, 10);
+    if (from && d < from) return false;
+    if (to && d > to) return false;
+    if (q && h.code.toLowerCase().indexOf(q) === -1 && h.name.toLowerCase().indexOf(q) === -1) return false;
+    if (type && h.type !== type) return false;
+    return true;
+  });
+
+  var headers = ['일시', '룰코드', '룰명', '파라미터', '변경 전', '변경 후', '수정자', '사유'];
+  var rows = [headers].concat(filtered.map(function(h) {
+    return [h.datetime, h.code, h.name, h.paramLabel, h.before, h.after, h.actor, h.reason];
+  }));
+  var csv = '\uFEFF' + rows.map(function(r) {
+    return r.map(function(c) { return '"' + String(c || '').replace(/"/g, '""') + '"'; }).join(',');
+  }).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'STR_param_history_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV 다운로드 완료 (' + filtered.length + '건)');
+}
 </script>
 </body>
 </html>
