@@ -4767,76 +4767,142 @@
 ══════════════════════════ -->
 <div class="slideover-backdrop" id="country-detail-backdrop" onclick="closeCountryDetail()"></div>
 <div class="slideover" id="country-detail-so" style="width:600px; max-width:96vw;">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-    <h2 style="font-size:16px; font-weight:700; margin:0;">국가 위험 평가 상세</h2>
-    <button onclick="closeCountryDetail()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);">&#10005;</button>
+
+  <!-- ── 헤더 (고정) ── -->
+  <div class="so-header">
+    <span class="so-title">국가 위험 평가 상세</span>
+    <button onclick="closeCountryDetail()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);line-height:1;">&#10005;</button>
   </div>
 
-  <!-- 기본 정보 -->
-  <div class="card" style="margin-bottom:14px; padding:16px;">
-    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">기본 정보</div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px 20px; font-size:13px;">
-      <div><span style="color:var(--text-secondary);">국가코드</span><br><strong id="cty-d-code"></strong></div>
-      <div><span style="color:var(--text-secondary);">국가명 (국문)</span><br><strong id="cty-d-name-kr"></strong></div>
-      <div><span style="color:var(--text-secondary);">국가명 (영문)</span><br><strong id="cty-d-name-en"></strong></div>
-      <div><span style="color:var(--text-secondary);">FATF 지위</span><br><span id="cty-d-fatf"></span></div>
-      <div><span style="color:var(--text-secondary);">UN 제재</span><br><span id="cty-d-un"></span></div>
-      <div><span style="color:var(--text-secondary);">최종수정일</span><br><span id="cty-d-updated"></span></div>
-    </div>
-  </div>
+  <!-- ── 본문 (스크롤) ── -->
+  <div class="so-body">
 
-  <!-- 현재 등급 -->
-  <div class="card" style="margin-bottom:14px; padding:16px;">
-    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">현재 위험등급</div>
-    <div style="display:flex; align-items:center; gap:16px;">
-      <div style="text-align:center;">
-        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">산출점수</div>
-        <div id="cty-d-score" style="font-size:28px; font-weight:800; color:var(--primary);"></div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">등급</div>
-        <div id="cty-d-grade-badge"></div>
-      </div>
-      <div id="cty-d-override-note" style="display:none; background:#FFF7ED; border:1px solid #F97316; border-radius:6px; padding:8px 12px; font-size:12px; color:#9A3412; flex:1;">
-        수동 강제등급 적용 중
+    <!-- 기본 정보 -->
+    <div class="card" style="margin-bottom:14px; padding:16px;">
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">기본 정보</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px 20px; font-size:13px;">
+        <div><span style="color:var(--text-secondary);">국가코드</span><br><strong id="cty-d-code"></strong></div>
+        <div><span style="color:var(--text-secondary);">국가명 (국문)</span><br><strong id="cty-d-name-kr"></strong></div>
+        <div><span style="color:var(--text-secondary);">국가명 (영문)</span><br><strong id="cty-d-name-en"></strong></div>
+        <div><span style="color:var(--text-secondary);">FATF 지위</span><br><span id="cty-d-fatf"></span></div>
+        <div><span style="color:var(--text-secondary);">UN 제재</span><br><span id="cty-d-un"></span></div>
+        <div><span style="color:var(--text-secondary);">최종수정일</span><br><span id="cty-d-updated"></span></div>
       </div>
     </div>
-  </div>
 
-  <!-- 12개 지표 평가 (수정 가능) -->
-  <div class="card" style="margin-bottom:14px; padding:16px;">
-    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px;">12개 지표 평가</div>
-    <div id="cty-indicator-form" style="display:grid; gap:10px;"></div>
-    <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-      <span style="font-size:12px; color:var(--text-secondary);">산출 점수</span>
-      <span id="cty-calc-score" style="font-size:20px; font-weight:800; color:var(--primary);"></span>
+    <!-- 현재 등급 -->
+    <div class="card" style="margin-bottom:14px; padding:16px;">
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">현재 위험등급</div>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="text-align:center;">
+          <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">산출점수</div>
+          <div id="cty-d-score" style="font-size:28px; font-weight:800; color:var(--primary);"></div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">등급</div>
+          <div id="cty-d-grade-badge"></div>
+        </div>
+        <div id="cty-d-override-note" style="display:none; background:#FFF7ED; border:1px solid #F97316; border-radius:6px; padding:8px 12px; font-size:12px; color:#9A3412; flex:1;">
+          수동 강제등급 적용 중
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- 강제등급 override -->
-  <div class="card" style="margin-bottom:14px; padding:16px;">
-    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">수동 강제등급 (선택)</div>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <select id="cty-override-select" class="form-control" style="width:160px;">
-        <option value="">강제등급 없음 (점수 기반)</option>
-        <option value="high">고위험</option>
-        <option value="mid">중위험</option>
-        <option value="low">저위험</option>
-      </select>
-      <span style="font-size:12px; color:var(--text-secondary);">선택 시 산출점수와 무관하게 해당 등급 적용</span>
+    <!-- 12개 지표 평가 (수정 가능) -->
+    <div class="card" style="margin-bottom:14px; padding:16px;">
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px;">12개 지표 평가</div>
+      <div id="cty-indicator-form" style="display:grid; gap:10px;"></div>
+      <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:12px; color:var(--text-secondary);">산출 점수</span>
+        <span id="cty-calc-score" style="font-size:20px; font-weight:800; color:var(--primary);"></span>
+      </div>
     </div>
+
+    <!-- ── 수동 강제등급 + 수정 사유 통합 카드 ── -->
+    <div class="card" style="margin-bottom:0; padding:0; border:2px solid var(--border); border-radius:10px; overflow:hidden;">
+
+      <!-- 섹션 타이틀 바 -->
+      <div style="background:var(--bg-secondary); padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5c1.38 0 2.5 1.12 2.5 2.5S11.38 15.5 10 15.5 7.5 14.38 7.5 13s1.12-2.5 2.5-2.5z" fill="currentColor" style="color:var(--text-secondary);"/></svg>
+        <span style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px;">수정 정보 입력</span>
+      </div>
+
+      <div style="padding:18px;">
+
+        <!-- 수동 강제등급 -->
+        <div style="margin-bottom:18px;">
+          <label style="display:block; font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">
+            수동 강제등급
+            <span style="font-size:11px; font-weight:400; color:var(--text-secondary); margin-left:6px;">(선택사항 — 비워두면 산출점수 기반 자동 적용)</span>
+          </label>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px;">
+            <label style="cursor:pointer;">
+              <input type="radio" name="cty-override-radio" value="" style="display:none;" checked onchange="document.getElementById('cty-override-select').value=this.value; _ctyCheckEditBtn();">
+              <div class="cty-grade-btn" data-val="" style="border:2px solid var(--border); border-radius:8px; padding:10px 6px; text-align:center; font-size:12px; font-weight:600; color:var(--text-secondary); background:#fff; transition:all .15s; user-select:none;">
+                자동<br><span style="font-size:10px; font-weight:400;">점수 기반</span>
+              </div>
+            </label>
+            <label style="cursor:pointer;">
+              <input type="radio" name="cty-override-radio" value="high" style="display:none;" onchange="document.getElementById('cty-override-select').value=this.value; _ctyCheckEditBtn();">
+              <div class="cty-grade-btn" data-val="high" style="border:2px solid #FECACA; border-radius:8px; padding:10px 6px; text-align:center; font-size:12px; font-weight:600; color:#DC2626; background:#FEF2F2; transition:all .15s; user-select:none;">
+                고위험<br><span style="font-size:10px; font-weight:400;">HIGH</span>
+              </div>
+            </label>
+            <label style="cursor:pointer;">
+              <input type="radio" name="cty-override-radio" value="mid" style="display:none;" onchange="document.getElementById('cty-override-select').value=this.value; _ctyCheckEditBtn();">
+              <div class="cty-grade-btn" data-val="mid" style="border:2px solid #FDE68A; border-radius:8px; padding:10px 6px; text-align:center; font-size:12px; font-weight:600; color:#92400E; background:#FFFBEB; transition:all .15s; user-select:none;">
+                중위험<br><span style="font-size:10px; font-weight:400;">MEDIUM</span>
+              </div>
+            </label>
+            <label style="cursor:pointer;">
+              <input type="radio" name="cty-override-radio" value="low" style="display:none;" onchange="document.getElementById('cty-override-select').value=this.value; _ctyCheckEditBtn();">
+              <div class="cty-grade-btn" data-val="low" style="border:2px solid #BBF7D0; border-radius:8px; padding:10px 6px; text-align:center; font-size:12px; font-weight:600; color:#166534; background:#F0FDF4; transition:all .15s; user-select:none;">
+                저위험<br><span style="font-size:10px; font-weight:400;">LOW</span>
+              </div>
+            </label>
+          </div>
+          <!-- hidden select (기존 로직 호환) -->
+          <select id="cty-override-select" style="display:none;" onchange="_ctyCheckEditBtn()">
+            <option value="">강제등급 없음 (점수 기반)</option>
+            <option value="high">고위험</option>
+            <option value="mid">중위험</option>
+            <option value="low">저위험</option>
+          </select>
+        </div>
+
+        <!-- 구분선 -->
+        <div style="border-top:1px solid var(--border); margin-bottom:18px;"></div>
+
+        <!-- 수정 사유 -->
+        <div>
+          <label style="display:block; font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">
+            수정 사유
+            <span style="color:var(--danger); margin-left:2px;">*</span>
+            <span style="font-size:11px; font-weight:400; color:var(--text-secondary); margin-left:6px;">최대 500자 · 변경 이력에 기록됩니다</span>
+          </label>
+          <textarea id="cty-edit-reason" class="form-control" rows="4"
+            placeholder="예) FATF 블랙리스트 신규 등재에 따른 고위험 상향 조정"
+            maxlength="500" style="resize:vertical; font-size:13px; line-height:1.6;"
+            oninput="_ctyCheckEditBtn()"></textarea>
+          <div style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:4px;">
+            <span id="cty-reason-count">0</span> / 500자
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /so-body -->
+
+  <!-- ── 푸터 (고정) ── -->
+  <div class="so-footer" style="gap:10px; padding:16px 22px;">
+    <button class="btn btn-outline" onclick="closeCountryDetail()" style="flex:0 0 auto;">닫기</button>
+    <button class="btn btn-primary" id="cty-edit-submit-btn" onclick="_ctyEditProceed()"
+      style="flex:1; font-size:14px; font-weight:700; padding:11px 0; letter-spacing:.3px;">
+      저장 &amp; OTP 인증 ›
+    </button>
   </div>
 
-  <!-- 수정 사유 -->
-  <div class="card" style="margin-bottom:16px; padding:16px;">
-    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; text-transform:uppercase; letter-spacing:.5px;">수정 사유</div>
-    <textarea id="cty-edit-reason" class="form-control" rows="3" placeholder="평가 수정 사유를 입력하세요 (최대 500자)" maxlength="500" style="resize:vertical;" oninput="_ctyCheckEditBtn()"></textarea>
-  </div>
-
-  <div style="display:flex; gap:10px; justify-content:flex-end;">
-    <button class="btn btn-outline" onclick="closeCountryDetail()">닫기</button>
-    <button class="btn btn-primary" id="cty-edit-submit-btn" onclick="_ctyEditProceed()">저장 → OTP ›</button>
-  </div>
 </div>
 
 <!-- ══════════════════════════
@@ -12078,6 +12144,9 @@
     document.getElementById('cty-d-override-note').style.display = c.override ? '' : 'none';
     document.getElementById('cty-override-select').value = c.override || '';
     document.getElementById('cty-edit-reason').value = '';
+    // 라디오 버튼 초기화
+    var radios = document.querySelectorAll('input[name="cty-override-radio"]');
+    radios.forEach(function(r) { r.checked = r.value === (c.override || ''); });
     _ctyCheckEditBtn();
 
     // 지표 폼
@@ -12117,9 +12186,29 @@
   }
 
   function _ctyCheckEditBtn() {
-    var reason = (document.getElementById('cty-edit-reason') || {value:''}).value.trim();
+    var reasonEl = document.getElementById('cty-edit-reason');
+    var reason = (reasonEl || {value:''}).value.trim();
     var btn = document.getElementById('cty-edit-submit-btn');
     if (btn) btn.disabled = reason.length === 0;
+
+    // 글자수 카운터
+    var countEl = document.getElementById('cty-reason-count');
+    if (countEl && reasonEl) countEl.textContent = reasonEl.value.length;
+
+    // 라디오 버튼 선택 강조
+    var selected = (document.getElementById('cty-override-select') || {value:''}).value;
+    document.querySelectorAll('.cty-grade-btn').forEach(function(btn) {
+      var val = btn.getAttribute('data-val');
+      if (val === selected) {
+        btn.style.boxShadow = '0 0 0 2px var(--primary)';
+        btn.style.opacity = '1';
+        btn.style.fontWeight = '700';
+      } else {
+        btn.style.boxShadow = 'none';
+        btn.style.opacity = '0.7';
+        btn.style.fontWeight = '600';
+      }
+    });
   }
 
   function _ctyEditProceed() {
