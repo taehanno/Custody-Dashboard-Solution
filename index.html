@@ -74,6 +74,39 @@
     .breadcrumb .bc-link { cursor: pointer; color: var(--primary); }
     .breadcrumb .bc-link:hover { text-decoration: underline; }
     .main-content { flex: 1; overflow-y: auto; padding: 24px; }
+    /* Notification bell */
+    .noti-bell-btn { position:relative; background:none; border:none; cursor:pointer; padding:6px; border-radius:8px; font-size:18px; line-height:1; color:var(--text-secondary); transition:background .15s; }
+    .noti-bell-btn:hover { background:#F1F5F9; }
+    .noti-badge { position:absolute; top:2px; right:2px; background:#EF4444; color:#fff; font-size:10px; font-weight:700; border-radius:10px; min-width:16px; height:16px; display:flex; align-items:center; justify-content:center; padding:0 4px; }
+    .noti-panel { position:fixed; top:58px; right:16px; width:340px; max-height:480px; background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,.12); z-index:1500; display:none; flex-direction:column; overflow:hidden; }
+    .noti-panel.open { display:flex; }
+    .noti-panel-head { padding:14px 16px 10px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    .noti-panel-title { font-size:13px; font-weight:700; }
+    .noti-mark-all { font-size:11px; color:var(--primary); cursor:pointer; background:none; border:none; }
+    .noti-list { flex:1; overflow-y:auto; }
+    .noti-item { padding:12px 16px; border-bottom:1px solid #F8FAFC; cursor:pointer; transition:background .1s; }
+    .noti-item:hover { background:#F8FAFC; }
+    .noti-item.unread { background:#EFF6FF; }
+    .noti-item .noti-msg { font-size:12px; font-weight:600; color:var(--text-primary); margin-bottom:3px; }
+    .noti-item .noti-sub { font-size:11px; color:var(--text-secondary); }
+    .noti-item .noti-time { font-size:10px; color:#94A3B8; margin-top:3px; }
+    .noti-item .noti-link { font-size:11px; color:var(--primary); font-weight:600; margin-top:4px; display:inline-block; }
+    .noti-empty { padding:32px 16px; text-align:center; color:var(--text-secondary); font-size:13px; }
+    /* SE detail modal account list */
+    .se-acct-list { border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:16px; }
+    .se-acct-row { display:flex; align-items:center; gap:10px; padding:9px 14px; border-bottom:1px solid #F1F5F9; font-size:12px; }
+    .se-acct-row:last-child { border-bottom:none; }
+    .se-acct-name { font-weight:600; flex:1; }
+    .se-acct-tag { font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; background:#F1F5F9; color:var(--text-secondary); }
+    .se-acct-tag.master { background:#F5F3FF; color:#8B5CF6; }
+    .se-acct-tag.auto { background:#F0F9FF; color:#0369A1; }
+    .se-acct-tag.inactive { background:#FEF3C7; color:#92400E; }
+    /* SE activity log */
+    .se-log-item { padding:10px 0; border-bottom:1px solid #F1F5F9; font-size:12px; }
+    .se-log-item:last-child { border-bottom:none; }
+    .se-log-meta { color:var(--text-secondary); font-size:11px; margin-bottom:3px; }
+    .se-log-event { font-weight:700; margin-bottom:3px; }
+    .se-log-detail { color:var(--text-secondary); white-space:pre-line; line-height:1.6; }
 
     /* ── Page visibility ── */
     .page { display: none; }
@@ -2074,24 +2107,46 @@
 <!-- ══════════════════════════
      MODAL: Strategy Detail (Read-Only)
 ══════════════════════════ -->
-<div class="modal" id="modal-se-detail" style="max-width:480px;">
-  <div class="modal-header">
-    <span class="modal-title">출금 정책 상세</span>
+<div class="modal" id="modal-se-detail" style="max-width:520px; max-height:88vh; overflow:hidden; display:flex; flex-direction:column;">
+  <div class="modal-header" style="flex-shrink:0;">
+    <span class="modal-title" id="se-det-title">출금 정책 상세</span>
     <button class="modal-close" onclick="closeStrategyDetail()">&#10005;</button>
   </div>
-  <div class="modal-body">
-    <div class="se-summary-box" id="se-detail-body">
-      <div class="se-summary-row"><span class="se-summary-key">지갑</span><span class="se-summary-val" id="se-det-wallet">—</span></div>
-      <div class="se-summary-row"><span class="se-summary-key">서명 정책</span><span class="se-summary-val" id="se-det-nom">—</span></div>
-      <div class="se-summary-row"><span class="se-summary-key">요청자</span><span class="se-summary-val" id="se-det-initiators">—</span></div>
-      <div class="se-summary-row"><span class="se-summary-key">서명자</span><span class="se-summary-val" id="se-det-signers">—</span></div>
-      <div class="se-summary-row"><span class="se-summary-key">Advanced</span><span class="se-summary-val" id="se-det-adv">—</span></div>
-      <div class="se-summary-row"><span class="se-summary-key">마지막 변경</span><span class="se-summary-val" id="se-det-changed">—</span></div>
+  <div style="flex:1; overflow-y:auto; padding:20px 24px;">
+    <!-- Policy summary header -->
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:11px; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px;">서명 정책</div>
+        <div style="font-size:26px; font-weight:800; color:var(--primary);" id="se-det-nom">—</div>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="text-align:right;">
+        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:2px;">설정 일시</div>
+        <div style="font-size:12px; font-weight:600;" id="se-det-created">—</div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">마지막 변경</div>
+        <div style="font-size:12px; font-weight:600;" id="se-det-changed">—</div>
+      </div>
     </div>
-    <div class="alert alert-info" style="font-size:12px;">ⓘ 정책 수정은 Master 계정만 가능합니다.</div>
+
+    <!-- Initiators -->
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.4px; margin-bottom:8px;">출금 요청자 (Initiator)</div>
+    <div class="se-acct-list" id="se-det-init-list"></div>
+
+    <!-- Signers -->
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.4px; margin-bottom:8px;">출금 서명자 (Signer)</div>
+    <div class="se-acct-list" id="se-det-sign-list"></div>
+
+    <!-- Advanced -->
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.4px; margin-bottom:8px;">Advanced Strategy</div>
+    <div id="se-det-adv-section" style="border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:12px; margin-bottom:18px; color:var(--text-secondary);">—</div>
+
+    <!-- Recent Activity Log -->
+    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.4px; margin-bottom:8px;">최근 변경 이력</div>
+    <div id="se-det-log" style="border:1px solid var(--border); border-radius:8px; padding:12px 14px;"></div>
   </div>
-  <div class="modal-footer">
+  <div class="modal-footer" style="flex-shrink:0;">
     <button class="btn btn-outline" onclick="closeStrategyDetail()">닫기</button>
+    <button class="btn btn-primary" id="se-det-edit-btn" onclick="closeStrategyDetail(); openStrategyWizard('edit', _seDetailWalletId)" style="display:none;">정책 수정</button>
   </div>
 </div>
 
@@ -3081,6 +3136,20 @@
       <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
       <span id="headerTitle" class="main-header-title">Dashboard</span>
       <span id="headerBreadcrumb"></span>
+      <div style="flex:1;"></div>
+      <button class="noti-bell-btn" onclick="toggleNotiPanel()" id="noti-bell-btn" title="알림">
+        🔔
+        <span class="noti-badge" id="noti-badge" style="display:none;">0</span>
+      </button>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="noti-panel" id="noti-panel">
+      <div class="noti-panel-head">
+        <span class="noti-panel-title">알림</span>
+        <button class="noti-mark-all" onclick="markAllNotiRead()">모두 읽음</button>
+      </div>
+      <div class="noti-list" id="noti-list"></div>
     </div>
     <div class="main-content">
 
@@ -3161,6 +3230,8 @@
             <!-- 4-9-6: 입금 보류 to-do rows (동적 렌더링) -->
             <div id="todo-hold-pending-rows"></div>
             <div id="todo-hold-rejected-rows"></div>
+            <!-- Strategy Engine policy alerts (Master only) -->
+            <div id="todo-strategy-rows"></div>
             <span class="stat-link" style="margin-top:4px;" onclick="showPage('workflows', document.getElementById('nav-workflows'))">Workflows 바로가기 →</span>
           </div>
         </div>
@@ -7295,6 +7366,7 @@
 
   // Policy per wallet (null = no policy)
   // advancedConditions: [{amount: KRW number, n: number}] sorted by amount asc
+  // activityLog: [{ts, actor, event, detail}]
   let _STRATEGY_POLICIES = {
     wallet1: {
       initiators: ['김철수', '이영희'],
@@ -7302,7 +7374,11 @@
       n: 1, m: 3,
       advanced: true, advancedCount: 2,
       advancedConditions: [{ amount: 100000000, n: 2 }, { amount: 1000000000, n: 3 }],
-      changedAt: '2026-04-08 14:30', changedBy: '김철수'
+      createdAt: '2026-04-08 10:00', changedAt: '2026-04-09 14:30', changedBy: '김철수',
+      activityLog: [
+        { ts: '2026-04-09 14:30:00', actor: '김철수', event: '📋 출금 정책 수정', detail: '서명 정책: 2 of 3 → 1 of 3\nAdvanced 활성화\n≥₩100,000,000 → 2 of 3 추가\n≥₩1,000,000,000 → 3 of 3 추가' },
+        { ts: '2026-04-08 10:00:00', actor: '김철수', event: '📋 출금 정책 설정', detail: '서명 정책: 2 of 3\n요청자: 김철수, 이영희\n서명자: 김철수, 이영희, 박민준' }
+      ]
     },
     wallet2: {
       initiators: ['김철수'],
@@ -7310,10 +7386,19 @@
       n: 1, m: 3,
       advanced: false, advancedCount: 0,
       advancedConditions: [],
-      changedAt: '2026-04-05 10:00', changedBy: '김철수'
+      createdAt: '2026-04-05 10:00', changedAt: '2026-04-05 10:00', changedBy: '김철수',
+      activityLog: [
+        { ts: '2026-04-05 10:00:00', actor: '김철수', event: '📋 출금 정책 설정', detail: '서명 정책: 1 of 3\n요청자: 김철수\n서명자: 김철수, 이영희, 박민준' }
+      ]
     },
     wallet3: null
   };
+
+  /* ── Notifications ── */
+  let _SE_NOTIFICATIONS = [
+    { id: 1, unread: true,  msg: '⚠ 출금 정책 변경 확인 필요 — 운영 지갑 A', sub: '서명자 박민준이 비활성화되었습니다. 정책 수정을 검토하세요.', ts: '2026-04-10 09:00', walletId: 'wallet1', link: 'strategy' },
+    { id: 2, unread: false, msg: '📋 출금 정책 설정 완료 — 운영 지갑 B', sub: '서명 정책 1 of 3이 설정되었습니다.', ts: '2026-04-05 10:01', walletId: 'wallet2', link: 'strategy' }
+  ];
 
   // Wizard state
   let _seMode = 'create';
@@ -7344,6 +7429,129 @@
     if (eok > 0) return '(' + eok + '억 원)';
     if (man > 0) return '(' + man + '만 원)';
     return '(' + n.toLocaleString('ko-KR') + ' 원)';
+  }
+
+  /* ── Notification system ── */
+  function _seAddNotification(msg, sub, walletId) {
+    _SE_NOTIFICATIONS.unshift({
+      id: Date.now(), unread: true,
+      msg: msg, sub: sub,
+      ts: _seNow(), walletId: walletId, link: 'strategy'
+    });
+    _seRenderNotiBadge();
+    _seRenderNotiList();
+    _seRenderTodoStrategy();
+  }
+
+  function _seRenderNotiBadge() {
+    const badge = document.getElementById('noti-badge');
+    const unread = _SE_NOTIFICATIONS.filter(n => n.unread).length;
+    if (badge) {
+      badge.textContent = unread;
+      badge.style.display = unread > 0 ? '' : 'none';
+    }
+  }
+
+  function _seRenderNotiList() {
+    const list = document.getElementById('noti-list');
+    if (!list) return;
+    if (_SE_NOTIFICATIONS.length === 0) {
+      list.innerHTML = '<div class="noti-empty">새 알림이 없습니다.</div>';
+      return;
+    }
+    list.innerHTML = _SE_NOTIFICATIONS.map(n =>
+      '<div class="noti-item' + (n.unread ? ' unread' : '') + '" onclick="_seNotiClick(' + n.id + ')">' +
+      '<div class="noti-msg">' + n.msg + '</div>' +
+      '<div class="noti-sub">' + n.sub + '</div>' +
+      '<div class="noti-time">' + n.ts + '</div>' +
+      (n.link ? '<div class="noti-link" onclick="event.stopPropagation(); _seNotiClick(' + n.id + ');">Strategy Engine으로 이동 →</div>' : '') +
+      '</div>'
+    ).join('');
+  }
+
+  function _seNotiClick(id) {
+    const n = _SE_NOTIFICATIONS.find(x => x.id === id);
+    if (n) { n.unread = false; }
+    _seRenderNotiBadge();
+    _seRenderNotiList();
+    _seRenderTodoStrategy();
+    closeNotiPanel();
+    showPage('strategy', document.getElementById('nav-strategy'));
+  }
+
+  function markAllNotiRead() {
+    _SE_NOTIFICATIONS.forEach(n => { n.unread = false; });
+    _seRenderNotiBadge();
+    _seRenderNotiList();
+    _seRenderTodoStrategy();
+  }
+
+  function toggleNotiPanel() {
+    const panel = document.getElementById('noti-panel');
+    if (!panel) return;
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) _seRenderNotiList();
+  }
+
+  function closeNotiPanel() {
+    const panel = document.getElementById('noti-panel');
+    if (panel) panel.classList.remove('open');
+  }
+
+  function _seRenderTodoStrategy() {
+    const cont = document.getElementById('todo-strategy-rows');
+    if (!cont) return;
+    if (!_IS_MASTER) { cont.innerHTML = ''; return; }
+    // Collect policies with inactive accounts
+    const wallets = _WALLET_DATA || [];
+    const warnWallets = wallets.filter(w => {
+      const p = _STRATEGY_POLICIES[w.id];
+      if (!p) return false;
+      return p.signers.some(n => _seIsInactive(n)) || p.initiators.some(n => _seIsInactive(n));
+    });
+    // Also unread strategy notifications
+    const unreadNoti = _SE_NOTIFICATIONS.filter(n => n.unread && n.link === 'strategy');
+
+    const rows = [];
+    warnWallets.forEach(w => {
+      rows.push('<div class="todo-item" style="flex-direction:column; align-items:flex-start; gap:4px;">' +
+        '<div style="display:flex; justify-content:space-between; width:100%;">' +
+        '<span class="todo-label" style="color:#F59E0B; font-weight:600;">⚠ 출금 정책 변경 확인 필요 — ' + w.name + '</span>' +
+        '<span class="todo-count" style="background:#F59E0B; cursor:pointer;" onclick="showPage(\'strategy\', document.getElementById(\'nav-strategy\'))">!</span>' +
+        '</div>' +
+        '<span style="font-size:11px; color:var(--text-secondary); cursor:pointer;" onclick="showPage(\'strategy\', document.getElementById(\'nav-strategy\'))">Strategy Engine으로 이동 →</span>' +
+        '</div>');
+    });
+    cont.innerHTML = rows.join('');
+  }
+
+  // Close noti panel when clicking outside
+  document.addEventListener('click', function(e) {
+    const panel = document.getElementById('noti-panel');
+    const bellBtn = document.getElementById('noti-bell-btn');
+    if (panel && panel.classList.contains('open')) {
+      if (!panel.contains(e.target) && !bellBtn.contains(e.target)) {
+        panel.classList.remove('open');
+      }
+    }
+  });
+
+  /* ── Activity log helper ── */
+  function _seNow() {
+    const now = new Date();
+    return now.getFullYear() + '-' +
+      String(now.getMonth()+1).padStart(2,'0') + '-' +
+      String(now.getDate()).padStart(2,'0') + ' ' +
+      String(now.getHours()).padStart(2,'0') + ':' +
+      String(now.getMinutes()).padStart(2,'0') + ':' +
+      String(now.getSeconds()).padStart(2,'0');
+  }
+
+  function _seAddLog(walletId, event, detail) {
+    const p = _STRATEGY_POLICIES[walletId];
+    if (!p) return;
+    if (!p.activityLog) p.activityLog = [];
+    p.activityLog.unshift({ ts: _seNow(), actor: '김철수', event: event, detail: detail });
   }
 
   /* ── Dashboard render ── */
@@ -7390,6 +7598,9 @@
 
     const sorted = [...unset.sort((a,b) => a.name.localeCompare(b.name,'ko')),
                      ...set.sort((a,b) => a.name.localeCompare(b.name,'ko'))];
+
+    _seRenderTodoStrategy();
+    _seRenderNotiBadge();
 
     grid.innerHTML = sorted.map(w => {
       const p = _STRATEGY_POLICIES[w.id];
@@ -8282,7 +8493,12 @@
     const walletId = _seEditWalletId;
     const w = (_WALLET_DATA||[]).find(x => x.id === walletId);
     const wName = w ? w.name : '';
+    const prevP = _STRATEGY_POLICIES[walletId];
+    const delDetail = prevP
+      ? '삭제 전 서명 정책: ' + prevP.n + ' of ' + prevP.m + '\n요청자: ' + (prevP.initiators||[]).join(', ') + '\n서명자: ' + (prevP.signers||[]).join(', ')
+      : '';
     _STRATEGY_POLICIES[walletId] = null;
+    _seAddNotification('🗑 출금 정책 삭제 — ' + wName, '해당 지갑의 출금이 차단되었습니다. 기존 요청자·서명자에게 알림이 발송됩니다.', walletId);
 
     closeModal('modal-se-del-confirm');
     closeStrategyWizard();
@@ -8322,6 +8538,9 @@
       String(now.getMinutes()).padStart(2,'0');
 
     const sortedConds = [..._seAdvConditions].sort((a,b) => a.amount - b.amount);
+    const prevPolicy  = _STRATEGY_POLICIES[_seWizWalletId];
+    const createdAt   = (_seMode === 'create') ? dt : (prevPolicy && prevPolicy.createdAt ? prevPolicy.createdAt : dt);
+    const prevLog     = (prevPolicy && prevPolicy.activityLog) ? prevPolicy.activityLog : [];
 
     _STRATEGY_POLICIES[_seWizWalletId] = {
       initiators: [..._seWizInitiators],
@@ -8330,13 +8549,46 @@
       advanced: _seUseAdv,
       advancedCount: _seUseAdv ? sortedConds.length : 0,
       advancedConditions: sortedConds,
-      changedAt: dt, changedBy: _SE_MASTER
+      createdAt: createdAt, changedAt: dt, changedBy: _SE_MASTER,
+      activityLog: prevLog
     };
+
+    // Build log detail
+    const isCreate = (_seMode === 'create');
+    let logDetail = '';
+    if (isCreate) {
+      logDetail = '서명 정책: ' + _seAdvBaseN + ' of ' + _seWizSigners.length +
+        '\n요청자: ' + _seWizInitiators.join(', ') +
+        '\n서명자: ' + _seWizSigners.join(', ');
+    } else if (_seOrigPolicy) {
+      const orig = _seOrigPolicy;
+      const changes = [];
+      if (orig.n !== _seAdvBaseN || orig.signers.length !== _seWizSigners.length)
+        changes.push('서명 정책: ' + orig.n + ' of ' + orig.signers.length + ' → ' + _seAdvBaseN + ' of ' + _seWizSigners.length);
+      const addedInits  = _seWizInitiators.filter(x => !orig.initiators.includes(x));
+      const removedInits = orig.initiators.filter(x => !_seWizInitiators.includes(x));
+      const addedSigns  = _seWizSigners.filter(x => !orig.signers.includes(x));
+      const removedSigns = orig.signers.filter(x => !_seWizSigners.includes(x));
+      if (addedInits.length)   changes.push('요청자 추가: ' + addedInits.join(', '));
+      if (removedInits.length) changes.push('요청자 제외: ' + removedInits.join(', '));
+      if (addedSigns.length)   changes.push('서명자 추가: ' + addedSigns.join(', '));
+      if (removedSigns.length) changes.push('서명자 제외: ' + removedSigns.join(', '));
+      if (orig.advanced !== _seUseAdv) changes.push('Advanced: ' + (orig.advanced ? '사용' : '미사용') + ' → ' + (_seUseAdv ? '사용' : '미사용'));
+      logDetail = changes.join('\n') || '(변경 없음)';
+    }
+    _seAddLog(_seWizWalletId, isCreate ? '📋 출금 정책 설정' : '📋 출금 정책 수정', logDetail);
 
     closeStrategyWizard();
     renderStrategyDashboard();
     const wName = w ? w.name : '';
-    const msg = _seMode === 'create'
+    const notiMsg = isCreate
+      ? '📋 출금 정책 설정 완료 — ' + wName
+      : '📋 출금 정책 수정 완료 — ' + wName;
+    const notiSub = isCreate
+      ? '서명 정책 ' + _seAdvBaseN + ' of ' + _seWizSigners.length + '이 설정되었습니다.'
+      : '정책이 수정되었습니다. 변경 영향 계정에 알림이 발송됩니다.';
+    _seAddNotification(notiMsg, notiSub, _seWizWalletId);
+    const msg = isCreate
       ? wName + ' 출금 정책이 설정되었습니다. 관련 계정에 알림이 발송됩니다.'
       : wName + ' 출금 정책이 수정되었습니다. 변경 영향 계정에 알림이 발송됩니다.';
     showToast(msg, 'success');
@@ -8355,30 +8607,93 @@
   }
 
   /* ── Detail modal (read-only) ── */
+  let _seDetailWalletId = null;
+
   function openStrategyDetail(walletId) {
     const p = _STRATEGY_POLICIES[walletId];
     if (!p) return;
+    _seDetailWalletId = walletId;
     const w = (_WALLET_DATA||[]).find(x => x.id === walletId);
-    _seSet('se-det-wallet', w ? w.name : walletId);
+    const wName = w ? w.name : walletId;
 
-    const nomBase = p.advanced ? p.n + ' of ' + p.m + ' (기본)' : p.n + ' of ' + p.m;
+    // Title
+    _seSet('se-det-title', '출금 정책 상세 — ' + wName);
+
+    // N of M
+    const nomBase = p.advanced ? p.n + ' of ' + p.m + '  (기본)' : p.n + ' of ' + p.m;
     _seSet('se-det-nom', nomBase);
 
-    // Use innerHTML for deactivated account highlight
-    const initEl = document.getElementById('se-det-initiators');
-    const signEl = document.getElementById('se-det-signers');
-    if (initEl) initEl.innerHTML = _seNamesHtml(p.initiators) + ' <span style="color:var(--text-secondary);font-size:11px;">(' + p.initiators.length + '명)</span>';
-    if (signEl) signEl.innerHTML = _seNamesHtml(p.signers) + ' <span style="color:var(--text-secondary);font-size:11px;">(' + p.signers.length + '명)</span>';
-
-    let advDetail = '없음';
-    if (p.advanced && p.advancedConditions && p.advancedConditions.length > 0) {
-      advDetail = '적용 중 (' + p.advancedCount + '건): ' +
-        p.advancedConditions.map(c => '≥₩' + _seFormatAmt(c.amount) + '→' + c.n + ' of ' + p.m).join(', ');
-    } else if (p.advanced) {
-      advDetail = '사용 (조건 없음)';
-    }
-    _seSet('se-det-adv', advDetail);
+    // Dates
+    _seSet('se-det-created', p.createdAt || p.changedAt || '—');
     _seSet('se-det-changed', p.changedAt + ' (' + p.changedBy + ')');
+
+    // Initiator list
+    const initList = document.getElementById('se-det-init-list');
+    if (initList) {
+      initList.innerHTML = p.initiators.map(name => {
+        const acct = _SP_ACCOUNTS.find(a => a.value === name);
+        const isMaster = name === _SE_MASTER;
+        const isInactive = _seIsInactive(name);
+        const roleTags = [
+          isMaster ? '<span class="se-acct-tag master">Master</span>' : '<span class="se-acct-tag">일반</span>',
+          isMaster ? '<span class="se-acct-tag auto">자동 포함</span>' : '',
+          isInactive ? '<span class="se-acct-tag inactive">⚠ 비활성화</span>' : ''
+        ].filter(Boolean).join(' ');
+        return '<div class="se-acct-row"><span class="se-acct-name" style="' + (isInactive?'color:#F59E0B;':'') + '">👤 ' + name + '</span>' + roleTags + '</div>';
+      }).join('');
+    }
+
+    // Signer list
+    const signList = document.getElementById('se-det-sign-list');
+    if (signList) {
+      signList.innerHTML = p.signers.map(name => {
+        const isMaster = name === _SE_MASTER;
+        const isInactive = _seIsInactive(name);
+        const roleTags = [
+          isMaster ? '<span class="se-acct-tag master">Master</span>' : '<span class="se-acct-tag">일반</span>',
+          isMaster ? '<span class="se-acct-tag auto">자동 포함</span>' : '',
+          isInactive ? '<span class="se-acct-tag inactive">⚠ 비활성화</span>' : ''
+        ].filter(Boolean).join(' ');
+        return '<div class="se-acct-row"><span class="se-acct-name" style="' + (isInactive?'color:#F59E0B;':'') + '">👤 ' + name + '</span>' + roleTags + '</div>';
+      }).join('');
+    }
+
+    // Advanced section
+    const advSec = document.getElementById('se-det-adv-section');
+    if (advSec) {
+      if (!p.advanced) {
+        advSec.innerHTML = '<span style="color:var(--text-secondary);">미사용</span>';
+      } else {
+        let html = '<div style="margin-bottom:6px; color:var(--text-primary); font-weight:600;">적용 중 (' + p.advancedCount + '건)</div>';
+        html += '<div style="color:var(--text-secondary);">· 기본 정책: <strong style="color:var(--text-primary);">' + p.n + ' of ' + p.m + '</strong></div>';
+        (p.advancedConditions || []).forEach(c => {
+          html += '<div style="color:var(--text-secondary);">· ≥ ₩' + _seFormatAmt(c.amount) + ' → <strong style="color:var(--text-primary);">' + c.n + ' of ' + p.m + '</strong></div>';
+        });
+        advSec.innerHTML = html;
+      }
+    }
+
+    // Activity log (last 5)
+    const logEl = document.getElementById('se-det-log');
+    if (logEl) {
+      const logs = (p.activityLog || []).slice(0, 5);
+      if (logs.length === 0) {
+        logEl.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">변경 이력이 없습니다.</div>';
+      } else {
+        logEl.innerHTML = logs.map(l =>
+          '<div class="se-log-item">' +
+          '<div class="se-log-meta">' + l.ts + ' &nbsp;·&nbsp; ' + l.actor + '</div>' +
+          '<div class="se-log-event">' + l.event + '</div>' +
+          (l.detail ? '<div class="se-log-detail">' + l.detail + '</div>' : '') +
+          '</div>'
+        ).join('');
+      }
+    }
+
+    // Edit button (Master only)
+    const editBtn = document.getElementById('se-det-edit-btn');
+    if (editBtn) editBtn.style.display = _IS_MASTER ? '' : 'none';
+
     openModal('modal-se-detail');
   }
 
@@ -9099,6 +9414,9 @@
     renderHoldBanners();
     _updateTodoBadges();
     applyRoleUI();
+    // Initialize strategy notifications
+    _seRenderNotiBadge();
+    _seRenderTodoStrategy();
   });
 
   /* ════════════════════════════════════
