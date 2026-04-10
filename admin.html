@@ -7355,8 +7355,7 @@
       // tab filter
       if (_TX_TAB === 'deposit'    && r.type !== 'deposit')    return false;
       if (_TX_TAB === 'withdrawal' && r.type !== 'withdrawal') return false;
-      // coldwallet: only show processing withdrawals (TXID 입력 대기)
-      if (isCW && !(r.type === 'withdrawal' && r.status === 'processing')) return false;
+      // (coldwallet도 전체 내역 조회 가능 — TXID 입력 버튼만 비활성화)
       // dropdown filters
       if (coin    && r.coin   !== coin)   return false;
       if (corp    && r.corp   !== corp)   return false;
@@ -7385,7 +7384,7 @@
     if (hBadge) { hBadge.textContent = holdPendingCount; hBadge.style.display = holdPendingCount ? '' : 'none'; }
 
     if (!list.length) {
-      var msg = isCW ? '처리 중인 출금건이 없습니다.' : '조회 결과가 없습니다.';
+      var msg = '조회 결과가 없습니다.';
       tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-secondary); padding:32px;">' + msg + '</td></tr>';
       return;
     }
@@ -7411,7 +7410,9 @@
       var actionCell = '';
       if (showAction) {
         if (r.type === 'withdrawal' && r.status === 'processing') {
-          actionCell = '<button class="btn btn-primary btn-xs" onclick="openTxTXIDModal(' + dataIdx + ')">TXID 입력</button>';
+          actionCell = isCW
+            ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45; cursor:not-allowed;" title="권한 없음">TXID 입력</button>'
+            : '<button class="btn btn-primary btn-xs" onclick="openTxTXIDModal(' + dataIdx + ')">TXID 입력</button>';
         } else if (r.type === 'withdrawal') {
           actionCell = '<button class="btn btn-outline btn-xs" onclick="openWithdrawalDetailAdmin(' + dataIdx + ')">상세</button>';
         } else {
@@ -7693,16 +7694,12 @@
   function initTxPage() {
     var isCW = _ADMIN_ROLE === 'coldwallet';
     var cwNotice = document.getElementById('tx-cw-notice');
-    if (cwNotice) cwNotice.style.display = isCW ? '' : 'none';
-
-    // stats bar hidden for coldwallet
-    var statsBar = document.getElementById('tx-stats-bar');
-    if (statsBar) statsBar.style.display = isCW ? 'none' : '';
+    if (cwNotice) cwNotice.style.display = 'none';
 
     renderTxStats();
 
-    // CW defaults to 출금 tab; others to 입출금 전체
-    switchTxTab(isCW ? 'withdrawal' : 'all');
+    // 전체 역할 입출금 전체 탭으로 시작
+    switchTxTab('all');
 
     // 보류 배지 — 사이드바
     var holdCount = _TX_DATA.filter(function(r){ return r.status==='hold' && r.holdSubStatus==='pending'; }).length;
