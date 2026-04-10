@@ -5762,7 +5762,12 @@
 
     // Re-render KYB table to update action buttons per role
     if (document.getElementById('kyb-tbody')) { renderKYBTable(); renderKYBLog(); }
-    if (document.getElementById('cty-tbody')) renderCountry();
+    // 국가위험정책 상단 버튼 가시성 직접 갱신 (renderCountry는 init 이후에만 안전하게 호출 가능)
+    var ctyBtns = document.getElementById('cty-manager-btns');
+    if (ctyBtns) {
+      var isCtyMgr = (_ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master');
+      ctyBtns.style.display = isCtyMgr ? 'flex' : 'none';
+    }
 
     // Re-init transactions page if visible
     if (document.getElementById('page-transactions') &&
@@ -12339,6 +12344,7 @@
   }
 
   function _ctyUpdateStats() {
+    if (!_COUNTRY_DATA) return;
     var total = _COUNTRY_DATA.length;
     var sup = 0, high = 0, mid = 0, low = 0;
     _COUNTRY_DATA.forEach(function(c) {
@@ -12390,6 +12396,7 @@
 
   function renderCountry() {
     if (!document.getElementById('cty-tbody')) return;
+    if (!_COUNTRY_DATA) return;
     _ctyUpdateStats();
     var data = _ctyGetFiltered();
     var tbody = document.getElementById('cty-tbody');
