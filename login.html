@@ -121,6 +121,11 @@
     <!-- Step dots -->
     <div class="steps" id="stepDots"></div>
 
+    <!-- 자동 로그아웃 안내 배너 -->
+    <div class="alert alert-warning" id="timeoutBanner" style="display:none;">
+      보안을 위해 자동 로그아웃되었습니다.<br>다시 로그인해 주세요.
+    </div>
+
     <!-- ── STEP 1: Email + PW ── -->
     <div class="step active" id="s1">
       <div class="card-title">로그인</div>
@@ -413,6 +418,17 @@
   /* ── Error helpers ── */
   function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
   function hideErr(el) { el.classList.remove('show'); }
+
+  /* ── 자동 로그아웃 안내 ── */
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('reason') === 'timeout') {
+      var banner = document.getElementById('timeoutBanner');
+      if (banner) banner.style.display = 'block';
+      // URL에서 파라미터 제거 (뒤로가기 시 중복 표시 방지)
+      history.replaceState(null, '', window.location.pathname);
+    }
+  })();
 </script>
 </body>
 </html>
