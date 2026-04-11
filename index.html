@@ -3258,83 +3258,98 @@
            PAGE: DASHBOARD
       ══════════════════════════ -->
       <div class="page active" id="page-dashboard">
-        <!-- KYB Banner (D-38 warning example) -->
-        <div class="kyb-banner kyb-banner-warning">
-          &#9888; KYB 갱신이 38일 후(2026-05-15) 만료됩니다. 담당자에게 갱신을 요청하세요.
-        </div>
-        <!-- 4-9-2/4: 입금 보류·거절 배너 (동적 렌더링) -->
+        <!-- KYB Banner — 동적 렌더링 (2-3-1) -->
+        <div id="kyb-banner-wrap"></div>
+        <!-- 입금 보류 알림 카드 — 동적 렌더링 (2-3-2 / 4-9) -->
         <div id="hold-banners"></div>
         <div class="dashboard-grid">
-          <!-- Company Info -->
+
+          <!-- ① 고객사 정보 COMPANY INFO (2-4) -->
           <div class="card">
-            <div class="card-title-sm">&#127970; 고객사 정보 Company Info</div>
-            <div class="info-row"><span class="info-label">고객사명</span><span style="font-weight:600;">알파투자운용(주)<br><span style="font-weight:400; font-size:12px; color:var(--text-secondary);">Alpha Investment Management</span></span></div>
-            <div class="info-row"><span class="info-label">사업자번호</span><span style="font-family:monospace; font-size:12px;">123-45-67890</span></div>
-            <div class="info-row"><span class="info-label">KYB 상태</span><span class="badge badge-success">KYB 완료</span></div>
-            <div class="info-row"><span class="info-label">위험등급</span><span class="badge badge-success">저위험 Low Risk</span></div>
-            <div class="info-row"><span class="info-label">다음 KYB 갱신일</span><span>2026-05-15 <span style="color:#F97316; font-size:12px; font-weight:600;">D-38</span></span></div>
-            <div class="info-row" style="border-bottom:none;"><span class="info-label">서비스 상태</span><span><span class="dot-status dot-green"></span>활성화</span></div>
+            <div class="card-title-sm">&#127970; 고객사 정보 COMPANY INFO</div>
+            <div class="info-row">
+              <span class="info-label">고객사명</span>
+              <span id="dash-company-name" style="font-weight:600; text-align:right; line-height:1.5;">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">사업자번호</span>
+              <span id="dash-company-biz" style="font-family:monospace; font-size:12px;">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">KYB 상태</span>
+              <span id="dash-company-kyb"></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">위험등급</span>
+              <span id="dash-company-risk"></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">다음 KYB 갱신일</span>
+              <span id="dash-company-kyb-date">—</span>
+            </div>
+            <div class="info-row" style="border-bottom:none;">
+              <span class="info-label">서비스 상태</span>
+              <span id="dash-company-service">—</span>
+            </div>
           </div>
-          <!-- Account Overview -->
+
+          <!-- ② 계정 현황 ACCOUNT OVERVIEW (2-5) -->
           <div class="card">
-            <div class="card-title-sm">&#128100; 계정 현황 Account Overview</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div class="card-title-sm">&#128100; 계정 현황 ACCOUNT OVERVIEW</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px; padding:8px 0;">
               <div style="text-align:center;">
-                <div style="font-size:28px; font-weight:700; color:var(--primary);">3</div>
-                <div style="font-size:11px; color:var(--text-secondary);">전체</div>
+                <div id="dash-acct-total" style="font-size:32px; font-weight:700; color:#2563EB; line-height:1.1;">0</div>
+                <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">전체</div>
               </div>
               <div style="text-align:center;">
-                <div style="font-size:28px; font-weight:700; color:var(--success);">3</div>
-                <div style="font-size:11px; color:var(--text-secondary);">활성</div>
+                <div id="dash-acct-active" style="font-size:32px; font-weight:700; color:#16A34A; line-height:1.1;">0</div>
+                <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">활성</div>
               </div>
               <div style="text-align:center;">
-                <div style="font-size:28px; font-weight:700; color:var(--text-secondary);">0</div>
-                <div style="font-size:11px; color:var(--text-secondary);">비활성</div>
+                <div id="dash-acct-inactive" style="font-size:32px; font-weight:700; color:#94A3B8; line-height:1.1;">0</div>
+                <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">비활성</div>
               </div>
             </div>
-            <span class="stat-link" onclick="showPage('accounts', document.getElementById('nav-settings'))">계정 관리 →</span>
+            <span id="dash-acct-mgr-link" class="stat-link"
+              onclick="if(_IS_MASTER) showPage('accounts', document.getElementById('nav-settings'))">계정 관리 →</span>
           </div>
-          <!-- Wallet Summary -->
+
+          <!-- ③ 지갑 현황 WALLET SUMMARY (2-6) -->
           <div class="card">
-            <div class="card-title-sm">&#128188; 지갑 현황 Wallet Summary</div>
-            <div class="info-row"><span class="info-label">총 지갑 수</span><span style="font-weight:600;">2개</span></div>
-            <div class="info-row"><span class="info-label">총 자산 (KRW)</span><span style="font-size:18px; font-weight:700;">₩0</span></div>
-            <div class="info-row"><span class="info-label">출금 대기 건</span><span><span class="badge badge-warning">2건</span></span></div>
-            <div class="info-row" style="border-bottom:none;"><span class="info-label">생성 요청 대기</span><span><span class="badge badge-info">1건</span></span></div>
+            <div class="card-title-sm">&#128188; 지갑 현황 WALLET SUMMARY</div>
+            <div class="info-row">
+              <span class="info-label">총 지갑 수</span>
+              <span id="dash-wallet-count" style="font-weight:600;">—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">총 자산 (KRW)</span>
+              <span id="dash-wallet-total" style="font-size:18px; font-weight:700;">₩—</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">출금 대기 건</span>
+              <span id="dash-wallet-wd-pending">—</span>
+            </div>
+            <div class="info-row" style="border-bottom:none;">
+              <span class="info-label">생성 요청 대기</span>
+              <span id="dash-wallet-create-pending">—</span>
+            </div>
             <span class="stat-link" onclick="showPage('wallet', document.getElementById('nav-wallet'))">지갑 바로가기 →</span>
           </div>
-          <!-- To-do -->
+
+          <!-- ④ To-do / Pending Actions (2-7) -->
           <div class="card">
-            <div class="card-title-sm">&#9989; To-do / Pending Actions</div>
-            <div class="todo-item">
-              <span class="todo-label">서명 대기 출금</span>
-              <span class="todo-count" id="todo-wf-pending" onclick="showPage('workflows', document.getElementById('nav-workflows'))" style="cursor:pointer;">0</span>
-            </div>
-            <div class="todo-item">
-              <span class="todo-label">Whitelist 승인 대기</span>
-              <span class="todo-count zero">0</span>
-            </div>
-            <div class="todo-item">
-              <span class="todo-label">지갑 생성 요청 대기</span>
-              <span class="todo-count zero" id="todo-wallet-pending">0</span>
-            </div>
-            <div class="todo-item">
-              <span class="todo-label">코인 추가 거절</span>
-              <span class="todo-count zero" id="todo-coin-rejected" style="cursor:pointer;"
-                onclick="gotoRejectedCoins()">0</span>
-            </div>
-            <div class="todo-item">
-              <span class="todo-label">지갑 삭제 요청 반려</span>
-              <span class="todo-count zero" id="todo-wallet-del-rejected" style="cursor:pointer;"
-                onclick="gotoWalletDelRejected()">0</span>
-            </div>
-            <!-- 4-9-6: 입금 보류 to-do rows (동적 렌더링) -->
+            <div class="card-title-sm">&#9989; To-do / PENDING ACTIONS</div>
+            <!-- 고정 7개 항목 + 동적 추가 항목 -->
+            <div id="dash-todo-list"></div>
+            <!-- 입금 보류 / 거절 동적 rows (4-9-6) -->
             <div id="todo-hold-pending-rows"></div>
             <div id="todo-hold-rejected-rows"></div>
-            <!-- Strategy Engine policy alerts (Master only) -->
+            <!-- Strategy Engine 정책 알림 (Master only) -->
             <div id="todo-strategy-rows"></div>
-            <span class="stat-link" style="margin-top:4px;" onclick="showPage('workflows', document.getElementById('nav-workflows'))">Workflows 바로가기 →</span>
+            <span class="stat-link" style="margin-top:4px;"
+              onclick="showPage('workflows', document.getElementById('nav-workflows'))">Workflows 바로가기 →</span>
           </div>
+
         </div>
       </div>
 
@@ -4480,12 +4495,23 @@
   /* ── Wallet delete feature (4-3) ── */
   var _IS_MASTER = true; // demo: logged-in user is Master
 
+  /* ── 고객사 데이터 (2-4) ── */
+  const _COMPANY_DATA = {
+    name_ko:       '알파투자운용(주)',
+    name_en:       'Alpha Investment Management',
+    biz_no:        '123-45-67890',
+    kyb_status:    'complete',    // 'complete' | 'in_progress' | 'expired'
+    risk_level:    'low',         // 'low' | 'medium' | 'high'
+    kyb_next_date: '2026-05-15',  // YYYY-MM-DD
+    service_status: 'active',     // 'active' | 'inactive'
+  };
+
   /* ── Role switch ── */
   function switchRole(val) {
     _IS_MASTER = (val === 'master');
     const label = document.getElementById('sidebar-role-label');
     if (label) label.textContent = _IS_MASTER ? 'Master Account' : '일반 계정';
-    applyRoleUI();
+    applyRoleUI(); // applyRoleUI 내에서 renderDashboard() 호출
     // re-render dynamic tables
     renderCoinsTab();
     renderWLTable();
@@ -4552,6 +4578,230 @@
         btn.disabled = false;
       }
     });
+
+    // 대시보드 재렌더
+    renderDashboard();
+  }
+
+  /* ════════════════════════════════════
+     DASHBOARD RENDER (2-2 ~ 2-8)
+  ════════════════════════════════════ */
+
+  function _kybDaysRemaining() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const next  = new Date(_COMPANY_DATA.kyb_next_date);
+    return Math.round((next - today) / 86400000);
+  }
+
+  function renderKybBanner() {
+    const wrap = document.getElementById('kyb-banner-wrap');
+    if (!wrap) return;
+    const d = _kybDaysRemaining();
+    if (d > 40) {
+      wrap.innerHTML = '';
+    } else if (d <= 0) {
+      wrap.innerHTML = `<div class="kyb-banner kyb-banner-danger">&#9888; KYB가 만료되었습니다. 출금이 차단됩니다.</div>`;
+    } else {
+      wrap.innerHTML = `<div class="kyb-banner kyb-banner-warning">&#9888; KYB 갱신이 ${d}일 후(${_COMPANY_DATA.kyb_next_date}) 만료됩니다. 담당자에게 갱신을 요청하세요.</div>`;
+    }
+  }
+
+  function renderDashboard() {
+    renderKybBanner();
+    _renderCompanyInfo();
+    _renderAccountOverview();
+    _renderWalletSummary();
+    _renderTodoList();
+  }
+
+  /* ── ① 고객사 정보 (2-4) ── */
+  function _renderCompanyInfo() {
+    const d = _kybDaysRemaining();
+
+    const el = id => document.getElementById(id);
+    if (!el('dash-company-name')) return;
+
+    el('dash-company-name').innerHTML =
+      `${_COMPANY_DATA.name_ko}<br><span style="font-weight:400;font-size:12px;color:var(--text-secondary);">${_COMPANY_DATA.name_en}</span>`;
+    el('dash-company-biz').textContent = _COMPANY_DATA.biz_no;
+
+    const kybBadge = {
+      complete:    '<span class="badge badge-success">KYB 완료</span>',
+      in_progress: '<span class="badge badge-gray">KYB 진행중</span>',
+      expired:     '<span class="badge badge-danger">KYB 만료</span>',
+    };
+    el('dash-company-kyb').innerHTML = kybBadge[_COMPANY_DATA.kyb_status] || '—';
+
+    const riskBadge = {
+      low:    '<span class="badge badge-success">저위험 Low</span>',
+      medium: '<span class="badge badge-warning">중위험 Medium</span>',
+      high:   '<span class="badge badge-danger">고위험 High</span>',
+    };
+    el('dash-company-risk').innerHTML = riskBadge[_COMPANY_DATA.risk_level] || '—';
+
+    let dLabel;
+    if (d <= 0) {
+      dLabel = `<span style="color:#DC2626;font-weight:700;">만료</span>`;
+    } else if (d <= 40) {
+      dLabel = `<span style="color:#F97316;font-weight:600;">D-${d}</span>`;
+    } else {
+      dLabel = `<span style="color:var(--text-secondary);">D-${d}</span>`;
+    }
+    el('dash-company-kyb-date').innerHTML = `${_COMPANY_DATA.kyb_next_date} ${dLabel}`;
+
+    el('dash-company-service').innerHTML = _COMPANY_DATA.service_status === 'active'
+      ? '<span class="dot-status dot-green"></span>활성화'
+      : '<span class="dot-status dot-gray"></span>비활성화';
+  }
+
+  /* ── ② 계정 현황 (2-5) ── */
+  function _renderAccountOverview() {
+    const el = id => document.getElementById(id);
+    if (!el('dash-acct-total')) return;
+
+    const total    = _ACCOUNTS.filter(a => a.status !== 'pending').length;
+    const active   = _ACCOUNTS.filter(a => a.status === 'active').length;
+    const inactive = _ACCOUNTS.filter(a => ['pw_locked','otp_locked','manual_inactive'].includes(a.status)).length;
+    el('dash-acct-total').textContent    = total;
+    el('dash-acct-active').textContent   = active;
+    el('dash-acct-inactive').textContent = inactive;
+
+    // [계정 관리 →] 역할별 처리
+    const link = el('dash-acct-mgr-link');
+    if (link) {
+      if (_IS_MASTER) {
+        link.style.color         = 'var(--primary)';
+        link.style.cursor        = 'pointer';
+        link.style.pointerEvents = '';
+        link.title               = '';
+      } else {
+        link.style.color         = '#94A3B8';
+        link.style.cursor        = 'not-allowed';
+        link.style.pointerEvents = 'none';
+        link.title               = 'Master 계정만 사용 가능합니다.';
+      }
+    }
+  }
+
+  /* ── ③ 지갑 현황 (2-6) ── */
+  function _renderWalletSummary() {
+    const el = id => document.getElementById(id);
+    if (!el('dash-wallet-count')) return;
+
+    const activeWallets = (_WALLET_DATA || []).filter(w => w.status === 'active');
+    const totalKRW      = activeWallets.reduce((s,w) => s + (w.totalKRW||0), 0);
+    el('dash-wallet-count').textContent = `${activeWallets.length}개`;
+    el('dash-wallet-total').textContent = '₩' + totalKRW.toLocaleString();
+
+    // 출금 대기 건 (서명 대기 상태)
+    const wdCnt = typeof _WORKFLOW_DATA !== 'undefined'
+      ? _WORKFLOW_DATA.filter(w => w.status === 'pending_sig').length : 0;
+    const wdStyle = wdCnt > 0
+      ? 'background:#F59E0B;color:#fff;'
+      : 'background:#E2E8F0;color:#94A3B8;';
+    el('dash-wallet-wd-pending').innerHTML =
+      `<span style="${wdStyle}padding:2px 10px;border-radius:10px;font-size:12px;font-weight:600;">${wdCnt}건</span>`;
+
+    // 생성 요청 대기 (pending 상태 지갑/코인 추가 요청)
+    const createCnt = typeof _COIN_DATA !== 'undefined'
+      ? _COIN_DATA.filter(c => c.status === 'pending').length : 0;
+    const createStyle = createCnt > 0
+      ? 'background:#2563EB;color:#fff;'
+      : 'background:#E2E8F0;color:#94A3B8;';
+    el('dash-wallet-create-pending').innerHTML =
+      `<span style="${createStyle}padding:2px 10px;border-radius:10px;font-size:12px;font-weight:600;">${createCnt}건</span>`;
+  }
+
+  /* ── ④ To-do 목록 (2-7) ── */
+  function _renderTodoList() {
+    const cont = document.getElementById('dash-todo-list');
+    if (!cont) return;
+
+    // 각 항목 건수 집계
+    const wdCnt      = typeof _WORKFLOW_DATA !== 'undefined'
+      ? _WORKFLOW_DATA.filter(w => w.status === 'pending_sig').length : 0;
+    const wlCnt      = typeof _WL_DATA !== 'undefined'
+      ? _WL_DATA.filter(w => w.status === 'pending').length : 0;
+    const walletCrCnt = typeof _COIN_DATA !== 'undefined'
+      ? _COIN_DATA.filter(c => c.status === 'pending').length : 0;
+    const coinRejCnt  = typeof _COIN_DATA !== 'undefined'
+      ? _COIN_DATA.filter(c => c.status === 'rejected').length : 0;
+    const walletDelRejCnt = typeof _WALLET_DEL_REQUESTS !== 'undefined'
+      ? _WALLET_DEL_REQUESTS.filter(r => r.status === 'rejected').length : 0;
+
+    // 현재 로그인 계정이 서명 대기 출금의 서명자인지 확인
+    const myName = _IS_MASTER ? '김철수' : '이영희'; // demo
+    const isSigner = typeof _WORKFLOW_DATA !== 'undefined'
+      && _WORKFLOW_DATA.some(w => w.status === 'pending_sig'
+         && w.signers && w.signers.some(s => s.name === myName));
+
+    // 항목 정의: [label, count, badgeColor, clickFn, roleDisabled, tooltip]
+    const items = [
+      {
+        label: '서명 대기 출금',
+        count: wdCnt,
+        color: '#F59E0B',
+        click: `showPage('workflows', document.getElementById('nav-workflows'))`,
+        disabled: wdCnt > 0 && !isSigner,
+        tip: wdCnt > 0 && !isSigner ? '서명자로 지정된 경우에만 접근할 수 있습니다.' : '',
+      },
+      {
+        label: 'Whitelist 승인 대기',
+        count: wlCnt,
+        color: '#F59E0B',
+        click: `showPage('whitelist', document.getElementById('nav-whitelist'))`,
+        disabled: false,
+        tip: '',
+      },
+      {
+        label: '지갑 생성 요청 대기',
+        count: walletCrCnt,
+        color: '#2563EB',
+        click: `showPage('wallet', document.getElementById('nav-wallet'))`,
+        disabled: false,
+        tip: '',
+      },
+      {
+        label: '코인 추가 거절',
+        count: coinRejCnt,
+        color: '#DC2626',
+        click: `gotoRejectedCoins()`,
+        disabled: false,
+        tip: '',
+      },
+      {
+        label: '지갑 삭제 요청 반려',
+        count: walletDelRejCnt,
+        color: '#DC2626',
+        click: `gotoWalletDelRejected()`,
+        disabled: !_IS_MASTER && walletDelRejCnt > 0,
+        tip: !_IS_MASTER ? 'Master 계정만 재요청할 수 있습니다.' : '',
+      },
+      {
+        label: '⚠ 출금 정책 변경 확인 필요',
+        count: 0,  // _seRenderTodoStrategy가 별도 렌더
+        color: '#F59E0B',
+        click: `showPage('strategy', document.getElementById('nav-strategy'))`,
+        disabled: !_IS_MASTER,
+        tip: !_IS_MASTER ? 'Master 계정만 사용 가능합니다.' : '',
+        hidden: true, // _seRenderTodoStrategy에서 별도 처리
+      },
+    ];
+
+    cont.innerHTML = items.filter(it => !it.hidden).map(it => {
+      const hasCount = it.count > 0;
+      const isClickable = hasCount && !it.disabled;
+      const badgeBg    = hasCount ? it.color : '#E2E8F0';
+      const badgeClr   = hasCount ? '#fff'   : '#94A3B8';
+      const cursor     = isClickable ? 'cursor:pointer;' : 'cursor:default;';
+      const onclick    = isClickable ? `onclick="${it.click}"` : '';
+      const titleAttr  = it.tip ? `title="${it.tip}"` : '';
+      return `
+        <div class="todo-item" style="${cursor}" ${onclick} ${titleAttr}>
+          <span class="todo-label" style="${it.label.startsWith('⚠') ? 'color:#F59E0B;font-weight:600;' : ''}">${it.label}</span>
+          <span style="background:${badgeBg};color:${badgeClr};padding:1px 10px;border-radius:10px;font-size:12px;font-weight:600;min-width:28px;text-align:center;">${it.count}</span>
+        </div>`;
+    }).join('');
   }
 
   /* ── Wallet data v2 — Multi-coin structure (4-1) ── */
@@ -6176,6 +6426,10 @@
     }
     // 4-9-6: Hold pending / rejected — dynamic rows
     renderHoldTodoRows();
+    // 대시보드 To-do 목록 재렌더 (2-7)
+    if (typeof _renderTodoList === 'function') _renderTodoList();
+    if (typeof _renderWalletSummary === 'function') _renderWalletSummary();
+    if (typeof _seRenderTodoStrategy === 'function') _seRenderTodoStrategy();
   }
 
   function renderHoldTodoRows() {
@@ -9797,6 +10051,8 @@
     renderHoldBanners();
     _updateTodoBadges();
     applyRoleUI();
+    // 대시보드 렌더 (applyRoleUI에서 호출되지만 데이터 로드 후 명시적으로도 실행)
+    renderDashboard();
     // Initialize strategy notifications
     _seRenderNotiBadge();
     _seRenderTodoStrategy();
