@@ -6056,9 +6056,9 @@
     tbody.innerHTML = list.map(function(a) {
       var statusBadge = {
         active:         '<span class="badge badge-success">&#9679; 활성</span>',
-        inactive_pw:    '<span class="badge badge-locked-pw">&#128274; PW 잠금</span>',
-        inactive_otp:   '<span class="badge badge-locked-otp">&#128274; OTP 잠금</span>',
-        inactive_manual:'<span class="badge badge-inactive">&#9679; 비활성화</span>',
+        inactive_pw:    '<span class="badge badge-locked-pw">&#128274; 비활성화(PW 잠금)</span>',
+        inactive_otp:   '<span class="badge badge-locked-otp">&#128274; 비활성화(OTP 잠금)</span>',
+        inactive_manual:'<span class="badge badge-inactive">&#9679; 비활성화(수동 잠금)</span>',
       }[a.status] || '';
 
       var actions = '';
