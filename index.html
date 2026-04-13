@@ -1068,10 +1068,25 @@
       <button class="btn btn-outline btn-sm" onclick="copyAddress()">&#128203; 전체 주소 복사</button>
       <button class="btn btn-outline btn-sm" onclick="showToast('블록체인 익스플로러는 데모에서 지원되지 않습니다.')">&#8599; 블록체인 익스플로러</button>
     </div>
+    <!-- Destination Tag (XRP only) -->
+    <div id="qr-dest-tag-section" style="display:none;margin-top:12px;">
+      <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;">
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">&#8505; Destination Tag <span style="font-size:10px;">(선택)</span></div>
+        <div id="qr-dest-tag-value-row" style="display:none;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-family:monospace;font-size:14px;font-weight:700;" id="qr-dest-tag-value"></span>
+            <button class="btn btn-outline btn-xs" onclick="copyDestTag()">&#128203; 복사</button>
+          </div>
+          <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:8px 10px;font-size:12px;color:#92400E;line-height:1.5;">&#9888; Destination Tag 없이 송금하면 자산이 유실될 수 있습니다. 송신 측에서 반드시 확인하세요.</div>
+        </div>
+        <div id="qr-dest-tag-none-row" style="display:none;font-size:12px;color:var(--text-secondary);">이 주소는 Destination Tag가 설정되어 있지 않습니다.</div>
+      </div>
+    </div>
     <!-- 경고 -->
     <div class="alert alert-warning" style="margin-top:14px;font-size:12px;" id="qr-warning-text"></div>
-    <!-- hidden full addr for copy -->
+    <!-- hidden full addr / destTag for copy -->
     <div id="qrAddress" style="display:none;"></div>
+    <div id="qrDestTag" style="display:none;"></div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-deposit-qr')">닫기</button>
@@ -1280,6 +1295,10 @@
         <span class="tx-info-label">수신 주소</span>
         <span id="txwd-toaddr" style="font-family:monospace; font-size:12px;"></span>
       </div>
+      <div class="tx-info-row" id="txwd-dest-tag-row" style="display:none;">
+        <span class="tx-info-label">Destination Tag</span>
+        <span id="txwd-dest-tag"></span>
+      </div>
       <div class="tx-info-row">
         <span class="tx-info-label">수신 유형</span>
         <span id="txwd-addr-type"></span>
@@ -1338,6 +1357,10 @@
       <div class="tx-info-row">
         <span class="tx-info-label">송신 주소</span>
         <span id="txdep-fromaddr" style="font-family:monospace; font-size:12px;"></span>
+      </div>
+      <div class="tx-info-row" id="txdep-dest-tag-row" style="display:none;">
+        <span class="tx-info-label">Destination Tag</span>
+        <span id="txdep-dest-tag"></span>
       </div>
       <div class="tx-info-row">
         <span class="tx-info-label">송신 주소 유형</span>
@@ -1752,6 +1775,12 @@
       <input type="text" id="wl-addr" class="form-control" placeholder="주소 입력"
         oninput="validateWLAddress()" autocomplete="off" spellcheck="false" />
       <div class="wl-addr-hint" id="wl-addr-hint"></div>
+    </div>
+    <div class="form-group" id="wl-dest-tag-group" style="display:none;">
+      <label class="form-label">Destination Tag <span style="font-size:11px;color:var(--text-secondary);font-weight:400;">선택 · XRP 전용</span></label>
+      <input type="text" id="wl-dest-tag" class="form-control" placeholder="예: 123456789 (숫자만 입력)"
+        inputmode="numeric" oninput="validateWLDestTag()" autocomplete="off" />
+      <div class="wl-addr-hint" id="wl-dest-tag-hint" style="margin-top:4px;">&#8505; 해당 주소로 송금 시 항상 동일한 Destination Tag를 사용하는 경우에만 입력하세요.</div>
     </div>
     <div class="form-group">
       <label class="form-label">주소 이름 / Label</label>
@@ -2594,6 +2623,7 @@
         <div class="wl-full-addr" id="wld-addr">—</div>
         <button class="btn btn-outline btn-xs" onclick="copyWLAddr()">&#128203; 전체 주소 복사</button>
       </div>
+      <div class="info-row" id="wld-dest-tag-row" style="padding:6px 0;display:none;"><span class="info-label">Destination Tag</span><span id="wld-dest-tag" style="font-family:monospace;">—</span></div>
       <div class="info-row" style="padding:6px 0;"><span class="info-label">Scope</span><span id="wld-scope">—</span></div>
       <div class="info-row" style="padding:6px 0;"><span class="info-label">신청일</span><span id="wld-created" style="font-size:12px;">—</span></div>
       <div class="info-row" style="padding:6px 0; border-bottom:none;"><span class="info-label">처리일</span><span id="wld-processed" style="font-size:12px;">—</span></div>
@@ -2719,7 +2749,7 @@
       <!-- Whitelist panel -->
       <div id="addr-whitelist-panel">
         <div class="wl-list">
-          <div class="wl-item selected" id="wl-0" onclick="selectWLItem(0)">
+          <div class="wl-item selected" id="wl-0" data-coin="USDT" data-dest-tag="" onclick="selectWLItem(0)">
             <div>
               <div class="wl-item-name">거래소 출금주소</div>
               <div class="wl-item-meta">Manual Transfer &#10003;</div>
@@ -2729,7 +2759,7 @@
               <div class="wl-item-addr">0x4d4b...C3E69</div>
             </div>
           </div>
-          <div class="wl-item" id="wl-1" onclick="selectWLItem(1)">
+          <div class="wl-item" id="wl-1" data-coin="BTC" data-dest-tag="" onclick="selectWLItem(1)">
             <div>
               <div class="wl-item-name">법인 보관지갑 A</div>
               <div class="wl-item-meta">Manual Transfer &#10003;</div>
@@ -2739,6 +2769,29 @@
               <div class="wl-item-addr">bc1qar...xy9</div>
             </div>
           </div>
+          <div class="wl-item" id="wl-2" data-coin="XRP" data-dest-tag="123456789" onclick="selectWLItem(2)">
+            <div>
+              <div class="wl-item-name">OKX 거래소 입금 주소</div>
+              <div class="wl-item-meta">Manual Transfer &#10003;</div>
+            </div>
+            <div class="wl-item-right">
+              <div class="wl-item-coin">XRP / XRP Ledger</div>
+              <div class="wl-item-addr">rN7n...cDeF</div>
+            </div>
+          </div>
+        </div>
+        <!-- Destination Tag 자동 표시 (XRP Whitelist 선택 시) -->
+        <div id="wl-selected-dest-tag-area" style="display:none;margin-top:8px;padding:10px 12px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;font-size:12px;color:#1D4ED8;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="color:var(--text-secondary);">Destination Tag:</span>
+            <span id="wl-selected-dest-tag-value" style="font-family:monospace;font-weight:700;"></span>
+            <span style="font-size:11px;color:var(--text-secondary);">(Whitelist 등록값 자동 적용)</span>
+          </div>
+        </div>
+        <div id="wl-selected-dest-tag-manual-area" style="display:none;margin-top:8px;">
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Destination Tag: — (미등록) · 필요 시 직접 입력</div>
+          <input type="text" id="wl-dest-tag-manual-input" class="form-control" placeholder="Destination Tag 입력 (선택)" inputmode="numeric" oninput="validateWDDestTag()" style="font-size:13px;" />
+          <div class="wl-addr-hint" id="wl-dest-tag-manual-hint" style="margin-top:4px;"></div>
         </div>
         <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="closeSO('so-withdrawal'); openSO('so-add-address')">+ Whitelist 추가 (Master)</button>
       </div>
@@ -2794,6 +2847,13 @@
             </div>
             <input type="text" class="form-control" id="wd-addr-input" placeholder="수신 주소를 입력하세요"
               oninput="onAddrInput(this.value)" autocomplete="off" />
+          </div>
+          <!-- Destination Tag (XRP 전용) -->
+          <div id="wd-dest-tag-group" style="display:none;margin-top:2px;">
+            <label class="form-label" style="font-size:12px;">Destination Tag <span style="font-size:11px;color:var(--text-secondary);font-weight:400;">선택 · XRP 전용</span></label>
+            <input type="text" id="wd-dest-tag-input" class="form-control" placeholder="숫자만 입력 (선택 사항)"
+              inputmode="numeric" oninput="validateWDDestTag()" autocomplete="off" />
+            <div class="wl-addr-hint" id="wd-dest-tag-hint" style="margin-top:4px;font-size:12px;color:var(--text-secondary);">&#8505; 수신 거래소/지갑에서 요구하는 경우에만 입력하세요. 미입력 시 자산이 유실될 수 있습니다.</div>
           </div>
           <div id="vasp-lookup-area" style="display:none;"></div>
         </div>
@@ -2861,6 +2921,7 @@
             <option value="ETH">ETH — Ethereum</option>
             <option value="USDT-ERC">USDT — ERC-20</option>
             <option value="USDT-TRC">USDT — TRC-20</option>
+            <option value="XRP">XRP — XRP Ledger</option>
           </select>
         </div>
         <div style="flex:1; min-width:140px;">
@@ -4811,9 +4872,10 @@
       coins: [
         { coin:'BTC',  network:'Bitcoin Mainnet',  icon:'&#8383;', color:'#F97316', addr:'bc1q...3f8e',  fullAddr:'bc1q4d2jKLp9mNqRs7tUvWx3f8e',  balance:2.5,    balanceKRW:350000000 },
         { coin:'USDT', network:'ERC20',             icon:'&#8366;', color:'#10B981', addr:'0x4d4b...C3E1', fullAddr:'0x4d4bC4a1f3E2c7B9d0F5a6C3E1', balance:100000, balanceKRW:138000000 },
-        { coin:'ETH',  network:'Ethereum Mainnet', icon:'&#9678;', color:'#627EEA', addr:'0x4d4b...C3E9', fullAddr:'0x4d4bC4a1f3E2c7B9d0F5a6C3E9', balance:23.0,   balanceKRW:119600000 }
+        { coin:'ETH',  network:'Ethereum Mainnet', icon:'&#9678;', color:'#627EEA', addr:'0x4d4b...C3E9', fullAddr:'0x4d4bC4a1f3E2c7B9d0F5a6C3E9', balance:23.0,   balanceKRW:119600000 },
+        { coin:'XRP',  network:'XRP Ledger',        icon:'&#10005;', color:'#0072C6', addr:'rHb9...yTh',  fullAddr:'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh', balance:5000,   balanceKRW:3900000, destTag:123456789 }
       ],
-      totalKRW: 607600000,
+      totalKRW: 611500000,
       sigPolicy: { n:2, m:3, signers:['김','이','박'] },
       requester: '김철수'
     },
@@ -4939,6 +5001,21 @@
       blockConfirm:'6 / 6',
       holdReasons:['OFAC 제재 주소로부터 송금된 거래입니다.'],
       rejectNote:'제재 대상 주소로부터의 입금으로 영구 거절 처리되었습니다.', rejectAt:'2026-03-25 11:30' },
+    { id:'WD-XRP-001', type:'withdrawal', coin:'XRP', network:'XRP Ledger',
+      walletId:'wallet1', walletName:'운영 지갑 A',
+      amount:1000, amountKRW:780000, fee:0.000012, actualAmount:999.999988,
+      status:'pending_sig', date:'2026-04-09 11:00:00',
+      toAddr:'rN7n3473SaZBCG4dFL73aBcDeF', addrType:'외부 주소 (CODE 검증 완료)',
+      txid:null, memo:'XRP 이전', destTag:987654321,
+      requester:'김철수',
+      signers:[{name:'김철수',done:true,at:'2026-04-09 11:02'},{name:'이영희',done:false,at:null},{name:'박민준',done:false,at:null}] },
+    { id:'DEP-XRP-001', type:'deposit', coin:'XRP', network:'XRP Ledger',
+      walletId:'wallet1', walletName:'운영 지갑 A',
+      amount:1000, amountKRW:780000,
+      status:'completed', date:'2026-04-09 10:00:00',
+      fromAddr:'rN7n3473SaZBCG4dFL73aBcDeF', addrType:'Whitelist 등록 주소',
+      txid:'A1B2C3D4E5F6G7H8I9J0', destTag:123456789,
+      blockConfirm:'1 / 1', holdReasons:[] },
   ];
 
   /* History filter state */
@@ -5226,6 +5303,20 @@
     const toEl = document.getElementById('txwd-toaddr');
     toEl.innerHTML = (h.toAddr || '—') +
       (h.toAddr ? ` <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.toAddr}').then(()=>showToast('주소 복사됨'))" style="color:var(--primary); cursor:pointer;">&#128203;</span>` : '');
+    // Destination Tag (XRP only)
+    const wdDtRow = document.getElementById('txwd-dest-tag-row');
+    const wdDtEl  = document.getElementById('txwd-dest-tag');
+    if (h.coin === 'XRP' && wdDtRow && wdDtEl) {
+      wdDtRow.style.display = '';
+      if (h.destTag !== undefined && h.destTag !== null && h.destTag !== '') {
+        const dtVal = String(h.destTag);
+        wdDtEl.innerHTML = `<span style="font-family:monospace;">${dtVal}</span> <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${dtVal}').then(()=>showToast('Destination Tag 복사됨'))" style="color:var(--primary);cursor:pointer;">&#128203;</span>`;
+      } else {
+        wdDtEl.innerHTML = '<span style="color:var(--text-secondary);">— (미입력)</span>';
+      }
+    } else if (wdDtRow) {
+      wdDtRow.style.display = 'none';
+    }
     document.getElementById('txwd-addr-type').textContent = h.addrType || '—';
     // TXID
     const txEl = document.getElementById('txwd-txid');
@@ -5288,6 +5379,20 @@
     const fromEl = document.getElementById('txdep-fromaddr');
     fromEl.innerHTML = (h.fromAddr || '—') +
       (h.fromAddr ? ` <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.fromAddr}').then(()=>showToast('주소 복사됨'))" style="color:var(--primary); cursor:pointer;">&#128203;</span>` : '');
+    // Destination Tag (XRP only)
+    const depDtRow = document.getElementById('txdep-dest-tag-row');
+    const depDtEl  = document.getElementById('txdep-dest-tag');
+    if (h.coin === 'XRP' && depDtRow && depDtEl) {
+      depDtRow.style.display = '';
+      if (h.destTag !== undefined && h.destTag !== null && h.destTag !== '') {
+        const dtVal = String(h.destTag);
+        depDtEl.innerHTML = `<span style="font-family:monospace;">${dtVal}</span> <span onclick="navigator.clipboard&&navigator.clipboard.writeText('${dtVal}').then(()=>showToast('Destination Tag 복사됨'))" style="color:var(--primary);cursor:pointer;">&#128203;</span>`;
+      } else {
+        depDtEl.innerHTML = '<span style="color:var(--text-secondary);">— (미입력)</span>';
+      }
+    } else if (depDtRow) {
+      depDtRow.style.display = 'none';
+    }
     document.getElementById('txdep-addr-type').textContent = h.addrType || '—';
     // TXID + copy
     const txEl = document.getElementById('txdep-txid');
@@ -5919,16 +6024,17 @@
       if (btn) { btn.disabled = true; setTimeout(() => btn.disabled = false, 3000); }
       return;
     }
-    const headers = ['거래 일시','지갑명','지갑 ID','유형','코인','네트워크','수량','원화 환산 금액','상태','신청 ID','TXID','송신/수신 주소','메모'];
+    const headers = ['거래 일시','지갑명','지갑 ID','유형','코인','네트워크','수량','원화 환산 금액','상태','신청 ID','TXID','송신/수신 주소','메모','Destination Tag'];
     const rows = data.map(h => {
-      const addr = h.type === 'withdrawal' ? (h.toAddr||'') : (h.fromAddr||'');
-      const id_  = h.type === 'withdrawal' ? h.id : '';
+      const addr    = h.type === 'withdrawal' ? (h.toAddr||'') : (h.fromAddr||'');
+      const id_     = h.type === 'withdrawal' ? h.id : '';
+      const destTag = h.coin === 'XRP' && (h.destTag !== undefined && h.destTag !== null) ? String(h.destTag) : '';
       return [
         h.date, h.walletName||'', h.walletId||'',
         h.type === 'withdrawal' ? '출금' : '입금',
         h.coin, h.network,
         h.amount.toFixed(8), h.amountKRW||0,
-        h.status, id_, h.txid||'', addr, h.memo||''
+        h.status, id_, h.txid||'', addr, h.memo||'', destTag
       ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
     });
     const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
@@ -7102,6 +7208,27 @@
     document.getElementById('qr-addr-short').textContent  = coinObj.fullAddr || coinObj.addr;
     document.getElementById('qrAddress').textContent      = coinObj.fullAddr || coinObj.addr;
     document.getElementById('qr-warning-text').innerHTML  = '&#9888; 위 주소는 <strong>' + coinObj.coin + ' / ' + coinObj.network + '</strong> 전용입니다.<br>다른 코인&#183;네트워크로 입금 시 자산이 소실될 수 있습니다.';
+    // Destination Tag (XRP only)
+    const dtSection    = document.getElementById('qr-dest-tag-section');
+    const dtValueRow   = document.getElementById('qr-dest-tag-value-row');
+    const dtNoneRow    = document.getElementById('qr-dest-tag-none-row');
+    const dtValueEl    = document.getElementById('qr-dest-tag-value');
+    const dtHiddenEl   = document.getElementById('qrDestTag');
+    if (coinObj.coin === 'XRP') {
+      dtSection.style.display = 'block';
+      const hasTag = coinObj.destTag !== undefined && coinObj.destTag !== null && coinObj.destTag !== '';
+      dtValueRow.style.display  = hasTag ? 'block' : 'none';
+      dtNoneRow.style.display   = hasTag ? 'none'  : 'block';
+      if (hasTag) {
+        dtValueEl.textContent   = coinObj.destTag;
+        dtHiddenEl.textContent  = coinObj.destTag;
+      } else {
+        dtHiddenEl.textContent  = '';
+      }
+    } else {
+      dtSection.style.display   = 'none';
+      dtHiddenEl.textContent    = '';
+    }
     openModal('modal-deposit-qr');
   }
 
@@ -7109,6 +7236,55 @@
     const addr = document.getElementById('qrAddress').textContent;
     navigator.clipboard && navigator.clipboard.writeText(addr);
     showToast('주소가 복사되었습니다.');
+  }
+
+  function copyDestTag() {
+    const tag = document.getElementById('qrDestTag').textContent;
+    if (!tag) return;
+    navigator.clipboard && navigator.clipboard.writeText(tag);
+    showToast('Destination Tag가 복사되었습니다.');
+  }
+
+  // Destination Tag 유효성 검사 (공통 헬퍼)
+  function _validateDestTagInput(inputId, hintId) {
+    const input = document.getElementById(inputId);
+    const hint  = document.getElementById(hintId);
+    if (!input || !hint) return true;
+    const val = input.value.trim();
+    if (val === '') {
+      input.className = 'form-control';
+      hint.className  = 'wl-addr-hint';
+      return true;
+    }
+    // 숫자만 허용
+    if (!/^\d+$/.test(val)) {
+      input.className = 'form-control addr-error';
+      hint.textContent = 'Destination Tag는 숫자만 입력할 수 있습니다.';
+      hint.className   = 'wl-addr-hint error';
+      return false;
+    }
+    const n = parseInt(val, 10);
+    if (n < 0 || n > 4294967295) {
+      input.className = 'form-control addr-error';
+      hint.textContent = 'Destination Tag는 0 ~ 4,294,967,295 사이 숫자여야 합니다.';
+      hint.className   = 'wl-addr-hint error';
+      return false;
+    }
+    input.className = 'form-control';
+    hint.textContent = '';
+    hint.className   = 'wl-addr-hint';
+    return true;
+  }
+
+  function validateWLDestTag() {
+    _validateDestTagInput('wl-dest-tag', 'wl-dest-tag-hint');
+  }
+
+  function validateWDDestTag() {
+    // Direct input panel
+    _validateDestTagInput('wd-dest-tag-input', 'wd-dest-tag-hint');
+    // Whitelist manual input (XRP whitelist without destTag)
+    _validateDestTagInput('wl-dest-tag-manual-input', 'wl-dest-tag-manual-hint');
   }
 
   /* ── 지갑 대시보드 동적 렌더링 (4-1) ── */
@@ -9130,10 +9306,11 @@
     'ETH':      'Ethereum Mainnet',
     'USDT-ERC': 'Ethereum (ERC-20)',
     'USDT-TRC': 'TRON (TRC-20)',
+    'XRP':      'XRP Ledger',
   };
-  const coinUSDPrice = { 'BTC': 62500, 'ETH': 3200, 'USDT-ERC': 1, 'USDT-TRC': 1 };
+  const coinUSDPrice = { 'BTC': 62500, 'ETH': 3200, 'USDT-ERC': 1, 'USDT-TRC': 1, 'XRP': 0.565 };
   const USD_KRW = 1380; // 환율 기준
-  const wdMaxBalance = { 'BTC': 0.5, 'ETH': 4.2, 'USDT-ERC': 12500, 'USDT-TRC': 8000 };
+  const wdMaxBalance = { 'BTC': 0.5, 'ETH': 4.2, 'USDT-ERC': 12500, 'USDT-TRC': 8000, 'XRP': 5000 };
 
   let _wdWalletName  = '';
   let _wdCurrentCase = 'D'; // A B C D
@@ -9178,6 +9355,11 @@
     // 탭 초기화
     [tabWL, tabDir, tabInt].forEach(t => t && t.classList.remove('selected'));
     [wlPanel, dirPanel, intPanel].forEach(p => p && (p.style.display = 'none'));
+    // Destination Tag 영역 초기화
+    const _dtArea   = document.getElementById('wl-selected-dest-tag-area');
+    const _dtManual = document.getElementById('wl-selected-dest-tag-manual-area');
+    if (_dtArea)   _dtArea.style.display   = 'none';
+    if (_dtManual) _dtManual.style.display = 'none';
 
     if (type === 'whitelist') {
       tabWL.classList.add('selected');
@@ -9239,6 +9421,28 @@
     document.querySelectorAll('.wl-item').forEach((el, i) => {
       el.classList.toggle('selected', i === idx);
     });
+    // Show Destination Tag info when XRP Whitelist item is selected
+    const selectedEl = document.querySelector('.wl-item.selected');
+    const coin       = selectedEl ? (selectedEl.dataset.coin || '') : '';
+    const destTag    = selectedEl ? (selectedEl.dataset.destTag || '') : '';
+    const dtArea     = document.getElementById('wl-selected-dest-tag-area');
+    const dtManual   = document.getElementById('wl-selected-dest-tag-manual-area');
+    const dtValue    = document.getElementById('wl-selected-dest-tag-value');
+    if (coin === 'XRP') {
+      if (destTag) {
+        if (dtArea)   { dtArea.style.display   = 'block'; }
+        if (dtManual) { dtManual.style.display  = 'none';  }
+        if (dtValue)  { dtValue.textContent     = destTag; }
+      } else {
+        if (dtArea)   { dtArea.style.display   = 'none';  }
+        if (dtManual) { dtManual.style.display  = 'block'; }
+        const manualInput = document.getElementById('wl-dest-tag-manual-input');
+        if (manualInput) manualInput.value = '';
+      }
+    } else {
+      if (dtArea)   { dtArea.style.display   = 'none'; }
+      if (dtManual) { dtManual.style.display  = 'none'; }
+    }
     document.getElementById('wd-submit-btn').disabled = false;
   }
 
@@ -9394,6 +9598,13 @@
     const max = wdMaxBalance[coin] || 0;
     const hint = document.querySelector('#so-withdrawal .form-hint strong');
     if (hint) hint.textContent = max.toFixed(8) + ' ' + coin.split('-')[0];
+    // Destination Tag field: show only for XRP in direct input panel
+    const dtGroup = document.getElementById('wd-dest-tag-group');
+    const dtInput = document.getElementById('wd-dest-tag-input');
+    if (dtGroup) {
+      dtGroup.style.display = coin === 'XRP' ? '' : 'none';
+      if (coin !== 'XRP' && dtInput) dtInput.value = '';
+    }
     updateUSD();
   }
 
@@ -10074,6 +10285,7 @@
     { idx:0, label:'업비트 출금 계좌',    coin:'USDT', network:'Ethereum (ERC-20)', addr:'0x4d4bC3E69aBcDeF1234567890abcDef123456789', scope:['Manual'],         status:'active',   createdAt:'2026-03-10 09:00:00', processedAt:'2026-03-11 10:00:00', rejectReason:'' },
     { idx:1, label:'법인 BTC 지갑',       coin:'BTC',  network:'Bitcoin Mainnet',   addr:'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',  scope:['Manual'],         status:'pending',  createdAt:'2026-04-05 11:30:00', processedAt:'',                  rejectReason:'' },
     { idx:2, label:'해외 거래소 출금주소', coin:'ETH',  network:'Ethereum Mainnet',  addr:'0x9a3cD4F12abcdef1234567890ABCdef1234567890', scope:['API'],            status:'rejected', createdAt:'2026-04-05 14:30:22', processedAt:'2026-04-06 09:15:00', rejectReason:'해당 주소는 검증되지 않은 외부 지갑 주소입니다. 거래소 공식 출금주소로 재신청해 주세요.' },
+    { idx:3, label:'OKX 거래소 입금 주소', coin:'XRP',  network:'XRP Ledger',        addr:'rN7n3473SaZBCG4dFL73aBcDeF1234567890',     destTag:123456789, scope:['Manual'], status:'active',   createdAt:'2026-04-01 09:00:00', processedAt:'2026-04-02 10:00:00', rejectReason:'' },
   ];
   let _wlActionIdx  = null;
   let _wlDetailIdx  = null;
@@ -10180,6 +10392,10 @@
     document.getElementById('wl-addr').className = 'form-control';
     document.getElementById('wl-addr-hint').textContent = '';
     document.getElementById('wl-addr-hint').className = 'wl-addr-hint';
+    const dtInput = document.getElementById('wl-dest-tag');
+    if (dtInput) dtInput.value = '';
+    const dtHint = document.getElementById('wl-dest-tag-hint');
+    if (dtHint) { dtHint.className = 'wl-addr-hint'; }
     document.getElementById('wl-label').value = '';
     document.getElementById('wl-label-count').textContent = '0 / 50';
     document.getElementById('wl-scope-manual').checked = true;
@@ -10195,6 +10411,17 @@
     sel.innerHTML = `<option value="">네트워크 선택 ▾</option>` +
       nets.map(n => `<option value="${n}">${n}</option>`).join('');
     if (nets.length === 1) sel.value = nets[0]; // auto-select if only one
+    // Destination Tag field: show only for XRP
+    const dtGroup = document.getElementById('wl-dest-tag-group');
+    const dtInput = document.getElementById('wl-dest-tag');
+    const dtHint  = document.getElementById('wl-dest-tag-hint');
+    if (dtGroup) {
+      dtGroup.style.display = coin === 'XRP' ? '' : 'none';
+      if (coin !== 'XRP' && dtInput) {
+        dtInput.value = '';
+        if (dtHint) { dtHint.className = 'wl-addr-hint'; dtHint.textContent = '&#8505; 해당 주소로 송금 시 항상 동일한 Destination Tag를 사용하는 경우에만 입력하세요.'; }
+      }
+    }
     validateWLAddress();
   }
 
@@ -10237,6 +10464,7 @@
     const label   = document.getElementById('wl-label').value.trim();
     const manual  = document.getElementById('wl-scope-manual').checked;
     const api     = document.getElementById('wl-scope-api').checked;
+    const destTagRaw = (document.getElementById('wl-dest-tag')?.value || '').trim();
 
     if (!coin)    { showToast('코인을 선택해주세요.');     return; }
     if (!network) { showToast('네트워크를 선택해주세요.'); return; }
@@ -10246,12 +10474,29 @@
     }
     if (!manual && !api) { showToast('Scope를 1개 이상 선택해주세요.'); return; }
 
-    // Duplicate check
-    const dup = _WL_DATA.find(w => w.coin === coin && w.network === network &&
-      w.addr.toLowerCase() === addr.toLowerCase() && w.status !== 'rejected');
-    if (dup) { showToast('이미 등록된 주소입니다.'); return; }
+    // Destination Tag validation (XRP only)
+    let destTagValue = null;
+    if (coin === 'XRP' && destTagRaw !== '') {
+      const dtHint = document.getElementById('wl-dest-tag-hint');
+      if (dtHint && dtHint.classList.contains('error')) {
+        showToast('Destination Tag는 0 ~ 4,294,967,295 사이 숫자여야 합니다.'); return;
+      }
+      destTagValue = parseInt(destTagRaw, 10);
+    }
 
-    const addrShort = addr.slice(0,8) + '...' + addr.slice(-6);
+    // Duplicate check — XRP: same address = 1 entry only
+    if (coin === 'XRP') {
+      const xrpDup = _WL_DATA.find(w => w.coin === 'XRP' &&
+        w.addr.toLowerCase() === addr.toLowerCase() && w.status !== 'rejected');
+      if (xrpDup) {
+        showToast('이미 등록된 주소입니다. 동일 XRP 주소는 Destination Tag 1개만 등록할 수 있습니다.'); return;
+      }
+    } else {
+      const dup = _WL_DATA.find(w => w.coin === coin && w.network === network &&
+        w.addr.toLowerCase() === addr.toLowerCase() && w.status !== 'rejected');
+      if (dup) { showToast('이미 등록된 주소입니다.'); return; }
+    }
+
     openOTPModal('Whitelist 주소 신청', function() {
       const scope = [manual && 'Manual', api && 'API'].filter(Boolean);
       const now   = new Date().toISOString().replace('T',' ').slice(0,19);
@@ -10259,6 +10504,7 @@
         idx: _WL_DATA.length,
         label: label || `${coin} 주소 ${_WL_DATA.length + 1}`,
         coin, network, addr, scope,
+        ...(coin === 'XRP' && destTagValue !== null && { destTag: destTagValue }),
         status: 'pending',
         createdAt: now, processedAt: '', rejectReason: ''
       };
@@ -10279,6 +10525,15 @@
     document.getElementById('wld-coin').textContent       = w.coin;
     document.getElementById('wld-network').textContent    = w.network;
     document.getElementById('wld-addr').textContent       = w.addr;
+    // Destination Tag (XRP only)
+    const wldDtRow = document.getElementById('wld-dest-tag-row');
+    const wldDtEl  = document.getElementById('wld-dest-tag');
+    if (w.coin === 'XRP' && wldDtRow && wldDtEl) {
+      wldDtRow.style.display = '';
+      wldDtEl.textContent = (w.destTag !== undefined && w.destTag !== null) ? String(w.destTag) : '— (미등록)';
+    } else if (wldDtRow) {
+      wldDtRow.style.display = 'none';
+    }
     document.getElementById('wld-scope').textContent      = w.scope.join(' / ');
     document.getElementById('wld-created').textContent    = w.createdAt || '—';
     document.getElementById('wld-processed').textContent  = w.processedAt || '—';
@@ -10305,6 +10560,9 @@
     document.getElementById('wl-network').value = w.network;
     document.getElementById('wl-addr').value = w.addr;
     validateWLAddress();
+    // Pre-fill Destination Tag if XRP
+    const dtInput = document.getElementById('wl-dest-tag');
+    if (dtInput) dtInput.value = (w.coin === 'XRP' && w.destTag !== undefined && w.destTag !== null) ? String(w.destTag) : '';
     document.getElementById('wl-label').value = w.label;
     document.getElementById('wl-label-count').textContent = w.label.length + ' / 50';
     document.getElementById('wl-scope-manual').checked = w.scope.includes('Manual');
