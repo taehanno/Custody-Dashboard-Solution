@@ -116,11 +116,16 @@
     /* ── Sidebar ── */
     .sidebar {
       width: 200px; min-width: 200px; background: var(--sidebar-bg);
-      overflow-y: auto; overflow-x: hidden;
+      overflow: hidden;
       transition: transform 0.25s ease;
+      display: flex; flex-direction: column;
     }
-    .sidebar::-webkit-scrollbar { width: 4px; }
-    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    .sidebar-nav-area { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .sidebar-nav-area::-webkit-scrollbar { width: 4px; }
+    .sidebar-nav-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    .sidebar-privacy { padding: 12px 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+    .privacy-link { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #94A3B8; text-decoration: none; }
+    .privacy-link:hover { color: #CBD5E1; text-decoration: underline; }
     .sidebar-section { padding: 14px 12px 4px; }
     .sidebar-section-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.8px; padding: 0 6px; margin-bottom: 4px; }
     .nav-item {
@@ -547,6 +552,7 @@
          SIDEBAR
     ════════════════════════════ -->
     <aside class="sidebar" id="sidebar">
+      <div class="sidebar-nav-area">
 
       <!-- 고객 관리 -->
       <div class="sidebar-section">
@@ -625,6 +631,10 @@
         </div>
       </div>
 
+      </div><!-- /.sidebar-nav-area -->
+      <div class="sidebar-privacy">
+        <a class="privacy-link" href="https://inbl.io/privacy-policy/" target="_blank" rel="noopener noreferrer">개인정보처리방침 ↗</a>
+      </div>
     </aside>
 
     <!-- ════════════════════════════

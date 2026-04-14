@@ -59,6 +59,8 @@
     .nav-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 6px 16px; }
 
     .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px; }
+    .privacy-link { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #94A3B8; text-decoration: none; padding: 4px 0; }
+    .privacy-link:hover { color: #CBD5E1; text-decoration: underline; }
     .btn-admin { width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: rgba(255,255,255,0.55); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center; }
     .btn-admin:hover { background: rgba(255,255,255,0.13); color: #fff; }
     .btn-logout { width: 100%; padding: 8px 12px; background: transparent; border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: rgba(239,68,68,0.7); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center; }
@@ -3301,6 +3303,7 @@
     <div class="sidebar-footer">
       <button class="btn-admin" onclick="window.open('admin.html','_blank')">&#9881; Admin Console</button>
       <button class="btn-logout" onclick="_sessionLogout()">&#8592; 로그아웃</button>
+      <a class="privacy-link" href="https://inbl.io/privacy-policy/" target="_blank" rel="noopener noreferrer">개인정보처리방침 ↗</a>
     </div>
   </aside>
 
