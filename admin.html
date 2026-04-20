@@ -7332,7 +7332,7 @@
     }
 
     closeModal('modal-wlf-kyb-detail');
-    openModal('modal-octa-result');
+    _afterClose(function() { openModal('modal-octa-result'); });
   }
 
   function completeKYBFromOCTA() {
@@ -8791,7 +8791,7 @@
     document.getElementById('wd-corp').textContent     = r.corp;
     document.getElementById('wd-wallet').textContent   = r.walletName || '—';
     document.getElementById('wd-coin').textContent     = r.coin + ' / ' + r.network;
-    document.getElementById('wd-amount').textContent   = '-' + r.amount + ' ' + r.coin;
+    document.getElementById('wd-amount').textContent   = (r.actualAmount || r.amount) + ' ' + r.coin;
     document.getElementById('wd-addr').textContent     = r.addr || '—';
     document.getElementById('wd-addr-type').textContent = r.addrType || '—';
     document.getElementById('wd-requester').textContent = r.requester || '—';
@@ -8815,7 +8815,7 @@
       if (feeLabel)   feeLabel.textContent   = isWdConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
       if (totalLabel) totalLabel.textContent = isWdConfirmed ? '총 출금액' : '총 출금액(예상)';
       document.getElementById('wd-fee').textContent    = r.fee + ' ' + r.coin;
-      document.getElementById('wd-actual').textContent = r.actualAmount + ' ' + r.coin;
+      document.getElementById('wd-actual').textContent = r.amount + ' ' + r.coin;
       document.getElementById('wd-krw').textContent    = (r.amountKRW ? '약 ₩' + r.amountKRW : '—');
       if (feeRow)    feeRow.style.display    = '';
       if (feeSep)    feeSep.style.display    = '';

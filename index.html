@@ -5542,7 +5542,7 @@
     document.getElementById('txwd-date').textContent = h.date;
     document.getElementById('txwd-requester').textContent = h.requester || '—';
     document.getElementById('txwd-coin').textContent = h.coin + ' — ' + h.network;
-    document.getElementById('txwd-amount').textContent = h.amount.toLocaleString() + ' ' + h.coin;
+    document.getElementById('txwd-amount').textContent = (h.actualAmount||h.amount).toLocaleString() + ' ' + h.coin;
     // 5-6 / 12-8: 수수료 예상/확정/미표시
     const txwdFeeConfirmed = (h.status === 'broadcasting' || h.status === 'done' || h.status === 'completed');
     const txwdIsRejected   = (h.status === 'rejected');
@@ -5562,7 +5562,7 @@
       if (txwdFeeLabel)   txwdFeeLabel.textContent   = txwdFeeConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
       if (txwdTotalLabel) txwdTotalLabel.textContent  = txwdFeeConfirmed ? '총 출금액' : '총 출금액(예상)';
       document.getElementById('txwd-fee').textContent    = (h.fee || 0) + ' ' + h.coin;
-      document.getElementById('txwd-actual').textContent = (h.actualAmount || h.amount) + ' ' + h.coin;
+      document.getElementById('txwd-actual').textContent = h.amount + ' ' + h.coin;
     }
     document.getElementById('txwd-krw').textContent = '≈ ₩' + (h.amountKRW || 0).toLocaleString();
     // To address with copy
@@ -6591,7 +6591,7 @@
     document.getElementById('wfd-date').textContent = w.date;
     document.getElementById('wfd-wallet').textContent = w.walletName;
     document.getElementById('wfd-coin').textContent = w.coin + ' / ' + w.network;
-    document.getElementById('wfd-amount').textContent = w.amount.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin;
+    document.getElementById('wfd-amount').textContent = (w.actualAmount||w.amount).toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin;
     // 5-6: 수수료 예상/확정/미표시
     const wfdFeeConfirmed = (w.status === 'broadcasting' || w.status === 'completed');
     const wfdIsRejected   = (w.status === 'rejected');
@@ -6611,7 +6611,7 @@
       if (wfdFeeLabel)   wfdFeeLabel.textContent   = wfdFeeConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
       if (wfdTotalLabel) wfdTotalLabel.textContent  = wfdFeeConfirmed ? '총 출금액' : '총 출금액(예상)';
       document.getElementById('wfd-fee').textContent = (w.fee||0) + ' ' + w.coin;
-      document.getElementById('wfd-actual').textContent = (w.actualAmount||w.amount) + ' ' + w.coin;
+      document.getElementById('wfd-actual').textContent = w.amount + ' ' + w.coin;
     }
     document.getElementById('wfd-krw').textContent = '약 ₩' + (w.amountKRW||0).toLocaleString();
     // Address
