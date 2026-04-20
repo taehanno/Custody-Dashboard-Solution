@@ -3219,7 +3219,7 @@
 ══════════════════════════════════════ -->
 <div class="modal modal-wide" id="modal-wlf-kyb-detail">
   <div class="modal-header">
-    <span class="modal-title">KYB 상세 — WLF 검사 중</span>
+    <span class="modal-title" id="wlfd-modal-title">KYB 상세 — WLF 검사 중</span>
     <button class="modal-close" onclick="closeModal('modal-wlf-kyb-detail')">&#10005;</button>
   </div>
   <div class="modal-body">
@@ -3239,20 +3239,27 @@
       <div class="section-box-title">② 국가위험정책 필터</div>
       <div id="wlfd-country-match" style="padding:10px 12px; border-radius:6px; font-size:12.5px;"></div>
     </div>
-    <!-- OCTA 검증 -->
+    <!-- OCTA 검증 — 대기/결과 인-플레이스 전환 -->
     <div class="section-box">
       <div class="section-box-title">③ OCTA Watch list 검증</div>
-      <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:12.5px; color:var(--text-secondary);">
+      <!-- 대기 상태 (초기) -->
+      <div id="wlfd-octa-pending" style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:12.5px; color:var(--text-secondary);">
         <div style="margin-bottom:4px; font-weight:600; color:var(--text-primary);">상태: ⏳ 검증 대기 중 (OCTA 결재 실행 전)</div>
         <div>ⓘ [OCTA 결재] 버튼을 실행하면 OCTA API를 호출하여 Watch list 여부를 검증합니다.</div>
+      </div>
+      <!-- 결과 (OCTA 실행 후 표시) -->
+      <div id="wlfd-octa-result" style="display:none;">
+        <div id="wlfd-octa-result-box" style="text-align:center; padding:20px 14px; border-radius:10px; margin-bottom:10px;"></div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:6px;" id="wlfd-octa-datetime"></div>
+        <div id="wlfd-octa-guide" style="font-size:12.5px; color:var(--text-secondary); padding:10px 12px; background:#F8FAFC; border-radius:6px; border:1px solid var(--border);"></div>
       </div>
     </div>
     <!-- 경고 배너 (WLF 매칭 시) -->
     <div id="wlfd-warn-banner" style="display:none; background:#FEF9C3; border:1px solid #FDE047; border-radius:8px; padding:10px 14px; font-size:12.5px; color:#713F12; margin-bottom:4px;">
       ⚠ 내부요주의인물 필터에 매칭된 항목이 있습니다. 내용을 검토 후 OCTA 결재를 진행하세요.
     </div>
-    <!-- OTP -->
-    <div style="margin-top:12px;">
+    <!-- OTP (OCTA 실행 전만 표시) -->
+    <div id="wlfd-otp-section" style="margin-top:12px;">
       <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">OTP 인증</div>
       <div id="wlfdOTPRow" style="display:flex;gap:6px;">
         <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,0,'wlfdOTPRow');_validateWLFD()" onkeydown="otpBack(event,this,0,'wlfdOTPRow')" onpaste="otpPaste(event,'wlfdOTPRow')">
@@ -3265,8 +3272,12 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-outline" onclick="openKYBDetail(_kybDetailIdx); closeModal('modal-wlf-kyb-detail');">KYB 내용 보기</button>
+    <!-- Phase 1: OCTA 실행 전 -->
+    <button class="btn btn-outline" id="wlfd-btn-kyb-view" onclick="openKYBDetail(_kybDetailIdx); closeModal('modal-wlf-kyb-detail');">KYB 내용 보기</button>
     <button class="btn btn-warning" id="wlfd-octa-btn" disabled onclick="runOCTAApproval()">OCTA 결재</button>
+    <!-- Phase 2: OCTA 실행 후 -->
+    <button class="btn btn-outline" id="wlfd-btn-close" style="display:none;" onclick="closeModal('modal-wlf-kyb-detail')">닫기</button>
+    <button class="btn btn-primary" id="wlfd-complete-btn" style="display:none;" onclick="completeKYBFromOCTA()">KYB 완료 처리</button>
   </div>
 </div>
 
@@ -7294,9 +7305,17 @@
         + '<div style="color:var(--text-secondary);">법인 소재 국가: ' + (k.wlfCountry ? k.wlfCountry.country : '—') + '</div>';
     }
 
+    // 모달 초기 상태 리셋 (이전 OCTA 결과 잔류 방지)
+    document.getElementById('wlfd-octa-pending').style.display = '';
+    document.getElementById('wlfd-octa-result').style.display  = 'none';
+    document.getElementById('wlfd-otp-section').style.display  = '';
+    document.getElementById('wlfd-btn-kyb-view').style.display = '';
+    document.getElementById('wlfd-btn-close').style.display    = 'none';
+    document.getElementById('wlfd-complete-btn').style.display = 'none';
+    document.getElementById('wlfd-modal-title').textContent    = 'KYB 상세 — WLF 검사 중';
     _otpRowReset('wlfdOTPRow');
     var btn = document.getElementById('wlfd-octa-btn');
-    if (btn) btn.disabled = true;
+    if (btn) { btn.disabled = true; btn.style.display = ''; }
     openModal('modal-wlf-kyb-detail');
   }
 
@@ -7313,11 +7332,11 @@
     var now = new Date().toISOString().slice(0,19).replace('T',' ');
     k.octaResult = { checked: true, watchlist: isWatchlist, checkedAt: now };
 
-    // 모달 전환 전에 결과 콘텐츠 먼저 채움
-    document.getElementById('octar-corp').textContent     = k.corpName;
-    document.getElementById('octar-datetime').textContent = now;
-    var resultBox = document.getElementById('octar-result-box');
-    var guideEl   = document.getElementById('octar-guide');
+    // OCTA 결과를 동일 모달 안에서 인-플레이스로 전환 (모달 전환 없음)
+    var resultBox = document.getElementById('wlfd-octa-result-box');
+    var guideEl   = document.getElementById('wlfd-octa-guide');
+    var dtEl      = document.getElementById('wlfd-octa-datetime');
+    if (dtEl) dtEl.textContent = '검증 일시: ' + now;
     if (isWatchlist) {
       resultBox.style.background = '#FEF9C3';
       resultBox.innerHTML = '<div style="font-size:32px; margin-bottom:8px;">⚠</div>'
@@ -7331,8 +7350,18 @@
       guideEl.innerHTML = 'ⓘ OCTA 검증이 완료되었습니다. [KYB 완료 처리]를 누르면 KYB 상태가 완료로 전환됩니다.';
     }
 
-    closeModal('modal-wlf-kyb-detail');
-    _afterClose(function() { openModal('modal-octa-result'); });
+    // OCTA 섹션 전환
+    document.getElementById('wlfd-octa-pending').style.display = 'none';
+    document.getElementById('wlfd-octa-result').style.display  = '';
+    // OTP 섹션 숨기기
+    document.getElementById('wlfd-otp-section').style.display  = 'none';
+    // 버튼 전환: Phase1 → Phase2
+    document.getElementById('wlfd-btn-kyb-view').style.display  = 'none';
+    document.getElementById('wlfd-octa-btn').style.display      = 'none';
+    document.getElementById('wlfd-btn-close').style.display     = '';
+    document.getElementById('wlfd-complete-btn').style.display  = '';
+    // 모달 타이틀 변경
+    document.getElementById('wlfd-modal-title').textContent = 'OCTA 검증 결과';
   }
 
   function completeKYBFromOCTA() {
@@ -7340,7 +7369,7 @@
     k.status    = 'done';
     k.riskGrade = k.riskGrade || 'low';
     k.completedAt = new Date().toISOString().slice(0,10);
-    closeModal('modal-octa-result');
+    closeModal('modal-wlf-kyb-detail');
     _afterClose(function() {
       renderKYBTable();
       showToast('✅ KYB 완료 처리되었습니다. 고객사 출금 차단이 해제됩니다.', 4000);
