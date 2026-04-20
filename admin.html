@@ -6798,7 +6798,7 @@
           : '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
       } else if (k.status === 'wlf') {
         actions = isManager
-          ? '<button class="btn btn-warning btn-xs" onclick="openWLFDetail('+k.idx+')">OCTA 결재</button>'
+          ? '<button class="btn btn-warning btn-xs" onclick="openKYBOCTADetail('+k.idx+')">OCTA 결재</button>'
           : '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
       } else if (k.status === 'done') {
         actions = isGeneral
@@ -7265,7 +7265,7 @@
   }
 
   /* ── 4-5: WLF + OCTA 상세 팝업 ── */
-  function openWLFDetail(idx) {
+  function openKYBOCTADetail(idx) {
     var k = _KYB_DATA[idx]; if (!k) return;
     _kybDetailIdx = idx;
 
