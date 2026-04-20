@@ -7143,33 +7143,31 @@
   function runOCTAApproval() {
     if (!_otpRowFilled('wlfdOTPRow')) return;
     var k = _KYB_DATA[_kybDetailIdx]; if (!k) return;
-    closeModal('modal-wlf-kyb-detail');
 
-    // 데모: 50% 확률로 Watch list 결과
     var isWatchlist = (k.wlfPerson && k.wlfPerson.matched);
     var now = new Date().toISOString().slice(0,19).replace('T',' ');
     k.octaResult = { checked: true, watchlist: isWatchlist, checkedAt: now };
 
-    _afterClose(function() {
-      document.getElementById('octar-corp').textContent     = k.corpName;
-      document.getElementById('octar-datetime').textContent = now;
+    // 모달 전환 전에 결과 콘텐츠 먼저 채움
+    document.getElementById('octar-corp').textContent     = k.corpName;
+    document.getElementById('octar-datetime').textContent = now;
+    var resultBox = document.getElementById('octar-result-box');
+    var guideEl   = document.getElementById('octar-guide');
+    if (isWatchlist) {
+      resultBox.style.background = '#FEF9C3';
+      resultBox.innerHTML = '<div style="font-size:32px; margin-bottom:8px;">⚠</div>'
+        + '<div style="font-size:16px; font-weight:700; color:#713F12;">Watch list 대상입니다.</div>'
+        + '<div style="font-size:13px; color:#713F12; margin-top:4px;">OCTA에서 확인해주세요.</div>';
+      guideEl.innerHTML = 'ⓘ Watch list 대상이더라도 AML 관리자 판단으로 KYB 완료 처리할 수 있습니다.<br>OCTA 시스템에서 상세 내용을 확인한 후 처리 여부를 결정하세요.';
+    } else {
+      resultBox.style.background = '#ECFDF5';
+      resultBox.innerHTML = '<div style="font-size:32px; margin-bottom:8px;">✅</div>'
+        + '<div style="font-size:16px; font-weight:700; color:#065F46;">Watch list 대상이 아닙니다.</div>';
+      guideEl.innerHTML = 'ⓘ OCTA 검증이 완료되었습니다. [KYB 완료 처리]를 누르면 KYB 상태가 완료로 전환됩니다.';
+    }
 
-      var resultBox = document.getElementById('octar-result-box');
-      var guideEl   = document.getElementById('octar-guide');
-      if (isWatchlist) {
-        resultBox.style.background = '#FEF9C3';
-        resultBox.innerHTML = '<div style="font-size:32px; margin-bottom:8px;">⚠</div>'
-          + '<div style="font-size:16px; font-weight:700; color:#713F12;">Watch list 대상입니다.</div>'
-          + '<div style="font-size:13px; color:#713F12; margin-top:4px;">OCTA에서 확인해주세요.</div>';
-        guideEl.innerHTML = 'ⓘ Watch list 대상이더라도 AML 관리자 판단으로 KYB 완료 처리할 수 있습니다.<br>OCTA 시스템에서 상세 내용을 확인한 후 처리 여부를 결정하세요.';
-      } else {
-        resultBox.style.background = '#ECFDF5';
-        resultBox.innerHTML = '<div style="font-size:32px; margin-bottom:8px;">✅</div>'
-          + '<div style="font-size:16px; font-weight:700; color:#065F46;">Watch list 대상이 아닙니다.</div>';
-        guideEl.innerHTML = 'ⓘ OCTA 검증이 완료되었습니다. [KYB 완료 처리]를 누르면 KYB 상태가 완료로 전환됩니다.';
-      }
-      openModal('modal-octa-result');
-    });
+    closeModal('modal-wlf-kyb-detail');
+    openModal('modal-octa-result');
   }
 
   function completeKYBFromOCTA() {
