@@ -3557,6 +3557,7 @@
       <div class="info-row"><span class="info-label">상태</span><span class="info-value" id="dd-status"></span></div>
       <div class="info-row"><span class="info-label">일시</span><span class="info-value" id="dd-datetime"></span></div>
       <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="dd-corp"></span></div>
+      <div class="info-row" id="dd-wallet-row" style="display:none;"><span class="info-label">지갑명</span><span class="info-value" id="dd-wallet" style="font-weight:600;"></span></div>
       <div class="info-row"><span class="info-label">코인 / 네트워크</span><span class="info-value" id="dd-coin"></span></div>
       <div class="info-row"><span class="info-label">수량</span><span class="info-value" id="dd-amount" style="font-weight:700; color:var(--success);"></span></div>
       <div class="info-row">
@@ -3591,9 +3592,35 @@
       <div class="section-box-title" style="color:var(--danger);">거절 사유</div>
       <p id="dd-reject-reason" style="margin:0; font-size:13px; color:var(--danger);"></p>
     </div>
+    <!-- 7-4: 고객사 상태 참고 (보류 처리 시만 표시) -->
+    <div id="dd-client-status-section" style="display:none;" class="section-box">
+      <div class="section-box-title">고객사 상태 참고 <span style="font-size:11px;font-weight:400;color:var(--text-secondary);">처리 판단용 — 보류 사유 아님</span></div>
+      <div class="info-row"><span class="info-label">KYB 상태</span><span class="info-value" id="dd-cs-kyb"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">지갑 상태</span><span class="info-value" id="dd-cs-wallet"></span></div>
+      <div style="font-size:11.5px;color:var(--text-secondary);padding:8px 0 2px;line-height:1.6;">ⓘ KYB/지갑 상태는 보류 판단 조건이 아닙니다. 수신 주소 등록 여부만이 보류 트리거입니다.</div>
+    </div>
+    <!-- 7-4: 처리 의견 + OTP (보류 처리 권한자만) -->
+    <div id="dd-action-section" style="display:none;">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">처리 의견 <span style="font-size:11px;font-weight:400;color:var(--text-secondary);">선택 · 최대 500자</span></label>
+        <textarea class="form-control" id="dd-opinion" rows="3" maxlength="500" style="width:100%; resize:vertical;" placeholder="처리 근거나 메모를 남길 수 있습니다."></textarea>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">OTP 인증</div>
+      <div style="display:flex;justify-content:center;gap:8px;" id="ddOTPRow">
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,0,'ddOTPRow');_validateHoldDetail()" onkeydown="otpBack(event,this,0,'ddOTPRow')" onpaste="otpPaste(event,'ddOTPRow')" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,1,'ddOTPRow');_validateHoldDetail()" onkeydown="otpBack(event,this,1,'ddOTPRow')" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,2,'ddOTPRow');_validateHoldDetail()" onkeydown="otpBack(event,this,2,'ddOTPRow')" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,3,'ddOTPRow');_validateHoldDetail()" onkeydown="otpBack(event,this,3,'ddOTPRow')" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,4,'ddOTPRow');_validateHoldDetail()" onkeydown="otpBack(event,this,4,'ddOTPRow')" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,5,'ddOTPRow');_validateHoldDetail()" onkeydown="otpBack(event,this,5,'ddOTPRow')" />
+      </div>
+    </div>
   </div>
   <div class="modal-footer" id="dd-footer">
+    <button class="btn btn-danger btn-sm" id="dd-btn-reject" style="display:none;" onclick="confirmHoldDetailReject()">거절</button>
+    <div style="flex:1;"></div>
     <button class="btn btn-outline" onclick="closeModal('modal-deposit-detail')">닫기</button>
+    <button class="btn btn-success btn-sm" id="dd-btn-approve" style="display:none;" disabled onclick="confirmHoldDetailApprove()">승인</button>
   </div>
 </div>
 
@@ -7671,10 +7698,10 @@
     // 입금 — 확인중
     { type:'deposit',    corp:'베타캐피탈 유한회사',  coin:'BTC',  network:'Bitcoin',           amount:'0.1200',    status:'pending',     txid:'7d8e9f...a0b1',   addr:'bc1qzp9...n3m',   datetime:'2026-04-08 11:05' },
     // 입금 — 보류 (holdSubStatus: pending/approved/rejected)
-    { type:'deposit',    corp:'알파투자운용(주)',     coin:'USDT', network:'Ethereum (ERC-20)', amount:'50,000.00', status:'hold',        txid:'0xf1e2d3...b4c5', addr:'0x2A4F...8D9E',   datetime:'2026-04-07 16:44', holdReason:'단일 입금 임계값 초과 (₩65,000,000)', holdSubStatus:'pending' },
-    { type:'deposit',    corp:'델타홀딩스 유한회사', coin:'XRP',  network:'XRP Ledger',        amount:'200,000',   status:'hold',        txid:'A3B4C5...D6E7',   addr:'rHb9Cj...P2E1',   destTag:987654321, datetime:'2026-04-06 22:10', holdReason:'신규 송신 주소 — AML 검토 필요', holdSubStatus:'pending' },
-    { type:'deposit',    corp:'감마트레이딩(주)',     coin:'ETH',  network:'Ethereum',          amount:'10.0000',   status:'hold',        txid:'0xc7d8e9...f0a1', addr:'0x5B1C...3F2A',   datetime:'2026-04-05 18:30', holdReason:'동일 주소 반복 입금 (24h 3회)', holdSubStatus:'approved', resolvedAt:'2026-04-06 09:00' },
-    { type:'deposit',    corp:'베타캐피탈 유한회사', coin:'USDT', network:'TRON (TRC-20)',     amount:'30,000.00', status:'hold',        txid:'TRy3xZ...M8K2',   addr:'TJa4wN...B7L9',   datetime:'2026-04-04 20:15', holdReason:'출처 불명 주소 — OFAC 스크리닝 필요', holdSubStatus:'rejected', rejectedReason:'OFAC 지정 주소 확인됨', resolvedAt:'2026-04-05 10:30' },
+    { type:'deposit',    corp:'알파투자운용(주)',     walletName:'운영 지갑 A', coin:'USDT', network:'Ethereum (ERC-20)', amount:'50,000.00', status:'hold',        txid:'0xf1e2d3...b4c5', addr:'0x2A4F...8D9E',   datetime:'2026-04-07 16:44', holdReason:'신규 미등록 주소 — Whitelist 및 Travel Rule 미충족', holdSubStatus:'pending', kybStatus:'done', walletActive:true },
+    { type:'deposit',    corp:'델타홀딩스 유한회사', walletName:'XRP 지갑',    coin:'XRP',  network:'XRP Ledger',        amount:'200,000',   status:'hold',        txid:'A3B4C5...D6E7',   addr:'rHb9Cj...P2E1',   destTag:987654321, datetime:'2026-04-06 22:10', holdReason:'신규 미등록 주소 — Whitelist 및 Travel Rule 미충족', holdSubStatus:'pending', kybStatus:'rejected', walletActive:true },
+    { type:'deposit',    corp:'감마트레이딩(주)',     walletName:'ETH 지갑',    coin:'ETH',  network:'Ethereum',          amount:'10.0000',   status:'hold',        txid:'0xc7d8e9...f0a1', addr:'0x5B1C...3F2A',   datetime:'2026-04-05 18:30', holdReason:'신규 미등록 주소 — Whitelist 및 Travel Rule 미충족', holdSubStatus:'approved', resolvedAt:'2026-04-06 09:00', kybStatus:'draft', walletActive:true },
+    { type:'deposit',    corp:'베타캐피탈 유한회사', walletName:'운영 지갑 B', coin:'USDT', network:'TRON (TRC-20)',     amount:'30,000.00', status:'hold',        txid:'TRy3xZ...M8K2',   addr:'TJa4wN...B7L9',   datetime:'2026-04-04 20:15', holdReason:'신규 미등록 주소 — Whitelist 및 Travel Rule 미충족', holdSubStatus:'rejected', rejectedReason:'OFAC 지정 주소 확인됨', resolvedAt:'2026-04-05 10:30', kybStatus:'wlf', walletActive:false },
     // 입금 — 거절
     { type:'deposit',    corp:'알파투자운용(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.0100',    status:'rejected',    txid:'5e6f7a...8b9c',   addr:'bc1qnm3...p4r',   datetime:'2026-04-03 14:00', rejectedReason:'허용되지 않는 코인 네트워크 (BTC Segwit)' },
     // 출금 — 완료
@@ -7901,10 +7928,7 @@
       var dataIdx = _TX_DATA.indexOf(r);
       var subCfg  = _TX_HOLD_SUBSTATUS_CFG[r.holdSubStatus] || { label: r.holdSubStatus, cls:'badge-gray' };
       var isPending = r.holdSubStatus === 'pending';
-      var actionBtns = isPending
-        ? '<button class="btn btn-success btn-xs" onclick="openHoldApproveModal(' + dataIdx + ')">승인</button>'
-          + ' <button class="btn btn-danger btn-xs" onclick="openHoldRejectModal(' + dataIdx + ')">거절</button>'
-        : '<button class="btn btn-outline btn-xs" onclick="openDepositDetailAdmin(' + dataIdx + ')">상세</button>';
+      var actionBtns = '<button class="btn btn-' + (isPending ? 'primary' : 'outline') + ' btn-xs" onclick="openDepositDetailAdmin(' + dataIdx + ')">' + (isPending ? '처리' : '상세') + '</button>';
       return '<tr>'
         + '<td style="width:32px;"><input type="checkbox" class="tx-hold-cb" data-idx="' + dataIdx + '" ' + (isPending ? '' : 'disabled') + '/></td>'
         + '<td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">' + r.datetime + '</td>'
@@ -7997,20 +8021,29 @@
     showToast(r.corp + ' 보류 입금이 거절되었습니다.');
   }
 
+  var _ddActiveIdx = null;
+
   function openDepositDetailAdmin(dataIdx) {
+    _ddActiveIdx = dataIdx;
     var r = _TX_DATA[dataIdx]; if (!r) return;
     var cfg = _TX_STATUS_CFG[r.status] || { label: r.status, cls:'badge-gray' };
     var holdCfg = r.holdSubStatus ? _TX_HOLD_SUBSTATUS_CFG[r.holdSubStatus] : null;
     var statusHtml = '<span class="badge ' + cfg.cls + '">' + cfg.label + '</span>';
     if (holdCfg) statusHtml += ' <span class="badge ' + holdCfg.cls + '">' + holdCfg.label + '</span>';
 
-    document.getElementById('dd-status').innerHTML   = statusHtml;
+    document.getElementById('dd-status').innerHTML    = statusHtml;
     document.getElementById('dd-datetime').textContent = r.datetime;
     document.getElementById('dd-corp').textContent    = r.corp;
     document.getElementById('dd-coin').textContent    = r.coin + ' / ' + r.network;
     document.getElementById('dd-amount').textContent  = '+' + r.amount + ' ' + r.coin;
     document.getElementById('dd-addr').textContent    = r.addr || '—';
     document.getElementById('dd-txid').textContent    = r.txid || '—';
+
+    // 지갑명
+    var walletRow = document.getElementById('dd-wallet-row');
+    var walletEl  = document.getElementById('dd-wallet');
+    if (walletRow) walletRow.style.display = r.walletName ? '' : 'none';
+    if (walletEl && r.walletName) walletEl.textContent = r.walletName;
 
     // Destination Tag (XRP only)
     var ddDtRow  = document.getElementById('dd-dest-tag-row');
@@ -8030,32 +8063,87 @@
       }
     }
 
-    // hold section
+    var isHold        = r.status === 'hold';
+    var isHoldPending = isHold && r.holdSubStatus === 'pending';
+    var isRejected    = r.status === 'rejected' || (isHold && r.holdSubStatus === 'rejected');
+    var canAct        = _ADMIN_ROLE === 'general' || _ADMIN_ROLE === 'master';
+
+    // 보류 사유 — hold 건 전체에 표시
     var holdSec = document.getElementById('dd-hold-section');
     if (holdSec) {
-      holdSec.style.display = (r.status === 'hold' && r.holdSubStatus === 'pending') ? '' : 'none';
+      holdSec.style.display = isHold ? '' : 'none';
       document.getElementById('dd-hold-reason').textContent = r.holdReason || '—';
     }
-    // reject section
+
+    // 거절 사유
     var rejSec = document.getElementById('dd-reject-section');
     if (rejSec) {
-      rejSec.style.display = (r.status === 'rejected' || (r.status === 'hold' && r.holdSubStatus === 'rejected')) ? '' : 'none';
+      rejSec.style.display = isRejected ? '' : 'none';
       document.getElementById('dd-reject-reason').textContent = r.rejectedReason || '—';
     }
 
-    // footer buttons
-    var footer = document.getElementById('dd-footer');
-    var isHoldPending = r.status === 'hold' && r.holdSubStatus === 'pending';
-    var canAct = _ADMIN_ROLE === 'general' || _ADMIN_ROLE === 'master';
-    if (footer && isHoldPending && canAct) {
-      footer.innerHTML = '<button class="btn btn-outline" onclick="closeModal(\'modal-deposit-detail\')">닫기</button>'
-        + '<button class="btn btn-danger" onclick="closeModal(\'modal-deposit-detail\'); openHoldRejectModal(' + dataIdx + ')">거절</button>'
-        + '<button class="btn btn-success" onclick="closeModal(\'modal-deposit-detail\'); openHoldApproveModal(' + dataIdx + ')">승인</button>';
-    } else {
-      footer.innerHTML = '<button class="btn btn-outline" onclick="closeModal(\'modal-deposit-detail\')">닫기</button>';
+    // 7-4: 고객사 상태 참고 (보류 건 전체에 표시)
+    var csSec = document.getElementById('dd-client-status-section');
+    if (csSec) {
+      csSec.style.display = isHold ? '' : 'none';
+      if (isHold) {
+        var kybLabelMap = {
+          done:      '<span style="color:var(--success);font-weight:600;">✅ KYB 완료</span>',
+          expired:   '<span style="color:#F97316;font-weight:600;">⚠ KYB 만료</span>',
+          submitted: '<span style="color:#3B82F6;font-weight:600;">검토 중</span>',
+          draft:     '<span style="color:var(--text-secondary);font-weight:600;">작성 중</span>',
+          wlf:       '<span style="color:#8B5CF6;font-weight:600;">WLF 검토 중</span>',
+          rejected:  '<span style="color:var(--danger);font-weight:600;">✕ KYB 반려</span>',
+        };
+        var kybHtml = r.kybStatus ? (kybLabelMap[r.kybStatus] || r.kybStatus) : '—';
+        var walletActiveHtml = r.walletActive === false
+          ? '<span style="color:var(--text-secondary);font-weight:600;">비활성화</span>'
+          : '<span style="color:var(--success);font-weight:600;">● 활성화</span>';
+        document.getElementById('dd-cs-kyb').innerHTML    = kybHtml;
+        document.getElementById('dd-cs-wallet').innerHTML = walletActiveHtml;
+      }
     }
 
+    // 7-4: 처리 의견 + OTP (보류 대기 + 권한자만)
+    var actSec = document.getElementById('dd-action-section');
+    var btnApprove = document.getElementById('dd-btn-approve');
+    var btnReject  = document.getElementById('dd-btn-reject');
+    _otpRowReset('ddOTPRow');
+    var opEl = document.getElementById('dd-opinion');
+    if (opEl) opEl.value = '';
+    if (actSec)    actSec.style.display    = (isHoldPending && canAct) ? '' : 'none';
+    if (btnApprove){ btnApprove.style.display = (isHoldPending && canAct) ? '' : 'none'; btnApprove.disabled = true; }
+    if (btnReject) btnReject.style.display  = (isHoldPending && canAct) ? '' : 'none';
+
     openModal('modal-deposit-detail');
+  }
+
+  function _validateHoldDetail() {
+    var btn = document.getElementById('dd-btn-approve');
+    if (btn) btn.disabled = !_otpRowFilled('ddOTPRow');
+  }
+
+  function confirmHoldDetailApprove() {
+    var r = _TX_DATA[_ddActiveIdx]; if (!r) return;
+    if (!_otpRowFilled('ddOTPRow')) return;
+    r.holdSubStatus = 'approved';
+    r.opinion       = (document.getElementById('dd-opinion') || {}).value || '';
+    r.resolvedAt    = new Date().toISOString().slice(0,16).replace('T',' ');
+    closeModal('modal-deposit-detail');
+    renderTxHoldTable(); renderTxTable(); renderTxStats();
+    showToast(r.corp + ' · ' + r.coin + ' 보류 입금이 승인되었습니다.', 3000);
+  }
+
+  function confirmHoldDetailReject() {
+    var r = _TX_DATA[_ddActiveIdx]; if (!r) return;
+    if (!_otpRowFilled('ddOTPRow')) { showToast('OTP를 입력해주세요.'); return; }
+    var opinion = (document.getElementById('dd-opinion') || {}).value || '';
+    r.holdSubStatus  = 'rejected';
+    r.rejectedReason = opinion || '관리자 검토 결과 거절';
+    r.resolvedAt     = new Date().toISOString().slice(0,16).replace('T',' ');
+    closeModal('modal-deposit-detail');
+    renderTxHoldTable(); renderTxTable(); renderTxStats();
+    showToast(r.corp + ' · ' + r.coin + ' 보류 입금이 거절되었습니다.', 3000);
   }
 
   function openWithdrawalDetailAdmin(dataIdx) {
