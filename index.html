@@ -321,6 +321,23 @@
     /* ── Wallet Delete Feature ── */
     .wallet-del-status { min-height: 0; margin-bottom: 0; }
     .wallet-del-status:not(:empty) { margin-bottom: 8px; }
+    /* ── Wallet Creation Request Cards (4-2) ── */
+    .wallet-card-pending { border-color: #FDE68A; background: #FFFBEB; }
+    .wallet-card-pending:hover { border-color: #F59E0B; box-shadow: 0 4px 16px rgba(245,158,11,0.15); }
+    .wallet-card-rejected { border: 1px solid #FECACA; border-left: 3px solid #EF4444; background: #FEF2F2; cursor: default; }
+    .wallet-card-rejected:hover { border-color: #FECACA; border-left-color: #EF4444; box-shadow: none; }
+    .wcr-separator { display: flex; align-items: center; gap: 10px; margin: 20px 0 14px; color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+    .wcr-separator::before, .wcr-separator::after { content: ''; flex: 1; height: 1px; background: var(--border); border-style: dashed; }
+    /* ── Pill Filters (history tab) ── */
+    .pill-filter { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: #fff; font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+    .pill-filter:hover { border-color: var(--primary); color: var(--primary); }
+    .pill-filter.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+    /* ── Coin checkbox group ── */
+    .coin-check-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .coin-check-item { display: flex; align-items: center; gap: 5px; padding: 6px 11px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; user-select: none; }
+    .coin-check-item:hover { border-color: var(--primary); color: var(--primary); }
+    .coin-check-item.checked { background: #EFF6FF; border-color: var(--primary); color: var(--primary); }
+    .coin-check-item input[type=checkbox] { accent-color: var(--primary); width: 14px; height: 14px; margin: 0; }
     .del-btn-wrap { position: relative; display: inline-block; }
     .del-btn-wrap[data-tip]:hover::after {
       content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); right: 0;
@@ -948,46 +965,170 @@
 <!-- ══════════════════════════════════════
      MODAL: Cold Wallet Creation Request
 ══════════════════════════════════════ -->
-<div class="modal" id="modal-coldwallet">
+<div class="modal" id="modal-coldwallet" style="max-width:520px;">
   <div class="modal-header">
-    <span class="modal-title">&#10052; 콜드월렛 생성 요청</span>
+    <span class="modal-title">지갑 추가 요청</span>
     <button class="modal-close" onclick="closeModal('modal-coldwallet')">&#10005;</button>
   </div>
   <div class="modal-body">
-    <div class="alert alert-info" style="margin-bottom:16px;">
-      &#8505; Admin 검토 및 Keypal 주소 생성까지 1~2 영업일 소요됩니다.
-    </div>
     <div class="form-group">
       <label class="form-label">지갑명 <span class="req">*</span></label>
-      <input type="text" class="form-control" placeholder="예: BTC 보관 지갑 #1" maxlength="50" id="cwName" />
-      <div class="form-hint">최대 50자</div>
+      <input type="text" class="form-control" placeholder="예: 운영 지갑 A" maxlength="50" id="cwName" oninput="validateWalletCreateForm()" />
+      <div id="cwName-err" style="font-size:12px; color:var(--danger); margin-top:4px; display:none;"></div>
     </div>
     <div class="form-group">
       <label class="form-label">코인 <span class="req">*</span></label>
-      <select class="form-control" id="cwCoin" onchange="updateNetwork()">
-        <option value="">Select coin ▾</option>
-        <option value="BTC">BTC — Bitcoin</option>
-        <option value="ETH">ETH — Ethereum</option>
-        <option value="USDT">USDT — Tether</option>
-        <option value="BNB">BNB — BNB Chain</option>
-        <option value="TRX">TRX — TRON</option>
-        <option value="FIL">FIL — Filecoin</option>
-      </select>
+      <div class="coin-check-group" id="cwCoinsGroup">
+        <label class="coin-check-item" id="cwCoin-BTC" onclick="toggleCoinCheck('BTC')">
+          <input type="checkbox" id="chk-BTC" onchange="validateWalletCreateForm()"> BTC
+        </label>
+        <label class="coin-check-item" id="cwCoin-ETH" onclick="toggleCoinCheck('ETH')">
+          <input type="checkbox" id="chk-ETH" onchange="validateWalletCreateForm()"> ETH
+        </label>
+        <label class="coin-check-item" id="cwCoin-USDT" onclick="toggleCoinCheck('USDT')">
+          <input type="checkbox" id="chk-USDT" onchange="validateWalletCreateForm()"> USDT
+        </label>
+        <label class="coin-check-item" id="cwCoin-XRP" onclick="toggleCoinCheck('XRP')">
+          <input type="checkbox" id="chk-XRP" onchange="validateWalletCreateForm()"> XRP
+        </label>
+        <label class="coin-check-item" id="cwCoin-SOL" onclick="toggleCoinCheck('SOL')">
+          <input type="checkbox" id="chk-SOL" onchange="validateWalletCreateForm()"> SOL
+        </label>
+      </div>
+      <div id="cwCoins-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;">코인을 1개 이상 선택해주세요.</div>
     </div>
     <div class="form-group">
-      <label class="form-label">네트워크 <span class="req">*</span></label>
-      <select class="form-control" id="cwNetwork">
-        <option value="">코인 선택 후 자동 필터 ▾</option>
-      </select>
+      <label class="form-label">용도 메모 <span style="font-size:11px; font-weight:400; color:var(--text-secondary);">(선택)</span></label>
+      <input type="text" class="form-control" placeholder="예: 법인 운영 자금 관리" maxlength="100" id="cwMemo" />
     </div>
-    <div class="form-group">
-      <label class="form-label">용도 메모</label>
-      <textarea class="form-control" rows="3" placeholder="선택 사항, 최대 100자" maxlength="100" style="resize:none;"></textarea>
+    <div class="alert alert-info" style="font-size:12.5px; line-height:1.6;">
+      &#8505; 요청 후 인피닛블록 담당자가 콜드월렛 주소를 생성합니다.<br>
+      처리 완료까지 영업일 기준 1~2일 소요될 수 있습니다.
     </div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-coldwallet')">취소</button>
-    <button class="btn btn-primary" onclick="openWalletCreateOTP()">요청 제출 →</button>
+    <button class="btn btn-primary" id="cwSubmitBtn" onclick="submitWalletCreate()" disabled>요청하기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 지갑 생성 요청 상세 (읽기 전용) (4-2-4)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wallet-req-detail" style="max-width:440px;">
+  <div class="modal-header">
+    <span class="modal-title">&#9203; 지갑 생성 요청 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-wallet-req-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:12.5px; color:#92400E;">
+      &#9203; <strong>생성 대기 중</strong> — Admin 담당자가 콜드월렛 주소를 생성 중입니다.
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; justify-content:space-between; font-size:13px; padding:8px 0; border-bottom:1px solid #F1F5F9;">
+        <span style="color:var(--text-secondary);">지갑명</span>
+        <span style="font-weight:600;" id="wrd-name"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:13px; padding:8px 0; border-bottom:1px solid #F1F5F9;">
+        <span style="color:var(--text-secondary);">요청 코인</span>
+        <span id="wrd-coins" style="font-weight:600;"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:13px; padding:8px 0; border-bottom:1px solid #F1F5F9;">
+        <span style="color:var(--text-secondary);">용도 메모</span>
+        <span id="wrd-memo" style="color:var(--text-secondary);"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:13px; padding:8px 0;">
+        <span style="color:var(--text-secondary);">요청일</span>
+        <span id="wrd-date"></span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline btn-full" onclick="closeModal('modal-wallet-req-detail')">닫기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 반려 사유 확인 (4-2-7)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wallet-reject-reason" style="max-width:460px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">지갑 생성 반려 사유</span>
+    <button class="modal-close" onclick="closeModal('modal-wallet-reject-reason')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; font-size:13px; padding:8px 0; border-bottom:1px solid #F1F5F9;">
+        <span style="color:var(--text-secondary);">지갑명</span>
+        <span style="font-weight:600;" id="wrr-name"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:13px; padding:8px 0; border-bottom:1px solid #F1F5F9;">
+        <span style="color:var(--text-secondary);">요청 코인</span>
+        <span style="font-weight:600;" id="wrr-coins"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:13px; padding:8px 0;">
+        <span style="color:var(--text-secondary);">반려일</span>
+        <span id="wrr-date"></span>
+      </div>
+    </div>
+    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:12px 14px;">
+      <div style="font-size:11px; font-weight:700; color:var(--danger); margin-bottom:6px;">반려 사유</div>
+      <div id="wrr-reason" style="font-size:13px; line-height:1.6; color:var(--text-primary);"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wallet-reject-reason')">닫기</button>
+    <button class="btn btn-primary" onclick="openWalletRerequestFromReason()">재요청하기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 지갑 생성 재요청 (4-2-8)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-wallet-rerequest" style="max-width:520px;">
+  <div class="modal-header">
+    <span class="modal-title">지갑 생성 재요청</span>
+    <button class="modal-close" onclick="closeModal('modal-wallet-rerequest')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- 반려 사유 박스 -->
+    <div id="wrq-reject-box" style="background:#FFF7ED; border:1px solid #FB923C; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:12.5px; line-height:1.6;">
+      <div style="font-size:11px; font-weight:700; color:#C2410C; margin-bottom:4px;">&#9888; 반려 사유</div>
+      <div id="wrq-reject-reason" style="color:#7C2D12;"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">지갑명 <span class="req">*</span></label>
+      <input type="text" class="form-control" placeholder="예: 운영 지갑 A" maxlength="50" id="wrqName" oninput="validateWalletRerequestForm()" />
+      <div id="wrqName-err" style="font-size:12px; color:var(--danger); margin-top:4px; display:none;"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">코인 <span class="req">*</span></label>
+      <div class="coin-check-group" id="wrqCoinsGroup">
+        <label class="coin-check-item" id="wrqCoin-BTC" onclick="toggleCoinCheckRq('BTC')">
+          <input type="checkbox" id="rchk-BTC" onchange="validateWalletRerequestForm()"> BTC
+        </label>
+        <label class="coin-check-item" id="wrqCoin-ETH" onclick="toggleCoinCheckRq('ETH')">
+          <input type="checkbox" id="rchk-ETH" onchange="validateWalletRerequestForm()"> ETH
+        </label>
+        <label class="coin-check-item" id="wrqCoin-USDT" onclick="toggleCoinCheckRq('USDT')">
+          <input type="checkbox" id="rchk-USDT" onchange="validateWalletRerequestForm()"> USDT
+        </label>
+        <label class="coin-check-item" id="wrqCoin-XRP" onclick="toggleCoinCheckRq('XRP')">
+          <input type="checkbox" id="rchk-XRP" onchange="validateWalletRerequestForm()"> XRP
+        </label>
+        <label class="coin-check-item" id="wrqCoin-SOL" onclick="toggleCoinCheckRq('SOL')">
+          <input type="checkbox" id="rchk-SOL" onchange="validateWalletRerequestForm()"> SOL
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">용도 메모 <span style="font-size:11px; font-weight:400; color:var(--text-secondary);">(선택)</span></label>
+      <input type="text" class="form-control" placeholder="예: 법인 운영 자금 관리" maxlength="100" id="wrqMemo" />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-wallet-rerequest')">취소</button>
+    <button class="btn btn-primary" id="wrqSubmitBtn" onclick="submitWalletRerequest()">재요청하기</button>
   </div>
 </div>
 
@@ -3424,7 +3565,7 @@
         <div class="page-header">
           <h1 class="page-title">Wallet</h1>
           <span class="role-tip-wrap" id="wrap-add-wallet">
-            <button class="btn btn-primary" id="btn-add-wallet" onclick="openModal('modal-coldwallet')">+ 지갑 추가</button>
+            <button class="btn btn-primary" id="btn-add-wallet" onclick="openWalletCreateModal()">+ 지갑 추가</button>
             <span class="role-tip">Master 계정만 사용 가능합니다.</span>
           </span>
         </div>
@@ -3441,34 +3582,77 @@
           </div>
         </div>
 
-        <!-- Wallet Grid — 동적 렌더링 (4-1) -->
-        <div class="wallet-grid" id="wallet-grid-container"></div>
+        <!-- Tabs (4-2-9) -->
+        <div class="admin-tabs" style="margin-bottom:20px;">
+          <div class="admin-tab active" id="wtab-list" onclick="switchWalletTab('list')">지갑 목록</div>
+          <div class="admin-tab" id="wtab-history" onclick="switchWalletTab('history')">생성 현황 <span id="wtab-history-badge" style="display:none; background:var(--danger); color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; margin-left:4px;"></span></div>
+        </div>
 
-        <!-- 4-3-4: Wallet Delete Dashboard -->
-        <div class="del-dash card" style="margin-top:24px;">
-          <div class="del-dash-header">
-            <span class="del-dash-title">&#128465; 지갑 삭제 현황</span>
-            <select class="form-control" id="del-dash-filter" style="width:130px; font-size:12px;" onchange="renderWalletDeleteDashboard()">
-              <option value="">전체 상태</option>
-              <option value="pending">요청 중</option>
-              <option value="rejected">반려됨</option>
-              <option value="done">삭제 완료</option>
-            </select>
+        <!-- [지갑 목록] 패널 -->
+        <div id="wallet-panel-list">
+          <!-- Wallet Grid — 동적 렌더링 (4-1) -->
+          <div class="wallet-grid" id="wallet-grid-container"></div>
+
+          <!-- 반려된 요청 구분선 + 카드 (4-2-6) -->
+          <div id="wallet-rejected-section" style="display:none;">
+            <div class="wcr-separator">반려된 요청</div>
+            <div class="wallet-grid" id="wallet-rejected-grid"></div>
           </div>
-          <div class="del-dash-stats" id="del-dash-stats"></div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>지갑명</th>
-                  <th>코인</th>
-                  <th>요청 일시</th>
-                  <th>상태</th>
-                  <th>상세</th>
-                </tr>
-              </thead>
-              <tbody id="del-dash-tbody"></tbody>
-            </table>
+
+          <!-- 4-3-4: Wallet Delete Dashboard -->
+          <div class="del-dash card" style="margin-top:24px;">
+            <div class="del-dash-header">
+              <span class="del-dash-title">&#128465; 지갑 삭제 현황</span>
+              <select class="form-control" id="del-dash-filter" style="width:130px; font-size:12px;" onchange="renderWalletDeleteDashboard()">
+                <option value="">전체 상태</option>
+                <option value="pending">요청 중</option>
+                <option value="rejected">반려됨</option>
+                <option value="done">삭제 완료</option>
+              </select>
+            </div>
+            <div class="del-dash-stats" id="del-dash-stats"></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>지갑명</th>
+                    <th>코인</th>
+                    <th>요청 일시</th>
+                    <th>상태</th>
+                    <th>상세</th>
+                  </tr>
+                </thead>
+                <tbody id="del-dash-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- [생성 현황] 패널 (4-2-9) -->
+        <div id="wallet-panel-history" style="display:none;">
+          <!-- filter pills -->
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;">
+            <button class="pill-filter active" id="wcr-pill-all"      onclick="setWCRFilter('', this)">전체</button>
+            <button class="pill-filter"        id="wcr-pill-pending"  onclick="setWCRFilter('pending', this)">&#9203; 생성 대기</button>
+            <button class="pill-filter"        id="wcr-pill-done"     onclick="setWCRFilter('done', this)">&#9679; 생성 완료</button>
+            <button class="pill-filter"        id="wcr-pill-rejected" onclick="setWCRFilter('rejected', this)">&#10005; 반려</button>
+          </div>
+          <div class="card" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>지갑명</th>
+                    <th>요청 코인</th>
+                    <th>요청일</th>
+                    <th>처리일</th>
+                    <th>상태</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="wcr-history-tbody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -4766,9 +4950,12 @@
     el('dash-wallet-wd-pending').innerHTML =
       `<span style="${wdStyle}padding:2px 10px;border-radius:10px;font-size:12px;font-weight:600;">${wdCnt}건</span>`;
 
-    // 생성 요청 대기 (pending 상태 지갑/코인 추가 요청)
-    const createCnt = typeof _COIN_DATA !== 'undefined'
+    // 생성 요청 대기 (지갑 생성 요청 + 코인 추가 pending)
+    const walletCreateCnt = typeof _WALLET_CREATION_REQUESTS !== 'undefined'
+      ? _WALLET_CREATION_REQUESTS.filter(r => r.status === 'pending').length : 0;
+    const coinCreateCnt = typeof _COIN_DATA !== 'undefined'
       ? _COIN_DATA.filter(c => c.status === 'pending').length : 0;
+    const createCnt = walletCreateCnt + coinCreateCnt;
     const createStyle = createCnt > 0
       ? 'background:#2563EB;color:#fff;'
       : 'background:#E2E8F0;color:#94A3B8;';
@@ -4786,8 +4973,8 @@
       ? _WORKFLOW_DATA.filter(w => w.status === 'pending_sig').length : 0;
     const wlCnt      = typeof _WL_DATA !== 'undefined'
       ? _WL_DATA.filter(w => w.status === 'pending').length : 0;
-    const walletCrCnt = typeof _COIN_DATA !== 'undefined'
-      ? _COIN_DATA.filter(c => c.status === 'pending').length : 0;
+    const walletCrCnt = (typeof _WALLET_CREATION_REQUESTS !== 'undefined' ? _WALLET_CREATION_REQUESTS.filter(r => r.status === 'pending').length : 0)
+      + (typeof _COIN_DATA !== 'undefined' ? _COIN_DATA.filter(c => c.status === 'pending').length : 0);
     const coinRejCnt  = typeof _COIN_DATA !== 'undefined'
       ? _COIN_DATA.filter(c => c.status === 'rejected').length : 0;
     const walletDelRejCnt = typeof _WALLET_DEL_REQUESTS !== 'undefined'
@@ -4904,6 +5091,20 @@
 
   // Per-wallet delete state: null | 'pending' | 'rejected' | 'done'
   var _WALLET_DEL_STATE = { wallet1: null, wallet2: null, wallet3: null };
+
+  /* ── 4-2: 지갑 생성 요청 데이터 ── */
+  var _WALLET_CREATION_REQUESTS = [
+    { id:'wcr-1', walletName:'운영 지갑 A', coins:['BTC','ETH','USDT'], memo:'법인 운영 자금 관리',
+      requestedAt:'2026-04-09', status:'rejected',
+      processedAt:'2026-04-10',
+      rejectedReason:'입력하신 지갑명이 기존 지갑과 중복됩니다. 지갑명을 변경 후 재요청해 주세요.' },
+    { id:'wcr-2', walletName:'예비 지갑 B', coins:['USDT'], memo:'',
+      requestedAt:'2026-04-08', status:'done', processedAt:'2026-04-09' },
+    { id:'wcr-3', walletName:'운영 지갑 C', coins:['ETH'], memo:'',
+      requestedAt:'2026-04-10', status:'pending', processedAt:null },
+  ];
+  var _wcrFilter = '';
+  var _wcrActiveId = null; // currently open creation request
   var _delWalletId = null; // currently-opening delete modal for which wallet
 
   // Demo historical delete requests for the dashboard
@@ -7396,14 +7597,60 @@
         + '</div>';
     });
 
+    // 생성 대기 중인 요청 카드 (pending)
+    _WALLET_CREATION_REQUESTS.filter(r => r.status === 'pending').forEach(r => {
+      html += '<div class="wallet-card wallet-card-pending" onclick="openWalletReqDetail(\'' + r.id + '\')">'
+        + '<div class="wallet-card-header">'
+        + '<div class="wallet-card-name">' + r.walletName + '</div>'
+        + '<span style="font-size:11px; font-weight:600; color:#F59E0B; background:#FFFBEB; border:1px solid #FDE68A; padding:2px 8px; border-radius:10px; white-space:nowrap;">&#9203; 생성 대기</span>'
+        + '</div>'
+        + '<div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">요청 코인: ' + r.coins.join(' / ') + '</div>'
+        + '<div style="font-size:12px; color:var(--text-secondary); flex:1;">요청일: ' + r.requestedAt + '</div>'
+        + '<div class="wallet-actions" style="margin-top:16px;">'
+        + '<button class="btn btn-outline btn-sm btn-full" onclick="event.stopPropagation();openWalletReqDetail(\'' + r.id + '\')">요청 상세</button>'
+        + '</div>'
+        + '</div>';
+    });
+
     // 지갑 추가 카드 (Master 전용)
-    html += '<div class="wallet-card wallet-card-add" onclick="' + (m ? 'openModal(\'modal-coldwallet\')' : '') + '" style="' + (!m ? 'pointer-events:none;' : '') + '">'
+    html += '<div class="wallet-card wallet-card-add" onclick="' + (m ? 'openWalletCreateModal()' : '') + '" style="' + (!m ? 'pointer-events:none;' : '') + '">'
       + '<div class="add-plus">' + (m ? '+' : '&#128274;') + '</div>'
       + '<div class="add-text">지갑 추가 요청</div>'
       + '<div style="font-size:11px;color:var(--text-secondary);">Master 전용</div>'
       + '</div>';
 
     grid.innerHTML = html;
+
+    // 반려된 요청 카드 렌더링 (4-2-6) — 별도 구분선 아래
+    const rejectedGrid = document.getElementById('wallet-rejected-grid');
+    const rejectedSection = document.getElementById('wallet-rejected-section');
+    const rejectedReqs = _WALLET_CREATION_REQUESTS.filter(r => r.status === 'rejected');
+    if (rejectedGrid && rejectedSection) {
+      if (rejectedReqs.length > 0) {
+        rejectedSection.style.display = '';
+        rejectedGrid.innerHTML = rejectedReqs.map(r =>
+          '<div class="wallet-card wallet-card-rejected">'
+          + '<div class="wallet-card-header">'
+          + '<div class="wallet-card-name">' + r.walletName + '</div>'
+          + '<span style="font-size:11px; font-weight:600; color:#EF4444; background:#FEF2F2; border:1px solid #FECACA; padding:2px 8px; border-radius:10px; white-space:nowrap;">&#10005; 반려</span>'
+          + '</div>'
+          + '<div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">요청 코인: ' + r.coins.join(' / ') + '</div>'
+          + '<div style="font-size:12px; color:var(--text-secondary); flex:1;">반려일: ' + (r.processedAt || '—') + '</div>'
+          + '<div class="wallet-actions" style="margin-top:16px; grid-template-columns:1fr 1fr;">'
+          + '<button class="btn btn-outline btn-sm" onclick="openWalletRejectReason(\'' + r.id + '\')">반려 사유 확인</button>'
+          + (m ? '<button class="btn btn-primary btn-sm" onclick="openWalletRerequest(\'' + r.id + '\')">재요청하기</button>' : '<button class="btn btn-primary btn-sm btn-role-disabled" disabled title="Master 전용">재요청하기</button>')
+          + '</div>'
+          + '</div>'
+        ).join('');
+      } else {
+        rejectedSection.style.display = 'none';
+      }
+    }
+
+    // 생성 현황 탭 배지 업데이트
+    const pendingCnt = _WALLET_CREATION_REQUESTS.filter(r => r.status === 'pending').length;
+    const badge = document.getElementById('wtab-history-badge');
+    if (badge) { badge.textContent = pendingCnt; badge.style.display = pendingCnt ? '' : 'none'; }
 
     // 삭제 배지 재적용
     Object.keys(_WALLET_DEL_STATE).forEach(wid => {
@@ -7423,8 +7670,9 @@
     FIL: ['Filecoin EVM'],
   };
   function updateNetwork() {
-    const coin = document.getElementById('cwCoin').value;
+    const coin = document.getElementById('cwCoin') ? document.getElementById('cwCoin').value : '';
     const sel = document.getElementById('cwNetwork');
+    if (!sel) return;
     sel.innerHTML = '<option value="">Select network ▾</option>';
     (networkMap[coin] || []).forEach(n => {
       const o = document.createElement('option');
@@ -7432,45 +7680,260 @@
       sel.appendChild(o);
     });
   }
-  function openWalletCreateOTP() {
-    const name = (document.getElementById('cwName').value || '').trim();
-    const coin = document.getElementById('cwCoin').value;
-    const network = document.getElementById('cwNetwork').value;
-    if (!name)    { showToast('지갑명을 입력해주세요.'); return; }
-    if (!coin)    { showToast('코인을 선택해주세요.'); return; }
-    if (!network) { showToast('네트워크를 선택해주세요.'); return; }
-    closeModal('modal-coldwallet');
-    _afterClose(() => openOTPModal('콜드월렛 생성 요청', () => addPendingWallet(name, coin, network)));
+  /* ══════════════════════════��═════════
+     4-2: 지갑 생성 요청 (신규)
+  ════════════════════════════════════ */
+  const _CW_COINS = ['BTC','ETH','USDT','XRP','SOL'];
+
+  function openWalletCreateModal() {
+    // 폼 초기화
+    const nameEl = document.getElementById('cwName');
+    const memoEl = document.getElementById('cwMemo');
+    const nameErr = document.getElementById('cwName-err');
+    const coinsErr = document.getElementById('cwCoins-err');
+    const btn = document.getElementById('cwSubmitBtn');
+    if (nameEl) nameEl.value = '';
+    if (memoEl) memoEl.value = '';
+    if (nameErr) nameErr.style.display = 'none';
+    if (coinsErr) coinsErr.style.display = 'none';
+    if (btn) btn.disabled = true;
+    _CW_COINS.forEach(c => {
+      const chk = document.getElementById('chk-' + c);
+      const lbl = document.getElementById('cwCoin-' + c);
+      if (chk) chk.checked = false;
+      if (lbl) lbl.classList.remove('checked');
+    });
+    openModal('modal-coldwallet');
   }
 
-  function addPendingWallet(name, coin, network) {
-    // Add a pending card to wallet grid
-    const grid = document.querySelector('.wallet-grid');
-    const addCard = grid.querySelector('.wallet-card-add');
-    const coinInitial = coin.charAt(0);
-    const colorMap = { BTC:'#F97316', ETH:'#6366F1', USDT:'#10B981', BNB:'#EAB308', TRX:'#EF4444', FIL:'#8B5CF6' };
-    const bg = colorMap[coin] || '#94A3B8';
-    const card = document.createElement('div');
-    card.className = 'wallet-card disabled';
-    card.innerHTML = `
-      <div class="wallet-card-header">
-        <div class="wallet-card-name">${name}</div>
-        <span class="badge badge-gray">&#9679; 요청 중</span>
-      </div>
-      <div class="wallet-coin-row">
-        <div class="coin-circle" style="background:${bg};">${coinInitial}</div>
-        <div><div style="font-size:13px; font-weight:600;">${coin}</div><div style="font-size:11px; color:var(--text-secondary);">${network}</div></div>
-      </div>
-      <div style="font-size:12px; color:var(--text-secondary); background:#F8FAFC; padding:10px; border-radius:7px; margin-top:10px; line-height:1.5;">
-        &#128336; Admin 처리 대기 중<br>
-        <span style="font-size:11px;">1~2 영업일 소요됩니다</span>
-      </div>`;
-    grid.insertBefore(card, addCard);
-    // Clear form
-    document.getElementById('cwName').value = '';
-    document.getElementById('cwCoin').value = '';
-    document.getElementById('cwNetwork').innerHTML = '<option value="">코인 선택 후 자동 필터 ▾</option>';
-    showToast('콜드월렛 생성 요청이 제출되었습니다. Admin이 처리 후 이메일로 알림드립니다.');
+  function toggleCoinCheck(coin) {
+    const chk = document.getElementById('chk-' + coin);
+    const lbl = document.getElementById('cwCoin-' + coin);
+    if (!chk) return;
+    chk.checked = !chk.checked;
+    lbl && lbl.classList.toggle('checked', chk.checked);
+    validateWalletCreateForm();
+  }
+
+  function toggleCoinCheckRq(coin) {
+    const chk = document.getElementById('rchk-' + coin);
+    const lbl = document.getElementById('wrqCoin-' + coin);
+    if (!chk) return;
+    chk.checked = !chk.checked;
+    lbl && lbl.classList.toggle('checked', chk.checked);
+    validateWalletRerequestForm();
+  }
+
+  function _getCheckedCoins() {
+    return _CW_COINS.filter(c => { const el = document.getElementById('chk-' + c); return el && el.checked; });
+  }
+
+  function _getCheckedCoinsRq() {
+    return _CW_COINS.filter(c => { const el = document.getElementById('rchk-' + c); return el && el.checked; });
+  }
+
+  function validateWalletCreateForm() {
+    const name = (document.getElementById('cwName').value || '').trim();
+    const coins = _getCheckedCoins();
+    const nameErr = document.getElementById('cwName-err');
+    const coinsErr = document.getElementById('cwCoins-err');
+    const btn = document.getElementById('cwSubmitBtn');
+
+    let nameMsg = '';
+    if (!name) {
+      nameMsg = '';
+    } else {
+      // 중복 지갑명 체크
+      const existingNames = _WALLET_DATA.map(w => w.name.toLowerCase());
+      if (existingNames.includes(name.toLowerCase())) {
+        nameMsg = '이미 사용 중인 지갑명입니다.';
+      }
+      // 처리 대기 중 동일 지갑명 체크
+      const pendingNames = _WALLET_CREATION_REQUESTS.filter(r => r.status === 'pending').map(r => r.walletName.toLowerCase());
+      if (pendingNames.includes(name.toLowerCase())) {
+        nameMsg = '이미 처리 대기 중인 요청이 있습니다.';
+      }
+    }
+
+    if (nameErr) { nameErr.textContent = nameMsg; nameErr.style.display = nameMsg ? 'block' : 'none'; }
+    if (coinsErr) coinsErr.style.display = coins.length === 0 ? 'block' : 'none';
+    if (btn) btn.disabled = !name || !!nameMsg || coins.length === 0;
+  }
+
+  function validateWalletRerequestForm() {
+    const name = (document.getElementById('wrqName').value || '').trim();
+    const coins = _getCheckedCoinsRq();
+    const nameErr = document.getElementById('wrqName-err');
+    const btn = document.getElementById('wrqSubmitBtn');
+
+    let nameMsg = '';
+    if (name) {
+      const existingNames = _WALLET_DATA.map(w => w.name.toLowerCase());
+      if (existingNames.includes(name.toLowerCase())) nameMsg = '이미 사용 중인 지갑명입니다.';
+      const pendingNames = _WALLET_CREATION_REQUESTS.filter(r => r.status === 'pending').map(r => r.walletName.toLowerCase());
+      if (pendingNames.includes(name.toLowerCase())) nameMsg = '이미 처리 대기 중인 요청이 있습니다.';
+    }
+
+    if (nameErr) { nameErr.textContent = nameMsg; nameErr.style.display = nameMsg ? 'block' : 'none'; }
+    if (btn) btn.disabled = !name || !!nameMsg || coins.length === 0;
+  }
+
+  function submitWalletCreate() {
+    const name = (document.getElementById('cwName').value || '').trim();
+    const coins = _getCheckedCoins();
+    const memo = (document.getElementById('cwMemo').value || '').trim();
+    if (!name || coins.length === 0) return;
+    closeModal('modal-coldwallet');
+    _afterClose(() => openOTPModal('지갑 추가 요청', () => {
+      const today = new Date().toISOString().slice(0,10);
+      const newReq = { id:'wcr-' + Date.now(), walletName:name, coins:coins, memo:memo, requestedAt:today, status:'pending', processedAt:null };
+      _WALLET_CREATION_REQUESTS.push(newReq);
+      // 폼 초기화
+      document.getElementById('cwName').value = '';
+      document.getElementById('cwMemo').value = '';
+      _CW_COINS.forEach(c => {
+        const chk = document.getElementById('chk-' + c);
+        const lbl = document.getElementById('cwCoin-' + c);
+        if (chk) chk.checked = false;
+        if (lbl) lbl.classList.remove('checked');
+      });
+      const btn = document.getElementById('cwSubmitBtn');
+      if (btn) btn.disabled = true;
+      renderWalletDashboard();
+      renderWalletCreationHistory();
+      showToast('지갑 추가 요청이 제출되었습니다. 처리 완료 후 이메일로 알림드립니다.');
+    }));
+  }
+
+  /* ── 지갑 생성 요청 상세 팝업 (생성 대기) ── */
+  function openWalletReqDetail(id) {
+    const r = _WALLET_CREATION_REQUESTS.find(x => x.id === id);
+    if (!r) return;
+    _wcrActiveId = id;
+    document.getElementById('wrd-name').textContent  = r.walletName;
+    document.getElementById('wrd-coins').textContent = r.coins.join(' / ');
+    document.getElementById('wrd-memo').textContent  = r.memo || '—';
+    document.getElementById('wrd-date').textContent  = r.requestedAt;
+    openModal('modal-wallet-req-detail');
+  }
+
+  /* ── 반려 사유 확인 팝업 ── */
+  function openWalletRejectReason(id) {
+    const r = _WALLET_CREATION_REQUESTS.find(x => x.id === id);
+    if (!r) return;
+    _wcrActiveId = id;
+    document.getElementById('wrr-name').textContent   = r.walletName;
+    document.getElementById('wrr-coins').textContent  = r.coins.join(' / ');
+    document.getElementById('wrr-date').textContent   = r.processedAt || '—';
+    document.getElementById('wrr-reason').textContent = r.rejectedReason || '—';
+    openModal('modal-wallet-reject-reason');
+  }
+
+  /* ── 반려 사유 팝업 → 재요청 ── */
+  function openWalletRerequestFromReason() {
+    closeModal('modal-wallet-reject-reason');
+    _afterClose(() => openWalletRerequest(_wcrActiveId));
+  }
+
+  /* ── 재요청 모달 오픈 ── */
+  function openWalletRerequest(id) {
+    const r = _WALLET_CREATION_REQUESTS.find(x => x.id === id);
+    if (!r) return;
+    _wcrActiveId = id;
+    // 반려 사유 표시
+    document.getElementById('wrq-reject-reason').textContent = r.rejectedReason || '—';
+    // 프리필
+    document.getElementById('wrqName').value = r.walletName;
+    document.getElementById('wrqMemo').value = r.memo || '';
+    // 코인 체크 프리필
+    _CW_COINS.forEach(c => {
+      const chk = document.getElementById('rchk-' + c);
+      const lbl = document.getElementById('wrqCoin-' + c);
+      const checked = r.coins.includes(c);
+      if (chk) chk.checked = checked;
+      if (lbl) lbl.classList.toggle('checked', checked);
+    });
+    validateWalletRerequestForm();
+    openModal('modal-wallet-rerequest');
+  }
+
+  /* ── 재요청 제출 ── */
+  function submitWalletRerequest() {
+    const name  = (document.getElementById('wrqName').value || '').trim();
+    const coins = _getCheckedCoinsRq();
+    const memo  = (document.getElementById('wrqMemo').value || '').trim();
+    if (!name || coins.length === 0) return;
+    closeModal('modal-wallet-rerequest');
+    _afterClose(() => openOTPModal('지갑 생성 재요청', () => {
+      const r = _WALLET_CREATION_REQUESTS.find(x => x.id === _wcrActiveId);
+      if (r) {
+        r.walletName  = name;
+        r.coins       = coins;
+        r.memo        = memo;
+        r.status      = 'pending';
+        r.requestedAt = new Date().toISOString().slice(0,10);
+        r.processedAt = null;
+        r.rejectedReason = null;
+      }
+      renderWalletDashboard();
+      renderWalletCreationHistory();
+      showToast('재요청이 접수되었습니다. 처리 완료 후 이메일로 알림드립니다.');
+    }));
+  }
+
+  /* ── 탭 전환 ── */
+  function switchWalletTab(tab) {
+    const listTab = document.getElementById('wtab-list');
+    const histTab = document.getElementById('wtab-history');
+    const listPanel = document.getElementById('wallet-panel-list');
+    const histPanel = document.getElementById('wallet-panel-history');
+    if (listTab) listTab.classList.toggle('active', tab === 'list');
+    if (histTab) histTab.classList.toggle('active', tab === 'history');
+    if (listPanel) listPanel.style.display = tab === 'list' ? '' : 'none';
+    if (histPanel) { histPanel.style.display = tab === 'history' ? '' : 'none'; if (tab === 'history') renderWalletCreationHistory(); }
+  }
+
+  /* ── 생성 현황 필터 ── */
+  function setWCRFilter(filter, el) {
+    _wcrFilter = filter;
+    document.querySelectorAll('#wallet-panel-history .pill-filter').forEach(p => p.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderWalletCreationHistory();
+  }
+
+  /* ── 생성 현황 테이블 렌더링 (4-2-9) ── */
+  function renderWalletCreationHistory() {
+    const tbody = document.getElementById('wcr-history-tbody');
+    if (!tbody) return;
+    const list = _wcrFilter
+      ? _WALLET_CREATION_REQUESTS.filter(r => r.status === _wcrFilter)
+      : _WALLET_CREATION_REQUESTS;
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:28px; color:var(--text-secondary);">내역이 없습니다.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(r => {
+      let badge;
+      if (r.status === 'pending')  badge = '<span style="font-size:11px; font-weight:600; color:#F59E0B; background:#FFFBEB; border:1px solid #FDE68A; padding:2px 8px; border-radius:10px;">&#9203; 생성 대기</span>';
+      else if (r.status === 'done') badge = '<span style="font-size:11px; font-weight:600; color:#10B981; background:#ECFDF5; border:1px solid #A7F3D0; padding:2px 8px; border-radius:10px;">&#9679; 생성 완료</span>';
+      else badge = '<span style="font-size:11px; font-weight:600; color:#EF4444; background:#FEF2F2; border:1px solid #FECACA; padding:2px 8px; border-radius:10px;">&#10005; 반려</span>';
+
+      const actionBtn = r.status === 'rejected' && _IS_MASTER
+        ? '<button class="btn btn-primary btn-xs" onclick="openWalletRerequest(\'' + r.id + '\')">재요청하기</button>'
+        : r.status === 'pending'
+          ? '<button class="btn btn-outline btn-xs" onclick="openWalletReqDetail(\'' + r.id + '\')">요청 상세</button>'
+          : '';
+
+      const rowStyle = r.status === 'rejected' ? ' style="background:#FEF2F2;"' : '';
+      return '<tr' + rowStyle + ' onclick="' + (r.status === 'rejected' ? 'openWalletRejectReason(\'' + r.id + '\')' : r.status === 'pending' ? 'openWalletReqDetail(\'' + r.id + '\')' : '') + '" style="cursor:' + (r.status === 'done' ? 'default' : 'pointer') + (r.status === 'rejected' ? ';background:#FEF2F2' : '') + ';">'
+        + '<td style="font-weight:600;">' + r.walletName + '</td>'
+        + '<td style="font-size:12px;">' + r.coins.join(' / ') + '</td>'
+        + '<td style="font-size:12px; color:var(--text-secondary);">' + r.requestedAt + '</td>'
+        + '<td style="font-size:12px; color:var(--text-secondary);">' + (r.processedAt || '—') + '</td>'
+        + '<td>' + badge + '</td>'
+        + '<td onclick="event.stopPropagation();">' + actionBtn + '</td>'
+        + '</tr>';
+    }).join('');
   }
 
   /* ════════════════════════════════════
