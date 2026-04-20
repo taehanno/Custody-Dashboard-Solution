@@ -3889,8 +3889,9 @@
       <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="wd-wallet"></span></div>
       <div class="info-row"><span class="info-label">코인 / 네트워크</span><span class="info-value" id="wd-coin"></span></div>
       <div class="info-row"><span class="info-label">출금 수량</span><span class="info-value" id="wd-amount" style="font-weight:700; color:var(--danger);"></span></div>
-      <div class="info-row" id="wd-fee-row"><span class="info-label">수수료 (예상)</span><span class="info-value" id="wd-fee"></span></div>
-      <div class="info-row" id="wd-actual-row"><span class="info-label">실제 출금</span><span class="info-value" id="wd-actual" style="font-weight:600;"></span></div>
+      <div class="info-row" id="wd-fee-row"><span class="info-label" id="wd-fee-label">네트워크 수수료</span><span class="info-value" id="wd-fee"></span></div>
+      <div id="wd-fee-sep" style="border-top:1px dashed var(--border); margin:4px 0;"></div>
+      <div class="info-row" id="wd-actual-row"><span class="info-label" id="wd-total-label" style="font-weight:600;">총 출금액</span><span class="info-value" id="wd-actual" style="font-weight:700;"></span></div>
       <div class="info-row" id="wd-krw-row"><span class="info-label">원화 환산</span><span class="info-value" id="wd-krw" style="color:var(--text-secondary);"></span></div>
       <div class="info-row">
         <span class="info-label">수신 주소</span>
@@ -7448,7 +7449,7 @@
     function q(v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }
     var _TX_TYPE_LABEL   = { deposit:'입금', withdrawal:'출금' };
     var _TX_STATUS_LABEL = { done:'완료', pending:'확인중', hold:'보류', rejected:'거절', signing:'서명대기', processing:'처리중', broadcasting:'출금중' };
-    var headers = ['유형','고객사','코인','네트워크','수량','주소','Destination Tag','TXID','출금번호','상태','일시'];
+    var headers = ['유형','고객사','코인','네트워크','수량','네트워크 수수료','총 출금액','주소','Destination Tag','TXID','출금번호','상태','일시'];
     // apply current filters
     var q2      = (document.getElementById('tx-search')        ||{}).value||'';
     var coin    = (document.getElementById('tx-filter-coin')   ||{}).value||'';
@@ -7469,8 +7470,13 @@
       return true;
     });
     var rows = list.map(function(r) {
+      // 7-7: 수수료 컬럼 — 출금 비거절만 표시, 예상/확정 구분
+      var isWdConfirmedCsv = (r.status === 'broadcasting' || r.status === 'done');
+      var feeVal   = (r.type === 'withdrawal' && r.status !== 'rejected' && r.fee) ? r.fee : '';
+      var totalVal = (r.type === 'withdrawal' && r.status !== 'rejected' && r.fee && r.actualAmount) ? r.actualAmount : '';
       return [
-        q(_TX_TYPE_LABEL[r.type] || r.type), q(r.corp), q(r.coin), q(r.network), q(r.amount), q(r.addr || ''),
+        q(_TX_TYPE_LABEL[r.type] || r.type), q(r.corp), q(r.coin), q(r.network), q(r.amount),
+        q(feeVal), q(totalVal), q(r.addr || ''),
         q(r.coin === 'XRP' && r.destTag != null ? r.destTag : ''),
         q(r.txid || ''), q(r.wdNo || ''),
         q(_TX_STATUS_LABEL[r.status] || r.status), q(r.datetime)
@@ -8791,21 +8797,30 @@
     document.getElementById('wd-requester').textContent = r.requester || '—';
     document.getElementById('wd-datetime').textContent  = r.datetime;
 
-    // 수수료 / 실제 출금 / 원화 환산
+    // 7-0: 수수료 표시 원칙 (예상/확정/거절 구분)
     var feeRow    = document.getElementById('wd-fee-row');
+    var feeSep    = document.getElementById('wd-fee-sep');
     var actualRow = document.getElementById('wd-actual-row');
     var krwRow    = document.getElementById('wd-krw-row');
-    if (r.fee) {
+    var feeLabel  = document.getElementById('wd-fee-label');
+    var totalLabel= document.getElementById('wd-total-label');
+    var isWdRejected   = (r.status === 'rejected');
+    var isWdConfirmed  = (r.status === 'broadcasting' || r.status === 'done');
+    if (isWdRejected || !r.fee) {
+      if (feeRow)    feeRow.style.display    = 'none';
+      if (feeSep)    feeSep.style.display    = 'none';
+      if (actualRow) actualRow.style.display = 'none';
+      if (krwRow)    krwRow.style.display    = 'none';
+    } else {
+      if (feeLabel)   feeLabel.textContent   = isWdConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
+      if (totalLabel) totalLabel.textContent = isWdConfirmed ? '총 출금액' : '총 출금액(예상)';
       document.getElementById('wd-fee').textContent    = r.fee + ' ' + r.coin;
       document.getElementById('wd-actual').textContent = r.actualAmount + ' ' + r.coin;
       document.getElementById('wd-krw').textContent    = (r.amountKRW ? '약 ₩' + r.amountKRW : '—');
       if (feeRow)    feeRow.style.display    = '';
+      if (feeSep)    feeSep.style.display    = '';
       if (actualRow) actualRow.style.display = '';
       if (krwRow)    krwRow.style.display    = '';
-    } else {
-      if (feeRow)    feeRow.style.display    = 'none';
-      if (actualRow) actualRow.style.display = 'none';
-      if (krwRow)    krwRow.style.display    = 'none';
     }
 
     // 메모
