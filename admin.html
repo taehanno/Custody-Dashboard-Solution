@@ -382,6 +382,13 @@
     .admin-tab-panel { display: none; }
     .admin-tab-panel.active { display: block; }
     .cw-role-badge { font-size: 12px; color: #8B5CF6; background: #F5F3FF; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+    .pill-filter { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: #fff; font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+    .pill-filter:hover { border-color: var(--primary); color: var(--primary); }
+    .pill-filter.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+    .wcm-coin-row { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .wcm-coin-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .wcm-coin-label { font-size: 12px; font-weight: 700; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+    .wcm-dest-tag-box { background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
 
     /* ── Slide-over (KYB 7-tab form) ── */
     .slideover-backdrop {
@@ -1178,30 +1185,68 @@
         <!-- 지갑 요청 (생성 + 삭제 통합) -->
         <div class="admin-tab-panel active" id="cw-panel-walletreq">
           <div class="stats-row" style="grid-template-columns:repeat(4,1fr); margin-bottom:16px;">
-            <div class="stat-card"><span class="stat-label">생성 대기</span><span class="stat-value stat-orange" id="cw-stat-pending">0</span></div>
+            <div class="stat-card"><span class="stat-label">⏳ 생성 대기</span><span class="stat-value stat-orange" id="cw-stat-pending">0</span></div>
             <div class="stat-card"><span class="stat-label">삭제 대기</span><span class="stat-value stat-red"    id="wd-stat-pending">0</span></div>
             <div class="stat-card"><span class="stat-label">처리 완료</span><span class="stat-value stat-green"  id="cw-walletreq-done">0</span></div>
             <div class="stat-card"><span class="stat-label">전체 지갑</span><span class="stat-value"             id="cw-walletreq-total">0</span></div>
           </div>
-          <div class="card" style="padding:0;">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr><th>고객사</th><th>지갑명</th><th>코인</th><th>요청 유형</th><th>요청일시</th><th>상태</th><th>처리</th></tr>
-                </thead>
-                <tbody id="cw-walletreq-tbody"></tbody>
-              </table>
+          <!-- 생성 요청 섹션 -->
+          <div style="margin-bottom:8px;">
+            <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:10px;">지갑 생성 요청</div>
+            <!-- 필터 pills + 검색 -->
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:10px;">
+              <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                <button class="pill-filter active" id="cwrp-all"      onclick="setCWRFilter('',this)">전체</button>
+                <button class="pill-filter"        id="cwrp-pending"  onclick="setCWRFilter('pending',this)">⏳ 생성 대기</button>
+                <button class="pill-filter"        id="cwrp-done"     onclick="setCWRFilter('done',this)">● 생성 완료</button>
+                <button class="pill-filter"        id="cwrp-rejected" onclick="setCWRFilter('rejected',this)">✕ 반려</button>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div class="search-wrap">
+                  <span class="search-icon">&#128269;</span>
+                  <input type="text" id="cwr-search" class="form-control" placeholder="고객사명 검색" style="width:160px; padding-left:30px;" oninput="renderCWRequests()" />
+                </div>
+                <select class="form-control" id="cwr-status-filter" style="width:130px;" onchange="renderCWRequests()">
+                  <option value="">전체 상태</option>
+                  <option value="pending">생성 대기</option>
+                  <option value="done">생성 완료</option>
+                  <option value="rejected">반려</option>
+                </select>
+              </div>
+            </div>
+            <div class="card" style="padding:0; margin-bottom:16px;">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>고객사명</th><th>지갑명</th><th>요청 코인</th><th>요청일</th><th>상태</th><th>처리</th></tr>
+                  </thead>
+                  <tbody id="cw-create-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- 삭제 요청 섹션 -->
+          <div>
+            <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:10px;">지갑 삭제 요청</div>
+            <div class="card" style="padding:0;">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>고객사</th><th>지갑명</th><th>코인</th><th>요청일시</th><th>상태</th><th>처리</th></tr>
+                  </thead>
+                  <tbody id="cw-delete-tbody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- 6-5: 코인 추가 요청 -->
+        <!-- 6-2: 코인 추가 요청 -->
         <div class="admin-tab-panel" id="cw-panel-coin">
-          <div class="stats-row" style="grid-template-columns:repeat(4,1fr); margin-bottom:16px;">
-            <div class="stat-card"><span class="stat-label">처리 대기</span><span class="stat-value stat-orange" id="ca-stat-pending">0</span></div>
-            <div class="stat-card"><span class="stat-label">처리 완료</span><span class="stat-value stat-green" id="ca-stat-done">0</span></div>
-            <div class="stat-card"><span class="stat-label">거절됨</span><span class="stat-value stat-red" id="ca-stat-rejected">0</span></div>
-            <div class="stat-card"><span class="stat-label">취소됨</span><span class="stat-value stat-gray" id="ca-stat-cancelled">0</span></div>
+          <div class="stats-row" style="grid-template-columns:repeat(3,1fr); margin-bottom:16px;">
+            <div class="stat-card"><span class="stat-label">⏳ 처리 대기</span><span class="stat-value stat-orange" id="ca-stat-pending">0</span></div>
+            <div class="stat-card"><span class="stat-label">● 추가 완료</span><span class="stat-value stat-green" id="ca-stat-done">0</span></div>
+            <div class="stat-card"><span class="stat-label">✕ 반려</span><span class="stat-value stat-red" id="ca-stat-rejected">0</span></div>
           </div>
           <div class="card" style="padding:0;">
             <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
@@ -1210,12 +1255,11 @@
                   <span class="search-icon">&#128269;</span>
                   <input type="text" id="ca-search" class="form-control" placeholder="고객사 / 지갑명 / 코인 검색" style="width:230px; padding-left:30px;" oninput="renderCoinAddRequests()" />
                 </div>
-                <select class="form-control" id="ca-filter" style="width:140px;" onchange="renderCoinAddRequests()">
+                <select class="form-control" id="ca-filter" style="width:130px;" onchange="renderCoinAddRequests()">
                   <option value="">전체 상태</option>
                   <option value="pending">처리 대기</option>
-                  <option value="done">처리 완료</option>
-                  <option value="rejected">거절됨</option>
-                  <option value="cancelled">취소됨</option>
+                  <option value="done">추가 완료</option>
+                  <option value="rejected">반려</option>
                 </select>
               </div>
             </div>
@@ -3659,41 +3703,66 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     SLIDE-OVER: 콜드월렛 주소 등록 (6-2)
+     MODAL: 지갑 생성 처리 (6-1-2)
 ══════════════════════════════════════ -->
-<div class="slideover-backdrop" id="cw-addr-backdrop" onclick="closeCWAddrSO()"></div>
-<div class="slideover" id="so-cw-addr" style="max-width:520px;">
-  <div class="so-header">
-    <div><div class="so-title">콜드월렛 주소 등록</div><div style="font-size:11px;color:var(--text-secondary);margin-top:2px;" id="cw-addr-subtitle"></div></div>
-    <button class="modal-close" onclick="closeCWAddrSO()">&#10005;</button>
+<div class="modal" id="modal-cw-wallet-create" style="max-width:560px;">
+  <div class="modal-header">
+    <span class="modal-title">지갑 생성 처리</span>
+    <button class="modal-close" type="button" onclick="closeModal('modal-cw-wallet-create')">&#10005;</button>
   </div>
-  <div class="so-body">
-    <div class="section-box">
-      <div class="section-box-title">요청 정보 (읽기 전용)</div>
-      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="cw-addr-corp"></span></div>
-      <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="cw-addr-wallet"></span></div>
-      <div class="info-row"><span class="info-label">코인</span><span class="info-value" id="cw-addr-coin"></span></div>
-      <div class="info-row"><span class="info-label">네트워크</span><span class="info-value" id="cw-addr-network"></span></div>
-      <div class="info-row" style="border-bottom:none;"><span class="info-label">용도 메모</span><span class="info-value" id="cw-addr-memo"></span></div>
+  <div class="modal-body">
+    <!-- 요청 정보 -->
+    <div class="section-box" style="margin-bottom:14px;">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="wcm-corp" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="wcm-wallet" style="font-weight:700;"></span></div>
+      <div class="info-row"><span class="info-label">용도 메모</span><span class="info-value" id="wcm-memo" style="color:var(--text-secondary);"></span></div>
+      <div class="info-row"><span class="info-label">신청일</span><span class="info-value" id="wcm-requested" style="font-size:12px;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">요청 코인</span><span class="info-value" id="wcm-coins" style="font-weight:600;"></span></div>
     </div>
-    <div class="form-group">
-      <label class="form-label">지갑 주소 <span style="color:var(--danger);">*</span></label>
-      <input type="text" id="cw-addr-input" class="form-control" style="width:100%; font-family:monospace;" placeholder="Keypal에서 생성한 주소를 입력하세요" oninput="validateCWAddr()" />
-      <div id="cw-addr-err" style="font-size:12px; color:var(--danger); margin-top:4px; display:none;"></div>
-      <div class="form-hint">&#8505; 체크섬 자동 검증 — 형식 오류 시 빨간 테두리로 표시됩니다.</div>
+    <!-- 코인별 주소 입력 (동적 생성) -->
+    <div style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:10px;">코인별 주소 입력</div>
+    <div id="wcm-addr-fields"></div>
+    <!-- 전체 에러 -->
+    <div id="wcm-addr-err" style="font-size:12px; color:var(--danger); margin-top:6px; display:none;">모든 코인의 주소를 입력해주세요.</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger btn-sm" id="wcm-reject-btn" onclick="openWCMRejectModal()">반려</button>
+    <div style="flex:1;"></div>
+    <button class="btn btn-outline" onclick="closeModal('modal-cw-wallet-create')">취소</button>
+    <button class="btn btn-primary" id="wcm-submit-btn" onclick="confirmWalletCreate()">생성 완료</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: 지갑 생성 반려 (6-1-3)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-cw-wallet-reject" style="max-width:480px;">
+  <div class="modal-header">
+    <span class="modal-title" style="color:var(--danger);">지갑 생성 반려</span>
+    <button class="modal-close" type="button" onclick="closeModal('modal-cw-wallet-reject')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box" style="margin-bottom:14px;">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="wcr-corp" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="wcr-wallet" style="font-weight:700;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">요청 코인</span><span class="info-value" id="wcr-coins"></span></div>
     </div>
-    <div class="form-group" id="cw-addr-dest-tag-group" style="display:none;">
-      <label class="form-label">Destination Tag <span style="font-size:11px;font-weight:400;color:var(--text-secondary);">선택 · XRP 전용</span></label>
-      <input type="text" id="cw-addr-dest-tag" class="form-control" style="width:100%; font-family:monospace;" inputmode="numeric" placeholder="숫자만 입력 (0 ~ 4,294,967,295)" oninput="_adminValidateDestTag('cw-addr-dest-tag','cw-addr-dest-tag-hint')" />
-      <div id="cw-addr-dest-tag-hint" style="font-size:12px;margin-top:4px;"></div>
+    <div class="form-group" style="margin-bottom:10px;">
+      <label class="form-label">반려 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea class="form-control" id="wcr-reason" rows="4" maxlength="500" style="width:100%; resize:vertical;" placeholder="반려 사유를 입력하세요 (최대 500자)"
+        oninput="document.getElementById('wcr-reason-count').textContent=this.value.length+' / 500'; document.getElementById('wcr-confirm-btn').disabled=!this.value.trim();"></textarea>
+      <div style="display:flex; justify-content:space-between; margin-top:4px;">
+        <span class="form-hint">&#8505; 반려 사유가 고객사 Master에게 이메일로 전달됩니다.</span>
+        <span id="wcr-reason-count" style="font-size:11px; color:var(--text-secondary);">0 / 500</span>
+      </div>
     </div>
-    <div class="alert alert-warning">
-      &#9888; 등록 완료 후 고객 포털 지갑이 <strong>활성화</strong>되며 Master 계정에 이메일이 발송됩니다.
+    <div class="alert alert-warning" style="font-size:12.5px; line-height:1.6; margin-bottom:0;">
+      &#9888; 반려 후 고객사에 사유가 전달됩니다.<br>고객사는 내용을 수정하여 재요청할 수 있습니다.
     </div>
   </div>
-  <div class="so-footer">
-    <button class="btn btn-outline" onclick="closeCWAddrSO()">취소</button>
-    <button class="btn btn-primary" id="cw-addr-submit" onclick="confirmCWAddr()">등록 완료 → OTP</button>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-cw-wallet-reject')">취소</button>
+    <button class="btn btn-danger" id="wcr-confirm-btn" onclick="confirmWalletReject()" disabled>반려 확인</button>
   </div>
 </div>
 
@@ -3786,42 +3855,59 @@
 <!-- ══════════════════════════════════════
      MODAL: 코인 추가 상세 (6-5-2)
 ══════════════════════════════════════ -->
-<div class="modal" id="modal-coin-add-detail">
+<div class="modal" id="modal-coin-add-detail" style="max-width:520px;">
   <div class="modal-header">
-    <span class="modal-title">코인 추가 요청 상세</span>
+    <span class="modal-title" id="cad-modal-title">코인 추가 처리</span>
     <button class="modal-close" onclick="closeModal('modal-coin-add-detail')">&#10005;</button>
   </div>
   <div class="modal-body">
-    <div class="section-box">
-      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="cad-corp"></span></div>
-      <div class="info-row"><span class="info-label">요청자</span><span class="info-value" id="cad-requester"></span></div>
-      <div class="info-row"><span class="info-label">요청일시</span><span class="info-value" id="cad-requested" style="font-size:12px;"></span></div>
+    <!-- 요청 정보 -->
+    <div class="section-box" style="margin-bottom:14px;">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="cad-corp" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="cad-wallet" style="font-weight:700;"></span></div>
+      <div class="info-row"><span class="info-label">추가 코인</span><span class="info-value" id="cad-coin-network"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">신청일</span><span class="info-value" id="cad-requested" style="font-size:12px;"></span></div>
     </div>
-    <div class="section-box">
-      <div class="section-box-title">코인 정보</div>
-      <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="cad-wallet"></span></div>
-      <div class="info-row"><span class="info-label">지갑 주소</span><span class="info-value" id="cad-wallet-addr" style="font-family:monospace; font-size:12px;"></span></div>
-      <div class="info-row"><span class="info-label">코인</span><span class="info-value" id="cad-coin"></span></div>
-      <div class="info-row" style="border-bottom:none;"><span class="info-label">네트워크</span><span class="info-value" id="cad-network"></span></div>
+    <!-- 처리 대기: 주소 입력 영역 -->
+    <div id="cad-input-section" style="display:none;">
+      <div class="form-group">
+        <label class="form-label" id="cad-addr-label">주소 입력 <span style="color:var(--danger);">*</span></label>
+        <input type="text" id="cad-addr-input" class="form-control" style="width:100%; font-family:monospace;" placeholder="Ledger에서 생성한 주소 입력" oninput="validateCoinAddAddr()" />
+        <div id="cad-addr-err" style="font-size:12px; color:var(--danger); margin-top:4px; display:none;"></div>
+      </div>
+      <!-- XRP Destination Tag -->
+      <div class="form-group" id="cad-dest-tag-group" style="display:none;">
+        <div class="wcm-dest-tag-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:12px; font-weight:600;">Destination Tag</span>
+            <span style="font-size:11px; color:var(--text-secondary);">선택 · XRP 전용</span>
+          </div>
+          <input type="text" id="cad-dest-tag" class="form-control" inputmode="numeric" style="font-family:monospace;" placeholder="숫자만 입력 (0 ~ 4,294,967,295)"
+            oninput="_adminValidateDestTag('cad-dest-tag','cad-dest-tag-hint'); validateCoinAddAddr();" />
+          <div id="cad-dest-tag-hint" style="font-size:12px; margin-top:4px;"></div>
+          <div class="form-hint" style="margin-top:4px;">&#8505; 이 주소로 입금 시 Destination Tag가 필요한 경우에만 입력하세요.</div>
+        </div>
+      </div>
     </div>
-    <div style="display:flex; align-items:center; gap:8px;">
-      <span style="font-size:12px; color:var(--text-secondary);">상태:</span>
-      <span id="cad-status-badge"></span>
-    </div>
-    <!-- Rejection reason (shown for rejected status) -->
-    <div id="cad-reject-box" style="display:none; margin-top:12px;">
-      <div style="font-size:12px; font-weight:600; color:var(--danger); margin-bottom:5px;">거절 사유</div>
-      <div id="cad-reject-reason" style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 12px; font-size:13px; line-height:1.6;"></div>
-      <div style="font-size:11.5px; color:var(--text-secondary); margin-top:6px;">처리자: <span id="cad-processor"></span> · 처리일시: <span id="cad-processed"></span></div>
-    </div>
-    <div id="cad-cancel-box" style="display:none; margin-top:12px;">
-      <div class="alert alert-info" style="margin-bottom:0;">&#8505; 고객사 Master가 요청을 취소했습니다. 별도 처리가 불필요합니다.</div>
+    <!-- 완료/반려 상태: 읽기 전용 표시 -->
+    <div id="cad-result-section" style="display:none;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <span style="font-size:12px; color:var(--text-secondary);">상태:</span>
+        <span id="cad-status-badge"></span>
+      </div>
+      <div id="cad-reject-box" style="display:none;">
+        <div style="font-size:12px; font-weight:600; color:var(--danger); margin-bottom:5px;">반려 사유</div>
+        <div id="cad-reject-reason" style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 12px; font-size:13px; line-height:1.6;"></div>
+        <div style="font-size:11.5px; color:var(--text-secondary); margin-top:6px;">처리자: <span id="cad-processor"></span> · 처리일시: <span id="cad-processed"></span></div>
+      </div>
     </div>
   </div>
   <div class="modal-footer" id="cad-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-coin-add-detail')">닫기</button>
-    <button class="btn btn-danger btn-sm" id="cad-btn-reject" onclick="openCoinAddReject()" style="display:none;">거절</button>
-    <button class="btn btn-primary btn-sm" id="cad-btn-register" onclick="openCoinAddrRegister()" style="display:none;">주소 등록 →</button>
+    <div id="cad-action-btns" style="display:none; gap:8px; display:flex;">
+      <button class="btn btn-danger btn-sm" id="cad-btn-reject" onclick="openCoinAddReject()">반려</button>
+      <button class="btn btn-primary btn-sm" id="cad-btn-register" onclick="confirmCoinAddr()">추가 완료</button>
+    </div>
   </div>
 </div>
 
@@ -3864,11 +3950,11 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     MODAL: 코인 추가 거절 (6-5-4)
+     MODAL: 코인 추가 반려 (6-2)
 ══════════════════════════════════════ -->
 <div class="modal" id="modal-coin-add-reject">
   <div class="modal-header">
-    <span class="modal-title" style="color:var(--danger);">코인 추가 요청 거절</span>
+    <span class="modal-title" style="color:var(--danger);">코인 추가 반려</span>
     <button class="modal-close" onclick="closeModal('modal-coin-add-reject')">&#10005;</button>
   </div>
   <div class="modal-body">
@@ -3877,18 +3963,22 @@
       <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="car-wallet"></span></div>
       <div class="info-row" style="border-bottom:none;"><span class="info-label">코인</span><span class="info-value" id="car-coin"></span></div>
     </div>
-    <div class="form-group" style="margin-bottom:0;">
-      <label class="form-label">거절 사유 <span style="color:var(--danger);">*</span></label>
-      <textarea class="form-control" id="car-reason" rows="4" maxlength="500" style="width:100%; resize:vertical;" placeholder="거절 사유를 입력하세요 (최대 500자)" oninput="document.getElementById('car-reason-count').textContent=this.value.length+' / 500'"></textarea>
+    <div class="form-group" style="margin-bottom:8px;">
+      <label class="form-label">반려 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea class="form-control" id="car-reason" rows="4" maxlength="500" style="width:100%; resize:vertical;" placeholder="반려 사유를 입력하세요 (최대 500자)"
+        oninput="document.getElementById('car-reason-count').textContent=this.value.length+' / 500'; document.getElementById('car-confirm-btn').disabled=!this.value.trim();"></textarea>
       <div style="display:flex; justify-content:space-between; margin-top:4px;">
-        <span class="form-hint">&#8505; 입력한 거절 사유가 고객사 Master에게 이메일로 전달됩니다.</span>
+        <span class="form-hint">&#8505; 반려 사유가 고객사 Master에게 이메일로 전달됩니다.</span>
         <span id="car-reason-count" style="font-size:11px; color:var(--text-secondary);">0 / 500</span>
       </div>
+    </div>
+    <div class="alert alert-warning" style="font-size:12.5px; margin-bottom:0;">
+      &#9888; 반려 후 고객사에 사유가 전달됩니다. 고객사는 내용을 수정하여 재요청할 수 있습니다.
     </div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-coin-add-reject')">취소</button>
-    <button class="btn btn-danger" onclick="confirmCoinAddReject()">거절 → OTP</button>
+    <button class="btn btn-danger" id="car-confirm-btn" onclick="confirmCoinAddReject()" disabled>반려 확인</button>
   </div>
 </div>
 
@@ -5894,7 +5984,7 @@
     }
 
     // 콜드월렛 테이블 재렌더 (처리/비활성화 버튼 권한 반영)
-    if (document.getElementById('cw-walletreq-tbody')) renderCWRequests();
+    if (document.getElementById('cw-create-tbody')) renderCWRequests();
     if (document.getElementById('cw-coin-tbody')) renderCoinAddRequests();
     if (document.getElementById('cw-allwallets-tbody')) renderCWAllWallets();
 
@@ -8235,11 +8325,26 @@
 
   /* ── 6-1 지갑 생성 요청 data ── */
   var _CW_REQUESTS = [
-    { idx:0, corp:'알파투자운용(주)', walletName:'USDT 운용 지갑', coin:'USDT', network:'TRON (TRC-20)', memo:'출금 전용 운용 지갑', requestedAt:'2026-03-28 10:00', status:'pending', addr:null },
-    { idx:1, corp:'베타캐피탈 유한회사', walletName:'BTC 보관 지갑', coin:'BTC', network:'Bitcoin Mainnet', memo:'장기 보관용', requestedAt:'2026-03-25 14:30', status:'done', addr:'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh' },
-    { idx:2, corp:'감마트레이딩(주)', walletName:'ETH 운영 지갑', coin:'ETH', network:'Ethereum Mainnet', memo:'DeFi 운영', requestedAt:'2026-04-01 09:15', status:'pending', addr:null },
-    { idx:3, corp:'알파투자운용(주)', walletName:'SOL 보관 지갑', coin:'SOL', network:'Solana Mainnet', memo:'스테이킹 보관', requestedAt:'2026-04-05 11:20', status:'done', addr:'So1ana9pG9VF5dMLnCdaGtfNb3cHFYxVBPYSwPy7iDP' },
+    { idx:0, corp:'알파투자운용(주)', walletName:'운영 지갑 A',
+      coins:['BTC','ETH','XRP'],
+      networks:{ BTC:'Bitcoin Mainnet', ETH:'Ethereum Mainnet', XRP:'XRP Ledger Mainnet' },
+      memo:'법인 운영 자금 관리', requestedAt:'2026-04-09 09:00', status:'pending',
+      addresses:{ BTC:'', ETH:'', XRP:'' }, destTag:null },
+    { idx:1, corp:'베타캐피탈 유한회사', walletName:'예비 지갑 B',
+      coins:['USDT'],
+      networks:{ USDT:'TRON (TRC-20)' },
+      memo:'단기 운용 자금', requestedAt:'2026-04-08 14:30', status:'done',
+      addresses:{ USDT:'TRXabc123def456ghi789jklmno345pqrstuvwxyz' }, destTag:null,
+      processedAt:'2026-04-09 10:00' },
+    { idx:2, corp:'감마트레이딩(주)', walletName:'운영 지갑 C',
+      coins:['ETH'],
+      networks:{ ETH:'Ethereum Mainnet' },
+      memo:'DeFi 운영', requestedAt:'2026-04-07 09:15', status:'rejected',
+      addresses:{ ETH:'' }, destTag:null,
+      rejectedReason:'Ledger 기기 점검 중으로 일시 처리 불가합니다. 내용 확인 후 재요청 바랍니다.',
+      processedAt:'2026-04-07 16:00' },
   ];
+  var _cwrFilter = ''; // creation request status filter
 
   /* ── 6-3 출금 서명 data ── */
   var _SIGN_REQUESTS = [
@@ -8283,6 +8388,16 @@
   }
 
   /* ── 6-1: 지갑 생성 요청 render ── */
+  function setCWRFilter(filter, el) {
+    _cwrFilter = filter;
+    document.querySelectorAll('#cw-panel-walletreq .pill-filter').forEach(function(p) { p.classList.remove('active'); });
+    if (el) el.classList.add('active');
+    // 상태 드롭다운 동기화
+    var sel = document.getElementById('cwr-status-filter');
+    if (sel) sel.value = filter;
+    renderCWRequests();
+  }
+
   function renderCWRequests() {
     // ── Stats ──
     var createPending = _CW_REQUESTS.filter(function(r){ return r.status === 'pending'; }).length;
@@ -8296,122 +8411,253 @@
     var dn = document.getElementById('cw-walletreq-done'); if (dn) dn.textContent = createDone + deleteDone;
     var tt = document.getElementById('cw-walletreq-total');if (tt) tt.textContent = totalWallets;
 
-    // 탭 배지
     var totalPending = createPending + deletePending;
     var badge = document.getElementById('cw-walletreq-badge');
     if (badge) { badge.textContent = totalPending; badge.style.display = totalPending ? '' : 'none'; }
 
-    // ── Unified table ──
-    var tbody = document.getElementById('cw-walletreq-tbody');
-    if (!tbody) return;
+    // ── 생성 요청 테이블 ──
+    var q = ((document.getElementById('cwr-search') || {}).value || '').toLowerCase();
+    var statusFilter = (document.getElementById('cwr-status-filter') || {}).value || _cwrFilter;
 
-    // Build combined list: creation requests first, then deletion requests
-    var rows = [];
-    _CW_REQUESTS.forEach(function(r) {
-      rows.push({ type: 'create', data: r });
-    });
-    _WALLET_DEL_ADMIN.forEach(function(r) {
-      rows.push({ type: 'delete', data: r });
+    var filtered = _CW_REQUESTS.filter(function(r) {
+      if (statusFilter && r.status !== statusFilter) return false;
+      if (q && !(r.corp.toLowerCase().includes(q) || r.walletName.toLowerCase().includes(q))) return false;
+      return true;
     });
 
-    if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-secondary);">요청 내역이 없습니다.</td></tr>';
-      return;
+    var createTbody = document.getElementById('cw-create-tbody');
+    if (createTbody) {
+      if (!filtered.length) {
+        createTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-secondary);">요청 내역이 없습니다.</td></tr>';
+      } else {
+        createTbody.innerHTML = filtered.map(function(r) {
+          var statusBadge;
+          if (r.status === 'pending')
+            statusBadge = '<span style="font-size:11px;font-weight:600;color:#F59E0B;background:#FFFBEB;border:1px solid #FDE68A;padding:2px 7px;border-radius:10px;">⏳ 생성 대기</span>';
+          else if (r.status === 'done')
+            statusBadge = '<span style="font-size:11px;font-weight:600;color:#10B981;background:#ECFDF5;border:1px solid #A7F3D0;padding:2px 7px;border-radius:10px;">● 생성 완료</span>';
+          else
+            statusBadge = '<span style="font-size:11px;font-weight:600;color:#EF4444;background:#FEF2F2;border:1px solid #FECACA;padding:2px 7px;border-radius:10px;">✕ 반려</span>';
+
+          var isMaster = (_ADMIN_ROLE === 'master');
+          var actionBtn = (r.status === 'pending' && isMaster)
+            ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45;cursor:not-allowed;" title="콜드월렛 담당자 전용">처리</button>'
+            : '<button class="btn btn-' + (r.status === 'pending' ? 'primary' : 'outline') + ' btn-xs" onclick="openWalletCreateModal(' + r.idx + ')">'
+              + (r.status === 'pending' ? '처리' : '상세') + '</button>';
+
+          var rowStyle = r.status === 'rejected' ? ' style="background:#FEF2F2;border-left:3px solid #EF4444;"' : '';
+          return '<tr' + rowStyle + ' onclick="openWalletCreateModal(' + r.idx + ')" style="cursor:pointer;">'
+            + '<td>' + r.corp + '</td>'
+            + '<td style="font-weight:600;">' + r.walletName + '</td>'
+            + '<td style="font-size:12px;">' + r.coins.join(' / ') + '</td>'
+            + '<td style="font-size:11.5px;color:var(--text-secondary);white-space:nowrap;">' + r.requestedAt.slice(0,10) + '</td>'
+            + '<td>' + statusBadge + '</td>'
+            + '<td onclick="event.stopPropagation();">' + actionBtn + '</td>'
+            + '</tr>';
+        }).join('');
+      }
     }
 
-    tbody.innerHTML = rows.map(function(row) {
-      var r = row.data;
-      var typeBadge = row.type === 'create'
-        ? '<span class="badge" style="background:#FFFBEB; color:#D97706;">🟡 생성</span>'
-        : '<span class="badge" style="background:#FEF2F2; color:#DC2626;">🔴 삭제</span>';
-
-      var statusBadge;
-      if      (r.status === 'pending')  statusBadge = '<span class="badge badge-warning">⏳ 대기</span>';
-      else if (r.status === 'done')     statusBadge = '<span class="badge badge-success">✓ 완료</span>';
-      else if (r.status === 'rejected') statusBadge = '<span class="badge badge-danger">✕ 반려</span>';
-      else                              statusBadge = '<span class="badge badge-gray">' + r.status + '</span>';
-
-      var isMasterRole = (_ADMIN_ROLE === 'master');
-      var actionBtn = r.status === 'pending' && isMasterRole
-        ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45; cursor:not-allowed;" title="권한 없음">처리</button>'
-        : '<button class="btn btn-' + (r.status === 'pending' ? 'primary' : 'outline') + ' btn-xs" onclick="openWalletReqDetail(\'' + row.type + '\',' + r.idx + ')">' + (r.status === 'pending' ? '처리' : '상세') + '</button>';
-
-      return '<tr>'
-        + '<td>' + r.corp + '</td>'
-        + '<td style="font-weight:600;">' + r.walletName + '</td>'
-        + '<td><span class="badge badge-info">' + r.coin + '</span></td>'
-        + '<td>' + typeBadge + '</td>'
-        + '<td style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">' + r.requestedAt + '</td>'
-        + '<td>' + statusBadge + '</td>'
-        + '<td>' + actionBtn + '</td>'
-        + '</tr>';
-    }).join('');
+    // ── 삭제 요청 테이블 ──
+    var deleteTbody = document.getElementById('cw-delete-tbody');
+    if (deleteTbody) {
+      if (!_WALLET_DEL_ADMIN.length) {
+        deleteTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-secondary);">요청 내역이 없습니다.</td></tr>';
+      } else {
+        deleteTbody.innerHTML = _WALLET_DEL_ADMIN.map(function(r) {
+          var statusBadge;
+          if (r.status === 'pending')  statusBadge = '<span class="badge badge-warning">⏳ 대기</span>';
+          else if (r.status === 'done') statusBadge = '<span class="badge badge-success">● 완료</span>';
+          else statusBadge = '<span class="badge badge-danger">✕ 반려</span>';
+          var isMaster = (_ADMIN_ROLE === 'master');
+          var actionBtn = (r.status === 'pending' && isMaster)
+            ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45;cursor:not-allowed;" title="콜드월렛 담당자 전용">처리</button>'
+            : '<button class="btn btn-' + (r.status === 'pending' ? 'primary' : 'outline') + ' btn-xs" onclick="event.stopPropagation();openWDAdminDetail(' + r.idx + ')">'
+              + (r.status === 'pending' ? '처리' : '상세') + '</button>';
+          return '<tr>'
+            + '<td>' + r.corp + '</td>'
+            + '<td style="font-weight:600;">' + r.walletName + '</td>'
+            + '<td><span class="badge badge-info">' + r.coin + '</span></td>'
+            + '<td style="font-size:11.5px;color:var(--text-secondary);white-space:nowrap;">' + r.requestedAt + '</td>'
+            + '<td>' + statusBadge + '</td>'
+            + '<td>' + actionBtn + '</td>'
+            + '</tr>';
+        }).join('');
+      }
+    }
   }
 
   function openWalletReqDetail(type, idx) {
-    if (type === 'create') {
-      openCWAddrRegister(idx);
-    } else {
-      openWDAdminDetail(idx);
-    }
+    if (type === 'create') openWalletCreateModal(idx);
+    else openWDAdminDetail(idx);
   }
 
-  /* ── 6-2: 콜드월렛 주소 등록 SO ── */
-  function openCWAddrRegister(idx) {
+  /* ── 6-1-2: 지갑 생성 처리 모달 ── */
+  function openWalletCreateModal(idx) {
     _cwActiveIdx = idx;
     var r = _CW_REQUESTS[idx];
-    document.getElementById('cw-addr-subtitle').textContent = r.status === 'done' ? '(등록 완료 — 읽기 전용)' : '';
-    document.getElementById('cw-addr-corp').textContent    = r.corp;
-    document.getElementById('cw-addr-wallet').textContent  = r.walletName;
-    document.getElementById('cw-addr-coin').textContent    = r.coin;
-    document.getElementById('cw-addr-network').textContent = r.network;
-    document.getElementById('cw-addr-memo').textContent    = r.memo || '—';
-    var input = document.getElementById('cw-addr-input');
-    input.value = r.addr || '';
-    input.disabled = r.status === 'done';
-    var err = document.getElementById('cw-addr-err');
-    err.style.display = 'none';
-    var submitBtn = document.getElementById('cw-addr-submit');
-    submitBtn.style.display = r.status === 'done' ? 'none' : '';
-    submitBtn.disabled = !r.addr;
-    // XRP Destination Tag field
-    var dtGroup = document.getElementById('cw-addr-dest-tag-group');
-    var dtInput = document.getElementById('cw-addr-dest-tag');
-    var dtHint  = document.getElementById('cw-addr-dest-tag-hint');
-    if (dtGroup) dtGroup.style.display = (r.coin === 'XRP') ? '' : 'none';
-    if (dtInput) { dtInput.value = ''; dtInput.style.borderColor = ''; dtInput.disabled = r.status === 'done'; }
-    if (dtHint)  { dtHint.textContent = ''; }
-    document.getElementById('cw-addr-backdrop').classList.add('open');
-    document.getElementById('so-cw-addr').classList.add('open');
+    if (!r) return;
+    document.getElementById('wcm-corp').textContent      = r.corp;
+    document.getElementById('wcm-wallet').textContent    = r.walletName;
+    document.getElementById('wcm-memo').textContent      = r.memo || '—';
+    document.getElementById('wcm-requested').textContent = r.requestedAt;
+    document.getElementById('wcm-coins').textContent     = r.coins.join(' / ');
+
+    var addrErr = document.getElementById('wcm-addr-err');
+    if (addrErr) addrErr.style.display = 'none';
+
+    // 코인별 주소 입력 필드 동적 생성
+    var fieldsDiv = document.getElementById('wcm-addr-fields');
+    var isReadOnly = (r.status !== 'pending');
+    fieldsDiv.innerHTML = r.coins.map(function(coin) {
+      var currentAddr = (r.addresses && r.addresses[coin]) || '';
+      var isXRP = coin === 'XRP';
+      var destTagHtml = isXRP ? (
+        '<div class="wcm-dest-tag-box" style="margin-top:8px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+        + '<span style="font-size:12px;font-weight:600;">Destination Tag</span>'
+        + '<span style="font-size:11px;color:var(--text-secondary);">선택 · XRP 전용</span></div>'
+        + '<input type="text" id="wcm-dt-' + coin + '" class="form-control" inputmode="numeric" style="font-family:monospace;"'
+        + ' placeholder="숫자만 입력 (0 ~ 4,294,967,295)"'
+        + (isReadOnly ? ' disabled value="' + (r.destTag != null ? r.destTag : '') + '"' : '')
+        + ' oninput="_adminValidateDestTag(\'wcm-dt-' + coin + '\',\'wcm-dt-hint-' + coin + '\');validateWCMForm();" />'
+        + '<div id="wcm-dt-hint-' + coin + '" style="font-size:12px;margin-top:4px;"></div>'
+        + '<div class="form-hint" style="margin-top:4px;">&#8505; 이 주소로 입금 시 Destination Tag가 필요한 경우에만 입력하세요.</div>'
+        + '</div>'
+      ) : '';
+      return '<div class="wcm-coin-row">'
+        + '<div class="wcm-coin-label"><span class="badge badge-info" style="font-size:12px;">' + coin + '</span>'
+        + (r.networks && r.networks[coin] ? '<span style="font-size:11px;color:var(--text-secondary);">' + r.networks[coin] + '</span>' : '')
+        + '</div>'
+        + '<input type="text" id="wcm-addr-' + coin + '" class="form-control" style="font-family:monospace;"'
+        + ' placeholder="' + coin + ' 주소 입력"'
+        + (isReadOnly ? ' disabled value="' + currentAddr + '"' : ' value="' + currentAddr + '" oninput="validateWCMForm()"')
+        + ' />'
+        + destTagHtml
+        + '</div>';
+    }).join('');
+
+    // 반려/완료 버튼 제어
+    var rejectBtn = document.getElementById('wcm-reject-btn');
+    var submitBtn = document.getElementById('wcm-submit-btn');
+    var isMaster = (_ADMIN_ROLE === 'master');
+
+    if (r.status === 'done') {
+      // 읽기 전용 - 완료 상태
+      if (rejectBtn) rejectBtn.style.display = 'none';
+      if (submitBtn) { submitBtn.textContent = '완료 (처리됨)'; submitBtn.disabled = true; }
+    } else if (r.status === 'rejected') {
+      // 읽기 전용 - 반려 상태
+      if (rejectBtn) rejectBtn.style.display = 'none';
+      if (submitBtn) { submitBtn.style.display = 'none'; }
+      // 반려 사유 표시
+      var existingNote = fieldsDiv.querySelector('.wcm-reject-note');
+      if (!existingNote) {
+        var note = document.createElement('div');
+        note.className = 'wcm-reject-note';
+        note.style.cssText = 'background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.6;';
+        note.innerHTML = '<strong style="color:var(--danger);">반려 사유:</strong> ' + (r.rejectedReason || '—');
+        fieldsDiv.insertBefore(note, fieldsDiv.firstChild);
+      }
+    } else if (isMaster) {
+      // master: 조회만
+      if (rejectBtn) rejectBtn.style.display = 'none';
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.45'; submitBtn.title = '콜드월렛 담당자 전용'; }
+    } else {
+      // 콜드월렛 담당자: 처리 가능
+      if (rejectBtn) rejectBtn.style.display = '';
+      if (submitBtn) { submitBtn.textContent = '생성 완료'; submitBtn.disabled = true; submitBtn.style.opacity = ''; submitBtn.title = ''; }
+      validateWCMForm();
+    }
+
+    openModal('modal-cw-wallet-create');
   }
-  function closeCWAddrSO() {
-    document.getElementById('cw-addr-backdrop').classList.remove('open');
-    document.getElementById('so-cw-addr').classList.remove('open');
-  }
-  function validateCWAddr() {
-    var val = document.getElementById('cw-addr-input').value.trim();
-    var err = document.getElementById('cw-addr-err');
-    var submitBtn = document.getElementById('cw-addr-submit');
-    var msg = '';
-    if (!val) msg = '주소를 입력해주세요.';
-    else if (val.length < 20) msg = '올바른 지갑 주소 형식이 아닙니다.';
-    if (err) { err.textContent = msg; err.style.display = msg ? 'block' : 'none'; }
-    if (submitBtn) submitBtn.disabled = !!msg;
-    return !msg;
-  }
-  function confirmCWAddr() {
-    if (!validateCWAddr()) return;
+
+  function validateWCMForm() {
     var r = _CW_REQUESTS[_cwActiveIdx];
-    if (r.coin === 'XRP' && !_adminValidateDestTag('cw-addr-dest-tag', 'cw-addr-dest-tag-hint')) return;
-    var addr = document.getElementById('cw-addr-input').value.trim();
-    var dtRaw = document.getElementById('cw-addr-dest-tag') ? document.getElementById('cw-addr-dest-tag').value.trim() : '';
-    closeCWAddrSO();
-    openOTPModal('콜드월렛 주소 등록', function() {
-      r.addr = addr;
-      if (r.coin === 'XRP') r.destTag = dtRaw !== '' ? parseInt(dtRaw, 10) : null;
-      r.status = 'done';
+    if (!r) return;
+    var allFilled = r.coins.every(function(coin) {
+      var input = document.getElementById('wcm-addr-' + coin);
+      return input && input.value.trim().length >= 20;
+    });
+    // XRP Destination Tag 범위 검사
+    var dtValid = true;
+    if (r.coins.includes('XRP')) {
+      var dtEl = document.getElementById('wcm-dt-XRP');
+      if (dtEl && dtEl.value.trim()) {
+        var dtVal = parseInt(dtEl.value.trim(), 10);
+        if (isNaN(dtVal) || dtVal < 0 || dtVal > 4294967295) dtValid = false;
+      }
+    }
+    var submitBtn = document.getElementById('wcm-submit-btn');
+    if (submitBtn) submitBtn.disabled = !(allFilled && dtValid);
+  }
+
+  function openWCMRejectModal() {
+    var r = _CW_REQUESTS[_cwActiveIdx];
+    if (!r) return;
+    closeModal('modal-cw-wallet-create');
+    document.getElementById('wcr-corp').textContent   = r.corp;
+    document.getElementById('wcr-wallet').textContent = r.walletName;
+    document.getElementById('wcr-coins').textContent  = r.coins.join(' / ');
+    var reasonEl = document.getElementById('wcr-reason');
+    var countEl  = document.getElementById('wcr-reason-count');
+    var confirmBtn = document.getElementById('wcr-confirm-btn');
+    if (reasonEl) reasonEl.value = '';
+    if (countEl)  countEl.textContent = '0 / 500';
+    if (confirmBtn) confirmBtn.disabled = true;
+    _afterClose(function() { openModal('modal-cw-wallet-reject'); });
+  }
+
+  function confirmWalletCreate() {
+    var r = _CW_REQUESTS[_cwActiveIdx];
+    if (!r) return;
+    // 주소 수집
+    var addresses = {};
+    var allOk = true;
+    r.coins.forEach(function(coin) {
+      var input = document.getElementById('wcm-addr-' + coin);
+      var val = input ? input.value.trim() : '';
+      if (val.length < 20) allOk = false;
+      addresses[coin] = val;
+    });
+    if (!allOk) {
+      var errEl = document.getElementById('wcm-addr-err');
+      if (errEl) errEl.style.display = 'block';
+      return;
+    }
+    // XRP Destination Tag
+    var destTag = null;
+    if (r.coins.includes('XRP')) {
+      var dtEl = document.getElementById('wcm-dt-XRP');
+      if (dtEl && dtEl.value.trim()) {
+        if (!_adminValidateDestTag('wcm-dt-XRP', 'wcm-dt-hint-XRP')) return;
+        destTag = parseInt(dtEl.value.trim(), 10);
+      }
+    }
+    closeModal('modal-cw-wallet-create');
+    openOTPModal('지갑 생성 완료', function() {
+      r.addresses = addresses;
+      r.destTag   = destTag;
+      r.status    = 'done';
+      r.processedAt = '2026-04-' + new Date().getDate() + ' ' + new Date().toTimeString().slice(0,5);
       renderCWRequests();
-      showToast(r.walletName + ' 주소가 등록되었습니다. 고객 포털 지갑이 활성화되고 Master에게 이메일이 발송되었습니다.', 4000);
+      showToast(r.corp + ' · ' + r.walletName + ' 생성 완료 처리되었습니다. Master에게 이메일이 발송되었습니다.', 4000);
+    });
+  }
+
+  function confirmWalletReject() {
+    var reason = (document.getElementById('wcr-reason').value || '').trim();
+    if (!reason) return;
+    var r = _CW_REQUESTS[_cwActiveIdx];
+    if (!r) return;
+    closeModal('modal-cw-wallet-reject');
+    openOTPModal('지갑 생성 반려', function() {
+      r.status         = 'rejected';
+      r.rejectedReason = reason;
+      r.processedAt    = '2026-04-' + new Date().getDate() + ' ' + new Date().toTimeString().slice(0,5);
+      renderCWRequests();
+      showToast(r.corp + ' · ' + r.walletName + ' 반려 처리되었습니다. Master에게 반려 사유가 이메일로 발송되었습니다.', 4000);
     });
   }
 
@@ -8568,20 +8814,18 @@
     });
   }
 
-  /* ── 6-5: 코인 추가 요청 render ── */
+  /* ── 6-2: 코인 추가 요청 render ── */
   function renderCoinAddRequests() {
     var q      = (document.getElementById('ca-search')  || {}).value || '';
     var filter = (document.getElementById('ca-filter')  || {}).value || '';
     q = q.toLowerCase();
 
-    var pending   = _COIN_ADD_REQUESTS.filter(function(r){ return r.status === 'pending'; });
-    var done      = _COIN_ADD_REQUESTS.filter(function(r){ return r.status === 'done'; });
-    var rejected  = _COIN_ADD_REQUESTS.filter(function(r){ return r.status === 'rejected'; });
-    var cancelled = _COIN_ADD_REQUESTS.filter(function(r){ return r.status === 'cancelled'; });
-    var sp = document.getElementById('ca-stat-pending');   if (sp) sp.textContent = pending.length;
-    var sd = document.getElementById('ca-stat-done');      if (sd) sd.textContent = done.length;
-    var sr = document.getElementById('ca-stat-rejected');  if (sr) sr.textContent = rejected.length;
-    var sc = document.getElementById('ca-stat-cancelled'); if (sc) sc.textContent = cancelled.length;
+    var pending  = _COIN_ADD_REQUESTS.filter(function(r){ return r.status === 'pending'; });
+    var done     = _COIN_ADD_REQUESTS.filter(function(r){ return r.status === 'done'; });
+    var rejected = _COIN_ADD_REQUESTS.filter(function(r){ return r.status === 'rejected'; });
+    var sp = document.getElementById('ca-stat-pending');  if (sp) sp.textContent = pending.length;
+    var sd = document.getElementById('ca-stat-done');     if (sd) sd.textContent = done.length;
+    var sr = document.getElementById('ca-stat-rejected'); if (sr) sr.textContent = rejected.length;
 
     var filtered = _COIN_ADD_REQUESTS.filter(function(r) {
       if (filter && r.status !== filter) return false;
@@ -8599,18 +8843,15 @@
     filtered.forEach(function(r) {
       var statusBadge, actionBtn;
       if (r.status === 'pending') {
-        statusBadge = '<span class="badge badge-warning">처리 대기</span>';
+        statusBadge = '<span style="font-size:11px;font-weight:600;color:#F59E0B;background:#FFFBEB;border:1px solid #FDE68A;padding:2px 7px;border-radius:10px;">⏳ 처리 대기</span>';
         actionBtn   = (_ADMIN_ROLE === 'master')
-          ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45; cursor:not-allowed;" title="권한 없음">처리</button>'
+          ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45; cursor:not-allowed;" title="콜드월렛 담당자 전용">처리</button>'
           : '<button class="btn btn-primary btn-xs" onclick="openCoinAddDetail(' + r.idx + ')">처리</button>';
       } else if (r.status === 'done') {
-        statusBadge = '<span class="badge badge-success">처리 완료</span>';
-        actionBtn   = '<button class="btn btn-outline btn-xs" onclick="openCoinAddDetail(' + r.idx + ')">상세</button>';
-      } else if (r.status === 'rejected') {
-        statusBadge = '<span class="badge badge-danger">거절됨</span>';
+        statusBadge = '<span style="font-size:11px;font-weight:600;color:#10B981;background:#ECFDF5;border:1px solid #A7F3D0;padding:2px 7px;border-radius:10px;">● 추가 완료</span>';
         actionBtn   = '<button class="btn btn-outline btn-xs" onclick="openCoinAddDetail(' + r.idx + ')">상세</button>';
       } else {
-        statusBadge = '<span class="badge badge-gray">취소됨</span>';
+        statusBadge = '<span style="font-size:11px;font-weight:600;color:#EF4444;background:#FEF2F2;border:1px solid #FECACA;padding:2px 7px;border-radius:10px;">✕ 반려</span>';
         actionBtn   = '<button class="btn btn-outline btn-xs" onclick="openCoinAddDetail(' + r.idx + ')">상세</button>';
       }
       var tr = document.createElement('tr');
@@ -8628,94 +8869,111 @@
   function openCoinAddDetail(idx) {
     _coinAddActiveIdx = idx;
     var r = _COIN_ADD_REQUESTS[idx];
+    if (!r) return;
+    var titleEl = document.getElementById('cad-modal-title');
+    if (titleEl) titleEl.textContent = r.status === 'pending' ? '코인 추가 처리' : '코인 추가 상세';
     document.getElementById('cad-corp').textContent        = r.corp;
-    document.getElementById('cad-requester').textContent   = r.requester;
-    document.getElementById('cad-requested').textContent   = r.requestedAt;
     document.getElementById('cad-wallet').textContent      = r.walletName;
-    document.getElementById('cad-wallet-addr').textContent = r.walletAddr;
-    document.getElementById('cad-coin').textContent        = r.coin;
-    document.getElementById('cad-network').textContent     = r.network;
+    document.getElementById('cad-coin-network').textContent = r.coin + ' / ' + r.network;
+    document.getElementById('cad-requested').textContent   = r.requestedAt;
 
-    var statusBadgeMap = {
-      pending:   '<span class="badge badge-warning">처리 대기</span>',
-      done:      '<span class="badge badge-success">처리 완료</span>',
-      rejected:  '<span class="badge badge-danger">거절됨</span>',
-      cancelled: '<span class="badge badge-gray">취소됨</span>',
-    };
-    document.getElementById('cad-status-badge').innerHTML = statusBadgeMap[r.status] || '';
+    var inputSection  = document.getElementById('cad-input-section');
+    var resultSection = document.getElementById('cad-result-section');
+    var actionBtns    = document.getElementById('cad-action-btns');
 
-    var rejectBox  = document.getElementById('cad-reject-box');
-    var cancelBox  = document.getElementById('cad-cancel-box');
-    rejectBox.style.display  = r.status === 'rejected'  ? 'block' : 'none';
-    cancelBox.style.display  = r.status === 'cancelled' ? 'block' : 'none';
-    if (r.status === 'rejected') {
-      document.getElementById('cad-reject-reason').textContent = r.reason || '—';
-      document.getElementById('cad-processor').textContent     = r.processor || '—';
-      document.getElementById('cad-processed').textContent     = r.processedAt || '—';
+    if (r.status === 'pending') {
+      // 처리 대기: 주소 입력 영역 표시
+      if (inputSection)  inputSection.style.display = '';
+      if (resultSection) resultSection.style.display = 'none';
+      if (actionBtns)    actionBtns.style.display = (_ADMIN_ROLE === 'master') ? 'none' : 'flex';
+      // 초기화
+      var addrInput = document.getElementById('cad-addr-input');
+      var addrErr   = document.getElementById('cad-addr-err');
+      var addrLbl   = document.getElementById('cad-addr-label');
+      if (addrInput) { addrInput.value = ''; addrInput.style.borderColor = ''; }
+      if (addrErr)   addrErr.style.display = 'none';
+      if (addrLbl)   addrLbl.innerHTML = r.coin + ' 주소 입력 <span style="color:var(--danger);">*</span>';
+      // XRP Destination Tag
+      var dtGroup = document.getElementById('cad-dest-tag-group');
+      var dtInput = document.getElementById('cad-dest-tag');
+      var dtHint  = document.getElementById('cad-dest-tag-hint');
+      if (dtGroup) dtGroup.style.display = (r.coin === 'XRP') ? '' : 'none';
+      if (dtInput) { dtInput.value = ''; dtInput.style.borderColor = ''; }
+      if (dtHint)  dtHint.textContent = '';
+      // 버튼 초기 비활성화
+      var btnReg = document.getElementById('cad-btn-register');
+      if (btnReg) btnReg.disabled = true;
+    } else {
+      // 완료/반려: 읽기 전용
+      if (inputSection)  inputSection.style.display = 'none';
+      if (resultSection) resultSection.style.display = '';
+      if (actionBtns)    actionBtns.style.display = 'none';
+      var statusBadgeMap = {
+        done:     '<span style="font-size:11px;font-weight:600;color:#10B981;background:#ECFDF5;border:1px solid #A7F3D0;padding:2px 7px;border-radius:10px;">● 추가 완료</span>',
+        rejected: '<span style="font-size:11px;font-weight:600;color:#EF4444;background:#FEF2F2;border:1px solid #FECACA;padding:2px 7px;border-radius:10px;">✕ 반려</span>',
+      };
+      var sbEl = document.getElementById('cad-status-badge');
+      if (sbEl) sbEl.innerHTML = statusBadgeMap[r.status] || '';
+      var rejectBox = document.getElementById('cad-reject-box');
+      if (rejectBox) rejectBox.style.display = r.status === 'rejected' ? 'block' : 'none';
+      if (r.status === 'rejected') {
+        document.getElementById('cad-reject-reason').textContent = r.reason || '—';
+        document.getElementById('cad-processor').textContent     = r.processor || '—';
+        document.getElementById('cad-processed').textContent     = r.processedAt || '—';
+      }
     }
-
-    var btnReject   = document.getElementById('cad-btn-reject');
-    var btnRegister = document.getElementById('cad-btn-register');
-    btnReject.style.display   = r.status === 'pending' ? '' : 'none';
-    btnRegister.style.display = r.status === 'pending' ? '' : 'none';
 
     openModal('modal-coin-add-detail');
   }
 
-  function openCoinAddrRegister() {
-    var r = _COIN_ADD_REQUESTS[_coinAddActiveIdx];
-    if (!r) return;
-    closeModal('modal-coin-add-detail');
-    document.getElementById('coin-addr-subtitle').textContent = r.coin + ' / ' + r.network;
-    document.getElementById('coin-addr-corp').textContent     = r.corp;
-    document.getElementById('coin-addr-wallet').textContent   = r.walletName;
-    document.getElementById('coin-addr-coin').textContent     = r.coin;
-    document.getElementById('coin-addr-network').textContent  = r.network;
-    document.getElementById('coin-addr-input').value         = '';
-    var err = document.getElementById('coin-addr-err');
-    err.style.display = 'none';
-    var submitBtn = document.getElementById('coin-addr-submit');
-    submitBtn.disabled = true;
-    // XRP Destination Tag field
-    var caDtGroup = document.getElementById('coin-addr-dest-tag-group');
-    var caDtInput = document.getElementById('coin-addr-dest-tag');
-    var caDtHint  = document.getElementById('coin-addr-dest-tag-hint');
-    if (caDtGroup) caDtGroup.style.display = (r.coin === 'XRP') ? '' : 'none';
-    if (caDtInput) { caDtInput.value = ''; caDtInput.style.borderColor = ''; }
-    if (caDtHint)  { caDtHint.textContent = ''; }
-    document.getElementById('coin-addr-backdrop').classList.add('open');
-    document.getElementById('so-coin-addr').classList.add('open');
-  }
-  function closeCoinAddrSO() {
-    document.getElementById('coin-addr-backdrop').classList.remove('open');
-    document.getElementById('so-coin-addr').classList.remove('open');
-  }
-  function validateCoinAddr() {
-    var val = document.getElementById('coin-addr-input').value.trim();
-    var err = document.getElementById('coin-addr-err');
-    var submitBtn = document.getElementById('coin-addr-submit');
+  function validateCoinAddAddr() {
+    var val = document.getElementById('cad-addr-input').value.trim();
+    var err = document.getElementById('cad-addr-err');
+    var btn = document.getElementById('cad-btn-register');
+    var r   = _COIN_ADD_REQUESTS[_coinAddActiveIdx];
     var msg = '';
     if (!val) msg = '주소를 입력해주세요.';
     else if (val.length < 20) msg = '올바른 지갑 주소 형식이 아닙니다.';
     if (err) { err.textContent = msg; err.style.display = msg ? 'block' : 'none'; }
-    if (submitBtn) submitBtn.disabled = !!msg;
-    return !msg;
+    // XRP Destination Tag 검사
+    var dtValid = true;
+    if (r && r.coin === 'XRP') {
+      var dtEl = document.getElementById('cad-dest-tag');
+      if (dtEl && dtEl.value.trim()) {
+        var v = parseInt(dtEl.value.trim(), 10);
+        if (isNaN(v) || v < 0 || v > 4294967295) dtValid = false;
+      }
+    }
+    if (btn) btn.disabled = !!msg || !dtValid;
+    return !msg && dtValid;
   }
+
+  // 구 함수명 호환 유지
+  function openCoinAddrRegister() { validateCoinAddAddr(); }
+  function closeCoinAddrSO() {}
+  function validateCoinAddr() { return validateCoinAddAddr(); }
+
   function confirmCoinAddr() {
-    if (!validateCoinAddr()) return;
+    if (!validateCoinAddAddr()) return;
     var r = _COIN_ADD_REQUESTS[_coinAddActiveIdx];
-    if (r && r.coin === 'XRP' && !_adminValidateDestTag('coin-addr-dest-tag', 'coin-addr-dest-tag-hint')) return;
-    var addr = document.getElementById('coin-addr-input').value.trim();
-    var caDtRaw = document.getElementById('coin-addr-dest-tag') ? document.getElementById('coin-addr-dest-tag').value.trim() : '';
-    closeCoinAddrSO();
-    openOTPModal('코인 주소 등록', function() {
-      r.coinAddr     = addr;
-      if (r.coin === 'XRP') r.destTag = caDtRaw !== '' ? parseInt(caDtRaw, 10) : null;
-      r.status       = 'done';
-      r.processor    = '관리자';
-      r.processedAt  = '2026-04-07 ' + new Date().toTimeString().slice(0,5);
+    if (!r) return;
+    var addr = (document.getElementById('cad-addr-input') || {}).value || '';
+    addr = addr.trim();
+    var dtRaw = '';
+    if (r.coin === 'XRP') {
+      if (!_adminValidateDestTag('cad-dest-tag', 'cad-dest-tag-hint')) return;
+      var dtEl = document.getElementById('cad-dest-tag');
+      if (dtEl) dtRaw = dtEl.value.trim();
+    }
+    closeModal('modal-coin-add-detail');
+    openOTPModal('코인 추가 완료', function() {
+      r.coinAddr    = addr;
+      if (r.coin === 'XRP') r.destTag = dtRaw !== '' ? parseInt(dtRaw, 10) : null;
+      r.status      = 'done';
+      r.processor   = '관리자';
+      r.processedAt = '2026-04-' + new Date().getDate() + ' ' + new Date().toTimeString().slice(0,5);
       renderCoinAddRequests();
-      showToast(r.corp + ' · ' + r.coin + ' 주소가 등록되었습니다. 고객 포털 Coins 탭에 즉시 활성화되었습니다.', 4000);
+      showToast(r.corp + ' · ' + r.coin + ' 추가 완료 처리되었습니다. 고객 포털에 즉시 활성화되고 Master에게 이메일이 발송되었습니다.', 4000);
     });
   }
 
@@ -8726,22 +8984,28 @@
     document.getElementById('car-corp').textContent   = r.corp;
     document.getElementById('car-wallet').textContent = r.walletName;
     document.getElementById('car-coin').textContent   = r.coin;
-    document.getElementById('car-reason').value = '';
-    document.getElementById('car-reason-count').textContent = '0 / 500';
-    openModal('modal-coin-add-reject');
+    var reasonEl = document.getElementById('car-reason');
+    var countEl  = document.getElementById('car-reason-count');
+    var confirmBtn = document.getElementById('car-confirm-btn');
+    if (reasonEl) reasonEl.value = '';
+    if (countEl)  countEl.textContent = '0 / 500';
+    if (confirmBtn) confirmBtn.disabled = true;
+    _afterClose(function() { openModal('modal-coin-add-reject'); });
   }
+
   function confirmCoinAddReject() {
-    var reason = document.getElementById('car-reason').value.trim();
-    if (!reason) { showToast('거절 사유를 입력해주세요.'); return; }
+    var reason = (document.getElementById('car-reason').value || '').trim();
+    if (!reason) return;
     var r = _COIN_ADD_REQUESTS[_coinAddActiveIdx];
+    if (!r) return;
     closeModal('modal-coin-add-reject');
-    openOTPModal('코인 추가 거절', function() {
+    openOTPModal('코인 추가 반려', function() {
       r.status      = 'rejected';
       r.reason      = reason;
       r.processor   = '관리자';
-      r.processedAt = '2026-04-07 ' + new Date().toTimeString().slice(0,5);
+      r.processedAt = '2026-04-' + new Date().getDate() + ' ' + new Date().toTimeString().slice(0,5);
       renderCoinAddRequests();
-      showToast(r.corp + ' · ' + r.coin + ' 요청이 거절되었습니다. Master에게 거절 사유 이메일이 발송되었습니다.', 4000);
+      showToast(r.corp + ' · ' + r.coin + ' 요청이 반려되었습니다. Master에게 반려 사유 이메일이 발송되었습니다.', 4000);
     });
   }
 
