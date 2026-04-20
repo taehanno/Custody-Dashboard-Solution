@@ -732,14 +732,15 @@
           <h1 class="page-title">KYB 관리</h1>
           <button class="btn btn-primary" id="btn-new-kyb" onclick="openNewKYB()">+ 신규 KYB 등록</button>
         </div>
-        <!-- 4-3 Stats 6종 -->
-        <div class="stats-row" style="grid-template-columns:repeat(6,1fr);">
+        <!-- 4-1 Stats 7종 -->
+        <div class="stats-row" style="grid-template-columns:repeat(7,1fr);">
           <div class="stat-card"><span class="stat-label">✏️ 입력 중</span><span class="stat-value stat-gray" id="kyb-stat-draft">0</span></div>
           <div class="stat-card"><span class="stat-label">📋 작성 완료</span><span class="stat-value stat-blue" id="kyb-stat-submitted">0</span></div>
-          <div class="stat-card"><span class="stat-label">⏳ WLF 검사 중</span><span class="stat-value" style="color:#F59E0B;" id="kyb-stat-wlf">0</span></div>
+          <div class="stat-card" style="border-left:3px solid #F59E0B;"><span class="stat-label">⏳ WLF 검사 중</span><span class="stat-value" style="color:#F59E0B;" id="kyb-stat-wlf">0</span></div>
           <div class="stat-card"><span class="stat-label">✅ KYB 완료</span><span class="stat-value stat-green" id="kyb-stat-done">0</span></div>
           <div class="stat-card"><span class="stat-label">✕ 반려</span><span class="stat-value stat-red" id="kyb-stat-rejected">0</span></div>
           <div class="stat-card" style="border-left:3px solid #F97316;"><span class="stat-label">⚠ KYB 만료</span><span class="stat-value stat-orange" id="kyb-stat-expired">0</span></div>
+          <div class="stat-card" style="border-left:3px solid #EF4444;"><span class="stat-label">🚫 계약 만료</span><span class="stat-value stat-red" id="kyb-stat-contract-expired">0</span></div>
         </div>
         <div class="card" style="padding:0;">
           <div style="padding:12px 16px; border-bottom:1px solid var(--border);">
@@ -748,14 +749,15 @@
                 <span class="search-icon">&#128269;</span>
                 <input type="text" id="kyb-search" class="form-control" placeholder="법인명 / 사업자번호 검색" style="width:220px; padding-left:30px;" oninput="renderKYBTable()" />
               </div>
-              <select class="form-control" id="kyb-filter-status" style="width:140px;" onchange="renderKYBTable()">
+              <select class="form-control" id="kyb-filter-status" style="width:150px;" onchange="renderKYBTable()">
                 <option value="">전체 상태</option>
-                <option value="draft">입력 중</option>
-                <option value="submitted">작성 완료</option>
-                <option value="wlf">WLF 검사 중</option>
-                <option value="done">KYB 완료</option>
-                <option value="rejected">반려</option>
-                <option value="expired">KYB 만료</option>
+                <option value="draft">✏️ 입력 중</option>
+                <option value="submitted">📋 작성 완료</option>
+                <option value="wlf">⏳ WLF 검사 중</option>
+                <option value="done">✅ KYB 완료</option>
+                <option value="rejected">✕ 반려</option>
+                <option value="expired">⚠ KYB 만료</option>
+                <option value="contract_expired">🚫 계약 만료</option>
               </select>
               <select class="form-control" id="kyb-filter-officer" style="width:120px;" onchange="renderKYBTable()">
                 <option value="">전체 담당자</option>
@@ -3162,8 +3164,9 @@
   <div class="modal-body">
     <div class="section-box">
       <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="kybr-corp"></span></div>
-      <div class="info-row"><span class="info-label">KYB 상태</span><span class="info-value"><span class="badge badge-kyb-expired">⚠ KYB 만료</span></span></div>
+      <div class="info-row"><span class="info-label">KYB 상태</span><span class="info-value" id="kybr-status-badge"></span></div>
       <div class="info-row"><span class="info-label">만료일</span><span class="info-value" id="kybr-expiry" style="color:#EF4444; font-weight:600;"></span></div>
+      <div class="info-row" id="kybr-contract-row" style="display:none;"><span class="info-label">계약 만료 전환</span><span class="info-value" id="kybr-contract-date" style="color:#EF4444;"></span></div>
       <div class="info-row" style="border-bottom:none;"><span class="info-label">이전 위험등급</span><span class="info-value" id="kybr-risk"></span></div>
     </div>
     <div class="alert alert-info">
@@ -3173,6 +3176,111 @@
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-kyb-restart')">취소</button>
     <button class="btn btn-warning" onclick="confirmKYBRestart()">재작성 시작</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: WLF + OCTA 결재 상세 (4-5)
+══════════════════════════════════════ -->
+<div class="modal modal-wide" id="modal-wlf-kyb-detail">
+  <div class="modal-header">
+    <span class="modal-title">KYB 상세 — WLF 검사 중</span>
+    <button class="modal-close" onclick="closeModal('modal-wlf-kyb-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="wlfd-corp" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">사업자번호</span><span class="info-value" id="wlfd-bizno" style="font-family:monospace;font-size:12px;"></span></div>
+      <div class="info-row"><span class="info-label">KYB 상태</span><span class="info-value"><span class="badge badge-kyb-wlf">⏳ WLF 검사 중</span></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">결재 일시</span><span class="info-value" id="wlfd-approved-at" style="font-size:12px; color:var(--text-secondary);"></span></div>
+    </div>
+    <!-- WLF 내부요주의인물 필터 -->
+    <div class="section-box">
+      <div class="section-box-title">① 내부요주의인물 필터</div>
+      <div id="wlfd-person-match" style="padding:10px 12px; border-radius:6px; font-size:12.5px;"></div>
+    </div>
+    <!-- WLF 국가위험정책 필터 -->
+    <div class="section-box">
+      <div class="section-box-title">② 국가위험정책 필터</div>
+      <div id="wlfd-country-match" style="padding:10px 12px; border-radius:6px; font-size:12.5px;"></div>
+    </div>
+    <!-- OCTA 검증 -->
+    <div class="section-box">
+      <div class="section-box-title">③ OCTA Watch list 검증</div>
+      <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:12.5px; color:var(--text-secondary);">
+        <div style="margin-bottom:4px; font-weight:600; color:var(--text-primary);">상태: ⏳ 검증 대기 중 (OCTA 결재 실행 전)</div>
+        <div>ⓘ [OCTA 결재] 버튼을 실행하면 OCTA API를 호출하여 Watch list 여부를 검증합니다.</div>
+      </div>
+    </div>
+    <!-- 경고 배너 (WLF 매칭 시) -->
+    <div id="wlfd-warn-banner" style="display:none; background:#FEF9C3; border:1px solid #FDE047; border-radius:8px; padding:10px 14px; font-size:12.5px; color:#713F12; margin-bottom:4px;">
+      ⚠ 내부요주의인물 필터에 매칭된 항목이 있습니다. 내용을 검토 후 OCTA 결재를 진행하세요.
+    </div>
+    <!-- OTP -->
+    <div style="margin-top:12px;">
+      <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">OTP 인증</div>
+      <div id="wlfdOTPRow" style="display:flex;gap:6px;">
+        <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,0,'wlfdOTPRow');_validateWLFD()" onkeydown="otpBack(event,this,0,'wlfdOTPRow')" onpaste="otpPaste(event,'wlfdOTPRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,1,'wlfdOTPRow');_validateWLFD()" onkeydown="otpBack(event,this,1,'wlfdOTPRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,2,'wlfdOTPRow');_validateWLFD()" onkeydown="otpBack(event,this,2,'wlfdOTPRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,3,'wlfdOTPRow');_validateWLFD()" onkeydown="otpBack(event,this,3,'wlfdOTPRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,4,'wlfdOTPRow');_validateWLFD()" onkeydown="otpBack(event,this,4,'wlfdOTPRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,5,'wlfdOTPRow');_validateWLFD()" onkeydown="otpBack(event,this,5,'wlfdOTPRow')">
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="openKYBDetail(_kybDetailIdx); closeModal('modal-wlf-kyb-detail');">KYB 내용 보기</button>
+    <button class="btn btn-warning" id="wlfd-octa-btn" disabled onclick="runOCTAApproval()">OCTA 결재</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: OCTA 검증 결과 (4-5-1)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-octa-result">
+  <div class="modal-header">
+    <span class="modal-title">OCTA 검증 결과</span>
+    <button class="modal-close" onclick="closeModal('modal-octa-result')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="octar-corp" style="font-weight:600;"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">검증 일시</span><span class="info-value" id="octar-datetime" style="font-size:12px; color:var(--text-secondary);"></span></div>
+    </div>
+    <!-- 결과 -->
+    <div id="octar-result-box" style="text-align:center; padding:20px 14px; border-radius:10px; margin-bottom:12px;"></div>
+    <!-- 안내 메시지 -->
+    <div id="octar-guide" style="font-size:12.5px; color:var(--text-secondary); padding:10px 12px; background:#F8FAFC; border-radius:6px; border:1px solid var(--border);"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-octa-result')">닫기</button>
+    <button class="btn btn-primary" onclick="completeKYBFromOCTA()">KYB 완료 처리</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: KYB 만료/계약만료 상세 (4-6)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-kyb-expired-detail">
+  <div class="modal-header">
+    <span class="modal-title">KYB 상세</span>
+    <button class="modal-close" onclick="closeModal('modal-kyb-expired-detail')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row"><span class="info-label">상태</span><span class="info-value" id="kyed-status-badge"></span></div>
+      <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="kyed-corp" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">이전 위험등급</span><span class="info-value" id="kyed-risk"></span></div>
+      <div class="info-row" id="kyed-expiry-row"><span class="info-label">만료일</span><span class="info-value" id="kyed-expiry" style="color:#EF4444; font-weight:600;"></span></div>
+      <div class="info-row" id="kyed-contract-row" style="display:none;"><span class="info-label">계약 만료 전환</span><span class="info-value" id="kyed-contract-date" style="color:#EF4444;"></span></div>
+      <div class="info-row"><span class="info-label">출금 차단</span><span class="info-value" style="color:#F97316; font-weight:600;">⚠ 진행 중 (갱신 완료 시 해제)</span></div>
+      <div class="info-row" id="kyed-login-row" style="display:none; border-bottom:none;"><span class="info-label">로그인 차단</span><span class="info-value" style="color:#EF4444; font-weight:600;">❌ 포털 접근 불가</span></div>
+      <div class="info-row" id="kyed-note-row" style="border-bottom:none;"><span class="info-label" style="color:var(--text-secondary);">ⓘ</span><span class="info-value" id="kyed-note" style="font-size:12px; color:var(--text-secondary);"></span></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-kyb-expired-detail')">닫기</button>
   </div>
 </div>
 
@@ -6076,30 +6184,41 @@
      DATA: KYB (섹션 4)
   ════════════════════════════════════ */
   var KYB_STATUS_CFG = {
-    draft:     { label:'✏️ 입력 중',     badgeCls:'badge-kyb-draft',     statKey:'kyb-stat-draft'     },
-    submitted: { label:'📋 작성 완료',   badgeCls:'badge-kyb-submitted',  statKey:'kyb-stat-submitted' },
-    wlf:       { label:'⏳ WLF 검사 중', badgeCls:'badge-kyb-wlf',        statKey:'kyb-stat-wlf'       },
-    done:      { label:'✅ KYB 완료',    badgeCls:'badge-kyb-done',       statKey:'kyb-stat-done'      },
-    rejected:  { label:'✕ 반려',         badgeCls:'badge-kyb-rejected',   statKey:'kyb-stat-rejected'  },
-    expired:   { label:'⚠ KYB 만료',    badgeCls:'badge-kyb-expired',    statKey:'kyb-stat-expired'   },
+    draft:            { label:'✏️ 입력 중',      badgeCls:'badge-kyb-draft',            statKey:'kyb-stat-draft'            },
+    submitted:        { label:'📋 작성 완료',    badgeCls:'badge-kyb-submitted',         statKey:'kyb-stat-submitted'        },
+    wlf:              { label:'⏳ WLF 검사 중',  badgeCls:'badge-kyb-wlf',               statKey:'kyb-stat-wlf'              },
+    done:             { label:'✅ KYB 완료',     badgeCls:'badge-kyb-done',              statKey:'kyb-stat-done'             },
+    rejected:         { label:'✕ 반려',          badgeCls:'badge-kyb-rejected',          statKey:'kyb-stat-rejected'         },
+    expired:          { label:'⚠ KYB 만료',     badgeCls:'badge-kyb-expired',           statKey:'kyb-stat-expired'          },
+    contract_expired: { label:'🚫 계약 만료',    badgeCls:'badge-danger',                statKey:'kyb-stat-contract-expired' },
   };
 
   var _KYB_DATA = [
     { idx:0, corpName:'알파투자운용(주)',     corpNameEn:'Alpha Investment Mgmt',  bizNo:'123-45-67890',
-      status:'done',      riskGrade:'low',  officer:'김담당', startedAt:'2025-10-01', completedAt:'2025-10-15', expiredAt:null, requiredDone:true },
+      status:'done',            riskGrade:'low',  officer:'김담당', startedAt:'2025-10-01', completedAt:'2025-10-15', expiredAt:null,         requiredDone:true,
+      nextKYB:'2027-04-07', renewalPeriod:'1년', wlfApprovedAt:'2025-10-12', octaResult:{ checked:true, watchlist:false, checkedAt:'2025-10-12 15:30' },
+      wlfPerson:{ matched:false }, wlfCountry:{ matched:false, country:'대한민국 (저위험)' } },
     { idx:1, corpName:'베타캐피탈 유한회사', corpNameEn:'Beta Capital Ltd',         bizNo:'234-56-78901',
-      status:'wlf',       riskGrade:null,   officer:'이담당', startedAt:'2025-11-01', completedAt:null,         expiredAt:null, requiredDone:true },
+      status:'wlf',             riskGrade:null,   officer:'이담당', startedAt:'2025-11-01', completedAt:null,         expiredAt:null,         requiredDone:true,
+      wlfApprovedAt:'2026-04-15 14:00', octaResult:null,
+      wlfPerson:{ matched:true, name:'김○○', reason:'자금세탁 의심', registeredAt:'2025-11-03', registeredBy:'박AML관리자', note:'과거 STR 보고 이력 있음' },
+      wlfCountry:{ matched:false, country:'대한민국 (저위험)' } },
     { idx:2, corpName:'감마트레이딩(주)',     corpNameEn:'Gamma Trading Corp',       bizNo:'345-67-89012',
-      status:'draft',     riskGrade:null,   officer:'박담당', startedAt:'2025-11-20', completedAt:null,         expiredAt:null, requiredDone:false },
+      status:'draft',           riskGrade:null,   officer:'박담당', startedAt:'2025-11-20', completedAt:null,         expiredAt:null,         requiredDone:false },
     { idx:3, corpName:'델타홀딩스 유한회사', corpNameEn:'Delta Holdings Ltd',        bizNo:'456-78-90123',
-      status:'rejected',  riskGrade:null,   officer:'김담당', startedAt:'2025-09-01', completedAt:null,         expiredAt:null, requiredDone:true,
+      status:'rejected',        riskGrade:null,   officer:'김담당', startedAt:'2025-09-01', completedAt:null,         expiredAt:null,         requiredDone:true,
       rejectedReason:'대표자 신원 서류가 불완전합니다. 여권 사본 및 인감증명서 최신본 제출 후 재신청해주세요.' },
     { idx:4, corpName:'엡실론자산운용(주)',   corpNameEn:'Epsilon Asset Mgmt',       bizNo:'567-89-01234',
-      status:'submitted', riskGrade:null,   officer:'이담당', startedAt:'2026-04-06', completedAt:null,         expiredAt:null, requiredDone:true },
+      status:'submitted',       riskGrade:null,   officer:'이담당', startedAt:'2026-04-06', completedAt:null,         expiredAt:null,         requiredDone:true },
     { idx:5, corpName:'제타캐피탈(주)',       corpNameEn:'Zeta Capital Corp',        bizNo:'678-90-12345',
-      status:'expired',   riskGrade:'mid',  officer:'이담당', startedAt:'2025-04-01', completedAt:'2025-04-02', expiredAt:'2026-04-01', requiredDone:true },
+      status:'expired',         riskGrade:'mid',  officer:'이담당', startedAt:'2025-04-01', completedAt:'2025-04-02', expiredAt:'2026-04-01', requiredDone:true,
+      wlfPerson:{ matched:false }, wlfCountry:{ matched:false, country:'대한민국 (저위험)' } },
     { idx:6, corpName:'오메가자산운용(주)',   corpNameEn:'Omega Asset Mgmt',         bizNo:'789-01-23456',
-      status:'expired',   riskGrade:'low',  officer:'박담당', startedAt:'2025-03-01', completedAt:'2025-03-15', expiredAt:'2026-03-15', requiredDone:true },
+      status:'expired',         riskGrade:'low',  officer:'박담당', startedAt:'2025-03-01', completedAt:'2025-03-15', expiredAt:'2026-03-15', requiredDone:true,
+      wlfPerson:{ matched:false }, wlfCountry:{ matched:false, country:'미국 (저위험)' } },
+    { idx:7, corpName:'시그마투자유한회사',   corpNameEn:'Sigma Investment Ltd',     bizNo:'890-12-34567',
+      status:'contract_expired',riskGrade:'mid',  officer:'이담당', startedAt:'2025-03-01', completedAt:'2025-03-21', expiredAt:'2026-03-21', contractExpiredAt:'2026-04-20', requiredDone:true,
+      wlfPerson:{ matched:false }, wlfCountry:{ matched:false, country:'대한민국 (저위험)' } },
   ];
   var _kybDetailIdx = null;
 
@@ -6537,18 +6656,19 @@
       return matchQ && matchS && matchO;
     });
 
-    // 만료 건을 목록 최상단에 고정 (만료 경과일 오래된 순)
+    // 정렬: 계약 만료 → KYB 만료 → WLF 검사 중 → 나머지
+    var statusOrder = { contract_expired: 0, expired: 1, wlf: 2 };
     list.sort(function(a, b) {
-      if (a.status === 'expired' && b.status !== 'expired') return -1;
-      if (a.status !== 'expired' && b.status === 'expired') return  1;
-      if (a.status === 'expired' && b.status === 'expired') {
-        return new Date(a.expiredAt) - new Date(b.expiredAt); // 더 오래된 만료가 위
-      }
+      var oa = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 9;
+      var ob = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 9;
+      if (oa !== ob) return oa - ob;
+      if (a.status === 'contract_expired' || a.status === 'expired')
+        return new Date(a.expiredAt || 0) - new Date(b.expiredAt || 0);
       return 0;
     });
 
-    // Update stats (6종)
-    ['draft','submitted','wlf','done','rejected','expired'].forEach(function(s) {
+    // Update stats (7종)
+    ['draft','submitted','wlf','done','rejected','expired','contract_expired'].forEach(function(s) {
       var el = document.getElementById('kyb-stat-' + s);
       if (el) el.textContent = _KYB_DATA.filter(function(k){ return k.status === s; }).length;
     });
@@ -6565,34 +6685,55 @@
 
       // 만료일 컬럼
       var expiryCell = '—';
-      if (k.status === 'done' && k.completedAt) {
-        // 완료 건은 만료일 = 완료 + 1년 (간략 표시)
-        expiryCell = '<span style="color:var(--text-secondary); font-size:12px;">1년 후</span>';
+      if (k.status === 'done' && k.nextKYB) {
+        expiryCell = '<span style="color:var(--text-secondary); font-size:12px;">' + k.nextKYB + '</span>';
+      } else if (k.status === 'done' && k.completedAt) {
+        expiryCell = '<span style="color:var(--text-secondary); font-size:12px;">갱신 필요 시 자동 전환</span>';
       }
-      if (k.status === 'expired' && k.expiredAt) {
+      if ((k.status === 'expired' || k.status === 'contract_expired') && k.expiredAt) {
         var days = kybDaysExpired(k.expiredAt);
         expiryCell = '<span style="color:#EF4444; font-weight:700; font-size:12px;">'
           + k.expiredAt + '</span>'
-          + ' <span style="color:#EF4444; font-size:11px; font-weight:600;">(D+' + days + ')</span>';
+          + (days !== null ? ' <span style="color:#EF4444; font-size:11px; font-weight:600;">(D+' + days + ')</span>' : '');
       }
 
-      // 4-5 Button policy
+      // 4-7 Button policy
+      var isOfficer  = (_ADMIN_ROLE === 'aml_officer'  || _ADMIN_ROLE === 'aml_officer');
+      var isManager  = (_ADMIN_ROLE === 'aml_manager');
+      var isGeneral  = (['general','master'].indexOf(_ADMIN_ROLE) !== -1);
       var actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
-      if (k.status === 'draft' && _ADMIN_ROLE === 'aml_officer') {
-        actions = '<button class="btn btn-primary btn-xs" onclick="openKYBDetail('+k.idx+')">이어쓰기</button>';
-      } else if (k.status === 'submitted' && _ADMIN_ROLE === 'aml_manager') {
-        actions = '<button class="btn btn-primary btn-xs" onclick="openKYBDetail('+k.idx+')">결재</button>';
-      } else if (k.status === 'done' && ['general','master'].indexOf(_ADMIN_ROLE) !== -1) {
-        actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
-      } else if (k.status === 'rejected' && _ADMIN_ROLE === 'aml_officer') {
-        actions = '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">재작성</button>';
-      } else if (k.status === 'expired' && _ADMIN_ROLE === 'aml_officer') {
-        actions = '<button class="btn btn-warning btn-xs" onclick="openKYBRestartModal('+k.idx+')">재작성 시작</button>';
+      if (k.status === 'draft') {
+        actions = isOfficer
+          ? '<button class="btn btn-primary btn-xs" onclick="openKYBDetail('+k.idx+')">이어쓰기</button>'
+          : '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">VIEW</button>';
+      } else if (k.status === 'submitted') {
+        actions = isManager
+          ? '<button class="btn btn-primary btn-xs" onclick="openKYBDetail('+k.idx+')">결재</button>'
+          : '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+      } else if (k.status === 'wlf') {
+        actions = isManager
+          ? '<button class="btn btn-warning btn-xs" onclick="openWLFDetail('+k.idx+')">OCTA 결재</button>'
+          : '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+      } else if (k.status === 'done') {
+        actions = isGeneral
+          ? '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>'
+          : '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+      } else if (k.status === 'rejected') {
+        actions = isOfficer
+          ? '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">재작성</button>'
+          : '<button class="btn btn-outline btn-xs" onclick="openKYBDetail('+k.idx+')">상세</button>';
+      } else if (k.status === 'expired' || k.status === 'contract_expired') {
+        actions = isOfficer
+          ? '<button class="btn btn-warning btn-xs" onclick="openKYBRestartModal('+k.idx+')">재작성 시작</button>'
+          : '<button class="btn btn-outline btn-xs" onclick="openKYBExpiredDetail('+k.idx+')">상세</button>';
       }
 
-      var isExpired = k.status === 'expired';
-      var rowStyle  = isExpired
-        ? ' style="background:#FFF7ED;"'
+      var rowStyle = k.status === 'contract_expired'
+        ? ' style="background:#FEF2F2; border-left:3px solid #EF4444;"'
+        : k.status === 'expired'
+        ? ' style="background:#FFF7ED; border-left:3px solid #F97316;"'
+        : k.status === 'wlf'
+        ? ' style="background:#FEFCE8; border-left:3px solid #F59E0B;"'
         : (k.status === 'rejected' ? ' class="row-danger"' : '');
       return '<tr' + rowStyle + '>'
         + '<td style="font-weight:600;">' + k.corpName + '</td>'
@@ -6617,13 +6758,13 @@
     var cfg = KYB_STATUS_CFG[k.status] || {};
     document.getElementById('kyb-so-status-badge').innerHTML = '<span class="badge ' + (cfg.badgeCls||'badge-gray') + '">' + (cfg.label||k.status) + '</span>';
 
-    // 4-5: Button visibility by status + role
+    // 4-7: Button visibility by status + role
     var showSubmit       = k.status === 'draft'     && _ADMIN_ROLE === 'aml_officer';
     var showRewrite      = k.status === 'rejected'  && _ADMIN_ROLE === 'aml_officer';
     var showReject       = k.status === 'submitted' && _ADMIN_ROLE === 'aml_manager';
     var showWLFApprove   = k.status === 'submitted' && _ADMIN_ROLE === 'aml_manager';
     var showCreateClient = k.status === 'done'      && ['general','master'].indexOf(_ADMIN_ROLE) !== -1;
-    var showRestart      = k.status === 'expired'   && _ADMIN_ROLE === 'aml_officer';
+    var showRestart      = (k.status === 'expired' || k.status === 'contract_expired') && _ADMIN_ROLE === 'aml_officer';
 
     document.getElementById('kyb-btn-submit').style.display        = showSubmit       ? '' : 'none';
     document.getElementById('kyb-btn-rewrite').style.display       = showRewrite      ? '' : 'none';
@@ -6656,13 +6797,26 @@
       statusBar.after(note);
     } else if (k.status === 'expired') {
       var days = kybDaysExpired(k.expiredAt);
+      var riskMap2 = { low:'저위험', mid:'중위험', high:'고위험' };
       var note = document.createElement('div');
       note.id = noteId;
       note.style.cssText = 'margin-top:8px; padding:10px 12px; background:#FFF7ED; border-radius:6px; font-size:12px; color:#92400E;';
-      note.innerHTML = '⚠ KYB 만료 건입니다. 내용 검토 후 작성 완료해주세요.<br>'
+      note.innerHTML = '⚠ KYB 만료 건입니다.<br>'
         + '<strong>만료일:</strong> ' + (k.expiredAt||'—') + (days !== null ? ' <span style="color:#EF4444;">(D+' + days + ' 경과)</span>' : '')
-        + ' &nbsp;|&nbsp; <strong>이전 위험등급:</strong> ' + (k.riskGrade ? ({low:'저위험',mid:'중위험',high:'고위험'}[k.riskGrade]||k.riskGrade) : '—')
-        + '<br><span style="color:#92400E;">고객사 출금이 자동 차단 중입니다. KYB 갱신 완료 시 자동 해제됩니다.</span>';
+        + ' &nbsp;|&nbsp; <strong>이전 위험등급:</strong> ' + (k.riskGrade ? (riskMap2[k.riskGrade]||k.riskGrade) : '—')
+        + '<br><span style="color:#92400E;">고객사 출금이 자동 차단 중입니다. D+30 이후 계약 만료로 자동 전환됩니다.</span>';
+      statusBar.after(note);
+    } else if (k.status === 'contract_expired') {
+      var days = kybDaysExpired(k.expiredAt);
+      var riskMap3 = { low:'저위험', mid:'중위험', high:'고위험' };
+      var note = document.createElement('div');
+      note.id = noteId;
+      note.style.cssText = 'margin-top:8px; padding:10px 12px; background:#FEF2F2; border:1px solid #FECACA; border-radius:6px; font-size:12px; color:#991B1B;';
+      note.innerHTML = '🚫 계약 만료 건입니다. 고객사 포털 로그인이 차단된 상태입니다.<br>'
+        + '<strong>최초 만료일:</strong> ' + (k.expiredAt||'—') + (days !== null ? ' <span style="color:#EF4444;">(D+' + days + ' 경과)</span>' : '')
+        + (k.contractExpiredAt ? ' &nbsp;|&nbsp; <strong>계약 만료 전환:</strong> ' + k.contractExpiredAt + ' (자동)' : '')
+        + '<br><strong>이전 위험등급:</strong> ' + (k.riskGrade ? (riskMap3[k.riskGrade]||k.riskGrade) : '—')
+        + '<br><span style="color:#991B1B;">KYB 재작성을 완료하면 고객사 상태가 자동으로 활성화됩니다.</span>';
       statusBar.after(note);
     }
 
@@ -6875,17 +7029,21 @@
     showToast('재작성 모드로 전환되었습니다. 내용을 수정 후 다시 제출해주세요.');
   }
 
-  /* ── 4-4-2: 재작성 시작 (KYB 만료 → 입력 중) ── */
+  /* ── 4-4: 재작성 시작 (KYB 만료 / 계약 만료 → 입력 중) ── */
   function openKYBRestartModal(idx) {
     var k = _KYB_DATA[idx]; if (!k) return;
     _kybDetailIdx = idx;
     var days = kybDaysExpired(k.expiredAt);
     document.getElementById('kybr-corp').textContent  = k.corpName;
     document.getElementById('kybr-expiry').textContent = (k.expiredAt || '—') + (days !== null ? ' (D+' + days + ')' : '');
-    var riskMap = { low:'저위험', mid:'중위험', high:'고위험' };
-    document.getElementById('kybr-risk').innerHTML = k.riskGrade
-      ? ('<span class="badge ' + (_RISK_BADGE[k.riskGrade] ? '' : 'badge-gray') + '">' + (riskMap[k.riskGrade]||k.riskGrade) + '</span>')
-      : '—';
+    var cfg = KYB_STATUS_CFG[k.status] || {};
+    var statusEl = document.getElementById('kybr-status-badge');
+    if (statusEl) statusEl.innerHTML = '<span class="badge ' + (cfg.badgeCls||'badge-gray') + '">' + (cfg.label||k.status) + '</span>';
+    var contractRow = document.getElementById('kybr-contract-row');
+    var contractDateEl = document.getElementById('kybr-contract-date');
+    if (contractRow) contractRow.style.display = (k.status === 'contract_expired') ? '' : 'none';
+    if (contractDateEl && k.contractExpiredAt) contractDateEl.textContent = k.contractExpiredAt + ' (자동 전환)';
+    document.getElementById('kybr-risk').innerHTML = k.riskGrade ? (_RISK_BADGE[k.riskGrade] || '—') : '—';
     openModal('modal-kyb-restart');
   }
 
@@ -6911,16 +7069,12 @@
     closeKYBDetail();
     openOTPModal('WLF 결재 승인', function() {
       k.status = 'wlf';
+      k.wlfApprovedAt = new Date().toISOString().slice(0,16).replace('T',' ');
+      k.wlfPerson  = k.wlfPerson  || { matched: false };
+      k.wlfCountry = k.wlfCountry || { matched: false, country: '대한민국 (저위험)' };
+      k.octaResult = null;
       renderKYBTable();
-      showToast('WLF 결재 승인 완료. OCTA 외부 검증이 자동 요청되었습니다.');
-      // Simulate OCTA response
-      setTimeout(function() {
-        k.status = 'done';
-        k.riskGrade = 'low';
-        k.completedAt = '2026-04-08';
-        renderKYBTable();
-        showToast('✅ OCTA 검증 완료 — 위험등급: 저위험. KYB 완료 상태로 전환되었습니다.', 5000);
-      }, 3000);
+      showToast('WLF 결재 승인 완료. WLF 필터 매칭 결과를 확인한 후 OCTA 결재를 진행해주세요.');
     });
   }
 
@@ -6930,6 +7084,133 @@
     // Pre-fill and open the create client modal
     openModal('modal-create-client');
     showToast('KYB 정보가 연동되었습니다. 고객사 생성을 진행해주세요.');
+  }
+
+  /* ── 4-5: WLF + OCTA 상세 팝업 ── */
+  function openWLFDetail(idx) {
+    var k = _KYB_DATA[idx]; if (!k) return;
+    _kybDetailIdx = idx;
+
+    document.getElementById('wlfd-corp').textContent       = k.corpName;
+    document.getElementById('wlfd-bizno').textContent      = k.bizNo;
+    document.getElementById('wlfd-approved-at').textContent = (k.wlfApprovedAt || '—') + ' (WLF 결재 승인)';
+
+    // 내부요주의인물 필터
+    var pEl = document.getElementById('wlfd-person-match');
+    var warnBanner = document.getElementById('wlfd-warn-banner');
+    if (k.wlfPerson && k.wlfPerson.matched) {
+      pEl.style.background = '#FEF2F2';
+      pEl.style.border = '1px solid #FECACA';
+      pEl.style.borderRadius = '8px';
+      pEl.innerHTML = '<div style="font-weight:700; color:#B91C1C; margin-bottom:6px;">매칭 결과: ⚠ 1건 해당</div>'
+        + '<div>이름: <strong>' + k.wlfPerson.name + '</strong> &nbsp;/&nbsp; 등록 사유: ' + k.wlfPerson.reason + '</div>'
+        + '<div>등록일: ' + k.wlfPerson.registeredAt + ' &nbsp;/&nbsp; 등록자: ' + k.wlfPerson.registeredBy + '</div>'
+        + '<div>비고: ' + (k.wlfPerson.note || '—') + '</div>';
+      if (warnBanner) warnBanner.style.display = '';
+    } else {
+      pEl.style.background = '#ECFDF5';
+      pEl.style.border = '1px solid #A7F3D0';
+      pEl.style.borderRadius = '8px';
+      pEl.innerHTML = '<div style="font-weight:700; color:#065F46;">매칭 결과: ✅ 해당 없음</div>';
+      if (warnBanner) warnBanner.style.display = 'none';
+    }
+
+    // 국가위험정책 필터
+    var cEl = document.getElementById('wlfd-country-match');
+    if (k.wlfCountry && k.wlfCountry.matched) {
+      cEl.style.background = '#FEF2F2'; cEl.style.border = '1px solid #FECACA'; cEl.style.borderRadius = '8px';
+      cEl.innerHTML = '<div style="font-weight:700; color:#B91C1C; margin-bottom:4px;">매칭 결과: ⚠ 고위험 국가 해당</div>'
+        + '<div>법인 소재 국가: ' + (k.wlfCountry.country||'—') + '</div>';
+    } else {
+      cEl.style.background = '#ECFDF5'; cEl.style.border = '1px solid #A7F3D0'; cEl.style.borderRadius = '8px';
+      cEl.innerHTML = '<div style="font-weight:700; color:#065F46; margin-bottom:4px;">매칭 결과: ✅ 해당 없음</div>'
+        + '<div style="color:var(--text-secondary);">법인 소재 국가: ' + (k.wlfCountry ? k.wlfCountry.country : '—') + '</div>';
+    }
+
+    _otpRowReset('wlfdOTPRow');
+    var btn = document.getElementById('wlfd-octa-btn');
+    if (btn) btn.disabled = true;
+    openModal('modal-wlf-kyb-detail');
+  }
+
+  function _validateWLFD() {
+    var btn = document.getElementById('wlfd-octa-btn');
+    if (btn) btn.disabled = !_otpRowFilled('wlfdOTPRow');
+  }
+
+  function runOCTAApproval() {
+    if (!_otpRowFilled('wlfdOTPRow')) return;
+    var k = _KYB_DATA[_kybDetailIdx]; if (!k) return;
+    closeModal('modal-wlf-kyb-detail');
+
+    // 데모: 50% 확률로 Watch list 결과
+    var isWatchlist = (k.wlfPerson && k.wlfPerson.matched);
+    var now = new Date().toISOString().slice(0,19).replace('T',' ');
+    k.octaResult = { checked: true, watchlist: isWatchlist, checkedAt: now };
+
+    _afterClose(function() {
+      document.getElementById('octar-corp').textContent     = k.corpName;
+      document.getElementById('octar-datetime').textContent = now;
+
+      var resultBox = document.getElementById('octar-result-box');
+      var guideEl   = document.getElementById('octar-guide');
+      if (isWatchlist) {
+        resultBox.style.background = '#FEF9C3';
+        resultBox.innerHTML = '<div style="font-size:32px; margin-bottom:8px;">⚠</div>'
+          + '<div style="font-size:16px; font-weight:700; color:#713F12;">Watch list 대상입니다.</div>'
+          + '<div style="font-size:13px; color:#713F12; margin-top:4px;">OCTA에서 확인해주세요.</div>';
+        guideEl.innerHTML = 'ⓘ Watch list 대상이더라도 AML 관리자 판단으로 KYB 완료 처리할 수 있습니다.<br>OCTA 시스템에서 상세 내용을 확인한 후 처리 여부를 결정하세요.';
+      } else {
+        resultBox.style.background = '#ECFDF5';
+        resultBox.innerHTML = '<div style="font-size:32px; margin-bottom:8px;">✅</div>'
+          + '<div style="font-size:16px; font-weight:700; color:#065F46;">Watch list 대상이 아닙니다.</div>';
+        guideEl.innerHTML = 'ⓘ OCTA 검증이 완료되었습니다. [KYB 완료 처리]를 누르면 KYB 상태가 완료로 전환됩니다.';
+      }
+      openModal('modal-octa-result');
+    });
+  }
+
+  function completeKYBFromOCTA() {
+    var k = _KYB_DATA[_kybDetailIdx]; if (!k) return;
+    k.status    = 'done';
+    k.riskGrade = k.riskGrade || 'low';
+    k.completedAt = new Date().toISOString().slice(0,10);
+    closeModal('modal-octa-result');
+    _afterClose(function() {
+      renderKYBTable();
+      showToast('✅ KYB 완료 처리되었습니다. 고객사 출금 차단이 해제됩니다.', 4000);
+    });
+  }
+
+  /* ── 4-6: 만료/계약만료 상세 팝업 ── */
+  function openKYBExpiredDetail(idx) {
+    var k = _KYB_DATA[idx]; if (!k) return;
+    _kybDetailIdx = idx;
+    var cfg  = KYB_STATUS_CFG[k.status] || {};
+    var days = kybDaysExpired(k.expiredAt);
+    var riskMap = { low:'저위험', mid:'중위험', high:'고위험' };
+
+    document.getElementById('kyed-status-badge').innerHTML = '<span class="badge ' + (cfg.badgeCls||'badge-gray') + '">' + (cfg.label||k.status) + '</span>';
+    document.getElementById('kyed-corp').textContent       = k.corpName;
+    document.getElementById('kyed-risk').innerHTML         = k.riskGrade ? (_RISK_BADGE[k.riskGrade]||'—') : '—';
+    document.getElementById('kyed-expiry').textContent     = (k.expiredAt||'—') + (days !== null ? '  D+' + days : '');
+
+    var contractRow  = document.getElementById('kyed-contract-row');
+    var contractDate = document.getElementById('kyed-contract-date');
+    var loginRow     = document.getElementById('kyed-login-row');
+    var noteEl       = document.getElementById('kyed-note');
+
+    if (k.status === 'contract_expired') {
+      if (contractRow)  contractRow.style.display  = '';
+      if (contractDate && k.contractExpiredAt) contractDate.textContent = k.contractExpiredAt + ' (자동)';
+      if (loginRow)     loginRow.style.display     = '';
+      if (noteEl)       noteEl.textContent = 'KYB 재작성을 완료해야 계약 만료가 해제되고 활성화됩니다.';
+    } else {
+      if (contractRow) contractRow.style.display = 'none';
+      if (loginRow)    loginRow.style.display    = 'none';
+      if (noteEl)      noteEl.textContent = 'D+30 이후 계약 만료로 자동 전환됩니다.';
+    }
+    openModal('modal-kyb-expired-detail');
   }
 
   /* ── KYB Slide-over open/close ── */
