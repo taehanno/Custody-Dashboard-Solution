@@ -1638,22 +1638,26 @@
         </div>
 
         <!-- 4-1: 통계 카드 -->
-        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px;">
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:16px;">
           <div class="card" style="padding:14px 16px;">
             <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9679; 등록완료</div>
             <div id="wlf-stat-registered" style="font-size:24px; font-weight:700; color:#10B981;">0</div>
           </div>
           <div class="card" style="padding:14px 16px;">
-            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9203; 결재 대기</div>
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9203; 등록결재대기</div>
             <div id="wlf-stat-pending" style="font-size:24px; font-weight:700; color:#F59E0B;">0</div>
           </div>
           <div class="card" style="padding:14px 16px;">
-            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9203; 삭제 대기</div>
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#9203; 삭제결재대기</div>
             <div id="wlf-stat-delete" style="font-size:24px; font-weight:700; color:#F97316;">0</div>
           </div>
           <div class="card" style="padding:14px 16px;">
-            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#10005; 거절됨</div>
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#10005; 등록거절</div>
             <div id="wlf-stat-rejected" style="font-size:24px; font-weight:700; color:#EF4444;">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:6px;">&#10005; 삭제 거절</div>
+            <div id="wlf-stat-del-rejected" style="font-size:24px; font-weight:700; color:#EF4444;">0</div>
           </div>
         </div>
 
@@ -1661,9 +1665,10 @@
           <!-- 탭 -->
           <div id="wlf-tabs" class="kyb-tabs" style="margin-bottom:0; padding:0 16px;">
             <div class="kyb-tab active" onclick="_wlfSetTab('registered',this)">등록완료</div>
-            <div class="kyb-tab" onclick="_wlfSetTab('pending',this)">결재 대기</div>
-            <div class="kyb-tab" onclick="_wlfSetTab('delete_pending',this)">삭제 대기</div>
-            <div class="kyb-tab" onclick="_wlfSetTab('rejected',this)">거절됨</div>
+            <div class="kyb-tab" onclick="_wlfSetTab('pending',this)">등록결재대기</div>
+            <div class="kyb-tab" onclick="_wlfSetTab('delete_pending',this)">삭제결재대기</div>
+            <div class="kyb-tab" onclick="_wlfSetTab('rejected',this)">등록거절</div>
+            <div class="kyb-tab" onclick="_wlfSetTab('delete_rejected',this)">삭제거절</div>
             <div class="kyb-tab" onclick="_wlfSetTab('all',this)">전체</div>
           </div>
 
@@ -5276,6 +5281,13 @@
       <div class="info-row"><span class="info-label">기안일시</span><span class="info-value" id="wlfd-del-draft-at"></span></div>
       <div class="info-row" style="border-bottom:none;"><span class="info-label">삭제 사유</span><span class="info-value" id="wlfd-del-reason" style="line-height:1.5;"></span></div>
     </div>
+    <!-- 삭제 기안 거절 정보 -->
+    <div class="section-box" id="wlfd-del-reject-section" style="display:none; border-left:3px solid #EF4444;">
+      <div class="section-box-title" style="color:#EF4444;">✕ 삭제 거절 사유</div>
+      <div class="info-row"><span class="info-label">거절자</span><span class="info-value" id="wlfd-del-rej-by"></span></div>
+      <div class="info-row"><span class="info-label">거절일시</span><span class="info-value" id="wlfd-del-rej-at"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">거절 사유</span><span class="info-value" id="wlfd-del-rej-note" style="color:#EF4444; line-height:1.5;"></span></div>
+    </div>
     <!-- 변경 이력 -->
     <div class="section-box">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -5297,6 +5309,7 @@
     <!-- RM05 상태 -->
     <div class="section-box" style="border-bottom:none; margin-bottom:0;">
       <div class="info-row" style="border-bottom:none;"><span class="info-label">RM05 감지</span><span class="info-value" id="wlfd-rm05"></span></div>
+      <div id="wlfd-del-rej-rm05-note" style="display:none; margin-top:4px; font-size:12px; color:#059669;">ⓘ 등록완료 상태가 유지됩니다. RM05 감지가 계속 적용됩니다.</div>
     </div>
     <!-- 결재 의견 입력 (AML 관리자 + 결재대기/삭제대기 상태) -->
     <div id="wlfd-approve-form" style="display:none; margin-top:16px;">
@@ -5320,9 +5333,16 @@
       <div class="section-box-title">삭제 대상 정보</div>
       <div class="info-row"><span class="info-label">등록번호</span><span class="info-value" id="wlf-del-id"></span></div>
       <div class="info-row"><span class="info-label">유형</span><span class="info-value" id="wlf-del-type"></span></div>
-      <div class="info-row"><span class="info-label">국문명</span><span class="info-value" id="wlf-del-name-kr" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">고객구분</span><span class="info-value" id="wlf-del-client"></span></div>
+      <div class="info-row"><span class="info-label">국문명</span><span class="info-value" id="wlf-del-name" style="font-weight:600;"></span></div>
       <div class="info-row"><span class="info-label">영문명</span><span class="info-value" id="wlf-del-name-en"></span></div>
       <div class="info-row" style="border-bottom:none;"><span class="info-label">현재 상태</span><span class="info-value" id="wlf-del-status"></span></div>
+    </div>
+    <!-- 이전 삭제 거절 사유 (삭제_거절 상태에서 재시도 시) -->
+    <div id="wlf-del-prev-rej" style="display:none; background:#FEF2F2; border-radius:8px; padding:10px 12px;">
+      <div style="font-weight:700; color:#EF4444; margin-bottom:4px;">⚠ 이전 삭제 기안 거절 사유</div>
+      <div id="wlf-del-prev-rej-meta" style="font-size:11.5px; color:var(--text-secondary); margin-bottom:3px;"></div>
+      <div id="wlf-del-prev-rej-text" style="font-size:12px; color:#7F1D1D; line-height:1.5;"></div>
     </div>
     <div style="background:#FFF7ED; border-radius:8px; padding:10px 12px; font-size:12px; color:#92400E; line-height:1.7;">
       &#9888; 삭제 기안 제출 시:<br>
@@ -5348,7 +5368,7 @@
 <!-- 4-9: 결재 거절 모달 -->
 <div class="modal" id="modal-wlf-reject" style="max-width:460px;">
   <div class="modal-header">
-    <span class="modal-title">&#10005; 결재 거절 / Approval Rejection</span>
+    <span class="modal-title" id="wlf-rej-modal-title">&#10005; 결재 거절 / Approval Rejection</span>
     <button class="modal-close" onclick="closeModal('modal-wlf-reject')">&#10005;</button>
   </div>
   <div class="modal-body" style="display:grid; gap:14px;">
@@ -5359,7 +5379,7 @@
     <div>
       <label class="form-label">거절 사유 <span style="color:var(--danger);">*</span> <span style="color:var(--text-secondary); font-weight:400;">(최대 500자)</span></label>
       <textarea id="wlf-rej-reason" class="form-control" rows="4" placeholder="거절 사유를 입력하세요" maxlength="500" style="width:100%; resize:vertical;" oninput="_wlfRejValidate()"></textarea>
-      <div style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">&#9432; 거절 사유가 기안자(AML 담당자)에게 전달됩니다.</div>
+      <div id="wlf-rej-hint" style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">&#9432; 거절 사유가 기안자(AML 담당자)에게 전달됩니다.</div>
     </div>
   </div>
   <div class="modal-footer">
@@ -12804,7 +12824,7 @@
       ]
     },
     { id:'WL-0004', type:'etc', clientType:'corporate',
-      nameKR:'(주)알파', nameEN:'ALPHA CO.', idNum:'1234567890',
+      nameKR:'(주)알파파이낸스', nameEN:'ALPHA FINANCE CO., LTD', idNum:'1234567890',
       nationality:'KR', address:'서울특별시 중구', gender:null, dob:null,
       wallets:[],
       reason:'뉴스 기반 이상 거래 의심 법인.',
@@ -12827,6 +12847,25 @@
       rejectAt:null, rejectBy:null, rejectNote:null,
       deleteDrafter:null, deleteDraftAt:null, deleteReason:null,
       history:[{at:'2026-04-02 16:30', type:'등록 승인', desc:'최초 등록 (WL-0005 부여)', actor:'최관리자'}]
+    },
+    { id:'WL-0006', type:'company', clientType:'corporate',
+      nameKR:'(주)베타캐피탈', nameEN:'BETA CAPITAL CO., LTD', idNum:'9876543210',
+      nationality:'HK', address:'홍콩 센트럴', gender:null, dob:null,
+      corpCountry:'HK',
+      wallets:[],
+      reason:'내부 심사: 비정상 법인 거래 패턴 확인.',
+      status:'delete_rejected',
+      drafter:'박담당자 (AML 담당자)', draftAt:'2026-04-02 09:00',
+      approver:'최관리자 (AML 관리자)', approveAt:'2026-04-02 11:00', approveNote:'이상 없음',
+      rejectAt:null, rejectBy:null, rejectNote:null,
+      deleteDrafter:'박담당자 (AML 담당자)', deleteDraftAt:'2026-04-10 10:00', deleteReason:'조사 종결. 혐의 없음으로 확인됨.',
+      deleteRejectAt:'2026-04-10 11:00', deleteRejectBy:'최관리자 (AML 관리자)',
+      deleteRejectNote:'현재 STR 이상거래 조사 진행 중으로 삭제 불가. 조사 완료 후 재기안하세요.',
+      history:[
+        {at:'2026-04-02 11:00', type:'등록 승인', desc:'최초 등록 (WL-0006 부여)', actor:'최관리자'},
+        {at:'2026-04-10 10:00', type:'삭제 기안', desc:'삭제 기안 제출', actor:'박담당자'},
+        {at:'2026-04-10 11:00', type:'삭제 기안 거절', desc:'거절 (STR 조사 진행중)', actor:'최관리자'}
+      ]
     }
   ];
 
@@ -12834,7 +12873,7 @@
   var _wlfCurrentId = null;
   var _wlfMode = 'register'; // 'register' | 'edit' | 'resubmit'
   var _wlfRegWallets = [];
-  var _wlfNextId = 6;
+  var _wlfNextId = 7;
 
   // ── 헬퍼 ──
   var _WLF_TYPE_LABEL = { company:'회사선정 요주의인물', blackwallet:'블랙지갑 소유자', judicial:'사법기관 정보제공자', etc:'기타' };
@@ -12845,9 +12884,10 @@
   function _wlfStatusBadge(status) {
     switch (status) {
       case 'registered':     return '<span class="badge badge-success">&#9679; 등록완료</span>';
-      case 'pending':        return '<span class="badge badge-warning">&#9203; 결재대기</span>';
+      case 'pending':        return '<span class="badge badge-warning">&#9203; 등록 결재 대기</span>';
       case 'delete_pending': return '<span style="background:#FFF7ED; color:#F97316; border:1px solid #FED7AA; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:600;">&#9203; 삭제대기</span>';
-      case 'rejected':       return '<span class="badge badge-danger">&#10005; 거절됨</span>';
+      case 'rejected':       return '<span class="badge badge-danger">&#10005; 등록 거절</span>';
+      case 'delete_rejected': return '<span style="background:#FEF2F2; color:#EF4444; border:1px solid #FECACA; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:600;">&#10005; 삭제 거절</span>';
       default: return '<span class="badge badge-gray">' + status + '</span>';
     }
   }
@@ -12861,10 +12901,11 @@
   }
 
   function _wlfUpdateStats() {
-    document.getElementById('wlf-stat-registered').textContent = _WLF_DATA.filter(function(d){ return d.status==='registered'; }).length;
-    document.getElementById('wlf-stat-pending').textContent    = _WLF_DATA.filter(function(d){ return d.status==='pending'; }).length;
-    document.getElementById('wlf-stat-delete').textContent     = _WLF_DATA.filter(function(d){ return d.status==='delete_pending'; }).length;
-    document.getElementById('wlf-stat-rejected').textContent   = _WLF_DATA.filter(function(d){ return d.status==='rejected'; }).length;
+    document.getElementById('wlf-stat-registered').textContent  = _WLF_DATA.filter(function(d){ return d.status==='registered'; }).length;
+    document.getElementById('wlf-stat-pending').textContent     = _WLF_DATA.filter(function(d){ return d.status==='pending'; }).length;
+    document.getElementById('wlf-stat-delete').textContent      = _WLF_DATA.filter(function(d){ return d.status==='delete_pending'; }).length;
+    document.getElementById('wlf-stat-rejected').textContent    = _WLF_DATA.filter(function(d){ return d.status==='rejected'; }).length;
+    document.getElementById('wlf-stat-del-rejected').textContent = _WLF_DATA.filter(function(d){ return d.status==='delete_rejected'; }).length;
   }
 
   function _wlfGetFiltered() {
@@ -12903,6 +12944,7 @@
     var isManager = (_ADMIN_ROLE === 'aml_manager' || _ADMIN_ROLE === 'master');
     var html = '';
     data.forEach(function(d) {
+      var rowStyle = (d.status === 'rejected' || d.status === 'delete_rejected') ? 'style="background:#FEF2F2; border-left:3px solid #EF4444; cursor:pointer;"' : 'style="cursor:pointer;"';
       var btns = '<button class="btn btn-outline btn-xs" onclick="openWLFDetail(\'' + d.id + '\')">상세</button>';
       if (isOfficer && d.status === 'registered') {
         btns += ' <button class="btn btn-outline btn-xs" onclick="openWLFEdit(\'' + d.id + '\')">수정</button>';
@@ -12911,7 +12953,11 @@
       if (isOfficer && d.status === 'rejected') {
         btns += ' <button class="btn btn-primary btn-xs" onclick="openWLFResubmit(\'' + d.id + '\')">재기안</button>';
       }
-      html += '<tr onclick="openWLFDetail(\'' + d.id + '\')" style="cursor:pointer;">'
+      if (isOfficer && d.status === 'delete_rejected') {
+        btns += ' <button class="btn btn-outline btn-xs" onclick="openWLFEdit(\'' + d.id + '\')">수정</button>';
+        btns += ' <button class="btn btn-outline btn-xs" style="color:#F97316; border-color:#F97316;" onclick="openWLFDeleteDraft(\'' + d.id + '\')">삭제기안(재시도)</button>';
+      }
+      html += '<tr onclick="openWLFDetail(\'' + d.id + '\')" ' + rowStyle + '>'
         + '<td style="font-family:monospace; font-size:11.5px; font-weight:700;">' + d.id + '</td>'
         + '<td style="font-size:12px;">' + (_WLF_TYPE_LABEL[d.type]||d.type) + '</td>'
         + '<td style="font-weight:600;">' + d.nameKR + '</td>'
@@ -12985,7 +13031,7 @@
       document.getElementById('wlfd-reject-note').textContent = d.rejectNote;
     } else { rejSec.style.display = 'none'; }
 
-    // 삭제 기안 정보
+    // 삭제 기안 정보 (delete_pending만)
     var delSec = document.getElementById('wlfd-delete-section');
     if (d.status === 'delete_pending' && d.deleteDrafter) {
       delSec.style.display = '';
@@ -12993,6 +13039,15 @@
       document.getElementById('wlfd-del-draft-at').textContent = d.deleteDraftAt;
       document.getElementById('wlfd-del-reason').textContent = d.deleteReason;
     } else { delSec.style.display = 'none'; }
+
+    // 삭제거절 섹션
+    var delRejSec = document.getElementById('wlfd-del-reject-section');
+    if (d.status === 'delete_rejected' && d.deleteRejectBy) {
+      delRejSec.style.display = '';
+      document.getElementById('wlfd-del-rej-by').textContent = d.deleteRejectBy;
+      document.getElementById('wlfd-del-rej-at').textContent = d.deleteRejectAt;
+      document.getElementById('wlfd-del-rej-note').textContent = d.deleteRejectNote;
+    } else { delRejSec.style.display = 'none'; }
 
     // 지갑주소
     var walletSec = document.getElementById('wlfd-wallets-section');
@@ -13021,9 +13076,11 @@
     } else { hTbody.innerHTML = '<tr><td colspan="4" style="padding:10px 4px; color:var(--text-secondary); text-align:center;">변경 이력 없음</td></tr>'; }
 
     // RM05 상태
-    document.getElementById('wlfd-rm05').innerHTML = d.status === 'registered'
+    document.getElementById('wlfd-rm05').innerHTML = (d.status === 'registered' || d.status === 'delete_rejected')
       ? '<span style="color:#10B981; font-weight:600;">&#9679; 활성 (RM05 감지 포함)</span>'
       : '<span style="color:var(--text-secondary);">&#9675; 비활성</span>';
+    var delRejRm05Note = document.getElementById('wlfd-del-rej-rm05-note');
+    if (delRejRm05Note) delRejRm05Note.style.display = (d.status === 'delete_rejected') ? '' : 'none';
 
     // 결재 배너
     var banner = document.getElementById('wlfd-approval-banner');
@@ -13049,6 +13106,10 @@
     }
     if (isOfficer && d.status === 'rejected') {
       btns += '<button class="btn btn-primary" onclick="closeWLFDetail(); setTimeout(function(){ openWLFResubmit(\'' + id + '\'); }, 200);">재기안</button>';
+    }
+    if (isOfficer && d.status === 'delete_rejected') {
+      btns += '<button class="btn btn-outline" onclick="closeWLFDetail(); setTimeout(function(){ openWLFEdit(\'' + id + '\'); }, 200);">수정</button>';
+      btns += '<button class="btn btn-outline" style="color:#F97316; border-color:#F97316;" onclick="closeWLFDetail(); setTimeout(function(){ openWLFDeleteDraft(\'' + id + '\'); }, 200);">삭제기안(재시도)</button>';
     }
     if (isManager && isApprovalPending) {
       btns += '<button class="btn btn-danger" onclick="openWLFRejectModal(\'' + id + '\')">거절</button>';
@@ -13321,9 +13382,17 @@
     _wlfCurrentId = id;
     document.getElementById('wlf-del-id').textContent = d.id;
     document.getElementById('wlf-del-type').textContent = _WLF_TYPE_LABEL[d.type]||d.type;
-    document.getElementById('wlf-del-name-kr').textContent = d.nameKR;
+    document.getElementById('wlf-del-client').textContent = d.clientType === 'individual' ? '개인' : d.clientType === 'corporate' ? '법인' : '지갑주소만';
+    document.getElementById('wlf-del-name').textContent = d.nameKR;
     document.getElementById('wlf-del-name-en').textContent = d.nameEN;
     document.getElementById('wlf-del-status').innerHTML = _wlfStatusBadge(d.status);
+    // 이전 삭제 거절 사유
+    var prevRejSec = document.getElementById('wlf-del-prev-rej');
+    if (d.status === 'delete_rejected' && d.deleteRejectNote) {
+      prevRejSec.style.display = '';
+      document.getElementById('wlf-del-prev-rej-meta').textContent = '거절 일시: ' + d.deleteRejectAt + '  |  거절자: ' + d.deleteRejectBy;
+      document.getElementById('wlf-del-prev-rej-text').textContent = d.deleteRejectNote;
+    } else { prevRejSec.style.display = 'none'; }
     document.getElementById('wlf-del-reason-text').value = '';
     document.getElementById('wlf-del-submit-btn').disabled = true;
     openModal('modal-wlf-delete');
@@ -13383,8 +13452,15 @@
     var d = _WLF_DATA.find(function(x){ return x.id===id; });
     if (!d) return;
     _wlfCurrentId = id;
+    var isDeleteRej = (d.status === 'delete_pending');
+    document.getElementById('wlf-rej-modal-title').textContent = isDeleteRej
+      ? '삭제 기안 거절 / Deletion Rejection'
+      : '등록 기안 거절 / Registration Rejection';
     document.getElementById('wlf-rej-id').textContent = d.id;
     document.getElementById('wlf-rej-name').textContent = d.nameKR + ' (' + d.nameEN + ')';
+    document.getElementById('wlf-rej-hint').textContent = isDeleteRej
+      ? '거절 후 해당 인물의 등록완료 상태가 유지됩니다. RM05 감지가 계속 적용됩니다.'
+      : '거절 후 AML 담당자가 [재기안]을 통해 재시도할 수 있습니다.';
     document.getElementById('wlf-rej-reason').value = '';
     document.getElementById('wlf-rej-submit-btn').disabled = true;
     openModal('modal-wlf-reject');
@@ -13403,13 +13479,22 @@
       openOTPModal('결재 거절', function() {
         var d = _WLF_DATA.find(function(x){ return x.id===id; });
         if (!d) return;
-        var now = '2026-04-09 ' + (function(){ var n=new Date(); return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'); })();
-        d.status = 'rejected';
-        d.rejectBy = '현재 관리자 (AML 관리자)';
-        d.rejectAt = now;
-        d.rejectNote = reason;
-        d.history.push({at: now, type:'거절', desc: reason, actor:'현재 관리자'});
-        showToast('결재가 거절되었습니다.');
+        var now = '2026-04-20 ' + (function(){ var n=new Date(); return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'); })();
+        if (d.status === 'delete_pending') {
+          d.status = 'delete_rejected';
+          d.deleteRejectBy = '현재 관리자 (AML 관리자)';
+          d.deleteRejectAt = now;
+          d.deleteRejectNote = reason;
+          d.history.push({at: now, type:'삭제 기안 거절', desc: reason, actor:'현재 관리자'});
+          showToast('삭제 기안이 거절되었습니다. 등록완료 상태가 유지됩니다.');
+        } else {
+          d.status = 'rejected';
+          d.rejectBy = '현재 관리자 (AML 관리자)';
+          d.rejectAt = now;
+          d.rejectNote = reason;
+          d.history.push({at: now, type:'등록 기안 거절', desc: reason, actor:'현재 관리자'});
+          showToast('등록 기안이 거절되었습니다.');
+        }
         closeWLFDetail();
         renderPEP();
       });
