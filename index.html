@@ -5218,7 +5218,7 @@
     { id:'DEP-002', type:'deposit', coin:'ETH', network:'Ethereum Mainnet',
       walletId:'wallet2', walletName:'운영 지갑 B',
       amount:2.0, amountKRW:10400000,
-      status:'hold', date:'2026-04-02 22:07:33',
+      status:'hold', date:'2026-04-18 22:07:33',
       fromAddr:'0xAbCd...1234', addrType:'미등록 주소', txid:'0xd4e5f6...7a8b',
       blockConfirm:'12 / 12',
       holdReasons:['송신 주소가 Travel Rule 화이트리스트에 등록되지 않았습니다.','거래 금액이 임계값(₩10,000,000)을 초과합니다.'] },
@@ -5950,15 +5950,17 @@
 
   /* ─ Navigate to wallet History tab with 보류 filter */
   function gotoHoldHistory() {
-    const w = _WALLET_DATA[0];
-    if (!w) return;
-    openWalletDetail(w.id);
+    showPage('transactions', document.getElementById('nav-transactions'));
     setTimeout(() => {
-      const histTab = document.querySelector('#walletDetailTabs .tab:nth-child(2)');
-      if (histTab) switchDetailTab(histTab, 'history');
-      const statusSel = document.getElementById('hist-status-filter');
-      if (statusSel) { statusSel.value = 'hold'; renderHistoryTab(); }
-    }, 350);
+      const statusSel = document.getElementById('txn-status-filter');
+      if (statusSel) statusSel.value = 'hold';
+      // 90일로 넓혀서 보류 건이 확실히 보이게
+      _txnPreset = '90d';
+      document.querySelectorAll('[id^="txn-p-"]').forEach(b => b.classList.remove('active'));
+      const p90 = document.getElementById('txn-p-90d');
+      if (p90) p90.classList.add('active');
+      renderTransactions();
+    }, 100);
   }
 
   function ackHoldReject(id) {
