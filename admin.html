@@ -664,17 +664,21 @@
           <span style="background:#F5F3FF; color:#8B5CF6; border-radius:5px; padding:3px 9px; font-weight:600;">⏳ Master 미생성</span>
           <span>→</span>
           <span style="background:#ECFDF5; color:#10B981; border-radius:5px; padding:3px 9px; font-weight:600;">● 활성화</span>
+          <span style="color:#CBD5E1;">→</span>
+          <span style="background:#FFF7ED; color:#F97316; border-radius:5px; padding:3px 9px; font-weight:600;">⚠ KYB 만료</span>
+          <span style="color:#CBD5E1;">→</span>
+          <span style="background:#FEF2F2; color:#EF4444; border-radius:5px; padding:3px 9px; font-weight:600;">🚫 계약 만료</span>
           <span style="margin-left:8px; color:#CBD5E1;">|</span>
-          <span style="background:#FFF7ED; color:#F97316; border-radius:5px; padding:3px 9px; font-weight:600; margin-left:8px;">⚠ KYB 만료</span>
-          <span style="background:#F1F5F9; color:#64748B; border-radius:5px; padding:3px 9px; font-weight:600;">○ 비활성화</span>
+          <span style="background:#F1F5F9; color:#64748B; border-radius:5px; padding:3px 9px; font-weight:600; margin-left:8px;">○ 비활성화</span>
         </div>
 
         <!-- 2-3 Stats -->
-        <div class="stats-row" style="grid-template-columns: repeat(5, 1fr);">
+        <div class="stats-row" style="grid-template-columns: repeat(6, 1fr);">
           <div class="stat-card"><span class="stat-label">전체</span><span class="stat-value stat-blue" id="cs-stat-total">0</span></div>
-          <div class="stat-card"><span class="stat-label">활성화</span><span class="stat-value stat-green" id="cs-stat-active">0</span></div>
+          <div class="stat-card"><span class="stat-label">● 활성화</span><span class="stat-value stat-green" id="cs-stat-active">0</span></div>
           <div class="stat-card" style="border-left:3px solid #F97316;"><span class="stat-label">⚠ KYB 만료</span><span class="stat-value stat-orange" id="cs-stat-expired">0</span></div>
-          <div class="stat-card"><span class="stat-label">비활성화</span><span class="stat-value stat-gray" id="cs-stat-inactive">0</span></div>
+          <div class="stat-card" style="border-left:3px solid #EF4444;"><span class="stat-label">🚫 계약 만료</span><span class="stat-value stat-red" id="cs-stat-contract-expired">0</span></div>
+          <div class="stat-card"><span class="stat-label">○ 비활성화</span><span class="stat-value stat-gray" id="cs-stat-inactive">0</span></div>
           <div class="stat-card"><span class="stat-label">⏳ 생성 대기</span><span class="stat-value" id="cs-stat-pending" style="color:#3B82F6;">0</span></div>
         </div>
 
@@ -685,13 +689,14 @@
                 <span class="search-icon">&#128269;</span>
                 <input type="text" id="cs-search" class="form-control" placeholder="고객사명 / 사업자번호 검색" style="width:230px; padding-left:30px;" oninput="renderClientsTable()" />
               </div>
-              <select class="form-control" id="cs-filter-status" style="width:150px;" onchange="renderClientsTable()">
+              <select class="form-control" id="cs-filter-status" style="width:160px;" onchange="renderClientsTable()">
                 <option value="">전체 상태</option>
-                <option value="active">활성화</option>
+                <option value="active">● 활성화</option>
                 <option value="expired">⚠ KYB 만료</option>
-                <option value="inactive">비활성화</option>
-                <option value="kyb_done">생성 대기</option>
-                <option value="master_pending">Master 미생성</option>
+                <option value="contract_expired">🚫 계약 만료</option>
+                <option value="inactive">○ 비활성화</option>
+                <option value="kyb_done">⏳ 생성 대기</option>
+                <option value="master_pending">⏳ Master 미생성</option>
               </select>
               <select class="form-control" id="cs-filter-risk" style="width:130px;" onchange="renderClientsTable()">
                 <option value="">전체 위험등급</option>
@@ -2348,22 +2353,28 @@
   <div class="modal-body">
     <!-- 2-4: 상태별 안내 배너 -->
     <div id="cd-banner-expired" style="display:none; background:#FFF7ED; border:1px solid #FDBA74; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
-      <div style="font-size:13px; font-weight:700; color:#C2410C; margin-bottom:4px;">⚠ KYB 만료 — 출금이 차단되어 있습니다.</div>
-      <div style="font-size:12px; color:#9A3412; margin-bottom:6px;">KYB 갱신이 완료되면 출금이 자동 재개됩니다. 입금은 조건 충족 시 정상 처리됩니다.</div>
+      <div style="font-size:13px; font-weight:700; color:#C2410C; margin-bottom:4px;">⚠ KYB가 만료되었습니다. 출금이 차단된 상태입니다.</div>
+      <div style="font-size:12px; color:#9A3412; margin-bottom:6px;">AML 담당자가 KYB 갱신을 완료해야 출금이 재개됩니다. 만료 후 30일 이내에 갱신하지 않으면 계약 만료로 전환됩니다.</div>
       <button class="btn btn-sm" style="background:#F97316; color:#fff; border:none; cursor:pointer;" onclick="showPage('kyb', document.getElementById('nav-kyb')); closeModal('modal-client-detail');">KYB 갱신 →</button>
     </div>
+    <div id="cd-banner-contract-expired" style="display:none; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
+      <div style="font-size:13px; font-weight:700; color:#B91C1C; margin-bottom:4px;">🚫 KYB 만료 후 30일 이상 경과하여 계약이 만료되었습니다.</div>
+      <div style="font-size:12px; color:#991B1B; margin-bottom:6px;">고객사 포털 로그인이 차단됩니다. AML 담당자가 KYB 재작성을 완료해야 활성화됩니다.</div>
+      <button class="btn btn-sm" style="background:#EF4444; color:#fff; border:none; cursor:pointer;" onclick="showPage('kyb', document.getElementById('nav-kyb')); closeModal('modal-client-detail');">KYB 재작성 →</button>
+    </div>
     <div id="cd-banner-inactive" style="display:none; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
-      <div style="font-size:13px; font-weight:700; color:#475569; margin-bottom:4px;">○ 비활성화 — 고객사 포털 접근이 차단되어 있습니다.</div>
-      <div style="font-size:12px; color:#64748B;">로그인 및 출금이 불가합니다. 입금은 조건 충족 시 Admin에서 확인 후 처리됩니다.</div>
+      <div style="font-size:13px; font-weight:700; color:#475569; margin-bottom:4px;">○ 해당 고객사는 비활성화 상태입니다.</div>
+      <div style="font-size:12px; color:#64748B;">로그인 및 출금이 차단됩니다. 입금은 조건부 허용됩니다.</div>
     </div>
     <!-- 기본 정보 -->
     <div class="section-box">
       <div class="section-box-title">고객사 정보</div>
       <div class="info-row"><span class="info-label">사업자번호</span><span class="info-value" id="cd-biz-no" style="font-family:monospace;"></span></div>
-      <div class="info-row"><span class="info-label">위험등급</span><span id="cd-risk"></span></div>
+      <div class="info-row"><span class="info-label">KYB 위험등급</span><span id="cd-risk"></span></div>
       <div class="info-row"><span class="info-label">상태</span><span id="cd-status-badge"></span></div>
-      <div class="info-row"><span class="info-label">KYB 갱신일</span><span class="info-value" id="cd-kyb-next"></span></div>
-      <div class="info-row" style="border-bottom:none;"><span class="info-label">D-day</span><span class="info-value" id="cd-dday"></span></div>
+      <div class="info-row"><span class="info-label">KYB 만료일</span><span class="info-value" id="cd-kyb-next"></span></div>
+      <div class="info-row"><span class="info-label">D-day</span><span class="info-value" id="cd-dday"></span></div>
+      <div class="info-row" id="cd-renewal-row" style="border-bottom:none;"><span class="info-label">갱신 주기</span><span class="info-value" id="cd-renewal"></span></div>
     </div>
     <!-- 2-6 Master 계정 현황 -->
     <div class="section-box" style="margin-bottom:0;">
@@ -2378,9 +2389,66 @@
   </div>
   <div class="modal-footer" id="cd-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-client-detail')">닫기</button>
+    <button class="btn btn-outline" id="cd-btn-deactivate" style="display:none; color:var(--danger); border-color:rgba(239,68,68,0.5);" onclick="openClientDeactivate()">비활성화</button>
+    <button class="btn btn-outline" id="cd-btn-reactivate" style="display:none;" onclick="openClientReactivate()">활성화</button>
     <button class="btn btn-outline" id="cd-btn-pw-resend" onclick="openMasterPWResend()">임시 PW 재발송</button>
-    <button class="btn btn-primary" id="cd-btn-email-change" onclick="openMasterEmailChange()">이메일 변경</button>
+    <button class="btn btn-primary" id="cd-btn-email-change" onclick="openMasterEmailChange()">Master 이메일 변경</button>
     <button class="btn btn-primary" id="cd-btn-create-master" onclick="openCreateMasterFromDetail()" style="display:none;">Master 계정 생성 →</button>
+  </div>
+</div>
+
+<!-- modal-client-deactivate: 고객사 비활성화 (2-5) -->
+<div class="modal" id="modal-client-deactivate">
+  <div class="modal-header">
+    <span class="modal-title">고객사 비활성화</span>
+    <button class="modal-close" onclick="closeModal('modal-client-deactivate')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">고객사</span><span class="info-value" id="cda-corp-name" style="font-weight:600;"></span></div>
+    </div>
+    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:12px 14px; margin-bottom:14px; font-size:12.5px; color:#B91C1C;">
+      ⚠ 비활성화 시 로그인 중인 모든 계정의 세션이 즉시 만료됩니다.
+    </div>
+    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">OTP 인증</div>
+    <div id="cdaOTPRow" style="display:flex;gap:6px;margin-bottom:4px;">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,0,'cdaOTPRow');_validateCDA()" onkeydown="otpBack(event,this,0,'cdaOTPRow')" onpaste="otpPaste(event,'cdaOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,1,'cdaOTPRow');_validateCDA()" onkeydown="otpBack(event,this,1,'cdaOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,2,'cdaOTPRow');_validateCDA()" onkeydown="otpBack(event,this,2,'cdaOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,3,'cdaOTPRow');_validateCDA()" onkeydown="otpBack(event,this,3,'cdaOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,4,'cdaOTPRow');_validateCDA()" onkeydown="otpBack(event,this,4,'cdaOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,5,'cdaOTPRow');_validateCDA()" onkeydown="otpBack(event,this,5,'cdaOTPRow')">
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-client-deactivate')">취소</button>
+    <button class="btn btn-danger" id="cda-submit-btn" disabled onclick="confirmClientDeactivate()">비활성화 확인</button>
+  </div>
+</div>
+
+<!-- modal-client-reactivate: 고객사 활성화 (2-5) -->
+<div class="modal" id="modal-client-reactivate">
+  <div class="modal-header">
+    <span class="modal-title">고객사 활성화</span>
+    <button class="modal-close" onclick="closeModal('modal-client-reactivate')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box">
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">고객사</span><span class="info-value" id="cra-corp-name" style="font-weight:600;"></span></div>
+    </div>
+    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">OTP 인증</div>
+    <div id="craOTPRow" style="display:flex;gap:6px;margin-bottom:4px;">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,0,'craOTPRow');_validateCRA()" onkeydown="otpBack(event,this,0,'craOTPRow')" onpaste="otpPaste(event,'craOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,1,'craOTPRow');_validateCRA()" onkeydown="otpBack(event,this,1,'craOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,2,'craOTPRow');_validateCRA()" onkeydown="otpBack(event,this,2,'craOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,3,'craOTPRow');_validateCRA()" onkeydown="otpBack(event,this,3,'craOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,4,'craOTPRow');_validateCRA()" onkeydown="otpBack(event,this,4,'craOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,5,'craOTPRow');_validateCRA()" onkeydown="otpBack(event,this,5,'craOTPRow')">
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-client-reactivate')">취소</button>
+    <button class="btn btn-primary" id="cra-submit-btn" disabled onclick="confirmClientReactivate()">활성화 확인</button>
   </div>
 </div>
 
@@ -7428,31 +7496,38 @@
   ════════════════════════════════════ */
   var _CLIENTS_DATA = [
     { idx:0, name:'알파투자운용(주)',     nameEn:'Alpha Investment Mgmt',  bizNo:'123-45-67890',
-      riskGrade:'low',  kybCompletedAt:'2025-10-15', nextKYB:'2026-05-09', dDay:-32, kybOfficer:'김담당',
-      status:'active',         masterEmail:'ki***@alpha.com',  masterStatus:'active',  masterFirstLogin:'2025-11-01 09:00' },
+      riskGrade:'low',  kybCompletedAt:'2025-10-15', nextKYB:'2026-05-09', dDay:-32,  kybOfficer:'김담당',
+      status:'active',           masterEmail:'ki***@alpha.com',  masterStatus:'active',   masterFirstLogin:'2025-11-01 09:00', renewalPeriod:'1년' },
     { idx:1, name:'베타캐피탈 유한회사', nameEn:'Beta Capital Ltd',         bizNo:'234-56-78901',
-      riskGrade:'mid',  kybCompletedAt:'2024-04-01', nextKYB:'2026-04-12', dDay:5,   kybOfficer:'이담당',
-      status:'expired',        masterEmail:'pa***@beta.com',   masterStatus:'active',  masterFirstLogin:'2025-04-10 14:30' },
+      riskGrade:'mid',  kybCompletedAt:'2024-04-01', nextKYB:'2026-04-12', dDay:5,    kybOfficer:'이담당',
+      status:'expired',          masterEmail:'pa***@beta.com',   masterStatus:'active',   masterFirstLogin:'2025-04-10 14:30', renewalPeriod:'1년' },
     { idx:2, name:'감마트레이딩(주)',     nameEn:'Gamma Trading Corp',      bizNo:'345-67-89012',
       riskGrade:'low',  kybCompletedAt:'2025-02-01', nextKYB:'2027-02-05', dDay:-304, kybOfficer:'박담당',
-      status:'active',         masterEmail:'ch***@gamma.com',  masterStatus:'active',  masterFirstLogin:'2025-02-10 10:00' },
+      status:'active',           masterEmail:'ch***@gamma.com',  masterStatus:'active',   masterFirstLogin:'2025-02-10 10:00', renewalPeriod:'2년' },
     { idx:3, name:'델타홀딩스 유한회사', nameEn:'Delta Holdings Ltd',       bizNo:'456-78-90123',
       riskGrade:'low',  kybCompletedAt:'2026-04-07', nextKYB:null, dDay:null, kybOfficer:'김담당',
-      status:'kyb_done',       masterEmail:null, masterStatus:null, masterFirstLogin:null },
+      status:'kyb_done',         masterEmail:null, masterStatus:null, masterFirstLogin:null, renewalPeriod:null },
     { idx:4, name:'엡실론파트너스(주)',   nameEn:'Epsilon Partners Corp',   bizNo:'567-89-01234',
       riskGrade:'low',  kybCompletedAt:'2026-03-20', nextKYB:null, dDay:null, kybOfficer:'이담당',
-      status:'master_pending', masterEmail:null, masterStatus:null, masterFirstLogin:null },
+      status:'master_pending',   masterEmail:null, masterStatus:null, masterFirstLogin:null, renewalPeriod:null },
+    { idx:5, name:'제타코프(주)',         nameEn:'Zeta Corp',               bizNo:'678-90-12345',
+      riskGrade:'high', kybCompletedAt:'2025-01-10', nextKYB:'2026-01-10', dDay:45,   kybOfficer:'이담당',
+      status:'contract_expired', masterEmail:'ze***@zeta.com',   masterStatus:'inactive', masterFirstLogin:'2025-01-20 10:00', renewalPeriod:'1년' },
+    { idx:6, name:'에타인베스트(주)',     nameEn:'Eta Invest Corp',         bizNo:'789-01-23456',
+      riskGrade:'mid',  kybCompletedAt:'2025-06-01', nextKYB:'2026-06-01', dDay:-10,  kybOfficer:'박담당',
+      status:'inactive',         masterEmail:'et***@eta.com',    masterStatus:'inactive', masterFirstLogin:'2025-06-05 09:00', renewalPeriod:'1년' },
   ];
   var _clientDetailIdx = null;
   // Rate limit tracking for PW resend: { clientIdx: [timestamps] }
   var _pwResendLog = {};
 
   var _CS_STATUS_CFG = {
-    kyb_done:       { badge:'<span class="badge" style="background:#EFF6FF;color:#3B82F6;">&#9203; 생성 대기</span>' },
-    master_pending: { badge:'<span class="badge" style="background:#F5F3FF;color:#8B5CF6;">&#9203; Master 미생성</span>' },
-    active:         { badge:'<span class="badge badge-success">&#9679; 활성화</span>' },
-    expired:        { badge:'<span class="badge badge-orange">&#9888; KYB 만료</span>' },
-    inactive:       { badge:'<span class="badge badge-gray">&#9675; 비활성화</span>' },
+    kyb_done:         { badge:'<span class="badge" style="background:#EFF6FF;color:#3B82F6;">&#9203; 생성 대기</span>' },
+    master_pending:   { badge:'<span class="badge" style="background:#F5F3FF;color:#8B5CF6;">&#9203; Master 미생성</span>' },
+    active:           { badge:'<span class="badge badge-success">&#9679; 활성화</span>' },
+    expired:          { badge:'<span class="badge badge-orange">&#9888; KYB 만료</span>' },
+    contract_expired: { badge:'<span class="badge badge-danger">&#128683; 계약 만료</span>' },
+    inactive:         { badge:'<span class="badge badge-gray">&#9675; 비활성화</span>' },
   };
 
   /* ── 2-3: Render clients table ── */
@@ -7473,11 +7548,12 @@
 
     // Update stats
     var all = _CLIENTS_DATA;
-    document.getElementById('cs-stat-total').textContent   = all.length;
-    document.getElementById('cs-stat-active').textContent  = all.filter(function(c){ return c.status==='active'; }).length;
-    document.getElementById('cs-stat-expired').textContent = all.filter(function(c){ return c.status==='expired'; }).length;
-    document.getElementById('cs-stat-inactive').textContent= all.filter(function(c){ return c.status==='inactive'; }).length;
-    document.getElementById('cs-stat-pending').textContent = all.filter(function(c){ return c.status==='kyb_done'||c.status==='master_pending'; }).length;
+    document.getElementById('cs-stat-total').textContent            = all.length;
+    document.getElementById('cs-stat-active').textContent           = all.filter(function(c){ return c.status==='active'; }).length;
+    document.getElementById('cs-stat-expired').textContent          = all.filter(function(c){ return c.status==='expired'; }).length;
+    document.getElementById('cs-stat-contract-expired').textContent = all.filter(function(c){ return c.status==='contract_expired'; }).length;
+    document.getElementById('cs-stat-inactive').textContent         = all.filter(function(c){ return c.status==='inactive'; }).length;
+    document.getElementById('cs-stat-pending').textContent          = all.filter(function(c){ return c.status==='kyb_done'||c.status==='master_pending'; }).length;
 
     if (list.length === 0) {
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:32px;">검색 결과가 없습니다.</td></tr>';
@@ -7497,7 +7573,9 @@
         kybCell = '<span style="font-size:11.5px; color:var(--text-secondary);">미설정</span>';
       }
 
-      var rowCls = c.status === 'expired'
+      var rowCls = c.status === 'contract_expired'
+        ? ' style="background:#FEF2F2; border-left:3px solid #EF4444;"'
+        : c.status === 'expired'
         ? ' class="row-warn"'
         : (c.dDay !== null && c.dDay > -40 && c.dDay <= 0 ? ' style="background:#FFFBEB;"' : '');
 
@@ -7561,7 +7639,7 @@
     openCreateClientFromKYB(c.idx);
   }
 
-  /* ── 2-6: Open client detail ── */
+  /* ── 2-4: Open client detail ── */
   function openClientDetail(idx) {
     var c = _CLIENTS_DATA[idx]; if (!c) return;
     _clientDetailIdx = idx;
@@ -7571,25 +7649,48 @@
     document.getElementById('cd-status-badge').innerHTML = (_CS_STATUS_CFG[c.status] || {}).badge || c.status;
     document.getElementById('cd-kyb-next').textContent   = c.nextKYB || '—';
 
-    // 상태별 안내 배너
-    var bannerExpired  = document.getElementById('cd-banner-expired');
-    var bannerInactive = document.getElementById('cd-banner-inactive');
-    if (bannerExpired)  bannerExpired.style.display  = c.status === 'expired'  ? '' : 'none';
-    if (bannerInactive) bannerInactive.style.display = c.status === 'inactive' ? '' : 'none';
+    // 갱신 주기
+    var renewalRow = document.getElementById('cd-renewal-row');
+    var renewalEl  = document.getElementById('cd-renewal');
+    if (c.renewalPeriod) {
+      if (renewalEl) renewalEl.textContent = c.renewalPeriod;
+      if (renewalRow) renewalRow.style.display = '';
+    } else {
+      if (renewalRow) renewalRow.style.display = 'none';
+    }
 
+    // 상태별 안내 배너
+    var bannerExpired         = document.getElementById('cd-banner-expired');
+    var bannerContractExpired = document.getElementById('cd-banner-contract-expired');
+    var bannerInactive        = document.getElementById('cd-banner-inactive');
+    if (bannerExpired)         bannerExpired.style.display         = c.status === 'expired'          ? '' : 'none';
+    if (bannerContractExpired) bannerContractExpired.style.display = c.status === 'contract_expired' ? '' : 'none';
+    if (bannerInactive)        bannerInactive.style.display        = c.status === 'inactive'         ? '' : 'none';
+
+    // D-Day
     var ddEl = document.getElementById('cd-dday');
     if (c.dDay !== null) {
-      var col = c.dDay >= 0 ? 'var(--danger)' : c.dDay > -40 ? '#F97316' : 'var(--text-secondary)';
+      var col = c.dDay >= 0 ? 'var(--danger)' : c.dDay > -40 ? '#F97316' : '#10B981';
       var lbl = c.dDay > 0 ? 'D+' + c.dDay : c.dDay === 0 ? 'D+0 (만료)' : 'D' + c.dDay;
       ddEl.innerHTML = '<span style="font-weight:600; color:' + col + ';">' + lbl + '</span>';
     } else { ddEl.textContent = '—'; }
 
+    // 비활성화 / 활성화 버튼 (AML 담당자는 불가)
+    var isAML     = (_ADMIN_ROLE === 'aml-officer' || _ADMIN_ROLE === 'aml-manager' || _ADMIN_ROLE === 'aml_officer' || _ADMIN_ROLE === 'aml_manager');
+    var canAct    = !isAML;
+    var btnDeact  = document.getElementById('cd-btn-deactivate');
+    var btnReact  = document.getElementById('cd-btn-reactivate');
+    // 비활성화 버튼: active 또는 expired 상태 (contract_expired는 KYB로만 복귀)
+    if (btnDeact) btnDeact.style.display = (canAct && (c.status === 'active' || c.status === 'expired')) ? '' : 'none';
+    // 활성화 버튼: inactive 상태
+    if (btnReact) btnReact.style.display = (canAct && c.status === 'inactive') ? '' : 'none';
+
+    // Master 계정
     var hasMaster = !!c.masterEmail;
     document.getElementById('cd-master-empty').style.display = hasMaster ? 'none' : 'block';
     document.getElementById('cd-master-info').style.display  = hasMaster ? 'block' : 'none';
-    document.getElementById('cd-btn-pw-resend').style.display     = hasMaster ? '' : 'none';
-    document.getElementById('cd-btn-email-change').style.display  = hasMaster ? '' : 'none';
-    var isAML = (_ADMIN_ROLE === 'aml_officer' || _ADMIN_ROLE === 'aml_manager');
+    document.getElementById('cd-btn-pw-resend').style.display    = hasMaster ? '' : 'none';
+    document.getElementById('cd-btn-email-change').style.display = hasMaster ? '' : 'none';
     document.getElementById('cd-btn-create-master').style.display = (hasMaster || isAML) ? 'none' : '';
 
     if (hasMaster) {
@@ -7600,6 +7701,57 @@
       document.getElementById('cd-master-first-login').textContent = c.masterFirstLogin || '미로그인';
     }
     openModal('modal-client-detail');
+  }
+
+  /* ── 2-5: 비활성화 / 활성화 전환 ── */
+  function openClientDeactivate() {
+    var c = _CLIENTS_DATA[_clientDetailIdx]; if (!c) return;
+    document.getElementById('cda-corp-name').textContent = c.name;
+    _otpRowReset('cdaOTPRow');
+    var btn = document.getElementById('cda-submit-btn');
+    if (btn) btn.disabled = true;
+    closeModal('modal-client-detail');
+    openModal('modal-client-deactivate');
+  }
+  function _validateCDA() {
+    var btn = document.getElementById('cda-submit-btn');
+    if (btn) btn.disabled = !_otpRowFilled('cdaOTPRow');
+  }
+  function confirmClientDeactivate() {
+    if (!_otpRowFilled('cdaOTPRow')) return;
+    var c = _CLIENTS_DATA[_clientDetailIdx]; if (!c) return;
+    c.status = 'inactive';
+    if (c.masterStatus) c.masterStatus = 'inactive';
+    closeModal('modal-client-deactivate');
+    _afterClose(function() {
+      renderClientsTable();
+      showToast(c.name + ' 고객사가 비활성화되었습니다. 모든 포털 세션이 강제 종료됩니다.');
+    });
+  }
+
+  function openClientReactivate() {
+    var c = _CLIENTS_DATA[_clientDetailIdx]; if (!c) return;
+    document.getElementById('cra-corp-name').textContent = c.name;
+    _otpRowReset('craOTPRow');
+    var btn = document.getElementById('cra-submit-btn');
+    if (btn) btn.disabled = true;
+    closeModal('modal-client-detail');
+    openModal('modal-client-reactivate');
+  }
+  function _validateCRA() {
+    var btn = document.getElementById('cra-submit-btn');
+    if (btn) btn.disabled = !_otpRowFilled('craOTPRow');
+  }
+  function confirmClientReactivate() {
+    if (!_otpRowFilled('craOTPRow')) return;
+    var c = _CLIENTS_DATA[_clientDetailIdx]; if (!c) return;
+    c.status = 'active';
+    if (c.masterStatus) c.masterStatus = 'active';
+    closeModal('modal-client-reactivate');
+    _afterClose(function() {
+      renderClientsTable();
+      showToast(c.name + ' 고객사가 활성화되었습니다.');
+    });
   }
 
   function openCreateMasterFromDetail() {
