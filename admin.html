@@ -3636,16 +3636,20 @@
     <div class="section-box">
       <div class="section-box-title">출금 정보</div>
       <div class="info-row"><span class="info-label">상태</span><span class="info-value" id="wd-status"></span></div>
-      <div class="info-row"><span class="info-label">출금번호</span><span class="info-value" id="wd-no" style="font-family:monospace;"></span></div>
-      <div class="info-row"><span class="info-label">일시</span><span class="info-value" id="wd-datetime"></span></div>
+      <div class="info-row"><span class="info-label">신청 ID</span><span class="info-value" id="wd-no" style="font-family:monospace;"></span></div>
       <div class="info-row"><span class="info-label">고객사</span><span class="info-value" id="wd-corp"></span></div>
+      <div class="info-row"><span class="info-label">지갑명</span><span class="info-value" id="wd-wallet"></span></div>
       <div class="info-row"><span class="info-label">코인 / 네트워크</span><span class="info-value" id="wd-coin"></span></div>
-      <div class="info-row"><span class="info-label">수량</span><span class="info-value" id="wd-amount" style="font-weight:700; color:var(--danger);"></span></div>
+      <div class="info-row"><span class="info-label">출금 수량</span><span class="info-value" id="wd-amount" style="font-weight:700; color:var(--danger);"></span></div>
+      <div class="info-row" id="wd-fee-row"><span class="info-label">수수료 (예상)</span><span class="info-value" id="wd-fee"></span></div>
+      <div class="info-row" id="wd-actual-row"><span class="info-label">실제 출금</span><span class="info-value" id="wd-actual" style="font-weight:600;"></span></div>
+      <div class="info-row" id="wd-krw-row"><span class="info-label">원화 환산</span><span class="info-value" id="wd-krw" style="color:var(--text-secondary);"></span></div>
       <div class="info-row">
         <span class="info-label">수신 주소</span>
         <span class="info-value" style="display:flex;align-items:flex-start;gap:8px;min-width:0;">
           <span id="wd-addr" style="font-family:monospace;font-size:12px;word-break:break-all;flex:1;"></span>
           <button type="button" class="btn btn-outline btn-xs" style="flex-shrink:0;" onclick="wlCopyAddrById('wd-addr',this)">&#128203; 복사</button>
+          <a id="wd-addr-explorer" href="#" target="_blank" class="btn btn-outline btn-xs" style="flex-shrink:0;display:none;">&#8599; 익스플러</a>
         </span>
       </div>
       <div class="info-row" id="wd-dest-tag-row" style="display:none;">
@@ -3655,14 +3659,20 @@
           <button type="button" class="btn btn-outline btn-xs" id="wd-dest-tag-copy" style="display:none;" onclick="wlCopyAddrById('wd-dest-tag',this)">&#128203; 복사</button>
         </span>
       </div>
+      <div class="info-row"><span class="info-label">수신 주소 유형</span><span class="info-value" id="wd-addr-type"></span></div>
+      <div class="info-row" id="wd-memo-row"><span class="info-label">메모</span><span class="info-value" id="wd-memo" style="color:var(--text-secondary);"></span></div>
+      <div class="info-row"><span class="info-label">신청자</span><span class="info-value" id="wd-requester"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">신청 일시</span><span class="info-value" id="wd-datetime"></span></div>
     </div>
-    <!-- 서명 대기 상태 -->
+    <!-- 서명 현황 (항상 표시) -->
     <div id="wd-signing-section" style="display:none;" class="section-box">
       <div class="section-box-title">서명 현황</div>
-      <div class="info-row"><span class="info-label">요청 서명</span><span class="info-value" id="wd-sign-required">—</span></div>
-      <div class="info-row" style="border-bottom:none;"><span class="info-label">완료 서명</span><span class="info-value" id="wd-sign-done">—</span></div>
+      <div class="info-row" style="border-bottom:none;">
+        <span class="info-label">서명 현황</span>
+        <span class="info-value" id="wd-sign-summary" style="font-weight:600;"></span>
+      </div>
     </div>
-    <!-- TXID 섹션 (출금중/완료) -->
+    <!-- TXID 섹션 (출금중/완료 — 읽기 전용) -->
     <div id="wd-txid-section" style="display:none;" class="section-box">
       <div class="section-box-title">TXID</div>
       <div class="info-row" style="border-bottom:none;">
@@ -3672,6 +3682,26 @@
           <button type="button" class="btn btn-outline btn-xs" style="flex-shrink:0;" onclick="wlCopyAddrById('wd-txid',this)">&#128203; 복사</button>
         </span>
       </div>
+    </div>
+    <!-- TXID 입력 (처리중 + 콜드월렛/마스터 전용) -->
+    <div id="wd-txid-input-section" style="display:none;" class="section-box">
+      <div class="section-box-title">TXID 입력 <span style="font-size:11px;font-weight:400;color:var(--text-secondary);">(콜드월렛 담당자 전용)</span></div>
+      <div style="margin-bottom:10px;">
+        <input type="text" id="wd-txid-input" placeholder="TXID를 입력하세요" oninput="_validateWDTXID()"
+          style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">OTP 인증</div>
+        <div id="wdTXIDOTPRow" style="display:flex;gap:6px;">
+          <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,0,'wdTXIDOTPRow');_validateWDTXID()" onkeydown="otpBack(event,this,0,'wdTXIDOTPRow')" onpaste="otpPaste(event,'wdTXIDOTPRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,1,'wdTXIDOTPRow');_validateWDTXID()" onkeydown="otpBack(event,this,1,'wdTXIDOTPRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,2,'wdTXIDOTPRow');_validateWDTXID()" onkeydown="otpBack(event,this,2,'wdTXIDOTPRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,3,'wdTXIDOTPRow');_validateWDTXID()" onkeydown="otpBack(event,this,3,'wdTXIDOTPRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,4,'wdTXIDOTPRow');_validateWDTXID()" onkeydown="otpBack(event,this,4,'wdTXIDOTPRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,5,'wdTXIDOTPRow');_validateWDTXID()" onkeydown="otpBack(event,this,5,'wdTXIDOTPRow')">
+        </div>
+      </div>
+      <button id="wd-txid-submit-btn" class="btn btn-primary" style="width:100%;" disabled onclick="confirmWDTXIDInline()">TXID 입력 완료</button>
     </div>
     <!-- 완료 타임라인 -->
     <div id="wd-timeline-section" style="display:none;" class="section-box">
@@ -7705,21 +7735,21 @@
     // 입금 — 거절
     { type:'deposit',    corp:'알파투자운용(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.0100',    status:'rejected',    txid:'5e6f7a...8b9c',   addr:'bc1qnm3...p4r',   datetime:'2026-04-03 14:00', rejectedReason:'허용되지 않는 코인 네트워크 (BTC Segwit)' },
     // 출금 — 완료
-    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'5,000.00',  status:'done',        txid:'0x9a1b...e3f2', addr:'TKx7vM...W3R1', datetime:'2026-04-07 10:42', wdNo:'WD-2026-0038', completedAt:'2026-04-07 10:55' },
-    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.5000',    status:'done',        txid:'3c4d5e...f6a7', addr:'bc1qrt5...k2m', datetime:'2026-04-05 15:00', wdNo:'WD-2026-0035', completedAt:'2026-04-05 15:18' },
+    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'5,000.00',  status:'done',        txid:'0x9a1b...e3f2', addr:'TKx7vM...W3R1', datetime:'2026-04-07 10:42', wdNo:'WD-2026-0038', completedAt:'2026-04-07 10:55', walletName:'운영 지갑 A',   fee:'5.00',       actualAmount:'4,995.00',   amountKRW:'6,543,450',  addrType:'외부 주소 (코드 검증 완료)', memo:'운영 자금 이전', requester:'홍Master', signRequired:2, signDone:2 },
+    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.5000',    status:'done',        txid:'3c4d5e...f6a7', addr:'bc1qrt5...k2m', datetime:'2026-04-05 15:00', wdNo:'WD-2026-0035', completedAt:'2026-04-05 15:18', walletName:'BTC 콜드월렛',  fee:'0.00010',    actualAmount:'0.49990',    amountKRW:'44,991,000', addrType:'내부 주소',                    memo:'',           requester:'김운영',   signRequired:2, signDone:2 },
     // 출금 — 서명대기
-    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',    status:'signing',     txid:null, addr:'0xA1B2...C3D4', datetime:'2026-04-08 09:00', wdNo:'WD-2026-0044', signRequired:2, signDone:1 },
+    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',    status:'signing',     txid:null, addr:'0xA1B2...C3D4', datetime:'2026-04-08 09:00', wdNo:'WD-2026-0044', walletName:'ETH 운영 지갑', fee:'0.002100',   actualAmount:'1.497900',   amountKRW:'5,200,000',  addrType:'외부 주소 (코드 검증 완료)', memo:'파트너사 지급', requester:'이일반',  signRequired:2, signDone:1 },
     // 출금 — 처리중
-    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'Ethereum (ERC-20)', amount:'10,000.00', status:'processing',  txid:null, addr:'0xE5F6...A7B8', datetime:'2026-04-08 10:15', wdNo:'WD-2026-0045' },
+    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'Ethereum (ERC-20)', amount:'10,000.00', status:'processing',  txid:null, addr:'0xE5F6...A7B8', datetime:'2026-04-08 10:15', wdNo:'WD-2026-0045', walletName:'운영 지갑 A',   fee:'8.50',       actualAmount:'9,991.50',   amountKRW:'13,068,865', addrType:'외부 주소 (코드 검증 완료)', memo:'투자 집행',   requester:'홍Master', signRequired:2, signDone:2 },
     // 출금 — 출금중 (브로드캐스트 완료, TXID 있음)
-    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.2000',    status:'broadcasting',txid:'9b8a7c...6d5e', addr:'bc1qhx4...z9y', datetime:'2026-04-08 08:00', wdNo:'WD-2026-0042' },
+    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.2000',    status:'broadcasting',txid:'9b8a7c...6d5e', addr:'bc1qhx4...z9y', datetime:'2026-04-08 08:00', wdNo:'WD-2026-0042', walletName:'BTC 콜드월렛',  fee:'0.00008',    actualAmount:'0.19992',    amountKRW:'17,992,800', addrType:'외부 주소',                    memo:'',           requester:'박콜드',   signRequired:2, signDone:2 },
     // 출금 — 처리중 (TXID 입력 대기)
-    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',    status:'processing',  txid:null, addr:'0xC9D0...E1F2', datetime:'2026-04-04 15:00', wdNo:'WD-2026-0041' },
-    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.0300',    status:'processing',  txid:null, addr:'bc1qmn2...j5k', datetime:'2026-04-07 08:30', wdNo:'WD-2026-0043' },
+    { type:'withdrawal', corp:'베타캐피탈 유한회사', coin:'ETH',  network:'Ethereum',          amount:'1.5000',    status:'processing',  txid:null, addr:'0xC9D0...E1F2', datetime:'2026-04-04 15:00', wdNo:'WD-2026-0041', walletName:'ETH 운영 지갑', fee:'0.001800',   actualAmount:'1.498200',   amountKRW:'5,200,000',  addrType:'외부 주소 (코드 검증 완료)', memo:'',           requester:'이일반',  signRequired:2, signDone:2 },
+    { type:'withdrawal', corp:'감마트레이딩(주)',     coin:'BTC',  network:'Bitcoin',           amount:'0.0300',    status:'processing',  txid:null, addr:'bc1qmn2...j5k', datetime:'2026-04-07 08:30', wdNo:'WD-2026-0043', walletName:'BTC 콜드월렛',  fee:'0.00005',    actualAmount:'0.02995',    amountKRW:'2,695,500',  addrType:'내부 주소',                    memo:'수수료 정산', requester:'김운영',   signRequired:2, signDone:2 },
     // 출금 — 거절
-    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'100,000.00',status:'rejected',    txid:null, addr:'TLx9wP...V2Q3', datetime:'2026-04-02 11:00', wdNo:'WD-2026-0030', rejectedReason:'화이트리스트 미등록 주소' },
+    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'USDT', network:'TRON (TRC-20)',     amount:'100,000.00',status:'rejected',    txid:null, addr:'TLx9wP...V2Q3', datetime:'2026-04-02 11:00', wdNo:'WD-2026-0030', rejectedReason:'화이트리스트 미등록 주소', walletName:'운영 지갑 A', fee:'',  actualAmount:'', amountKRW:'', addrType:'미확인 (검증 실패)', memo:'', requester:'홍Master', signRequired:2, signDone:0 },
     // XRP 출금
-    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'XRP',  network:'XRP Ledger',        amount:'1,000.000000', status:'processing', txid:null, addr:'rN7n3473SaZBCG4dFL73aBcDeF', destTag:987654321, datetime:'2026-04-09 11:00', wdNo:'WD-2026-0047' },
+    { type:'withdrawal', corp:'알파투자운용(주)',     coin:'XRP',  network:'XRP Ledger',        amount:'1,000.000000', status:'processing', txid:null, addr:'rN7n3473SaZBCG4dFL73aBcDeF', destTag:987654321, datetime:'2026-04-09 11:00', wdNo:'WD-2026-0047', walletName:'XRP 지갑', fee:'0.000012', actualAmount:'999.999988', amountKRW:'779,999', addrType:'외부 주소 (코드 검증 완료)', memo:'XRP 이전', requester:'홍Master', signRequired:2, signDone:2 },
   ];
 
   var _TX_STATUS_CFG = {
@@ -7859,11 +7889,7 @@
         : '<span style="color:var(--text-secondary);">—</span>';
       var actionCell = '';
       if (showAction) {
-        if (r.type === 'withdrawal' && r.status === 'processing') {
-          actionCell = isCW
-            ? '<button class="btn btn-primary btn-xs" disabled style="opacity:.45; cursor:not-allowed;" title="권한 없음">TXID 입력</button>'
-            : '<button class="btn btn-primary btn-xs" onclick="openTxTXIDModal(' + dataIdx + ')">TXID 입력</button>';
-        } else if (r.type === 'withdrawal') {
+        if (r.type === 'withdrawal') {
           actionCell = '<button class="btn btn-outline btn-xs" onclick="openWithdrawalDetailAdmin(' + dataIdx + ')">상세</button>';
         } else {
           actionCell = '<button class="btn btn-outline btn-xs" onclick="openDepositDetailAdmin(' + dataIdx + ')">상세</button>';
@@ -8146,17 +8172,51 @@
     showToast(r.corp + ' · ' + r.coin + ' 보류 입금이 거절되었습니다.', 3000);
   }
 
+  var _wdDetailIdx = null;
+
   function openWithdrawalDetailAdmin(dataIdx) {
     var r = _TX_DATA[dataIdx]; if (!r) return;
+    _wdDetailIdx = dataIdx;
     var cfg = _TX_STATUS_CFG[r.status] || { label: r.status, cls:'badge-gray' };
 
-    document.getElementById('wd-status').innerHTML    = '<span class="badge ' + cfg.cls + '">' + cfg.label + '</span>';
-    document.getElementById('wd-no').textContent      = r.wdNo || '—';
-    document.getElementById('wd-datetime').textContent = r.datetime;
-    document.getElementById('wd-corp').textContent    = r.corp;
-    document.getElementById('wd-coin').textContent    = r.coin + ' / ' + r.network;
-    document.getElementById('wd-amount').textContent  = '-' + r.amount + ' ' + r.coin;
-    document.getElementById('wd-addr').textContent    = r.addr || '—';
+    document.getElementById('wd-status').innerHTML     = '<span class="badge ' + cfg.cls + '">' + cfg.label + '</span>';
+    document.getElementById('wd-no').textContent       = r.wdNo || '—';
+    document.getElementById('wd-corp').textContent     = r.corp;
+    document.getElementById('wd-wallet').textContent   = r.walletName || '—';
+    document.getElementById('wd-coin').textContent     = r.coin + ' / ' + r.network;
+    document.getElementById('wd-amount').textContent   = '-' + r.amount + ' ' + r.coin;
+    document.getElementById('wd-addr').textContent     = r.addr || '—';
+    document.getElementById('wd-addr-type').textContent = r.addrType || '—';
+    document.getElementById('wd-requester').textContent = r.requester || '—';
+    document.getElementById('wd-datetime').textContent  = r.datetime;
+
+    // 수수료 / 실제 출금 / 원화 환산
+    var feeRow    = document.getElementById('wd-fee-row');
+    var actualRow = document.getElementById('wd-actual-row');
+    var krwRow    = document.getElementById('wd-krw-row');
+    if (r.fee) {
+      document.getElementById('wd-fee').textContent    = r.fee + ' ' + r.coin;
+      document.getElementById('wd-actual').textContent = r.actualAmount + ' ' + r.coin;
+      document.getElementById('wd-krw').textContent    = (r.amountKRW ? '약 ₩' + r.amountKRW : '—');
+      if (feeRow)    feeRow.style.display    = '';
+      if (actualRow) actualRow.style.display = '';
+      if (krwRow)    krwRow.style.display    = '';
+    } else {
+      if (feeRow)    feeRow.style.display    = 'none';
+      if (actualRow) actualRow.style.display = 'none';
+      if (krwRow)    krwRow.style.display    = 'none';
+    }
+
+    // 메모
+    var memoRow = document.getElementById('wd-memo-row');
+    if (memoRow) {
+      if (r.memo) {
+        document.getElementById('wd-memo').textContent = r.memo;
+        memoRow.style.display = '';
+      } else {
+        memoRow.style.display = 'none';
+      }
+    }
 
     // Destination Tag (XRP only)
     var wdaDtRow  = document.getElementById('wd-dest-tag-row');
@@ -8176,20 +8236,37 @@
       }
     }
 
-    // signing section
+    // 서명 현황 (서명대기/처리중/출금중/완료에서 표시)
     var signSec = document.getElementById('wd-signing-section');
-    signSec.style.display = (r.status === 'signing') ? '' : 'none';
-    if (r.status === 'signing') {
-      document.getElementById('wd-sign-required').textContent = (r.signRequired||2) + '명';
-      document.getElementById('wd-sign-done').textContent     = (r.signDone||0) + '명';
+    var showSign = (r.status !== 'rejected');
+    signSec.style.display = showSign ? '' : 'none';
+    if (showSign) {
+      var req  = r.signRequired || 2;
+      var done = r.signDone != null ? r.signDone : 0;
+      var signLabel = done + ' / ' + req;
+      if (done >= req) signLabel += '  (서명 완료)';
+      else if (r.status === 'signing') signLabel += '  (서명 대기 중)';
+      document.getElementById('wd-sign-summary').textContent = signLabel;
     }
 
-    // txid section
+    // TXID 읽기 전용 (출금중/완료)
     var txidSec = document.getElementById('wd-txid-section');
     txidSec.style.display = (r.status === 'broadcasting' || r.status === 'done') ? '' : 'none';
     if (r.txid) document.getElementById('wd-txid').textContent = r.txid;
 
-    // timeline section
+    // TXID 입력 섹션 (처리중 + 콜드월렛/마스터)
+    var txidInputSec = document.getElementById('wd-txid-input-section');
+    var canInputTXID = (r.status === 'processing') && (_ADMIN_ROLE === 'coldwallet' || _ADMIN_ROLE === 'master');
+    txidInputSec.style.display = canInputTXID ? '' : 'none';
+    if (canInputTXID) {
+      var txidInp = document.getElementById('wd-txid-input');
+      if (txidInp) txidInp.value = '';
+      _otpRowReset('wdTXIDOTPRow');
+      var submitBtn = document.getElementById('wd-txid-submit-btn');
+      if (submitBtn) submitBtn.disabled = true;
+    }
+
+    // 완료 타임라인
     var tlSec = document.getElementById('wd-timeline-section');
     tlSec.style.display = (r.status === 'done') ? '' : 'none';
     if (r.status === 'done') {
@@ -8201,7 +8278,7 @@
       ].map(function(s){ return '<div>' + s + '</div>'; }).join('');
     }
 
-    // reject section
+    // 거절 사유
     var rejSec = document.getElementById('wd-reject-section');
     rejSec.style.display = (r.status === 'rejected') ? '' : 'none';
     if (r.status === 'rejected') {
@@ -8209,6 +8286,26 @@
     }
 
     openModal('modal-withdrawal-detail-admin');
+  }
+
+  function _validateWDTXID() {
+    var txidVal = (document.getElementById('wd-txid-input') || {}).value || '';
+    var filled  = _otpRowFilled('wdTXIDOTPRow');
+    var btn     = document.getElementById('wd-txid-submit-btn');
+    if (btn) btn.disabled = !(txidVal.trim().length > 0 && filled);
+  }
+
+  function confirmWDTXIDInline() {
+    var r = _TX_DATA[_wdDetailIdx]; if (!r) return;
+    var txidVal = (document.getElementById('wd-txid-input') || {}).value || '';
+    if (!txidVal.trim() || !_otpRowFilled('wdTXIDOTPRow')) return;
+    r.txid   = txidVal.trim();
+    r.status = 'broadcasting';
+    closeModal('modal-withdrawal-detail-admin');
+    _afterClose(function() {
+      alert('TXID가 입력되었습니다.\n출금 브로드캐스트로 상태가 변경됩니다.');
+      renderTransactionAdmin();
+    });
   }
 
   function openTxTXIDModal(dataIdx) {
