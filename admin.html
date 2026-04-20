@@ -6343,6 +6343,8 @@
     modal.classList.add('open');
   }
 
+  function _afterClose(fn) { setTimeout(fn, 260); }
+
   function closeModal(id) {
     var modal = document.getElementById(id);
     if (modal) modal.classList.remove('open');
