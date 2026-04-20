@@ -6281,12 +6281,12 @@
     { idx:0, corpName:'알파투자운용(주)',     corpNameEn:'Alpha Investment Mgmt',  bizNo:'123-45-67890',
       status:'done',            riskGrade:'low',  officer:'김담당', startedAt:'2025-10-01', completedAt:'2025-10-15', expiredAt:null,         requiredDone:true,
       nextKYB:'2027-04-07', renewalPeriod:'1년', wlfApprovedAt:'2025-10-12', octaResult:{ checked:true, watchlist:false, checkedAt:'2025-10-12 15:30' },
-      wlfPerson:{ matched:false }, wlfCountry:{ matched:false, country:'대한민국 (저위험)' } },
+      wlfPerson:{ matched:true, names:['김○○'] }, wlfCountry:{ country:'대한민국(저위험)' } },
     { idx:1, corpName:'베타캐피탈 유한회사', corpNameEn:'Beta Capital Ltd',         bizNo:'234-56-78901',
       status:'wlf',             riskGrade:null,   officer:'이담당', startedAt:'2025-11-01', completedAt:null,         expiredAt:null,         requiredDone:true,
       wlfApprovedAt:'2026-04-15 14:00', octaResult:null,
-      wlfPerson:{ matched:true, name:'김○○', reason:'자금세탁 의심', registeredAt:'2025-11-03', registeredBy:'박AML관리자', note:'과거 STR 보고 이력 있음' },
-      wlfCountry:{ matched:false, country:'대한민국 (저위험)' } },
+      wlfPerson:{ matched:true, names:['김○○', '(주)알파파이낸스'] },
+      wlfCountry:{ country:'대한민국(저위험)' } },
     { idx:2, corpName:'감마트레이딩(주)',     corpNameEn:'Gamma Trading Corp',       bizNo:'345-67-89012',
       status:'draft',           riskGrade:null,   officer:'박담당', startedAt:'2025-11-20', completedAt:null,         expiredAt:null,         requiredDone:false },
     { idx:3, corpName:'델타홀딩스 유한회사', corpNameEn:'Delta Holdings Ltd',        bizNo:'456-78-90123',
@@ -6296,13 +6296,13 @@
       status:'submitted',       riskGrade:null,   officer:'이담당', startedAt:'2026-04-06', completedAt:null,         expiredAt:null,         requiredDone:true },
     { idx:5, corpName:'제타캐피탈(주)',       corpNameEn:'Zeta Capital Corp',        bizNo:'678-90-12345',
       status:'expired',         riskGrade:'mid',  officer:'이담당', startedAt:'2025-04-01', completedAt:'2025-04-02', expiredAt:'2026-04-01', requiredDone:true,
-      wlfPerson:{ matched:false }, wlfCountry:{ matched:false, country:'대한민국 (저위험)' } },
+      wlfPerson:{ matched:false }, wlfCountry:{ country:'대한민국(저위험)' } },
     { idx:6, corpName:'오메가자산운용(주)',   corpNameEn:'Omega Asset Mgmt',         bizNo:'789-01-23456',
       status:'expired',         riskGrade:'low',  officer:'박담당', startedAt:'2025-03-01', completedAt:'2025-03-15', expiredAt:'2026-03-15', requiredDone:true,
-      wlfPerson:{ matched:false }, wlfCountry:{ matched:false, country:'미국 (저위험)' } },
+      wlfPerson:{ matched:false }, wlfCountry:{ country:'미국(저위험)' } },
     { idx:7, corpName:'시그마투자유한회사',   corpNameEn:'Sigma Investment Ltd',     bizNo:'890-12-34567',
       status:'contract_expired',riskGrade:'mid',  officer:'이담당', startedAt:'2025-03-01', completedAt:'2025-03-21', expiredAt:'2026-03-21', contractExpiredAt:'2026-04-20', requiredDone:true,
-      wlfPerson:{ matched:false }, wlfCountry:{ matched:false, country:'대한민국 (저위험)' } },
+      wlfPerson:{ matched:false }, wlfCountry:{ country:'대한민국(저위험)' } },
   ];
   var _kybDetailIdx = null;
 
@@ -7222,10 +7222,10 @@
     // ① 내부요주의인물
     var pEl = document.getElementById('kybd-person-match');
     if (k.wlfPerson && k.wlfPerson.matched) {
+      var names = k.wlfPerson.names || (k.wlfPerson.name ? [k.wlfPerson.name] : []);
       pEl.style.cssText = 'padding:10px 12px; border-radius:6px; background:#FEF2F2; border:1px solid #FECACA; font-size:12.5px;';
-      pEl.innerHTML = '<div style="font-weight:700; color:#B91C1C; margin-bottom:6px;">매칭 결과: ⚠ 1건 해당</div>'
-        + '<div>이름: <strong>' + k.wlfPerson.name + '</strong> &nbsp;/&nbsp; 등록 사유: ' + k.wlfPerson.reason + '</div>'
-        + '<div>등록일: ' + k.wlfPerson.registeredAt + '</div>';
+      pEl.innerHTML = '<div style="font-weight:700; color:#B91C1C; margin-bottom:6px;">매칭 결과: ⚠ ' + names.length + '건 해당</div>'
+        + names.map(function(n){ return '<div>· ' + n + '</div>'; }).join('');
     } else {
       pEl.style.cssText = 'padding:10px 12px; border-radius:6px; background:#ECFDF5; border:1px solid #A7F3D0; font-size:12.5px;';
       pEl.innerHTML = '<div style="font-weight:700; color:#065F46;">매칭 결과: ✅ 해당 없음</div>';
@@ -7233,27 +7233,22 @@
 
     // ② 국가위험정책
     var cEl = document.getElementById('kybd-country-match');
-    if (k.wlfCountry && k.wlfCountry.matched) {
-      cEl.style.cssText = 'padding:10px 12px; border-radius:6px; background:#FEF2F2; border:1px solid #FECACA; font-size:12.5px;';
-      cEl.innerHTML = '<div style="font-weight:700; color:#B91C1C; margin-bottom:4px;">매칭 결과: ⚠ 고위험 국가 해당</div>'
-        + '<div>법인 소재 국가: ' + (k.wlfCountry.country||'—') + '</div>';
-    } else {
-      cEl.style.cssText = 'padding:10px 12px; border-radius:6px; background:#ECFDF5; border:1px solid #A7F3D0; font-size:12.5px;';
-      cEl.innerHTML = '<div style="font-weight:700; color:#065F46; margin-bottom:4px;">매칭 결과: ✅ 해당 없음</div>'
-        + (k.wlfCountry ? '<div style="color:var(--text-secondary);">법인 소재 국가: ' + k.wlfCountry.country + '</div>' : '');
-    }
+    var dCountryStr = (k.wlfCountry && k.wlfCountry.country) ? k.wlfCountry.country : '—';
+    var dIsHighRisk = dCountryStr.indexOf('고위험') !== -1;
+    cEl.style.cssText = 'padding:10px 12px; border-radius:6px; font-size:12.5px; background:' + (dIsHighRisk ? '#FEF2F2; border:1px solid #FECACA;' : '#ECFDF5; border:1px solid #A7F3D0;');
+    cEl.innerHTML = '<div style="font-weight:600; color:' + (dIsHighRisk ? '#B91C1C' : '#065F46') + ';">' + dCountryStr + '</div>';
 
     // ③ OCTA Watch list
     var oEl = document.getElementById('kybd-octa-result');
     if (k.octaResult && k.octaResult.checked) {
       if (k.octaResult.watchlist) {
         oEl.style.cssText = 'padding:10px 12px; border-radius:6px; background:#FEF9C3; border:1px solid #FDE047; font-size:12.5px;';
-        oEl.innerHTML = '<div style="margin-bottom:4px;">검증 일시: ' + k.octaResult.checkedAt + '</div>'
-          + '<div style="font-weight:700; color:#713F12; margin-bottom:4px;">결과: ⚠ Watch list 대상입니다. OCTA에서 확인해주세요.</div>'
+        oEl.innerHTML = '<div style="margin-bottom:4px; color:var(--text-secondary);">검증 일시: ' + k.octaResult.checkedAt + '</div>'
+          + '<div style="font-weight:700; color:#713F12; margin-bottom:4px;">결과: ⚠ Watch list 대상입니다.</div>'
           + '<div style="color:#713F12;">처리: AML 관리자 판단으로 KYB 완료 처리</div>';
       } else {
         oEl.style.cssText = 'padding:10px 12px; border-radius:6px; background:#ECFDF5; border:1px solid #A7F3D0; font-size:12.5px;';
-        oEl.innerHTML = '<div style="margin-bottom:4px;">검증 일시: ' + k.octaResult.checkedAt + '</div>'
+        oEl.innerHTML = '<div style="margin-bottom:4px; color:var(--text-secondary);">검증 일시: ' + k.octaResult.checkedAt + '</div>'
           + '<div style="font-weight:700; color:#065F46;">결과: ✅ Watch list 대상이 아닙니다.</div>';
       }
     } else {
@@ -7277,33 +7272,23 @@
     var pEl = document.getElementById('wlfd-person-match');
     var warnBanner = document.getElementById('wlfd-warn-banner');
     if (k.wlfPerson && k.wlfPerson.matched) {
-      pEl.style.background = '#FEF2F2';
-      pEl.style.border = '1px solid #FECACA';
-      pEl.style.borderRadius = '8px';
-      pEl.innerHTML = '<div style="font-weight:700; color:#B91C1C; margin-bottom:6px;">매칭 결과: ⚠ 1건 해당</div>'
-        + '<div>이름: <strong>' + k.wlfPerson.name + '</strong> &nbsp;/&nbsp; 등록 사유: ' + k.wlfPerson.reason + '</div>'
-        + '<div>등록일: ' + k.wlfPerson.registeredAt + ' &nbsp;/&nbsp; 등록자: ' + k.wlfPerson.registeredBy + '</div>'
-        + '<div>비고: ' + (k.wlfPerson.note || '—') + '</div>';
+      var names = k.wlfPerson.names || (k.wlfPerson.name ? [k.wlfPerson.name] : []);
+      pEl.style.cssText = 'padding:10px 12px; border-radius:8px; background:#FEF2F2; border:1px solid #FECACA; font-size:12.5px;';
+      pEl.innerHTML = '<div style="font-weight:700; color:#B91C1C; margin-bottom:6px;">매칭 결과: ⚠ ' + names.length + '건 해당</div>'
+        + names.map(function(n){ return '<div>· ' + n + '</div>'; }).join('');
       if (warnBanner) warnBanner.style.display = '';
     } else {
-      pEl.style.background = '#ECFDF5';
-      pEl.style.border = '1px solid #A7F3D0';
-      pEl.style.borderRadius = '8px';
+      pEl.style.cssText = 'padding:10px 12px; border-radius:8px; background:#ECFDF5; border:1px solid #A7F3D0; font-size:12.5px;';
       pEl.innerHTML = '<div style="font-weight:700; color:#065F46;">매칭 결과: ✅ 해당 없음</div>';
       if (warnBanner) warnBanner.style.display = 'none';
     }
 
     // 국가위험정책 필터
     var cEl = document.getElementById('wlfd-country-match');
-    if (k.wlfCountry && k.wlfCountry.matched) {
-      cEl.style.background = '#FEF2F2'; cEl.style.border = '1px solid #FECACA'; cEl.style.borderRadius = '8px';
-      cEl.innerHTML = '<div style="font-weight:700; color:#B91C1C; margin-bottom:4px;">매칭 결과: ⚠ 고위험 국가 해당</div>'
-        + '<div>법인 소재 국가: ' + (k.wlfCountry.country||'—') + '</div>';
-    } else {
-      cEl.style.background = '#ECFDF5'; cEl.style.border = '1px solid #A7F3D0'; cEl.style.borderRadius = '8px';
-      cEl.innerHTML = '<div style="font-weight:700; color:#065F46; margin-bottom:4px;">매칭 결과: ✅ 해당 없음</div>'
-        + '<div style="color:var(--text-secondary);">법인 소재 국가: ' + (k.wlfCountry ? k.wlfCountry.country : '—') + '</div>';
-    }
+    var countryStr = (k.wlfCountry && k.wlfCountry.country) ? k.wlfCountry.country : '—';
+    var isHighRisk = countryStr.indexOf('고위험') !== -1;
+    cEl.style.cssText = 'padding:10px 12px; border-radius:8px; font-size:12.5px; background:' + (isHighRisk ? '#FEF2F2; border:1px solid #FECACA;' : '#ECFDF5; border:1px solid #A7F3D0;');
+    cEl.innerHTML = '<div style="font-weight:600; color:' + (isHighRisk ? '#B91C1C' : '#065F46') + ';">' + countryStr + '</div>';
 
     // 모달 초기 상태 리셋 (이전 OCTA 결과 잔류 방지)
     document.getElementById('wlfd-octa-pending').style.display = '';
