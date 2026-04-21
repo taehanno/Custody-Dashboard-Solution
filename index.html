@@ -7758,7 +7758,7 @@
         + '<div class="wallet-card-name">' + r.walletName + '</div>'
         + '<span style="font-size:11px; font-weight:600; color:#F59E0B; background:#FFFBEB; border:1px solid #FDE68A; padding:2px 8px; border-radius:10px; white-space:nowrap;">&#9203; 생성 대기</span>'
         + '</div>'
-        + '<div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">요청 코인: ' + r.coins.join(' / ') + '</div>'
+        + '<div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">요청 코인: ' + _formatCoinsWithNetwork(r.coins) + '</div>'
         + '<div style="font-size:12px; color:var(--text-secondary); flex:1;">요청일: ' + r.requestedAt + '</div>'
         + '<div class="wallet-actions" style="margin-top:16px;">'
         + '<button class="btn btn-outline btn-sm btn-full" onclick="event.stopPropagation();openWalletReqDetail(\'' + r.id + '\')">요청 상세</button>'
@@ -7788,7 +7788,7 @@
           + '<div class="wallet-card-name">' + r.walletName + '</div>'
           + '<span style="font-size:11px; font-weight:600; color:#EF4444; background:#FEF2F2; border:1px solid #FECACA; padding:2px 8px; border-radius:10px; white-space:nowrap;">&#10005; 반려</span>'
           + '</div>'
-          + '<div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">요청 코인: ' + r.coins.join(' / ') + '</div>'
+          + '<div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">요청 코인: ' + _formatCoinsWithNetwork(r.coins) + '</div>'
           + '<div style="font-size:12px; color:var(--text-secondary); flex:1;">반려일: ' + (r.processedAt || '—') + '</div>'
           + '<div class="wallet-actions" style="margin-top:16px; grid-template-columns:1fr 1fr;">'
           + '<button class="btn btn-outline btn-sm" onclick="openWalletRejectReason(\'' + r.id + '\')">반려 사유 확인</button>'
@@ -7841,6 +7841,16 @@
      4-2: 지갑 생성 요청 (신규)
   ════════════════════════════════════ */
   const _CW_COINS = ['BTC','ETH','USDT','XRP','SOL'];
+  const _COIN_DEFAULT_NETWORK_LABEL = {
+    BTC:  'Bitcoin Mainnet', ETH: 'Mainnet', USDT: 'ERC20',
+    XRP:  'XRP Ledger',      SOL: 'Mainnet', USDC: 'ERC20', BNB: 'BEP20'
+  };
+  function _formatCoinsWithNetwork(coins) {
+    return coins.map(c => {
+      const net = _COIN_DEFAULT_NETWORK_LABEL[c];
+      return net ? c + ' (' + net + ')' : c;
+    }).join(' / ');
+  }
 
   function openWalletCreateModal() {
     // 폼 초기화
@@ -7968,7 +7978,7 @@
     if (!r) return;
     _wcrActiveId = id;
     document.getElementById('wrd-name').textContent  = r.walletName;
-    document.getElementById('wrd-coins').textContent = r.coins.join(' / ');
+    document.getElementById('wrd-coins').textContent = _formatCoinsWithNetwork(r.coins);
     document.getElementById('wrd-memo').textContent  = r.memo || '—';
     document.getElementById('wrd-date').textContent  = r.requestedAt;
     openModal('modal-wallet-req-detail');
@@ -7980,7 +7990,7 @@
     if (!r) return;
     _wcrActiveId = id;
     document.getElementById('wrr-name').textContent   = r.walletName;
-    document.getElementById('wrr-coins').textContent  = r.coins.join(' / ');
+    document.getElementById('wrr-coins').textContent  = _formatCoinsWithNetwork(r.coins);
     document.getElementById('wrr-date').textContent   = r.processedAt || '—';
     document.getElementById('wrr-reason').textContent = r.rejectedReason || '—';
     openModal('modal-wallet-reject-reason');
@@ -8084,7 +8094,7 @@
       const rowStyle = r.status === 'rejected' ? ' style="background:#FEF2F2;"' : '';
       return '<tr' + rowStyle + ' onclick="' + (r.status === 'rejected' ? 'openWalletRejectReason(\'' + r.id + '\')' : r.status === 'pending' ? 'openWalletReqDetail(\'' + r.id + '\')' : '') + '" style="cursor:' + (r.status === 'done' ? 'default' : 'pointer') + (r.status === 'rejected' ? ';background:#FEF2F2' : '') + ';">'
         + '<td style="font-weight:600;">' + r.walletName + '</td>'
-        + '<td style="font-size:12px;">' + r.coins.join(' / ') + '</td>'
+        + '<td style="font-size:12px;">' + _formatCoinsWithNetwork(r.coins) + '</td>'
         + '<td style="font-size:12px; color:var(--text-secondary);">' + r.requestedAt + '</td>'
         + '<td style="font-size:12px; color:var(--text-secondary);">' + (r.processedAt || '—') + '</td>'
         + '<td>' + badge + '</td>'
