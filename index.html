@@ -3883,9 +3883,12 @@
               <div style="margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <select id="hist-coin-filter" class="form-control" style="width:auto; padding:6px 10px; font-size:12px;" onchange="renderHistoryTab()">
                   <option value="">전체 코인</option>
-                  <option value="BTC">BTC</option>
-                  <option value="ETH">ETH</option>
-                  <option value="USDT">USDT</option>
+                  <option value="BTC::Bitcoin Mainnet">BTC (Bitcoin Mainnet)</option>
+                  <option value="ETH::Ethereum Mainnet">ETH (Mainnet)</option>
+                  <option value="XRP::XRP Ledger">XRP (XRP Ledger)</option>
+                  <option value="USDT::Ethereum (ERC-20)">USDT (ERC20)</option>
+                  <option value="USDT::TRC20">USDT (TRC20)</option>
+                  <option value="USDC::Ethereum (ERC-20)">USDC (ERC20)</option>
                 </select>
                 <select id="hist-status-filter" class="form-control" style="width:auto; padding:6px 10px; font-size:12px;" onchange="renderHistoryTab()">
                   <option value="">전체 상태</option>
@@ -5331,12 +5334,12 @@
         const destTagRow = (c.coin === 'XRP' && c.destTag != null)
           ? `<div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Destination Tag: ${c.destTag}</div>` : '';
         rows += `
-          <tr onclick="goToHistoryWithCoin('${c.coin}')" style="cursor:pointer;" title="History 탭에서 ${c.coin} 거래 조회">
+          <tr onclick="goToHistoryWithCoin('${c.coin}','${c.network}')" style="cursor:pointer;" title="History 탭에서 ${c.coin} 거래 조회">
             <td><div class="coin-name-row">
               <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${sym}</div>
               <div><div class="coin-name-text">${c.coin}</div></div>
             </div></td>
-            <td style="font-size:12px;">${c.network}</td>
+            <td style="font-size:12px;">${_getShortNetworkLabel(c.network)}</td>
             <td onclick="event.stopPropagation()" style="font-family:monospace; font-size:12px;">${addrDisplay}${addrCopyBtn}${destTagRow}</td>
             <td style="text-align:right; font-weight:600;">${fmtBal} ${c.coin}</td>
             <td style="text-align:right; color:var(--text-secondary); font-size:12px;">₩${price.toLocaleString()}</td>
@@ -5358,9 +5361,9 @@
               <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${sym}</div>
               <div><div class="coin-name-text">${c.coin}</div></div>
             </div></td>
-            <td style="font-size:12px;">${c.network}</td>
+            <td style="font-size:12px;">${_getShortNetworkLabel(c.network)}</td>
             <td colspan="4">
-              <span style="font-size:11px;font-weight:600;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;padding:2px 8px;border-radius:10px;">&#9203; 처리 대기</span>
+              <span style="font-size:11px;font-weight:600;color:#92400E;background:#FEF3C7;border:1px solid #FDE68A;padding:2px 8px;border-radius:10px;">&#9203; 처리 중</span>
               <span style="font-size:11px; color:var(--text-secondary); margin-left:8px;">요청일: ${c.requestedAt || '—'}</span>
             </td>
             <td style="text-align:center;" onclick="event.stopPropagation();">
@@ -5380,9 +5383,9 @@
               <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${sym}</div>
               <div><div class="coin-name-text">${c.coin}</div></div>
             </div></td>
-            <td style="font-size:12px;">${c.network}</td>
+            <td style="font-size:12px;">${_getShortNetworkLabel(c.network)}</td>
             <td colspan="4">
-              <span style="font-size:11px;font-weight:600;color:#EF4444;background:#FEF2F2;border:1px solid #FECACA;padding:2px 8px;border-radius:10px;">&#10005; 반려</span>
+              <span style="font-size:11px;font-weight:600;color:#EF4444;background:#FEF2F2;border:1px solid #FECACA;padding:2px 8px;border-radius:10px;">&#10005; 거절됨</span>
             </td>
             <td onclick="event.stopPropagation();" style="text-align:center; white-space:nowrap;">
               <button class="btn btn-outline btn-xs" style="margin-right:4px;" onclick="openCoinRejectReason(${c.idx})">반려 사유 확인</button>
@@ -5470,7 +5473,14 @@
 
     let rows = _HISTORY_DATA.filter(h => {
       if (_histType !== 'all' && h.type !== _histType) return false;
-      if (coinF && h.coin !== coinF) return false;
+      if (coinF) {
+        if (coinF.includes('::')) {
+          const [fCoin, fNet] = coinF.split('::');
+          if (h.coin !== fCoin || h.network !== fNet) return false;
+        } else {
+          if (h.coin !== coinF) return false;
+        }
+      }
       // status filter: map compound keys
       if (statusF) {
         const sKey = statusF.replace('_wd','').replace('_dep','');
@@ -5518,9 +5528,10 @@
     }).join('');
   }
 
-  function goToHistoryWithCoin(coinSymbol) {
+  function goToHistoryWithCoin(coinSymbol, network) {
+    const filterVal = network ? coinSymbol + '::' + network : coinSymbol;
     const histTab = document.querySelector('#walletDetailTabs .tab:nth-child(2)');
-    switchDetailTab(histTab, 'history', coinSymbol);
+    switchDetailTab(histTab, 'history', filterVal);
   }
 
   function exportHistCSV() { showToast('CSV 다운로드는 데모에서 지원되지 않습니다.'); }
@@ -7597,6 +7608,18 @@
   }
 
   /* ── 지갑 대시보드 동적 렌더링 (4-1) ── */
+  function _getShortNetworkLabel(network) {
+    if (!network) return '';
+    const n = network.trim();
+    if (n === 'Bitcoin Mainnet') return 'Bitcoin Mainnet';
+    if (/mainnet/i.test(n) && !/xrp/i.test(n)) return 'Mainnet';
+    if (/^ERC.?20$/i.test(n) || /ethereum.*erc.?20/i.test(n) || n === 'Ethereum (ERC-20)') return 'ERC20';
+    if (/^TRC.?20$/i.test(n) || /tron.*trc.?20/i.test(n) || n === 'TRON (TRC-20)') return 'TRC20';
+    if (/^BEP.?20$/i.test(n) || /bnb.*smart/i.test(n)) return 'BEP20';
+    if (/xrp.?ledger/i.test(n)) return 'XRP Ledger';
+    return n;
+  }
+
   function renderWalletDashboard() {
     const grid = document.getElementById('wallet-grid-container');
     if (!grid) return;
@@ -7628,9 +7651,13 @@
       } else {
         const show = positiveCoins.slice(0, 5);
         const extra = positiveCoins.length - 5;
-        chipHtml = show.map(c =>
-          '<span class="coin-chip"><span class="coin-chip-icon">' + (_COIN_ICONS_MAP[c.coin] || c.coin[0]) + '</span>' + c.coin + '</span>'
-        ).join('');
+        chipHtml = show.map(c => {
+          const netLabel = _getShortNetworkLabel(c.network);
+          return '<span class="coin-chip"><span class="coin-chip-icon">' + (_COIN_ICONS_MAP[c.coin] || c.coin[0]) + '</span>'
+            + c.coin
+            + (netLabel ? ' <span class="coin-network-text">(' + netLabel + ')</span>' : '')
+            + '</span>';
+        }).join('');
         if (extra > 0) chipHtml += '<span class="coin-chip" style="background:#E2E8F0;color:var(--text-secondary);">+' + extra + '개</span>';
       }
 
