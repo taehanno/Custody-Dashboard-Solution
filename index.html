@@ -11886,11 +11886,15 @@
       return `<span style="font-size:12px; font-weight:600; color:${color};">${n}/${_CERT_RESEND_MAX}</span>`;
     };
 
-    /* 액션 버튼 분기 (90일/5회/Rate Limit) */
-    const actionBtn = h => {
+    /* 동일 id의 첫 번째(=최신) 항목에만 액션 버튼 표시 */
+    const seenIds = new Set();
+
+    const actionBtn = (h, isLatest) => {
       if (h.status === 'failed') {
         return `<button class="btn btn-outline btn-xs" onclick="_certRetry('${h.id}')" style="font-size:11px; padding:3px 8px; border-color:var(--danger); color:var(--danger);">재시도</button>`;
       }
+      /* 최신 항목이 아니면 액션 없음 */
+      if (!isLatest) return '<span style="color:var(--text-secondary); font-size:12px;">—</span>';
       if (h.status !== 'sent') return '<span style="color:var(--text-secondary); font-size:12px;">—</span>';
 
       /* 90일 초과 */
@@ -11908,16 +11912,19 @@
       return `<button class="btn btn-outline btn-xs" onclick="_certResend('${h.id}')" style="font-size:11px; padding:3px 8px;">재발송</button>`;
     };
 
-    tbody.innerHTML = list.map(h=>`
+    tbody.innerHTML = list.map(h => {
+      const isLatest = !seenIds.has(h.id);
+      seenIds.add(h.id);
+      return `
       <tr>
         <td style="font-size:12px; white-space:nowrap;">${h.reqAt}</td>
         <td style="font-size:11px; font-family:monospace; white-space:nowrap;">${h.status==='processing' ? '—' : h.id}</td>
         <td style="font-size:12px;">${h.label}</td>
         <td>${statusBadge(h.status)}</td>
         <td style="text-align:center;">${resendCell(h)}</td>
-        <td>${actionBtn(h)}</td>
-      </tr>
-    `).join('');
+        <td>${actionBtn(h, isLatest)}</td>
+      </tr>`;
+    }).join('');
   }
 
   /* 재발송 */
