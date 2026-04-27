@@ -3584,6 +3584,7 @@
               <th style="font-size:11px;">문서번호</th>
               <th style="font-size:11px;">종류</th>
               <th style="font-size:11px;">상태</th>
+              <th style="font-size:11px; text-align:center;">재발송</th>
               <th style="font-size:11px;">액션</th>
             </tr>
           </thead>
@@ -3593,7 +3594,8 @@
       <div id="cert-hist-empty" style="display:none; padding:32px; text-align:center; color:var(--text-secondary); font-size:13px;">발급 이력이 없습니다.</div>
       <div style="margin-top:10px; font-size:11px; color:var(--text-secondary); line-height:1.7;">
         ⓘ 모든 증빙 문서는 Master 등록 이메일로 발송됩니다.<br>
-        ⓘ 재발송은 동일 이메일로만 가능합니다.<br>
+        ⓘ 재발송은 발급 후 <strong>90일 이내</strong> / 문서당 <strong>최대 5회</strong>까지 가능합니다.<br>
+        ⓘ 시간당 발급 요청 한도: 5건 (신규 발급 + 재발송 통합 카운트)<br>
         ⓘ 발급 이력은 1년간 보관됩니다.
       </div>
     </div>
@@ -11705,11 +11707,30 @@
   ════════════════════════════════════ */
 
   /* 발급 이력 더미 데이터 */
+  /* ── 재발송 제한 상수 ── */
+  const _CERT_RESEND_DAYS  = 90;   /* 발급 후 재발송 가능 기간 (일) */
+  const _CERT_RESEND_MAX   = 5;    /* 문서당 재발송 최대 횟수 */
+  const _CERT_RATE_LIMIT   = 5;    /* 시간당 발급 요청 한도 (신규+재발송 통합) */
+
+  /* Rate Limit 추적: 최근 1시간 내 요청 타임스탬프 배열 */
+  let _certRateLimitLog = [];
+
+  function _certCheckRateLimit() {
+    const now = Date.now();
+    _certRateLimitLog = _certRateLimitLog.filter(t => now - t < 3600000);
+    return _certRateLimitLog.length < _CERT_RATE_LIMIT;
+  }
+  function _certIncrRateLimit() {
+    _certRateLimitLog.push(Date.now());
+  }
+
+  /* ── 발급 이력 더미 데이터 (issuedDate: ISO 날짜, resendCount: 횟수) ── */
   const _CERT_HISTORY = [
-    { id:'BC-20260427-00001', type:'bc', label:'잔고증명서', status:'sent',       reqAt:'04-27 14:30', scope:'고객사 전체' },
-    { id:'TS-20260427-00001', type:'ts', label:'거래명세서', status:'processing', reqAt:'04-27 14:00', scope:'운영 지갑 A' },
-    { id:'TR-20260427-00001', type:'tr', label:'거래증빙',   status:'failed',     reqAt:'04-27 11:00', scope:'단건 거래'  },
-    { id:'BC-20260420-00001', type:'bc', label:'잔고증명서', status:'sent',       reqAt:'04-20 09:15', scope:'고객사 전체' },
+    { id:'BC-20260427-00001', type:'bc', label:'잔고증명서', status:'sent',       reqAt:'04-27 14:30', scope:'고객사 전체', issuedDate:'2026-04-27', resendCount:1 },
+    { id:'TS-20260427-00001', type:'ts', label:'거래명세서', status:'processing', reqAt:'04-27 14:00', scope:'운영 지갑 A', issuedDate:'2026-04-27', resendCount:0 },
+    { id:'TR-20260427-00001', type:'tr', label:'거래증빙',   status:'failed',     reqAt:'04-27 11:00', scope:'단건 거래',  issuedDate:'2026-04-27', resendCount:0 },
+    { id:'BC-20260215-00001', type:'bc', label:'잔고증명서', status:'sent',       reqAt:'02-15 09:15', scope:'고객사 전체', issuedDate:'2026-02-15', resendCount:5 },
+    { id:'BC-20260120-00001', type:'bc', label:'잔고증명서', status:'sent',       reqAt:'01-20 09:00', scope:'고객사 전체', issuedDate:'2026-01-20', resendCount:0 },
   ];
 
   /* 탭 전환 */
@@ -11768,6 +11789,7 @@
       const err = document.getElementById('cert-basedate-err');
       if (!d) { err.textContent='기준일을 선택해주세요.'; err.style.display='block'; valid=false; }
       else if (new Date(d) > today) { err.textContent='미래 날짜는 선택할 수 없습니다.'; err.style.display='block'; valid=false; }
+      else if ((today - new Date(d)) > 365*24*3600*1000) { err.textContent='기준일은 최대 1년 이전까지 설정할 수 있습니다.'; err.style.display='block'; valid=false; }
       else err.style.display='none';
     } else if (type === 'ts') {
       const f = document.getElementById('cert-from-date').value;
@@ -11821,17 +11843,22 @@
   function _certSubmit() {
     _certValidate();
     if (document.getElementById('cert-submit-btn').disabled) return;
+    if (!_certCheckRateLimit()) {
+      showToast('시간당 5건까지 발급 요청 가능합니다. 잠시 후 다시 시도해주세요.', 'error');
+      return;
+    }
     const type = document.querySelector('input[name="certType"]:checked').value;
     const labels = { bc:'잔고증명서', ts:'거래명세서' };
     closeModal('modal-cert-issue');
-    showToast(`발급 요청이 접수되었습니다. 처리 완료 후 Master 등록 이메일로 발송됩니다.`, 'success');
-    /* 이력에 신규 항목 추가 (데모) */
+    showToast('발급 요청이 접수되었습니다. 처리 완료 후 Master 등록 이메일로 발송됩니다.', 'success');
+    _certIncrRateLimit();
     const now = new Date();
     const pad2 = n=>String(n).padStart(2,'0');
     const reqAt = `${pad2(now.getMonth()+1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+    const issuedDate = now.toISOString().slice(0,10);
     const prefix = type === 'bc' ? 'BC' : 'TS';
     const docId = `${prefix}-${now.getFullYear()}${pad2(now.getMonth()+1)}${pad2(now.getDate())}-${String(_CERT_HISTORY.length+1).padStart(5,'0')}`;
-    _CERT_HISTORY.unshift({ id:docId, type, label:labels[type], status:'processing', reqAt, scope:'고객사 전체' });
+    _CERT_HISTORY.unshift({ id:docId, type, label:labels[type], status:'processing', reqAt, scope:'고객사 전체', issuedDate, resendCount:0 });
   }
 
   /* 이력 렌더링 */
@@ -11851,10 +11878,34 @@
       failed:     '<span style="background:#FEE2E2; color:#991B1B; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:600;">❌ 발송실패</span>',
     })[s] || '';
 
+    /* 재발송 N/5 컬럼: sent 건만 표시 */
+    const resendCell = h => {
+      if (h.status !== 'sent') return '<span style="color:var(--text-secondary); font-size:12px;">—</span>';
+      const n = h.resendCount || 0;
+      const color = n >= _CERT_RESEND_MAX ? '#991B1B' : n >= 3 ? '#92400E' : '#065F46';
+      return `<span style="font-size:12px; font-weight:600; color:${color};">${n}/${_CERT_RESEND_MAX}</span>`;
+    };
+
+    /* 액션 버튼 분기 (90일/5회/Rate Limit) */
     const actionBtn = h => {
-      if (h.status==='sent')       return `<button class="btn btn-outline btn-xs" onclick="_certResend('${h.id}')" style="font-size:11px; padding:3px 8px;">재발송</button>`;
-      if (h.status==='failed')     return `<button class="btn btn-outline btn-xs" onclick="_certRetry('${h.id}')" style="font-size:11px; padding:3px 8px; border-color:var(--danger); color:var(--danger);">재시도</button>`;
-      return '<span style="color:var(--text-secondary); font-size:12px;">—</span>';
+      if (h.status === 'failed') {
+        return `<button class="btn btn-outline btn-xs" onclick="_certRetry('${h.id}')" style="font-size:11px; padding:3px 8px; border-color:var(--danger); color:var(--danger);">재시도</button>`;
+      }
+      if (h.status !== 'sent') return '<span style="color:var(--text-secondary); font-size:12px;">—</span>';
+
+      /* 90일 초과 */
+      const daysSince = h.issuedDate
+        ? Math.floor((Date.now() - new Date(h.issuedDate)) / 86400000)
+        : 0;
+      if (daysSince > _CERT_RESEND_DAYS) {
+        return '<span style="font-size:11px; color:var(--text-secondary);" title="발급 후 90일이 지난 문서는 재발송할 수 없습니다. 새로 발급해주세요.">기간 만료</span>';
+      }
+      /* 5회 한도 초과 */
+      if ((h.resendCount || 0) >= _CERT_RESEND_MAX) {
+        return '<span style="font-size:11px; color:var(--text-secondary);" title="이 문서는 재발송 한도(5회)에 도달했습니다. 새로 발급해주세요.">한도 초과</span>';
+      }
+      /* 활성 재발송 버튼 */
+      return `<button class="btn btn-outline btn-xs" onclick="_certResend('${h.id}')" style="font-size:11px; padding:3px 8px;">재발송</button>`;
     };
 
     tbody.innerHTML = list.map(h=>`
@@ -11863,6 +11914,7 @@
         <td style="font-size:11px; font-family:monospace; white-space:nowrap;">${h.status==='processing' ? '—' : h.id}</td>
         <td style="font-size:12px;">${h.label}</td>
         <td>${statusBadge(h.status)}</td>
+        <td style="text-align:center;">${resendCell(h)}</td>
         <td>${actionBtn(h)}</td>
       </tr>
     `).join('');
@@ -11870,22 +11922,67 @@
 
   /* 재발송 */
   function _certResend(id) {
-    const item = _CERT_HISTORY.find(h=>h.id===id);
+    const item = _CERT_HISTORY.find(h => h.id === id);
     if (!item) return;
-    if (confirm(`Master 등록 이메일로 재발송하시겠습니까?\n문서번호: ${id}`)) {
-      showToast('재발송 요청이 접수되었습니다.', 'success');
-      const now=new Date(), pad2=n=>String(n).padStart(2,'0');
-      _CERT_HISTORY.unshift({ ...item, reqAt:`${pad2(now.getMonth()+1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`, status:'sent', label:item.label+' (재발송)' });
-      _renderCertHistory();
+
+    /* 사전 검증 ① 90일 기간 */
+    const daysSince = item.issuedDate
+      ? Math.floor((Date.now() - new Date(item.issuedDate)) / 86400000)
+      : 0;
+    if (daysSince > _CERT_RESEND_DAYS) {
+      showToast('발급 후 90일이 지난 문서는 재발송할 수 없습니다. 새로 발급해주세요.', 'error');
+      return;
     }
+    /* 사전 검증 ② 5회 한도 */
+    if ((item.resendCount || 0) >= _CERT_RESEND_MAX) {
+      showToast('이 문서는 재발송 한도(5회)에 도달했습니다. 새로 발급해주세요.', 'error');
+      return;
+    }
+    /* 사전 검증 ③ Rate Limit */
+    if (!_certCheckRateLimit()) {
+      showToast('시간당 5건까지 발급 요청 가능합니다. 잠시 후 다시 시도해주세요.', 'error');
+      return;
+    }
+
+    /* 확인 모달 (데모: confirm으로 대체) */
+    const nextCount = (item.resendCount || 0) + 1;
+    const confirmed = confirm(
+      `Master 등록 이메일로 재발송하시겠습니까?\n` +
+      `문서번호: ${id}\n` +
+      `재발송 횟수: 현재 ${item.resendCount || 0}회 / ${_CERT_RESEND_MAX}회\n` +
+      `(OTP 인증 필요 — Demo에서는 즉시 처리됩니다.)`
+    );
+    if (!confirmed) return;
+
+    /* 처리 */
+    _certIncrRateLimit();
+    item.resendCount = nextCount;
+    const now = new Date();
+    const pad2 = n => String(n).padStart(2,'0');
+    const reqAt = `${pad2(now.getMonth()+1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+    _CERT_HISTORY.unshift({
+      ...item,
+      id: item.id,
+      reqAt,
+      status: 'sent',
+      label: `${item.label.replace(/ \(재발송.*\)$/, '')} (재발송 ${nextCount}회차)`,
+      resendCount: nextCount,
+    });
+    showToast(`재발송이 완료되었습니다. (${nextCount}/${_CERT_RESEND_MAX}회)`, 'success');
+    _renderCertHistory();
   }
 
-  /* 재시도 */
+  /* 재시도 (발송 실패 건 — 신규 발급으로 재처리) */
   function _certRetry(id) {
-    const idx = _CERT_HISTORY.findIndex(h=>h.id===id);
-    if (idx===-1) return;
-    showToast('재시도 요청이 접수되었습니다.', 'success');
+    const idx = _CERT_HISTORY.findIndex(h => h.id === id);
+    if (idx === -1) return;
+    if (!_certCheckRateLimit()) {
+      showToast('시간당 5건까지 발급 요청 가능합니다. 잠시 후 다시 시도해주세요.', 'error');
+      return;
+    }
+    _certIncrRateLimit();
     _CERT_HISTORY[idx].status = 'processing';
+    showToast('재시도 요청이 접수되었습니다.', 'success');
     _renderCertHistory();
   }
 
@@ -11932,7 +12029,7 @@
     showToast('발급 요청이 접수되었습니다. 처리 완료 후 Master 등록 이메일로 발송됩니다.', 'success');
     const now=new Date(), pad2=n=>String(n).padStart(2,'0');
     const reqAt=`${pad2(now.getMonth()+1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
-    _CERT_HISTORY.unshift({ id:'TR-'+now.getFullYear()+pad2(now.getMonth()+1)+pad2(now.getDate())+'-'+String(_CERT_HISTORY.length+1).padStart(5,'0'), type:'tr', label:'거래증빙', status:'processing', reqAt, scope:'단건 거래' });
+    _CERT_HISTORY.unshift({ id:'TR-'+now.getFullYear()+pad2(now.getMonth()+1)+pad2(now.getDate())+'-'+String(_CERT_HISTORY.length+1).padStart(5,'0'), type:'tr', label:'거래증빙', status:'processing', reqAt, scope:'단건 거래', issuedDate:now.toISOString().slice(0,10), resendCount:0 });
   }
 
   /* ── 출금/입금 상세 팝업 — 증빙 버튼 노출 조건 제어 ── */
