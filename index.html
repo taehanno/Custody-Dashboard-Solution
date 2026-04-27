@@ -11961,9 +11961,9 @@
     );
     if (!confirmed) return;
 
-    /* 처리 */
+    /* 처리 — 동일 id의 모든 이력 항목 resendCount 동기화 */
     _certIncrRateLimit();
-    item.resendCount = nextCount;
+    _CERT_HISTORY.forEach(h => { if (h.id === id) h.resendCount = nextCount; });
     const now = new Date();
     const pad2 = n => String(n).padStart(2,'0');
     const reqAt = `${pad2(now.getMonth()+1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
