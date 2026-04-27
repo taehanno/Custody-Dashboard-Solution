@@ -1475,7 +1475,8 @@
     <!-- Status note -->
     <div id="txwd-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; margin-top:4px;"></div>
   </div>
-  <div class="modal-footer" id="txwd-footer">
+  <div class="modal-footer" id="txwd-footer" style="justify-content:space-between;">
+    <button id="txwd-cert-btn" class="btn btn-outline btn-sm" onclick="openCertReceiptModal('wd')" style="display:none; font-size:12px;">&#128196; 증빙 발급 요청</button>
     <button class="btn btn-outline" onclick="closeModal('modal-tx-detail-wd')">닫기</button>
   </div>
 </div>
@@ -1546,7 +1547,8 @@
     </div>
     <div id="txdep-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; margin-top:4px;"></div>
   </div>
-  <div class="modal-footer" id="txdep-footer">
+  <div class="modal-footer" id="txdep-footer" style="justify-content:space-between;">
+    <button id="txdep-cert-btn" class="btn btn-outline btn-sm" onclick="openCertReceiptModal('dep')" style="display:none; font-size:12px;">&#128196; 증빙 발급 요청</button>
     <button class="btn btn-outline" onclick="closeModal('modal-tx-detail-dep')">닫기</button>
   </div>
 </div>
@@ -3411,6 +3413,272 @@
 </div>
 
 <!-- ══════════════════════════════════════
+     MODAL: 증빙 문서 발급 (12-13)
+══════════════════════════════════════ -->
+<div class="modal" id="modal-cert-issue" style="max-width:600px;">
+  <div class="modal-header">
+    <span class="modal-title">&#128196; 증빙 문서 발급</span>
+    <button class="modal-close" onclick="closeModal('modal-cert-issue')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="padding-top:12px;">
+    <!-- Tabs -->
+    <div class="tabs" style="margin-bottom:18px;">
+      <div class="tab active" id="cert-tab-issue" onclick="_certTab('issue')">문서 발급</div>
+      <div class="tab" id="cert-tab-history" onclick="_certTab('history')">발급 이력</div>
+    </div>
+
+    <!-- ───── 문서 발급 패널 ───── -->
+    <div id="cert-panel-issue">
+      <!-- 이메일 -->
+      <div class="form-group">
+        <label class="form-label">&#128231; 발송 받을 이메일</label>
+        <div style="display:flex; align-items:center; gap:8px; background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:13px;">
+          <span style="font-weight:600; color:var(--text-primary);" id="cert-email-display">master@company.com</span>
+          <span style="margin-left:auto; font-size:14px; color:var(--text-secondary);">&#128274;</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">ⓘ 보안상 Master 등록 이메일로만 발송됩니다. 변경 불가.</div>
+      </div>
+
+      <!-- ① 문서 종류 -->
+      <div class="form-group">
+        <label class="form-label">① 문서 종류 <span class="req">*</span></label>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;" id="cert-type-grid">
+          <label id="cert-type-bc" style="display:flex; flex-direction:column; gap:4px; border:2px solid var(--primary); border-radius:10px; padding:12px; cursor:pointer; background:#EEF2FF;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input type="radio" name="certType" value="bc" checked onchange="_certTypeChange()" style="accent-color:var(--primary);">
+              <span style="font-weight:600; font-size:12px;">잔고증명서</span>
+            </div>
+            <span style="font-size:11px; color:var(--text-secondary); line-height:1.4;">특정 시점의 보유 자산 증빙</span>
+          </label>
+          <label id="cert-type-ts" style="display:flex; flex-direction:column; gap:4px; border:1.5px solid var(--border); border-radius:10px; padding:12px; cursor:pointer;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input type="radio" name="certType" value="ts" onchange="_certTypeChange()" style="accent-color:var(--primary);">
+              <span style="font-weight:600; font-size:12px;">거래명세서</span>
+            </div>
+            <span style="font-size:11px; color:var(--text-secondary); line-height:1.4;">기간별 입출금 거래 내역 증빙</span>
+          </label>
+          <label id="cert-type-info" style="display:flex; flex-direction:column; justify-content:center; background:#F8FAFC; border:1px dashed var(--border); border-radius:10px; padding:12px;">
+            <span style="font-size:11px; color:var(--text-secondary); line-height:1.5;">&#9432; 개별 거래 증빙은<br>거래 상세 팝업에서<br>요청하세요.</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ② 발급 범위 -->
+      <div class="form-group">
+        <label class="form-label">② 발급 범위 <span class="req">*</span></label>
+        <div style="display:flex; gap:16px; margin-bottom:10px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+            <input type="radio" name="certScope" value="all" checked onchange="_certScopeChange()" style="accent-color:var(--primary);"> 고객사 전체 지갑
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+            <input type="radio" name="certScope" value="select" onchange="_certScopeChange()" style="accent-color:var(--primary);"> 특정 지갑 선택
+          </label>
+        </div>
+        <div id="cert-wallet-select" style="display:none; flex-wrap:wrap; gap:6px;">
+          <label style="display:flex; align-items:center; gap:5px; font-size:12px; background:#F1F5F9; padding:5px 10px; border-radius:6px; cursor:pointer; border:1px solid var(--border);">
+            <input type="checkbox" name="certWallet" value="wallet1" style="accent-color:var(--primary);"> 운영 지갑 A
+          </label>
+          <label style="display:flex; align-items:center; gap:5px; font-size:12px; background:#F1F5F9; padding:5px 10px; border-radius:6px; cursor:pointer; border:1px solid var(--border);">
+            <input type="checkbox" name="certWallet" value="wallet2" style="accent-color:var(--primary);"> 운영 지갑 B
+          </label>
+          <label style="display:flex; align-items:center; gap:5px; font-size:12px; background:#F1F5F9; padding:5px 10px; border-radius:6px; cursor:pointer; border:1px solid var(--border);">
+            <input type="checkbox" name="certWallet" value="wallet3" style="accent-color:var(--primary);"> 예비 지갑 A
+          </label>
+        </div>
+        <div id="cert-wallet-err" style="display:none; font-size:12px; color:var(--danger); margin-top:4px;">지갑을 1개 이상 선택해주세요.</div>
+      </div>
+
+      <!-- ③ 기준일 / 기간 -->
+      <div class="form-group" id="cert-date-group-bc">
+        <label class="form-label">③ 기준일 <span class="req">*</span></label>
+        <input type="date" id="cert-base-date" class="form-control" style="max-width:180px;" oninput="_certValidate()">
+        <div id="cert-basedate-err" style="display:none; font-size:12px; color:var(--danger); margin-top:4px;"></div>
+      </div>
+      <div class="form-group" id="cert-date-group-ts" style="display:none;">
+        <label class="form-label">③ 조회 기간 <span class="req">*</span></label>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="date" id="cert-from-date" class="form-control" style="max-width:160px;" oninput="_certValidate()">
+          <span style="font-size:12px; color:var(--text-secondary);">~</span>
+          <input type="date" id="cert-to-date" class="form-control" style="max-width:160px;" oninput="_certValidate()">
+        </div>
+        <div id="cert-period-err" style="display:none; font-size:12px; color:var(--danger); margin-top:4px;"></div>
+      </div>
+
+      <!-- ④ 언어 -->
+      <div class="form-group">
+        <label class="form-label">④ 언어 <span class="req">*</span></label>
+        <div style="display:flex; gap:16px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+            <input type="radio" name="certLang" value="ko" checked style="accent-color:var(--primary);"> 국문 (KOR)
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+            <input type="radio" name="certLang" value="en" style="accent-color:var(--primary);"> 영문 (ENG)
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+            <input type="radio" name="certLang" value="both" style="accent-color:var(--primary);"> 국·영문 병기
+          </label>
+        </div>
+      </div>
+
+      <!-- ⑤ 발급 정보 -->
+      <div class="form-group">
+        <label class="form-label">⑤ 발급 용도 <span class="req">*</span></label>
+        <input type="text" id="cert-purpose" class="form-control" placeholder="예: 감사 자료 제출" maxlength="100" oninput="_certValidate()">
+        <div id="cert-purpose-err" style="display:none; font-size:12px; color:var(--danger); margin-top:4px;">발급 용도를 입력해주세요.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">수신처 <span style="font-size:11px; color:var(--text-secondary);">(선택)</span></label>
+        <input type="text" id="cert-recipient" class="form-control" placeholder="예: 삼정회계법인" maxlength="100">
+      </div>
+      <div class="form-group">
+        <label class="form-label">담당자명 <span style="font-size:11px; color:var(--text-secondary);">(선택)</span></label>
+        <input type="text" id="cert-manager" class="form-control" placeholder="예: 홍길동" maxlength="50">
+      </div>
+
+      <!-- 안내 -->
+      <div style="background:#F0F9FF; border:1px solid #BAE6FD; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#0C4A6E; line-height:1.6;">
+        ⓘ 발급된 문서는 인피닛블록 직인이 포함된 공식 증빙입니다.<br>
+        ⓘ 처리 완료 후 Master 등록 이메일로 PDF가 발송됩니다.<br>
+        ⓘ 발급 처리 시간: 평균 1~5분 (최대 30분)
+      </div>
+
+      <!-- OTP -->
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" style="text-align:center; display:block;">OTP 인증 <span class="req">*</span></label>
+        <div class="otp-row" id="certOtpRow" style="margin:8px 0 4px;">
+          <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,0,'certOtpRow')" onkeydown="otpBack(event,this,0,'certOtpRow')" onpaste="otpPaste(event,'certOtpRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,1,'certOtpRow')" onkeydown="otpBack(event,this,1,'certOtpRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,2,'certOtpRow')" onkeydown="otpBack(event,this,2,'certOtpRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,3,'certOtpRow')" onkeydown="otpBack(event,this,3,'certOtpRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,4,'certOtpRow')" onkeydown="otpBack(event,this,4,'certOtpRow')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,5,'certOtpRow')" onkeydown="otpBack(event,this,5,'certOtpRow')" onpaste="otpPaste(event,'certOtpRow')">
+        </div>
+        <div style="text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:2px;">Demo: 아무 숫자나 6자리</div>
+        <div class="otp-attempt-row" id="certOtpErr"></div>
+      </div>
+    </div>
+
+    <!-- ───── 발급 이력 패널 ───── -->
+    <div id="cert-panel-history" style="display:none;">
+      <!-- 필터 -->
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <select id="cert-hist-type-filter" class="form-control" style="font-size:12px; padding:5px 8px; height:auto; max-width:130px;" onchange="_renderCertHistory()">
+          <option value="">문서 종류 전체</option>
+          <option value="bc">잔고증명서</option>
+          <option value="ts">거래명세서</option>
+          <option value="tr">거래증빙</option>
+        </select>
+        <select id="cert-hist-status-filter" class="form-control" style="font-size:12px; padding:5px 8px; height:auto; max-width:120px;" onchange="_renderCertHistory()">
+          <option value="">상태 전체</option>
+          <option value="processing">처리 중</option>
+          <option value="sent">발송 완료</option>
+          <option value="failed">발송 실패</option>
+        </select>
+      </div>
+      <!-- 이력 테이블 -->
+      <div class="table-wrap" style="max-height:360px; overflow-y:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="white-space:nowrap; font-size:11px;">요청일시</th>
+              <th style="font-size:11px;">문서번호</th>
+              <th style="font-size:11px;">종류</th>
+              <th style="font-size:11px;">상태</th>
+              <th style="font-size:11px;">액션</th>
+            </tr>
+          </thead>
+          <tbody id="cert-hist-tbody"></tbody>
+        </table>
+      </div>
+      <div id="cert-hist-empty" style="display:none; padding:32px; text-align:center; color:var(--text-secondary); font-size:13px;">발급 이력이 없습니다.</div>
+      <div style="margin-top:10px; font-size:11px; color:var(--text-secondary); line-height:1.7;">
+        ⓘ 모든 증빙 문서는 Master 등록 이메일로 발송됩니다.<br>
+        ⓘ 재발송은 동일 이메일로만 가능합니다.<br>
+        ⓘ 발급 이력은 1년간 보관됩니다.
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer" id="cert-issue-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-cert-issue')">취소</button>
+    <button class="btn btn-primary" id="cert-submit-btn" onclick="_certSubmit()" disabled>발급 요청 &#8594;</button>
+  </div>
+</div>
+
+<!-- MODAL: 개별 거래 증빙 발급 요청 (거래 상세 팝업에서 호출) (12-13-15) -->
+<div class="modal" id="modal-cert-receipt" style="max-width:480px;">
+  <div class="modal-header">
+    <span class="modal-title">&#128196; 거래 증빙 발급 요청</span>
+    <button class="modal-close" onclick="closeModal('modal-cert-receipt')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <!-- 거래 요약 -->
+    <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:14px; font-size:12px;">
+      <div style="font-size:11px; font-weight:600; color:var(--text-secondary); margin-bottom:8px;">거래 정보</div>
+      <div style="display:grid; grid-template-columns:80px 1fr; gap:5px 0;">
+        <span style="color:var(--text-secondary);">유형</span><span id="cr-type" style="font-weight:600;"></span>
+        <span style="color:var(--text-secondary);">지갑</span><span id="cr-wallet"></span>
+        <span style="color:var(--text-secondary);">코인</span><span id="cr-coin"></span>
+        <span style="color:var(--text-secondary);">수량</span><span id="cr-amount" style="font-weight:700;"></span>
+        <span style="color:var(--text-secondary);">상태</span><span id="cr-status"></span>
+      </div>
+    </div>
+    <!-- 발급 이메일 -->
+    <div class="form-group">
+      <label class="form-label">&#128231; 발송 이메일</label>
+      <div style="display:flex; align-items:center; gap:8px; background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:13px;">
+        <span style="font-weight:600;" id="cr-email-display">master@company.com</span>
+        <span style="margin-left:auto; font-size:14px; color:var(--text-secondary);">&#128274;</span>
+      </div>
+    </div>
+    <!-- 발급 용도 -->
+    <div class="form-group">
+      <label class="form-label">발급 용도 <span class="req">*</span></label>
+      <input type="text" id="cr-purpose" class="form-control" placeholder="예: 감사 자료 제출" maxlength="100" oninput="_certReceiptValidate()">
+      <div id="cr-purpose-err" style="display:none; font-size:12px; color:var(--danger); margin-top:4px;">발급 용도를 입력해주세요.</div>
+    </div>
+    <!-- 수신처 -->
+    <div class="form-group">
+      <label class="form-label">수신처 <span style="font-size:11px; color:var(--text-secondary);">(선택)</span></label>
+      <input type="text" id="cr-recipient" class="form-control" placeholder="예: 삼정회계법인" maxlength="100">
+    </div>
+    <!-- 언어 -->
+    <div class="form-group">
+      <label class="form-label">언어 <span class="req">*</span></label>
+      <div style="display:flex; gap:16px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="crLang" value="ko" checked style="accent-color:var(--primary);"> 국문 (KOR)
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="crLang" value="en" style="accent-color:var(--primary);"> 영문 (ENG)
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="crLang" value="both" style="accent-color:var(--primary);"> 국·영문 병기
+        </label>
+      </div>
+    </div>
+    <!-- OTP -->
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label" style="text-align:center; display:block;">OTP 인증 <span class="req">*</span></label>
+      <div class="otp-row" id="crOtpRow" style="margin:8px 0 4px;">
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,0,'crOtpRow')" onkeydown="otpBack(event,this,0,'crOtpRow')" onpaste="otpPaste(event,'crOtpRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,1,'crOtpRow')" onkeydown="otpBack(event,this,1,'crOtpRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,2,'crOtpRow')" onkeydown="otpBack(event,this,2,'crOtpRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,3,'crOtpRow')" onkeydown="otpBack(event,this,3,'crOtpRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,4,'crOtpRow')" onkeydown="otpBack(event,this,4,'crOtpRow')">
+        <input class="otp-box" maxlength="1" inputmode="numeric" oninput="otpMove(this,5,'crOtpRow')" onkeydown="otpBack(event,this,5,'crOtpRow')" onpaste="otpPaste(event,'crOtpRow')">
+      </div>
+      <div style="text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:2px;">Demo: 아무 숫자나 6자리</div>
+      <div class="otp-attempt-row" id="crOtpErr"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-cert-receipt')">취소</button>
+    <button class="btn btn-primary" id="cr-submit-btn" onclick="_certReceiptSubmit()" disabled>발급 요청 &#8594;</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
      TOAST
 ══════════════════════════════════════ -->
 <div id="toast" style="position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1E293B; color:#fff; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:500; z-index:900; opacity:0; transition:all 0.3s; white-space:nowrap; box-shadow:0 8px 20px rgba(0,0,0,0.2);"></div>
@@ -4005,6 +4273,9 @@
       <div class="page" id="page-transactions">
         <div class="page-header">
           <h1 class="page-title">Transactions</h1>
+          <div id="wrap-cert-btn" style="display:inline-block;" title="">
+            <button id="btn-cert-issue" class="btn btn-outline btn-sm" onclick="openCertIssueModal()" style="font-size:12px; display:flex; align-items:center; gap:5px;">&#128196; 증빙 발급</button>
+          </div>
         </div>
 
         <!-- 12-3: Stats cards -->
@@ -4879,6 +5150,11 @@
       }
     });
 
+    // 증빙 발급 버튼 (12-13)
+    _setRoleBtn('btn-cert-issue', m, '', 'btn btn-outline btn-sm');
+    const wrapCert = document.getElementById('wrap-cert-btn');
+    if (wrapCert) wrapCert.title = m ? '' : 'Master 계정만 사용 가능합니다.';
+
     // 대시보드 재렌더
     renderDashboard();
   }
@@ -5650,7 +5926,10 @@
         <button class="btn btn-outline btn-danger" style="flex:1;" onclick="closeModal('modal-tx-detail-wd'); setTimeout(()=>openWorkflowRejectOTP(),100)">거절하기</button>
         <button class="btn btn-primary" onclick="closeModal('modal-tx-detail-wd'); setTimeout(()=>openSO('so-workflow-sign'),100)">서명하기</button>`;
     } else {
-      footer.innerHTML = `${_txnNavBtn}<button class="btn btn-outline" onclick="closeModal('modal-tx-detail-wd')">닫기</button>`;
+      const _wdCertBtn = (_IS_MASTER && (h.status === 'completed' || h.status === 'broadcasting'))
+        ? `<button class="btn btn-outline btn-sm" onclick="openCertReceiptModal('wd')" style="font-size:12px; margin-right:auto;">&#128196; 증빙 발급 요청</button>`
+        : '';
+      footer.innerHTML = `${_txnNavBtn}${_wdCertBtn}<button class="btn btn-outline" onclick="closeModal('modal-tx-detail-wd')">닫기</button>`;
     }
     openModal('modal-tx-detail-wd');
   }
@@ -5725,7 +6004,10 @@
       const _depNavBtn = _txnOpenedFrom === 'transactions'
         ? `<button class="btn btn-outline btn-sm" style="margin-right:auto; font-size:12px;" onclick="_txnGoToWalletHistory('${h.id}')">지갑 History &#8599;</button>`
         : '';
-      depFooter.innerHTML = `${_depNavBtn}<button class="btn btn-outline" onclick="closeModal('modal-tx-detail-dep')">닫기</button>`;
+      const _depCertBtn = (_IS_MASTER && h.status === 'completed')
+        ? `<button class="btn btn-outline btn-sm" onclick="openCertReceiptModal('dep')" style="font-size:12px; margin-right:auto;">&#128196; 증빙 발급 요청</button>`
+        : '';
+      depFooter.innerHTML = `${_depNavBtn}${_depCertBtn}<button class="btn btn-outline" onclick="closeModal('modal-tx-detail-dep')">닫기</button>`;
     }
     openModal('modal-tx-detail-dep');
   }
@@ -9906,6 +10188,8 @@
     if (el.value && idx < 5) boxes[idx + 1].focus();
     boxes.forEach(b => b.classList.remove('err'));
     document.getElementById('otpModalErr') && (document.getElementById('otpModalErr').style.display = 'none');
+    if (wrapId === 'certOtpRow') _certValidate();
+    if (wrapId === 'crOtpRow')   _certReceiptValidate();
   }
   function otpBack(e, el, idx, wrapId) {
     if (e.key === 'Backspace' && !el.value && idx > 0) {
@@ -9921,6 +10205,8 @@
     const next = Math.min(digits.length, 5);
     boxes[next].focus();
     boxes.forEach(b => b.classList.remove('err'));
+    if (wrapId === 'certOtpRow') _certValidate();
+    if (wrapId === 'crOtpRow')   _certReceiptValidate();
   }
 
   /* ════════════════════════════════════
@@ -11413,6 +11699,251 @@
 
   /* ── 페이지 로드 시 세션 시작 ── */
   _sessionStart();
+
+  /* ════════════════════════════════════
+     12-13. 증빙 문서 발급 (Balance Certificate / Transaction Statement)
+  ════════════════════════════════════ */
+
+  /* 발급 이력 더미 데이터 */
+  const _CERT_HISTORY = [
+    { id:'BC-20260427-00001', type:'bc', label:'잔고증명서', status:'sent',       reqAt:'04-27 14:30', scope:'고객사 전체' },
+    { id:'TS-20260427-00001', type:'ts', label:'거래명세서', status:'processing', reqAt:'04-27 14:00', scope:'운영 지갑 A' },
+    { id:'TR-20260427-00001', type:'tr', label:'거래증빙',   status:'failed',     reqAt:'04-27 11:00', scope:'단건 거래'  },
+    { id:'BC-20260420-00001', type:'bc', label:'잔고증명서', status:'sent',       reqAt:'04-20 09:15', scope:'고객사 전체' },
+  ];
+
+  /* 탭 전환 */
+  function _certTab(tab) {
+    document.getElementById('cert-tab-issue').classList.toggle('active', tab === 'issue');
+    document.getElementById('cert-tab-history').classList.toggle('active', tab === 'history');
+    document.getElementById('cert-panel-issue').style.display  = tab === 'issue'   ? '' : 'none';
+    document.getElementById('cert-panel-history').style.display = tab === 'history' ? '' : 'none';
+    const footer = document.getElementById('cert-issue-footer');
+    footer.style.display = tab === 'issue' ? '' : 'none';
+    if (tab === 'history') _renderCertHistory();
+  }
+
+  /* 문서 종류 변경 */
+  function _certTypeChange() {
+    const val = document.querySelector('input[name="certType"]:checked').value;
+    document.getElementById('cert-type-bc').style.border = val === 'bc' ? '2px solid var(--primary)' : '1.5px solid var(--border)';
+    document.getElementById('cert-type-bc').style.background = val === 'bc' ? '#EEF2FF' : '';
+    document.getElementById('cert-type-ts').style.border = val === 'ts' ? '2px solid var(--primary)' : '1.5px solid var(--border)';
+    document.getElementById('cert-type-ts').style.background = val === 'ts' ? '#EEF2FF' : '';
+    document.getElementById('cert-date-group-bc').style.display = val === 'bc' ? '' : 'none';
+    document.getElementById('cert-date-group-ts').style.display = val === 'ts' ? '' : 'none';
+    _certValidate();
+  }
+
+  /* 발급 범위 변경 */
+  function _certScopeChange() {
+    const val = document.querySelector('input[name="certScope"]:checked').value;
+    const sel = document.getElementById('cert-wallet-select');
+    sel.style.display = val === 'select' ? 'flex' : 'none';
+    _certValidate();
+  }
+
+  /* 유효성 검사 & 발급 버튼 활성화 */
+  function _certValidate() {
+    const type  = document.querySelector('input[name="certType"]:checked')?.value;
+    const scope = document.querySelector('input[name="certScope"]:checked')?.value;
+    const purpose = document.getElementById('cert-purpose').value.trim();
+    const otp = Array.from(document.querySelectorAll('#certOtpRow .otp-box')).map(b=>b.value).join('');
+
+    let valid = true;
+
+    /* 지갑 체크 */
+    if (scope === 'select') {
+      const checked = document.querySelectorAll('input[name="certWallet"]:checked').length > 0;
+      document.getElementById('cert-wallet-err').style.display = checked ? 'none' : 'block';
+      if (!checked) valid = false;
+    } else {
+      document.getElementById('cert-wallet-err').style.display = 'none';
+    }
+
+    /* 날짜 검사 */
+    const today = new Date(); today.setHours(23,59,59,999);
+    if (type === 'bc') {
+      const d = document.getElementById('cert-base-date').value;
+      const err = document.getElementById('cert-basedate-err');
+      if (!d) { err.textContent='기준일을 선택해주세요.'; err.style.display='block'; valid=false; }
+      else if (new Date(d) > today) { err.textContent='미래 날짜는 선택할 수 없습니다.'; err.style.display='block'; valid=false; }
+      else err.style.display='none';
+    } else if (type === 'ts') {
+      const f = document.getElementById('cert-from-date').value;
+      const t = document.getElementById('cert-to-date').value;
+      const err = document.getElementById('cert-period-err');
+      if (!f || !t) { err.textContent='시작일과 종료일을 모두 선택해주세요.'; err.style.display='block'; valid=false; }
+      else if (new Date(f) > new Date(t)) { err.textContent='시작일은 종료일보다 이전이어야 합니다.'; err.style.display='block'; valid=false; }
+      else if ((new Date(t)-new Date(f))/(1000*60*60*24*30) > 12) { err.textContent='조회 기간은 최대 12개월까지 설정할 수 있습니다.'; err.style.display='block'; valid=false; }
+      else if (new Date(t) > today) { err.textContent='종료일은 오늘 이전이어야 합니다.'; err.style.display='block'; valid=false; }
+      else err.style.display='none';
+    }
+
+    /* 발급 용도 */
+    document.getElementById('cert-purpose-err').style.display = purpose ? 'none' : 'block';
+    if (!purpose) valid = false;
+
+    /* OTP 6자리 */
+    if (otp.length < 6) valid = false;
+
+    document.getElementById('cert-submit-btn').disabled = !valid;
+  }
+
+  /* 모달 열기 */
+  function openCertIssueModal() {
+    if (!_IS_MASTER) { showToast('Master 계정만 사용 가능합니다.', 'error'); return; }
+    /* 폼 초기화 */
+    document.querySelector('input[name="certType"][value="bc"]').checked = true;
+    document.querySelector('input[name="certScope"][value="all"]').checked = true;
+    document.querySelector('input[name="certLang"][value="ko"]').checked = true;
+    document.getElementById('cert-base-date').value = new Date().toISOString().slice(0,10);
+    document.getElementById('cert-from-date').value = '';
+    document.getElementById('cert-to-date').value   = '';
+    document.getElementById('cert-purpose').value   = '';
+    document.getElementById('cert-recipient').value = '';
+    document.getElementById('cert-manager').value   = '';
+    document.querySelectorAll('input[name="certWallet"]').forEach(c=>c.checked=false);
+    document.querySelectorAll('#certOtpRow .otp-box').forEach(b=>b.value='');
+    document.getElementById('cert-wallet-err').style.display    = 'none';
+    document.getElementById('cert-basedate-err').style.display  = 'none';
+    document.getElementById('cert-period-err').style.display    = 'none';
+    document.getElementById('cert-purpose-err').style.display   = 'none';
+    document.getElementById('certOtpErr').textContent           = '';
+    document.getElementById('cert-submit-btn').disabled         = true;
+    _certTab('issue');
+    _certTypeChange();
+    _certScopeChange();
+    openModal('modal-cert-issue');
+  }
+
+  /* 발급 요청 제출 */
+  function _certSubmit() {
+    _certValidate();
+    if (document.getElementById('cert-submit-btn').disabled) return;
+    const type = document.querySelector('input[name="certType"]:checked').value;
+    const labels = { bc:'잔고증명서', ts:'거래명세서' };
+    closeModal('modal-cert-issue');
+    showToast(`발급 요청이 접수되었습니다. 처리 완료 후 Master 등록 이메일로 발송됩니다.`, 'success');
+    /* 이력에 신규 항목 추가 (데모) */
+    const now = new Date();
+    const pad2 = n=>String(n).padStart(2,'0');
+    const reqAt = `${pad2(now.getMonth()+1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+    const prefix = type === 'bc' ? 'BC' : 'TS';
+    const docId = `${prefix}-${now.getFullYear()}${pad2(now.getMonth()+1)}${pad2(now.getDate())}-${String(_CERT_HISTORY.length+1).padStart(5,'0')}`;
+    _CERT_HISTORY.unshift({ id:docId, type, label:labels[type], status:'processing', reqAt, scope:'고객사 전체' });
+  }
+
+  /* 이력 렌더링 */
+  function _renderCertHistory() {
+    const typeF   = document.getElementById('cert-hist-type-filter').value;
+    const statusF = document.getElementById('cert-hist-status-filter').value;
+    const list = _CERT_HISTORY.filter(h => (!typeF || h.type===typeF) && (!statusF || h.status===statusF));
+    const tbody = document.getElementById('cert-hist-tbody');
+    const empty = document.getElementById('cert-hist-empty');
+
+    if (!list.length) { tbody.innerHTML=''; empty.style.display=''; return; }
+    empty.style.display='none';
+
+    const statusBadge = s => ({
+      processing: '<span style="background:#FEF3C7; color:#92400E; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:600;">⏳ 처리 중</span>',
+      sent:       '<span style="background:#D1FAE5; color:#065F46; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:600;">✅ 발송완료</span>',
+      failed:     '<span style="background:#FEE2E2; color:#991B1B; padding:2px 7px; border-radius:4px; font-size:11px; font-weight:600;">❌ 발송실패</span>',
+    })[s] || '';
+
+    const actionBtn = h => {
+      if (h.status==='sent')       return `<button class="btn btn-outline btn-xs" onclick="_certResend('${h.id}')" style="font-size:11px; padding:3px 8px;">재발송</button>`;
+      if (h.status==='failed')     return `<button class="btn btn-outline btn-xs" onclick="_certRetry('${h.id}')" style="font-size:11px; padding:3px 8px; border-color:var(--danger); color:var(--danger);">재시도</button>`;
+      return '<span style="color:var(--text-secondary); font-size:12px;">—</span>';
+    };
+
+    tbody.innerHTML = list.map(h=>`
+      <tr>
+        <td style="font-size:12px; white-space:nowrap;">${h.reqAt}</td>
+        <td style="font-size:11px; font-family:monospace; white-space:nowrap;">${h.status==='processing' ? '—' : h.id}</td>
+        <td style="font-size:12px;">${h.label}</td>
+        <td>${statusBadge(h.status)}</td>
+        <td>${actionBtn(h)}</td>
+      </tr>
+    `).join('');
+  }
+
+  /* 재발송 */
+  function _certResend(id) {
+    const item = _CERT_HISTORY.find(h=>h.id===id);
+    if (!item) return;
+    if (confirm(`Master 등록 이메일로 재발송하시겠습니까?\n문서번호: ${id}`)) {
+      showToast('재발송 요청이 접수되었습니다.', 'success');
+      const now=new Date(), pad2=n=>String(n).padStart(2,'0');
+      _CERT_HISTORY.unshift({ ...item, reqAt:`${pad2(now.getMonth()+1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`, status:'sent', label:item.label+' (재발송)' });
+      _renderCertHistory();
+    }
+  }
+
+  /* 재시도 */
+  function _certRetry(id) {
+    const idx = _CERT_HISTORY.findIndex(h=>h.id===id);
+    if (idx===-1) return;
+    showToast('재시도 요청이 접수되었습니다.', 'success');
+    _CERT_HISTORY[idx].status = 'processing';
+    _renderCertHistory();
+  }
+
+  /* ── 개별 거래 증빙 (거래 상세 팝업) ── */
+  let _certReceiptCtx = null;
+
+  function openCertReceiptModal(txType) {
+    if (!_IS_MASTER) { showToast('Master 계정만 사용 가능합니다.', 'error'); return; }
+    /* 거래 상세 정보 읽기 */
+    if (txType === 'wd') {
+      document.getElementById('cr-type').textContent   = '출금';
+      document.getElementById('cr-wallet').textContent = document.querySelector('#modal-tx-detail-wd .tx-info-row span:nth-child(1)')?.textContent || '—';
+      document.getElementById('cr-coin').textContent   = document.getElementById('txwd-coin')?.textContent || '—';
+      document.getElementById('cr-amount').textContent = document.getElementById('txwd-amount')?.textContent || '—';
+      document.getElementById('cr-status').textContent = document.getElementById('txwd-status')?.textContent || '—';
+    } else {
+      document.getElementById('cr-type').textContent   = '입금';
+      document.getElementById('cr-coin').textContent   = document.getElementById('txdep-coin')?.textContent || '—';
+      document.getElementById('cr-amount').textContent = document.getElementById('txdep-amount')?.textContent || '—';
+      document.getElementById('cr-status').textContent = document.getElementById('txdep-status')?.textContent || '—';
+      document.getElementById('cr-wallet').textContent = '—';
+    }
+    _certReceiptCtx = txType;
+    document.getElementById('cr-purpose').value = '';
+    document.getElementById('cr-recipient').value = '';
+    document.querySelector('input[name="crLang"][value="ko"]').checked = true;
+    document.querySelectorAll('#crOtpRow .otp-box').forEach(b=>b.value='');
+    document.getElementById('cr-purpose-err').style.display = 'none';
+    document.getElementById('crOtpErr').textContent = '';
+    document.getElementById('cr-submit-btn').disabled = true;
+    openModal('modal-cert-receipt');
+  }
+
+  function _certReceiptValidate() {
+    const purpose = document.getElementById('cr-purpose').value.trim();
+    const otp = Array.from(document.querySelectorAll('#crOtpRow .otp-box')).map(b=>b.value).join('');
+    document.getElementById('cr-purpose-err').style.display = purpose ? 'none' : 'block';
+    document.getElementById('cr-submit-btn').disabled = !(purpose && otp.length >= 6);
+  }
+
+  function _certReceiptSubmit() {
+    if (document.getElementById('cr-submit-btn').disabled) return;
+    closeModal('modal-cert-receipt');
+    showToast('발급 요청이 접수되었습니다. 처리 완료 후 Master 등록 이메일로 발송됩니다.', 'success');
+    const now=new Date(), pad2=n=>String(n).padStart(2,'0');
+    const reqAt=`${pad2(now.getMonth()+1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+    _CERT_HISTORY.unshift({ id:'TR-'+now.getFullYear()+pad2(now.getMonth()+1)+pad2(now.getDate())+'-'+String(_CERT_HISTORY.length+1).padStart(5,'0'), type:'tr', label:'거래증빙', status:'processing', reqAt, scope:'단건 거래' });
+  }
+
+  /* ── 출금/입금 상세 팝업 — 증빙 버튼 노출 조건 제어 ── */
+  /* openTxDetailModal / openDepositDetailModal에서 호출됨 */
+  function _updateCertBtnVisibility(btnId, status, allowedStatuses) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    const show = _IS_MASTER && allowedStatuses.includes(status);
+    btn.style.display = show ? '' : 'none';
+  }
+
 </script>
 </body>
 </html>
