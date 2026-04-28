@@ -289,7 +289,7 @@
     .wallet-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .wallet-card-name { font-size: 14px; font-weight: 700; }
     .wallet-coin-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-    .coin-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden; }
+    .coin-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.08); }
     .coin-circle img { width: 100%; height: 100%; object-fit: contain; display: block; }
     .wallet-address { font-size: 11px; color: var(--text-secondary); font-family: monospace; background: #F8FAFC; padding: 4px 8px; border-radius: 5px; margin-bottom: 12px; }
     .wallet-asset { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
@@ -5053,13 +5053,16 @@
   };
   const _COIN_COLORS  = { BTC:'#F97316', ETH:'#627EEA', USDT:'#10B981', BNB:'#F0B90B', TRX:'#EF4444', FIL:'#0090FF', XRP:'#346AA9' };
   const _COIN_SYMBOLS = { BTC:'B', ETH:'E', USDT:'U', BNB:'B', TRX:'T', FIL:'F', XRP:'X' };
-  const _COIN_LOGO_MAP = { BTC:'BTC', ETH:'ETH', USDT:'USDT', XRP:'XRP', TRX:'TRON', USDC:'USDC', SOL:'SOL' };
+  const _COIN_LOGO_MAP = { BTC:'BTC', ETH:'ETH', USDT:'USDT', XRP:'XRP', TRX:'TRON', USDC:'USDC', SOL:'SOL', BNB:'BNB' };
   function _coinImgHtml(symbol, size) {
     size = size || 22;
     if (!_COIN_LOGO_MAP[symbol]) return null;
     return '<img src="assets/' + _COIN_LOGO_MAP[symbol] + '.png" alt="' + symbol
       + '" width="' + size + '" height="' + size + '" style="object-fit:contain;"'
       + ' onerror="this.style.display=\'none\'">';
+  }
+  function _coinCircleBg(symbol) {
+    return _COIN_LOGO_MAP[symbol] ? '#fff' : (_COIN_COLORS[symbol] || '#94A3B8');
   }
 
   let _COIN_DATA = [
@@ -5634,7 +5637,7 @@
         rows += `
           <tr onclick="goToHistoryWithCoin('${c.coin}','${c.network}')" style="cursor:pointer;" title="History 탭에서 ${c.coin} 거래 조회">
             <td><div class="coin-name-row">
-              <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${_coinImgHtml(c.coin, 22) || sym}</div>
+              <div class="coin-circle" style="background:${_coinCircleBg(c.coin)}; width:28px; height:28px; font-size:11px;">${_coinImgHtml(c.coin, 22) || sym}</div>
               <div><div class="coin-name-text">${c.coin}</div></div>
             </div></td>
             <td style="font-size:12px;">${_getShortNetworkLabel(c.network)}</td>
@@ -5656,7 +5659,7 @@
         rows += `
           <tr style="background:#FFFBEB;">
             <td><div class="coin-name-row">
-              <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${_coinImgHtml(c.coin, 22) || sym}</div>
+              <div class="coin-circle" style="background:${_coinCircleBg(c.coin)}; width:28px; height:28px; font-size:11px;">${_coinImgHtml(c.coin, 22) || sym}</div>
               <div><div class="coin-name-text">${c.coin}</div></div>
             </div></td>
             <td style="font-size:12px;">${_getShortNetworkLabel(c.network)}</td>
@@ -5678,7 +5681,7 @@
         rows += `
           <tr style="background:#FEF2F2;">
             <td><div class="coin-name-row">
-              <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${_coinImgHtml(c.coin, 22) || sym}</div>
+              <div class="coin-circle" style="background:${_coinCircleBg(c.coin)}; width:28px; height:28px; font-size:11px;">${_coinImgHtml(c.coin, 22) || sym}</div>
               <div><div class="coin-name-text">${c.coin}</div></div>
             </div></td>
             <td style="font-size:12px;">${_getShortNetworkLabel(c.network)}</td>
@@ -6426,7 +6429,7 @@
           <td>${typeBadge}</td>
           <td>
             <div style="display:flex; align-items:center; gap:6px;">
-              <div class="coin-circle" style="background:${coinColor}; width:22px; height:22px; font-size:10px; flex-shrink:0;">${_coinImgHtml(h.coin, 18) || coinSym}</div>
+              <div class="coin-circle" style="background:${_coinCircleBg(h.coin)}; width:22px; height:22px; font-size:10px; flex-shrink:0;">${_coinImgHtml(h.coin, 18) || coinSym}</div>
               <span style="font-size:12px;">${h.coin}<br><span style="font-size:10px; color:var(--text-secondary);">${h.network}</span></span>
             </div>
           </td>
@@ -6788,7 +6791,7 @@
           <td style="font-size:12px;">${w.walletName}</td>
           <td>
             <div style="display:flex; align-items:center; gap:6px;">
-              <div class="coin-circle" style="background:${_txnCoinColor(w.coin)}; width:22px; height:22px; font-size:10px; flex-shrink:0;">${_txnCoinSym(w.coin)}</div>
+              <div class="coin-circle" style="background:${_coinCircleBg(w.coin)}; width:22px; height:22px; font-size:10px; flex-shrink:0;">${_coinImgHtml(w.coin, 18) || _txnCoinSym(w.coin)}</div>
               <span style="font-size:12px;">${w.coin}<br><span style="font-size:10px; color:var(--text-secondary);">${w.network}</span></span>
             </div>
           </td>
@@ -7286,7 +7289,7 @@
     _cdDetailIdx = idx;
     const color = _COIN_COLORS[c.coin] || '#94A3B8';
     const sym   = _COIN_SYMBOLS[c.coin] || c.coin[0];
-    document.getElementById('cd-circle').style.background = color;
+    document.getElementById('cd-circle').style.background = _coinCircleBg(c.coin);
     document.getElementById('cd-circle').innerHTML = _coinImgHtml(c.coin, 36) || sym;
     document.getElementById('cd-coin').textContent      = c.coin;
     document.getElementById('cd-network').textContent   = c.network;
@@ -7802,7 +7805,7 @@
       const listEl = document.getElementById('deposit-coin-list');
       listEl.innerHTML = list.map((c, idx) =>
         '<div class="deposit-coin-row" onclick="selectDepositCoin(\'' + walletId + '\',' + idx + ')">'
-        + '<div class="coin-circle" style="background:' + (c.color || '#64748B') + ';width:34px;height:34px;font-size:15px;">' + (_COIN_ICONS_MAP[c.coin] || c.coin[0]) + '</div>'
+        + '<div class="coin-circle" style="background:' + _coinCircleBg(c.coin) + ';width:34px;height:34px;font-size:15px;">' + (_coinImgHtml(c.coin, 28) || _COIN_ICONS_MAP[c.coin] || c.coin[0]) + '</div>'
         + '<div style="flex:1;">'
         + '<div style="font-weight:600;font-size:13px;">' + (_COIN_ICONS_MAP[c.coin] || '') + ' ' + c.coin + '</div>'
         + '<div style="font-size:12px;color:var(--text-secondary);">' + c.network + '</div>'
