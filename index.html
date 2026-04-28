@@ -289,7 +289,8 @@
     .wallet-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .wallet-card-name { font-size: 14px; font-weight: 700; }
     .wallet-coin-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-    .coin-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .coin-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden; }
+    .coin-circle img { width: 100%; height: 100%; object-fit: contain; display: block; }
     .wallet-address { font-size: 11px; color: var(--text-secondary); font-family: monospace; background: #F8FAFC; padding: 4px 8px; border-radius: 5px; margin-bottom: 12px; }
     .wallet-asset { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
     .wallet-asset-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
@@ -305,7 +306,8 @@
     .wallet-section-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
     .coin-chips-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; min-height: 24px; align-items: center; }
     .coin-chip { display: inline-flex; align-items: center; gap: 4px; background: #F1F5F9; border-radius: 20px; padding: 3px 9px; font-size: 12px; font-weight: 600; }
-    .coin-chip-icon { font-size: 13px; }
+    .coin-chip-icon { font-size: 13px; display: inline-flex; align-items: center; }
+    .coin-chip-icon img { width: 16px; height: 16px; object-fit: contain; }
     .sig-policy-body { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
     .sig-badge { font-size: 11px; font-weight: 700; background: #EFF6FF; color: #1D4ED8; border-radius: 4px; padding: 2px 7px; flex-shrink: 0; }
     .sig-avatars { display: inline-flex; gap: 3px; }
@@ -2630,7 +2632,7 @@
   </div>
   <div class="modal-body">
     <div style="display:flex; align-items:center; gap:14px; padding:4px 0 16px;">
-      <div id="cd-circle" style="width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:700; flex-shrink:0;">U</div>
+      <div id="cd-circle" style="width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:700; flex-shrink:0; overflow:hidden;"></div>
       <div>
         <div style="font-size:16px; font-weight:700;" id="cd-coin">—</div>
         <div style="font-size:12px; color:var(--text-secondary);" id="cd-network">—</div>
@@ -5051,6 +5053,14 @@
   };
   const _COIN_COLORS  = { BTC:'#F97316', ETH:'#627EEA', USDT:'#10B981', BNB:'#F0B90B', TRX:'#EF4444', FIL:'#0090FF', XRP:'#346AA9' };
   const _COIN_SYMBOLS = { BTC:'B', ETH:'E', USDT:'U', BNB:'B', TRX:'T', FIL:'F', XRP:'X' };
+  const _COIN_LOGO_MAP = { BTC:'BTC', ETH:'ETH', USDT:'USDT', XRP:'XRP', TRX:'TRON', USDC:'USDC', SOL:'SOL' };
+  function _coinImgHtml(symbol, size) {
+    size = size || 22;
+    if (!_COIN_LOGO_MAP[symbol]) return null;
+    return '<img src="assets/' + _COIN_LOGO_MAP[symbol] + '.png" alt="' + symbol
+      + '" width="' + size + '" height="' + size + '" style="object-fit:contain;"'
+      + ' onerror="this.style.display=\'none\'">';
+  }
 
   let _COIN_DATA = [
     { idx:0, coin:'BTC',  network:'Bitcoin Mainnet',   addr:'bc1q4d2jK...3f8e',       balance:'0.00000000', status:'active',   requestedAt:'2025-11-01 09:00' },
@@ -5624,7 +5634,7 @@
         rows += `
           <tr onclick="goToHistoryWithCoin('${c.coin}','${c.network}')" style="cursor:pointer;" title="History 탭에서 ${c.coin} 거래 조회">
             <td><div class="coin-name-row">
-              <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${sym}</div>
+              <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${_coinImgHtml(c.coin, 22) || sym}</div>
               <div><div class="coin-name-text">${c.coin}</div></div>
             </div></td>
             <td style="font-size:12px;">${_getShortNetworkLabel(c.network)}</td>
@@ -5646,7 +5656,7 @@
         rows += `
           <tr style="background:#FFFBEB;">
             <td><div class="coin-name-row">
-              <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${sym}</div>
+              <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${_coinImgHtml(c.coin, 22) || sym}</div>
               <div><div class="coin-name-text">${c.coin}</div></div>
             </div></td>
             <td style="font-size:12px;">${_getShortNetworkLabel(c.network)}</td>
@@ -5668,7 +5678,7 @@
         rows += `
           <tr style="background:#FEF2F2;">
             <td><div class="coin-name-row">
-              <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${sym}</div>
+              <div class="coin-circle" style="background:${color}; width:28px; height:28px; font-size:11px;">${_coinImgHtml(c.coin, 22) || sym}</div>
               <div><div class="coin-name-text">${c.coin}</div></div>
             </div></td>
             <td style="font-size:12px;">${_getShortNetworkLabel(c.network)}</td>
@@ -6416,7 +6426,7 @@
           <td>${typeBadge}</td>
           <td>
             <div style="display:flex; align-items:center; gap:6px;">
-              <div class="coin-circle" style="background:${coinColor}; width:22px; height:22px; font-size:10px; flex-shrink:0;">${coinSym}</div>
+              <div class="coin-circle" style="background:${coinColor}; width:22px; height:22px; font-size:10px; flex-shrink:0;">${_coinImgHtml(h.coin, 18) || coinSym}</div>
               <span style="font-size:12px;">${h.coin}<br><span style="font-size:10px; color:var(--text-secondary);">${h.network}</span></span>
             </div>
           </td>
@@ -7277,7 +7287,7 @@
     const color = _COIN_COLORS[c.coin] || '#94A3B8';
     const sym   = _COIN_SYMBOLS[c.coin] || c.coin[0];
     document.getElementById('cd-circle').style.background = color;
-    document.getElementById('cd-circle').textContent = sym;
+    document.getElementById('cd-circle').innerHTML = _coinImgHtml(c.coin, 36) || sym;
     document.getElementById('cd-coin').textContent      = c.coin;
     document.getElementById('cd-network').textContent   = c.network;
     document.getElementById('cd-wallet').textContent    = _currentWalletLabel;
@@ -7947,7 +7957,7 @@
         const extra = positiveCoins.length - 5;
         chipHtml = show.map(c => {
           const netLabel = _getShortNetworkLabel(c.network);
-          return '<span class="coin-chip"><span class="coin-chip-icon">' + (_COIN_ICONS_MAP[c.coin] || c.coin[0]) + '</span>'
+          return '<span class="coin-chip"><span class="coin-chip-icon">' + (_coinImgHtml(c.coin, 16) || _COIN_ICONS_MAP[c.coin] || c.coin[0]) + '</span>'
             + c.coin
             + (netLabel ? ' <span class="coin-network-text">(' + netLabel + ')</span>' : '')
             + '</span>';
