@@ -348,11 +348,13 @@
     .assets-coin-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
     .assets-coin-table tr:last-child td { border-bottom: none; }
     .assets-coin-table tr.total-row td { background: #F0F7FF; font-weight: 700; border-top: 2px solid var(--border); }
-    .assets-coin-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; margin-right: 8px; flex-shrink: 0; }
+    .assets-coin-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; margin-right: 8px; flex-shrink: 0; overflow: hidden; }
+    .assets-coin-icon img { width: 22px; height: 22px; object-fit: contain; }
     .assets-coin-icon.btc  { background: #FFF7ED; color: #F97316; }
     .assets-coin-icon.eth  { background: #EFF6FF; color: #3B82F6; }
     .assets-coin-icon.usdt { background: #F0FDF4; color: #22C55E; }
     .assets-coin-icon.xrp  { background: #F5F3FF; color: #8B5CF6; }
+    .assets-coin-icon.tron { background: #FEF3C7; color: #D97706; }
     .assets-coin-icon.default { background: #F1F5F9; color: #64748B; }
     /* 고객별 자산 행 */
     .assets-customer-hdr { cursor: pointer; transition: background 0.12s; }
@@ -11591,8 +11593,12 @@
           actions += ' <button class="btn btn-danger btn-xs" onclick="openCoinDelete('+c.id+')">삭제</button>';
         }
       }
+      var scImgHtml = _coinImgHtml(c.symbol, 32);
+      var scIconCell = scImgHtml
+        ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#F8FAFC;overflow:hidden;">' + scImgHtml + '</span>'
+        : '<span style="font-size:22px;line-height:1;">' + c.icon + '</span>';
       return '<tr>'
-        + '<td style="text-align:center; font-size:20px;">'+c.icon+'</td>'
+        + '<td style="text-align:center;">' + scIconCell + '</td>'
         + '<td style="font-weight:500;">'+c.name+'</td>'
         + '<td><span class="badge badge-info">'+c.symbol+'</span></td>'
         + '<td>'+networksHtml+'</td>'
@@ -11980,6 +11986,16 @@
   /* ════════════════════════════════════
      자산 관리 (섹션 16) — 데이터
   ════════════════════════════════════ */
+  /* ── 코인 로고 PNG 헬퍼 ── */
+  var _COIN_LOGO_MAP = { BTC:'BTC', ETH:'ETH', USDT:'USDT', XRP:'XRP', TRON:'TRON', USDC:'USDC' };
+  function _coinImgHtml(symbol, size) {
+    size = size || 22;
+    if (!_COIN_LOGO_MAP[symbol]) return null;
+    return '<img src="assets/' + _COIN_LOGO_MAP[symbol] + '.png" alt="' + symbol
+      + '" width="' + size + '" height="' + size + '" style="object-fit:contain;"'
+      + ' onerror="this.style.display=\'none\'">';
+  }
+
   var _ASSETS_COINS = {
     'BTC':        { name:'Bitcoin',    symbol:'BTC',  network:'Bitcoin Mainnet', price:140000000, icon:'₿',  cls:'btc'  },
     'ETH':        { name:'Ethereum',   symbol:'ETH',  network:'Ethereum Mainnet',price:5200000,   icon:'◎',  cls:'eth'  },
@@ -12088,8 +12104,9 @@
       var qty = coinTotals[key];
       var eval_ = c.price * qty;
       grandTotal += eval_;
+      var iconContent = _coinImgHtml(c.symbol) || c.icon;
       rows += '<tr>'
-        + '<td><span class="assets-coin-icon ' + c.cls + '">' + c.icon + '</span>' + c.name + '</td>'
+        + '<td><span class="assets-coin-icon ' + c.cls + '">' + iconContent + '</span>' + c.name + '</td>'
         + '<td><strong>' + c.symbol + '</strong></td>'
         + '<td><span style="font-size:11px;background:#F1F5F9;padding:2px 6px;border-radius:4px;color:var(--text-secondary);">' + c.network + '</span></td>'
         + '<td class="num" style="font-family:monospace;">' + qty.toFixed(key === 'USDT_ERC20' || key === 'USDT_TRC20' || key === 'XRP' ? 2 : 8) + '</td>'
@@ -12174,8 +12191,9 @@
           var qtyDecimals = (c.symbol === 'BTC' || c.symbol === 'ETH') ? 8 : 2;
           var tr = document.createElement('tr');
           tr.className = 'assets-detail-inner';
+          var detailIconContent = _coinImgHtml(c.symbol, 18) || c.icon;
           tr.innerHTML = '<td style="text-align:center;padding-left:0;"></td>'
-            + '<td><span class="assets-coin-icon ' + c.cls + '" style="width:22px;height:22px;font-size:11px;margin-right:6px;">' + c.icon + '</span>'
+            + '<td><span class="assets-coin-icon ' + c.cls + '" style="width:22px;height:22px;font-size:11px;margin-right:6px;">' + detailIconContent + '</span>'
             + '<strong>' + c.symbol + '</strong>&nbsp;<span style="font-size:11px;color:var(--text-secondary);">' + c.network + '</span></td>'
             + '<td style="font-size:12px;">' + w.wallet + '<span style="display:block;font-size:11px;color:var(--text-secondary);font-family:monospace;">' + w.qty.toFixed(qtyDecimals) + ' ' + c.symbol + '</span></td>'
             + '<td class="num" style="font-weight:600;color:var(--primary);">' + _fmtKRW(Math.round(eval_)) + '</td>';
@@ -12216,8 +12234,9 @@
       var qty = coinTotals[key];
       var eval_ = c.price * qty;
       grandTotal += eval_;
+      var intIconContent = _coinImgHtml(c.symbol) || c.icon;
       overviewRows += '<tr>'
-        + '<td><span class="assets-coin-icon ' + c.cls + '">' + c.icon + '</span>' + c.name + '</td>'
+        + '<td><span class="assets-coin-icon ' + c.cls + '">' + intIconContent + '</span>' + c.name + '</td>'
         + '<td><strong>' + c.symbol + '</strong></td>'
         + '<td><span style="font-size:11px;background:#E2E8F0;padding:2px 6px;border-radius:4px;color:#64748B;">' + c.network + '</span></td>'
         + '<td class="num" style="font-family:monospace;">' + qty.toFixed(key === 'USDT_ERC20' || key === 'USDT_TRC20' || key === 'XRP' ? 2 : 8) + '</td>'
@@ -12278,8 +12297,9 @@
             var qtyDecimals = (c.symbol === 'BTC' || c.symbol === 'ETH') ? 8 : 2;
             var tr = document.createElement('tr');
             tr.className = 'assets-detail-inner';
+            var intDetailIcon = _coinImgHtml(c.symbol, 18) || c.icon;
             tr.innerHTML = '<td></td>'
-              + '<td><span class="assets-coin-icon ' + c.cls + '" style="width:22px;height:22px;font-size:11px;margin-right:6px;">' + c.icon + '</span>'
+              + '<td><span class="assets-coin-icon ' + c.cls + '" style="width:22px;height:22px;font-size:11px;margin-right:6px;">' + intDetailIcon + '</span>'
               + '<strong>' + c.symbol + '</strong>&nbsp;<span style="font-size:11px;color:var(--text-secondary);">' + c.network + '</span>'
               + '<span style="display:block;font-size:11px;color:var(--text-secondary);font-family:monospace;margin-left:28px;">' + w.qty.toFixed(qtyDecimals) + ' ' + c.symbol + '</span></td>'
               + '<td class="num" style="font-weight:600;color:#64748B;">' + _fmtKRW(Math.round(eval_)) + '</td>'
