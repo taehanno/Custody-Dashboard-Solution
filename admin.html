@@ -367,6 +367,19 @@
     /* CSV 모달 */
     .csv-month-wrap { display: flex; gap: 8px; align-items: center; }
     .csv-month-wrap select { flex: 1; }
+    /* 인피닛블록 회원사(탭 3) */
+    .assets-internal-box {
+      background: linear-gradient(135deg, #475569 0%, #64748B 100%);
+      border-radius: 12px; padding: 24px 28px; color: #fff; margin-bottom: 20px;
+      position: relative;
+    }
+    .assets-internal-ref-label {
+      position: absolute; top: 16px; right: 20px;
+      font-size: 11px; background: rgba(255,255,255,0.18); border-radius: 4px;
+      padding: 3px 8px; font-weight: 600; letter-spacing: 0.3px;
+    }
+    .assets-internal-coin-table th { background: #E2E8F0; }
+    .assets-internal-coin-table tr.total-row td { background: #CBD5E1; font-weight: 700; border-top: 2px solid #94A3B8; }
 
     /* ── Radio group ── */
     .radio-group { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
@@ -382,6 +395,7 @@
     .admin-tab-panel { display: none; }
     .admin-tab-panel.active { display: block; }
     .cw-role-badge { font-size: 12px; color: #8B5CF6; background: #F5F3FF; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+    .member-badge { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:600; background:#F3E8FF; color:#7C3AED; border:1px solid #DDD6FE; border-radius:4px; padding:2px 7px; vertical-align:middle; }
     .pill-filter { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: #fff; font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
     .pill-filter:hover { border-color: var(--primary); color: var(--primary); }
     .pill-filter.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
@@ -703,6 +717,11 @@
                 <option value="low">저위험</option>
                 <option value="mid">중위험</option>
                 <option value="high">고위험</option>
+              </select>
+              <select class="form-control" id="cs-filter-member" style="width:130px;" onchange="renderClientsTable()">
+                <option value="">전체 구분</option>
+                <option value="external">외부 고객사만</option>
+                <option value="internal">회원사만</option>
               </select>
             </div>
           </div>
@@ -2191,26 +2210,28 @@
       <div class="page" id="page-assets">
         <div class="page-header">
           <h1 class="page-title">자산 관리 <span style="font-size:13px;font-weight:400;color:var(--text-secondary);">/ Asset Management</span></h1>
-          <div style="display:flex;gap:8px;align-items:center;">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <span style="font-size:12px;color:var(--text-secondary);">조회 기준: <strong style="color:var(--primary);">실시간</strong></span>
-            <button type="button" class="btn btn-outline btn-sm" onclick="openAssetsCSVModal()">&#8595; CSV 다운로드 (금감원 보고용)</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="openAssetsCSVModal()">&#8595; CSV 다운로드 (월별·금감원 보고용)</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="openAssetsDailyCSVModal()">&#8595; CSV 다운로드 (일자별)</button>
           </div>
         </div>
 
         <div class="alert" style="background:#FFFBEB;border:1px solid #FCD34D;color:#92400E;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12.5px;">
-          &#9888; 인피닛블록 회원사 보유 자산은 집계에서 제외됩니다. 이 화면은 외부 고객사(고객 포털 사용 법인) 보유 자산만 표시합니다.
+          &#9888; 인피닛블록 회원사 보유 자산은 고객 잔고 집계에서 제외됩니다. 회원사 자산은 하단 별도 영역(탭 3)에서 참고용으로 표시됩니다.
         </div>
 
         <!-- 탭 -->
         <div class="admin-tabs">
-          <div class="admin-tab active" id="assets-tab-btn-overview" onclick="switchAssetsTab('overview', this)">&#128202; 전체 고객 자산 현황</div>
+          <div class="admin-tab active" id="assets-tab-btn-overview" onclick="switchAssetsTab('overview', this)">&#128202; 외부 고객사 자산 현황</div>
           <div class="admin-tab" id="assets-tab-btn-detail" onclick="switchAssetsTab('detail', this)">&#128100; 고객별 자산 상세</div>
+          <div class="admin-tab" id="assets-tab-btn-internal" onclick="switchAssetsTab('internal', this)" style="color:#64748B;">&#127970; 인피닛블록 회원사(자사) 자산</div>
         </div>
 
-        <!-- TAB 1: 전체 현황 -->
+        <!-- TAB 1: 외부 고객사 자산 현황 -->
         <div class="admin-tab-panel active" id="assets-tab-overview">
           <div class="assets-total-box">
-            <div class="assets-total-label">&#128200; 전체 고객 총 자산 (KRW 환산) — 인피닛블록 회원사 제외</div>
+            <div class="assets-total-label">&#128200; 외부 고객사 총 자산 (KRW 환산) — 인피닛블록 회원사 제외</div>
             <div class="assets-total-amount" id="assets-grand-total-krw">₩ 0</div>
             <div class="assets-total-sub" id="assets-grand-total-sub">계산 중...</div>
             <div class="assets-total-meta" id="assets-price-time">현재가 기준 시각: 2026-04-09 10:30:00 (실시간)</div>
@@ -2238,6 +2259,9 @@
 
         <!-- TAB 2: 고객별 상세 -->
         <div class="admin-tab-panel" id="assets-tab-detail">
+          <div style="font-size:12px;color:var(--text-secondary);background:#F8FAFC;border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:14px;">
+            &#9432; 인피닛블록 회원사(자사)는 이 목록에 표시되지 않습니다. 회원사 자산은 탭 3에서 확인합니다.
+          </div>
           <!-- 필터 바 -->
           <div class="filter-bar" style="margin-bottom:16px;">
             <input type="text" class="form-control" id="assets-search" placeholder="&#128269; 고객사명 검색" style="max-width:200px;" oninput="renderAssetsDetail()" />
@@ -2272,6 +2296,57 @@
             </div>
           </div>
         </div>
+
+        <!-- TAB 3: 인피닛블록 회원사(자사) 자산 -->
+        <div class="admin-tab-panel" id="assets-tab-internal">
+          <div class="assets-internal-box">
+            <span class="assets-internal-ref-label">참고용 (집계 제외)</span>
+            <div class="assets-total-label">&#127970; 인피닛블록 회원사(자사) 총 자산 (KRW 환산)</div>
+            <div class="assets-total-amount" id="assets-internal-total-krw">₩ 0</div>
+            <div class="assets-total-sub" id="assets-internal-total-sub">계산 중...</div>
+            <div class="assets-total-meta" id="assets-internal-price-time">현재가 기준 시각: 2026-04-09 10:30:00 (실시간)</div>
+          </div>
+
+          <div class="alert" style="background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12.5px;">
+            &#9888; 본 영역의 자산은 외부 고객 잔고 집계 및 금감원 보고 대상에 포함되지 않습니다.
+          </div>
+
+          <div class="section-box">
+            <div class="section-box-title" style="color:#64748B;">코인별 자산 내역</div>
+            <div style="overflow-x:auto;">
+              <table class="assets-coin-table assets-internal-coin-table">
+                <thead>
+                  <tr>
+                    <th>코인</th>
+                    <th>심볼</th>
+                    <th>네트워크</th>
+                    <th class="num">수량 합계</th>
+                    <th class="num">현재가 (KRW)</th>
+                    <th class="num">평가금액 (KRW)</th>
+                  </tr>
+                </thead>
+                <tbody id="assets-internal-overview-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-box" style="padding:0;margin-top:16px;">
+            <div class="section-box-title" style="padding:14px 16px 0;color:#64748B;">지갑별 상세 (펼침/접힘)</div>
+            <div style="overflow-x:auto;">
+              <table class="assets-coin-table assets-internal-coin-table" style="min-width:600px;">
+                <thead>
+                  <tr>
+                    <th style="width:32px;"></th>
+                    <th>지갑명</th>
+                    <th class="num">평가금액 (KRW)</th>
+                    <th>보유 코인</th>
+                  </tr>
+                </thead>
+                <tbody id="assets-internal-detail-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div><!-- /page-assets -->
 
     </div><!-- /main -->
@@ -2301,7 +2376,7 @@
       <div class="info-row" style="border-bottom:none;"><span class="info-label">담당 AML</span><span class="info-value" id="cc-aml-officer">—</span></div>
     </div>
     <!-- KYB 갱신 주기 -->
-    <div class="form-group" style="margin-bottom:0;">
+    <div class="form-group">
       <span class="form-label">KYB 갱신 주기 <span style="color:var(--danger);">*</span></span>
       <div class="radio-group">
         <label class="radio-item"><input type="radio" name="renewal" value="1" checked onchange="calcNextRenewal()"> 1년</label>
@@ -2309,6 +2384,22 @@
         <label class="radio-item"><input type="radio" name="renewal" value="3" onchange="calcNextRenewal()"> 3년</label>
       </div>
       <div class="renewal-hint" id="renewal-hint"></div>
+    </div>
+    <!-- 고객사 구분 -->
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+      <div class="form-label" style="margin-bottom:8px;">고객사 구분</div>
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;">
+        <input type="checkbox" id="cc-internal-member" style="margin-top:2px;accent-color:#7C3AED;width:15px;height:15px;" />
+        <span>
+          <strong style="color:#7C3AED;">🏢 인피닛블록 회원사 (자사)</strong>
+          <span style="display:block;font-size:12px;color:var(--text-secondary);margin-top:3px;line-height:1.6;">
+            ⓘ 체크 시 다음 정책이 적용됩니다:<br>
+            &nbsp;&nbsp;· 외부 고객 잔고 집계에서 제외<br>
+            &nbsp;&nbsp;· 금감원 보고 CSV에서 제외<br>
+            &nbsp;&nbsp;· 자산 관리 탭 3에 별도 표시
+          </span>
+        </span>
+      </label>
     </div>
   </div>
   <div class="modal-footer">
@@ -2355,9 +2446,15 @@
 <div class="modal modal-wide" id="modal-client-detail">
   <div class="modal-header">
     <span class="modal-title" id="cd-corp-name">고객사 상세</span>
+    <span id="cd-header-member-badge" style="display:none;" class="member-badge">🏢 회원사</span>
     <button class="modal-close" onclick="closeModal('modal-client-detail')">&#10005;</button>
   </div>
   <div class="modal-body">
+    <!-- 회원사 안내 배너 -->
+    <div id="cd-banner-member" style="display:none; background:#F5F3FF; border:1px solid #DDD6FE; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
+      <div style="font-size:13px; font-weight:700; color:#6D28D9; margin-bottom:4px;">🏢 인피닛블록 회원사 (자사)</div>
+      <div style="font-size:12px; color:#5B21B6;">본 고객사는 인피닛블록 회원사로 분류되어 외부 고객 잔고 집계 및 금감원 보고에서 제외됩니다.</div>
+    </div>
     <!-- 2-4: 상태별 안내 배너 -->
     <div id="cd-banner-expired" style="display:none; background:#FFF7ED; border:1px solid #FDBA74; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
       <div style="font-size:13px; font-weight:700; color:#C2410C; margin-bottom:4px;">⚠ KYB가 만료되었습니다. 출금이 차단된 상태입니다.</div>
@@ -2379,6 +2476,7 @@
       <div class="info-row"><span class="info-label">사업자번호</span><span class="info-value" id="cd-biz-no" style="font-family:monospace;"></span></div>
       <div class="info-row"><span class="info-label">KYB 위험등급</span><span id="cd-risk"></span></div>
       <div class="info-row"><span class="info-label">상태</span><span id="cd-status-badge"></span></div>
+      <div class="info-row"><span class="info-label">고객사 구분</span><span class="info-value" id="cd-member-type"></span></div>
       <div class="info-row"><span class="info-label">KYB 만료일</span><span class="info-value" id="cd-kyb-next"></span></div>
       <div class="info-row"><span class="info-label">D-day</span><span class="info-value" id="cd-dday"></span></div>
       <div class="info-row" id="cd-renewal-row" style="border-bottom:none;"><span class="info-label">갱신 주기</span><span class="info-value" id="cd-renewal"></span></div>
@@ -2394,13 +2492,14 @@
       </div>
     </div>
   </div>
-  <div class="modal-footer" id="cd-footer">
+  <div class="modal-footer" id="cd-footer" style="flex-wrap:wrap;gap:8px;">
     <button class="btn btn-outline" onclick="closeModal('modal-client-detail')">닫기</button>
     <button class="btn btn-outline" id="cd-btn-deactivate" style="display:none; color:var(--danger); border-color:rgba(239,68,68,0.5);" onclick="openClientDeactivate()">비활성화</button>
     <button class="btn btn-outline" id="cd-btn-reactivate" style="display:none;" onclick="openClientReactivate()">활성화</button>
     <button class="btn btn-outline" id="cd-btn-pw-resend" onclick="openMasterPWResend()">임시 PW 재발송</button>
     <button class="btn btn-primary" id="cd-btn-email-change" onclick="openMasterEmailChange()">Master 이메일 변경</button>
     <button class="btn btn-primary" id="cd-btn-create-master" onclick="openCreateMasterFromDetail()" style="display:none;">Master 계정 생성 →</button>
+    <button class="btn btn-outline" id="cd-btn-member-flag" style="display:none; color:#7C3AED; border-color:rgba(124,58,237,0.4);" onclick="openMemberFlagChange()">🏢 회원사 여부 변경</button>
   </div>
 </div>
 
@@ -2514,6 +2613,48 @@
   <div class="modal-footer">
     <button class="btn btn-outline" onclick="closeModal('modal-master-email-change')">취소</button>
     <button class="btn btn-danger" id="ec-submit-btn" onclick="confirmEmailChange()">이메일 변경 → OTP</button>
+  </div>
+</div>
+
+<!-- modal-member-flag-change: 회원사 여부 변경 (2-10, 마스터 관리자 전용) -->
+<div class="modal modal-wide" id="modal-member-flag-change" style="max-width:520px;">
+  <div class="modal-header">
+    <span class="modal-title">회원사 여부 변경</span>
+    <button class="modal-close" onclick="closeModal('modal-member-flag-change')">&#10005;</button>
+  </div>
+  <div class="modal-body">
+    <div class="section-box" style="margin-bottom:16px;">
+      <div class="info-row"><span class="info-label">대상 고객사</span><span class="info-value" id="mfc-corp-name" style="font-weight:600;"></span></div>
+      <div class="info-row"><span class="info-label">현재 구분</span><span class="info-value" id="mfc-current-type"></span></div>
+      <div class="info-row" style="border-bottom:none;"><span class="info-label">변경 후 구분</span><span class="info-value" id="mfc-new-type"></span></div>
+    </div>
+    <!-- 영향 안내 -->
+    <div id="mfc-impact-box" style="background:#FFF7ED; border:1px solid #FCD34D; border-radius:8px; padding:12px 14px; margin-bottom:16px; font-size:12.5px; color:#92400E; line-height:1.8;">
+      <strong>⚠ 변경 시 다음 영향이 발생합니다:</strong>
+      <div id="mfc-impact-list" style="margin-top:6px;"></div>
+    </div>
+    <!-- 변경 사유 -->
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">변경 사유 <span style="color:var(--danger);">*</span></label>
+      <textarea id="mfc-reason" class="form-control" rows="3" maxlength="200"
+        style="width:100%; resize:vertical;" placeholder="변경 사유를 입력하세요 (최대 200자)"
+        oninput="validateMemberFlagChangeForm()"></textarea>
+      <div class="form-hint"><span id="mfc-reason-len">0</span>/200자</div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:16px 0 10px;"></div>
+    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">OTP 인증</div>
+    <div id="mfcOTPRow" style="display:flex;gap:6px;margin-bottom:4px;">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,0,'mfcOTPRow');validateMemberFlagChangeForm()" onkeydown="otpBack(event,this,0,'mfcOTPRow')" onpaste="otpPaste(event,'mfcOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,1,'mfcOTPRow');validateMemberFlagChangeForm()" onkeydown="otpBack(event,this,1,'mfcOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,2,'mfcOTPRow');validateMemberFlagChangeForm()" onkeydown="otpBack(event,this,2,'mfcOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,3,'mfcOTPRow');validateMemberFlagChangeForm()" onkeydown="otpBack(event,this,3,'mfcOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,4,'mfcOTPRow');validateMemberFlagChangeForm()" onkeydown="otpBack(event,this,4,'mfcOTPRow')">
+      <input class="otp-box" maxlength="1" inputmode="numeric" style="width:36px;height:40px;text-align:center;font-size:16px;font-weight:700;border:1px solid var(--border);border-radius:6px;" oninput="otpMove(this,5,'mfcOTPRow');validateMemberFlagChangeForm()" onkeydown="otpBack(event,this,5,'mfcOTPRow')">
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-member-flag-change')">취소</button>
+    <button class="btn btn-primary" id="mfc-submit-btn" disabled style="background:#7C3AED; border-color:#7C3AED;" onclick="confirmMemberFlagChange()">변경 확인</button>
   </div>
 </div>
 
@@ -5712,7 +5853,7 @@
 ══════════════════════════ -->
 <div class="modal modal-wide" id="modal-assets-csv" style="max-width:500px;">
   <div class="modal-header">
-    <span class="modal-title">고객 자산 현황 CSV 다운로드 (금감원 보고용)</span>
+    <span class="modal-title">월별 자산 CSV 다운로드 (금감원 보고용)</span>
     <button class="modal-close" type="button" onclick="closeModal('modal-assets-csv')">&#10005;</button>
   </div>
   <div class="modal-body" style="padding:20px 24px;">
@@ -5779,6 +5920,75 @@
   <div class="modal-footer" style="gap:10px;">
     <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-assets-csv')">취소</button>
     <button type="button" class="btn btn-primary" style="flex:2;" id="csv-download-btn" onclick="submitAssetsCSV()" disabled>&#8595; CSV 다운로드</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     MODAL: 자산 CSV 다운로드 (일자별)
+════════════════════════════════════ -->
+<div class="modal modal-wide" id="modal-assets-daily-csv" style="max-width:500px;">
+  <div class="modal-header">
+    <span class="modal-title">일자별 자산 CSV 다운로드</span>
+    <button class="modal-close" type="button" onclick="closeModal('modal-assets-daily-csv')">&#10005;</button>
+  </div>
+  <div class="modal-body" style="padding:20px 24px;">
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:10px 14px;font-size:12px;color:#1E40AF;margin-bottom:20px;line-height:1.6;">
+      &#9432; 인피닛블록 회원사 자산은 포함되지 않습니다.<br>
+      &#9432; 선택한 일자의 24:00(자정) KST 기준가가 적용됩니다. (전일까지 선택 가능)
+    </div>
+
+    <!-- 기준 일자 선택 -->
+    <div class="form-group">
+      <label class="form-label">기준 일자 선택 <span style="color:#EF4444;">*</span></label>
+      <input type="date" class="form-control" id="daily-csv-date" onchange="validateDailyCSVForm()" style="max-width:200px;" />
+      <div class="form-hint" style="margin-top:4px;">선택한 일자 24:00 KST 기준가 적용 / 전일까지 선택 가능</div>
+      <div id="daily-csv-date-error" style="display:none;color:#EF4444;font-size:12px;margin-top:4px;"></div>
+    </div>
+
+    <!-- 기준 시각 미리보기 -->
+    <div id="daily-csv-preview" style="display:none;background:#F8FAFC;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--text-secondary);margin-bottom:16px;">
+      기준 시각: <strong id="daily-csv-preview-text">—</strong>
+    </div>
+
+    <!-- 다운로드 사유 -->
+    <div class="form-group" style="margin-top:16px;">
+      <label class="form-label">다운로드 사유 <span style="color:#EF4444;">*</span></label>
+      <select class="form-control" id="daily-csv-reason-preset" onchange="onDailyCSVReasonPreset()" style="margin-bottom:6px;">
+        <option value="">사유 선택...</option>
+        <option value="일별 자산 현황 확인">일별 자산 현황 확인</option>
+        <option value="내부 감사">내부 감사</option>
+        <option value="기타">기타 (직접 입력)</option>
+      </select>
+      <textarea class="form-control" id="daily-csv-reason" rows="2" maxlength="100" placeholder="다운로드 사유를 입력하세요 (최대 100자)" oninput="validateDailyCSVForm()" style="resize:none;"></textarea>
+      <div class="form-hint"><span id="daily-csv-reason-len">0</span>/100자</div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:20px 0;"></div>
+
+    <!-- OTP 입력 -->
+    <div style="text-align:center;">
+      <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">OTP 인증</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Google Authenticator 앱에서 6자리 코드를 입력하세요</div>
+      <div class="otp-row" style="justify-content:center;margin-bottom:8px;" id="daily-csv-otp-row">
+        <input type="text" class="otp-box" maxlength="1" id="dotp-0" oninput="dailyOtpMove(this,0)" onkeydown="dailyOtpBack(event,this,0)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="dotp-1" oninput="dailyOtpMove(this,1)" onkeydown="dailyOtpBack(event,this,1)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="dotp-2" oninput="dailyOtpMove(this,2)" onkeydown="dailyOtpBack(event,this,2)" inputmode="numeric" />
+        <div style="width:8px;"></div>
+        <input type="text" class="otp-box" maxlength="1" id="dotp-3" oninput="dailyOtpMove(this,3)" onkeydown="dailyOtpBack(event,this,3)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="dotp-4" oninput="dailyOtpMove(this,4)" onkeydown="dailyOtpBack(event,this,4)" inputmode="numeric" />
+        <input type="text" class="otp-box" maxlength="1" id="dotp-5" oninput="dailyOtpMove(this,5)" onkeydown="dailyOtpBack(event,this,5)" inputmode="numeric" />
+      </div>
+      <div style="font-size:11.5px;color:var(--text-secondary);">남은 시도: <span id="daily-csv-otp-attempts">5</span>회</div>
+      <div id="daily-csv-otp-error" style="display:none;color:#EF4444;font-size:12px;margin-top:4px;"></div>
+      <div id="daily-csv-otp-lock" style="display:none;color:#EF4444;font-size:12px;margin-top:4px;font-weight:600;">&#128274; 5회 실패로 잠금되었습니다. 관리자에게 문의하세요.</div>
+      <div style="margin-top:10px;padding:6px 12px;background:#F8FAFC;border-radius:6px;font-size:11px;color:var(--text-secondary);display:inline-block;">
+        <strong>Demo</strong> : 아무 6자리 숫자 입력 시 인증됩니다
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer" style="gap:10px;">
+    <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-assets-daily-csv')">취소</button>
+    <button type="button" class="btn btn-primary" style="flex:2;" id="daily-csv-download-btn" onclick="submitAssetsDailyCSV()" disabled>&#8595; CSV 다운로드</button>
   </div>
 </div>
 
@@ -7998,25 +8208,28 @@
   var _CLIENTS_DATA = [
     { idx:0, name:'알파투자운용(주)',     nameEn:'Alpha Investment Mgmt',  bizNo:'123-45-67890',
       riskGrade:'low',  kybCompletedAt:'2025-10-15', nextKYB:'2026-05-09', dDay:-32,  kybOfficer:'김담당',
-      status:'active',           masterEmail:'ki***@alpha.com',  masterStatus:'active',   masterFirstLogin:'2025-11-01 09:00', renewalPeriod:'1년' },
+      status:'active',           masterEmail:'ki***@alpha.com',  masterStatus:'active',   masterFirstLogin:'2025-11-01 09:00', renewalPeriod:'1년', internal_member:false },
     { idx:1, name:'베타캐피탈 유한회사', nameEn:'Beta Capital Ltd',         bizNo:'234-56-78901',
       riskGrade:'mid',  kybCompletedAt:'2024-04-01', nextKYB:'2026-04-12', dDay:5,    kybOfficer:'이담당',
-      status:'expired',          masterEmail:'pa***@beta.com',   masterStatus:'active',   masterFirstLogin:'2025-04-10 14:30', renewalPeriod:'1년' },
+      status:'expired',          masterEmail:'pa***@beta.com',   masterStatus:'active',   masterFirstLogin:'2025-04-10 14:30', renewalPeriod:'1년', internal_member:false },
     { idx:2, name:'감마트레이딩(주)',     nameEn:'Gamma Trading Corp',      bizNo:'345-67-89012',
       riskGrade:'low',  kybCompletedAt:'2025-02-01', nextKYB:'2027-02-05', dDay:-304, kybOfficer:'박담당',
-      status:'active',           masterEmail:'ch***@gamma.com',  masterStatus:'active',   masterFirstLogin:'2025-02-10 10:00', renewalPeriod:'2년' },
+      status:'active',           masterEmail:'ch***@gamma.com',  masterStatus:'active',   masterFirstLogin:'2025-02-10 10:00', renewalPeriod:'2년', internal_member:false },
     { idx:3, name:'델타홀딩스 유한회사', nameEn:'Delta Holdings Ltd',       bizNo:'456-78-90123',
       riskGrade:'low',  kybCompletedAt:'2026-04-07', nextKYB:null, dDay:null, kybOfficer:'김담당',
-      status:'kyb_done',         masterEmail:null, masterStatus:null, masterFirstLogin:null, renewalPeriod:null },
+      status:'kyb_done',         masterEmail:null, masterStatus:null, masterFirstLogin:null, renewalPeriod:null, internal_member:false },
     { idx:4, name:'엡실론파트너스(주)',   nameEn:'Epsilon Partners Corp',   bizNo:'567-89-01234',
       riskGrade:'low',  kybCompletedAt:'2026-03-20', nextKYB:null, dDay:null, kybOfficer:'이담당',
-      status:'master_pending',   masterEmail:null, masterStatus:null, masterFirstLogin:null, renewalPeriod:null },
+      status:'master_pending',   masterEmail:null, masterStatus:null, masterFirstLogin:null, renewalPeriod:null, internal_member:false },
     { idx:5, name:'제타코프(주)',         nameEn:'Zeta Corp',               bizNo:'678-90-12345',
       riskGrade:'high', kybCompletedAt:'2025-01-10', nextKYB:'2026-01-10', dDay:45,   kybOfficer:'이담당',
-      status:'contract_expired', masterEmail:'ze***@zeta.com',   masterStatus:'inactive', masterFirstLogin:'2025-01-20 10:00', renewalPeriod:'1년' },
+      status:'contract_expired', masterEmail:'ze***@zeta.com',   masterStatus:'inactive', masterFirstLogin:'2025-01-20 10:00', renewalPeriod:'1년', internal_member:false },
     { idx:6, name:'에타인베스트(주)',     nameEn:'Eta Invest Corp',         bizNo:'789-01-23456',
       riskGrade:'mid',  kybCompletedAt:'2025-06-01', nextKYB:'2026-06-01', dDay:-10,  kybOfficer:'박담당',
-      status:'inactive',         masterEmail:'et***@eta.com',    masterStatus:'inactive', masterFirstLogin:'2025-06-05 09:00', renewalPeriod:'1년' },
+      status:'inactive',         masterEmail:'et***@eta.com',    masterStatus:'inactive', masterFirstLogin:'2025-06-05 09:00', renewalPeriod:'1년', internal_member:false },
+    { idx:7, name:'인피닛블록(주)',       nameEn:'Infiniteblock Corp',      bizNo:'000-00-99999',
+      riskGrade:'low',  kybCompletedAt:'2026-01-15', nextKYB:'2027-01-15', dDay:-365, kybOfficer:'김담당',
+      status:'active',           masterEmail:'in***@infiniteblock.com', masterStatus:'active', masterFirstLogin:'2026-01-20 09:00', renewalPeriod:'1년', internal_member:true },
   ];
   var _clientDetailIdx = null;
   // Rate limit tracking for PW resend: { clientIdx: [timestamps] }
@@ -8038,13 +8251,17 @@
     var q   = (document.getElementById('cs-search')        || {}).value || '';
     var fs  = (document.getElementById('cs-filter-status') || {}).value || '';
     var fr  = (document.getElementById('cs-filter-risk')   || {}).value || '';
+    var fm  = (document.getElementById('cs-filter-member') || {}).value || '';
     q = q.toLowerCase();
 
     var list = _CLIENTS_DATA.filter(function(c) {
       var matchQ = !q || c.name.toLowerCase().includes(q) || c.bizNo.includes(q);
       var matchS = !fs || c.status === fs;
       var matchR = !fr || c.riskGrade === fr;
-      return matchQ && matchS && matchR;
+      var matchM = !fm
+        || (fm === 'external' && !c.internal_member)
+        || (fm === 'internal' && !!c.internal_member);
+      return matchQ && matchS && matchR && matchM;
     });
 
     // Update stats
@@ -8093,8 +8310,11 @@
           : '<button class="btn btn-outline btn-xs" style="color:#8B5CF6; border-color:rgba(139,92,246,0.4);" onclick="openClientDetail(' + c.idx + ')">Master 생성</button>';
       }
 
+      var memberBadgeHtml = c.internal_member
+        ? '&nbsp;<span class="member-badge">&#127970; 회원사</span>'
+        : '';
       return '<tr' + rowCls + '>' +
-        '<td style="font-weight:600;">' + c.name + '</td>' +
+        '<td style="font-weight:600;">' + c.name + memberBadgeHtml + '</td>' +
         '<td style="font-size:12px;color:var(--text-secondary);">' + c.bizNo + '</td>' +
         '<td>' + riskBadge + '</td>' +
         '<td>' + kybCell + '</td>' +
@@ -8149,6 +8369,24 @@
     document.getElementById('cd-risk').innerHTML         = _RISK_BADGE[c.riskGrade] || '—';
     document.getElementById('cd-status-badge').innerHTML = (_CS_STATUS_CFG[c.status] || {}).badge || c.status;
     document.getElementById('cd-kyb-next').textContent   = c.nextKYB || '—';
+
+    // 회원사 구분 표시
+    var memberBadgeEl = document.getElementById('cd-header-member-badge');
+    var memberBannerEl = document.getElementById('cd-banner-member');
+    var memberTypeEl  = document.getElementById('cd-member-type');
+    if (c.internal_member) {
+      if (memberBadgeEl) memberBadgeEl.style.display = '';
+      if (memberBannerEl) memberBannerEl.style.display = '';
+      if (memberTypeEl)  memberTypeEl.innerHTML = '<span class="member-badge">&#127970; 인피닛블록 회원사</span>';
+    } else {
+      if (memberBadgeEl) memberBadgeEl.style.display = 'none';
+      if (memberBannerEl) memberBannerEl.style.display = 'none';
+      if (memberTypeEl)  memberTypeEl.textContent = '외부 고객사';
+    }
+
+    // 회원사 여부 변경 버튼: 마스터 관리자만
+    var btnMemberFlag = document.getElementById('cd-btn-member-flag');
+    if (btnMemberFlag) btnMemberFlag.style.display = (_ADMIN_ROLE === 'master') ? '' : 'none';
 
     // 갱신 주기
     var renewalRow = document.getElementById('cd-renewal-row');
@@ -8363,6 +8601,78 @@
       }
       renderClientsTable();
       showToast('이메일이 변경되었습니다. 기존 세션이 종료되고 기존·신규 이메일 모두에 보안 알림이 발송되었습니다.', 5000);
+    });
+  }
+
+  /* ── 2-10: 회원사 여부 변경 (마스터 관리자 전용) ── */
+  function openMemberFlagChange() {
+    var c = _CLIENTS_DATA[_clientDetailIdx]; if (!c) return;
+    var isInternal = !!c.internal_member;
+
+    document.getElementById('mfc-corp-name').textContent = c.name;
+    document.getElementById('mfc-current-type').innerHTML = isInternal
+      ? '<span class="member-badge">&#127970; 인피닛블록 회원사</span>'
+      : '외부 고객사';
+    document.getElementById('mfc-new-type').innerHTML = isInternal
+      ? '외부 고객사'
+      : '<span class="member-badge">&#127970; 인피닛블록 회원사</span>';
+
+    var impactListEl = document.getElementById('mfc-impact-list');
+    if (isInternal) {
+      impactListEl.innerHTML =
+        '· 외부 고객 잔고 집계에 즉시 포함<br>' +
+        '· 다음 금감원 보고 CSV부터 포함<br>' +
+        '· 자산 관리 탭 1·2로 자동 이동 표시';
+    } else {
+      impactListEl.innerHTML =
+        '· 외부 고객 잔고 집계에서 즉시 제외<br>' +
+        '· 다음 금감원 보고 CSV부터 제외<br>' +
+        '· 자산 관리 탭 3으로 자동 이동 표시';
+    }
+
+    document.getElementById('mfc-reason').value = '';
+    document.getElementById('mfc-reason-len').textContent = '0';
+    _otpRowReset('mfcOTPRow');
+    document.getElementById('mfc-submit-btn').disabled = true;
+
+    closeModal('modal-client-detail');
+    openModal('modal-member-flag-change');
+  }
+
+  function validateMemberFlagChangeForm() {
+    var reason = (document.getElementById('mfc-reason') || {}).value || '';
+    var lenEl  = document.getElementById('mfc-reason-len');
+    if (lenEl) lenEl.textContent = reason.length;
+    var otpFilled = _otpRowFilled('mfcOTPRow');
+    var btn = document.getElementById('mfc-submit-btn');
+    if (btn) btn.disabled = !(reason.trim().length > 0 && otpFilled);
+  }
+
+  function confirmMemberFlagChange() {
+    if (!_otpRowFilled('mfcOTPRow')) return;
+    var c = _CLIENTS_DATA[_clientDetailIdx]; if (!c) return;
+    var wasInternal = !!c.internal_member;
+    c.internal_member = !wasInternal;
+
+    var reason = (document.getElementById('mfc-reason') || {}).value || '';
+    var actionStr = wasInternal
+      ? '회원사 → 외부 고객사 변경 — ' + c.name + ' / 사유: ' + reason
+      : '외부 고객사 → 회원사 변경 — ' + c.name + ' / 사유: ' + reason;
+
+    _ACTLOG_DATA.unshift({
+      idx: _ACTLOG_DATA.length,
+      datetime: new Date().toISOString().replace('T',' ').slice(0,16),
+      actorName:'홍길동', actorEmail:'hong@infiniteblock.io', actorMask:'홍○동',
+      role: _ADMIN_ROLE, corp: c.name,
+      cat:'고객사관리',
+      action: actionStr,
+      result:'success', ip:'192.168.10.10', ua:'Chrome / macOS', errCode:null
+    });
+
+    closeModal('modal-member-flag-change');
+    _afterClose(function() {
+      renderClientsTable();
+      showToast('회원사 여부가 변경되었습니다. (' + c.name + ')');
     });
   }
 
@@ -10052,9 +10362,23 @@
 
   function submitCreateClient() {
     openOTPModal('고객사 생성', function() {
-      // Update client status to master_pending
       var c = _CLIENTS_DATA[_clientDetailIdx];
-      if (c && c.status === 'kyb_done') c.status = 'master_pending';
+      if (c && c.status === 'kyb_done') {
+        c.status = 'master_pending';
+        var isInternalChecked = (document.getElementById('cc-internal-member') || {}).checked || false;
+        c.internal_member = isInternalChecked;
+        if (isInternalChecked) {
+          _ACTLOG_DATA.unshift({
+            idx: _ACTLOG_DATA.length,
+            datetime: new Date().toISOString().replace('T',' ').slice(0,16),
+            actorName:'홍길동', actorEmail:'hong@infiniteblock.io', actorMask:'홍○동',
+            role: _ADMIN_ROLE, corp: c.name,
+            cat:'고객사관리',
+            action:'회원사로 신규 등록 — ' + c.name + ' (' + c.bizNo + ')',
+            result:'success', ip:'192.168.10.10', ua:'Chrome / macOS', errCode:null
+          });
+        }
+      }
       closeModal('modal-create-client');
       // Pre-fill master modal
       var corpName = c ? c.name : '';
@@ -11665,24 +11989,24 @@
   };
 
   var _ASSETS_CUSTOMERS = [
-    { id:1, name:'알파투자운용(주)', bizNum:'123-45-67890', wallets:[
+    { id:1, name:'알파투자운용(주)', bizNum:'123-45-67890', internal_member:false, wallets:[
       { wallet:'운영 지갑 A', coin:'BTC',        qty:3.00000000 },
       { wallet:'운영 지갑 A', coin:'USDT_ERC20', qty:500000.000000 },
       { wallet:'운영 지갑 A', coin:'ETH',        qty:10.00000000 },
       { wallet:'운영 지갑 B', coin:'BTC',        qty:1.50000000 },
       { wallet:'예비 지갑 A', coin:'ETH',        qty:5.00000000 }
     ]},
-    { id:2, name:'베타캐피탈(주)', bizNum:'234-56-78901', wallets:[
+    { id:2, name:'베타캐피탈(주)', bizNum:'234-56-78901', internal_member:false, wallets:[
       { wallet:'주 지갑 A', coin:'BTC',        qty:8.00000000 },
       { wallet:'주 지갑 A', coin:'USDT_TRC20', qty:800000.000000 },
       { wallet:'주 지갑 B', coin:'BTC',        qty:2.00000000 }
     ]},
-    { id:3, name:'감마트레이딩(주)', bizNum:'345-67-89012', wallets:[
+    { id:3, name:'감마트레이딩(주)', bizNum:'345-67-89012', internal_member:false, wallets:[
       { wallet:'트레이딩 지갑 A', coin:'BTC', qty:5.00000000 },
       { wallet:'트레이딩 지갑 A', coin:'ETH', qty:30.00000000 },
       { wallet:'트레이딩 지갑 B', coin:'BTC', qty:2.50000000 }
     ]},
-    { id:4, name:'델타자산운용(주)', bizNum:'456-78-90123', wallets:[
+    { id:4, name:'델타자산운용(주)', bizNum:'456-78-90123', internal_member:false, wallets:[
       { wallet:'운용 지갑 A', coin:'BTC',        qty:2.00000000 },
       { wallet:'운용 지갑 A', coin:'USDT_ERC20', qty:1000000.000000 },
       { wallet:'운용 지갑 A', coin:'ETH',        qty:20.00000000 },
@@ -11690,8 +12014,17 @@
     ]}
   ];
 
-  var _assetsExpanded = {};  // { customerId: true/false }
+  var _ASSETS_INTERNAL = [
+    { id:'IB001', name:'인피닛블록(주)', bizNum:'000-00-00000', internal_member:true, wallets:[
+      { wallet:'인피닛블록 운영지갑 A', coin:'BTC', qty:0.50000000 },
+      { wallet:'인피닛블록 운영지갑 B', coin:'ETH', qty:10.00000000 }
+    ]}
+  ];
+
+  var _assetsExpanded = {};         // { customerId: true/false }
+  var _assetsInternalExpanded = {}; // { walletName: true/false }
   var _csvOtpAttempts = 0;
+  var _dailyCsvOtpAttempts = 0;
 
   /* ── 숫자 포맷 헬퍼 ── */
   function _fmtNum(n) {
@@ -11715,11 +12048,16 @@
 
   /* ── 탭 전환 ── */
   function switchAssetsTab(tab, el) {
-    document.querySelectorAll('#page-assets .admin-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('#page-assets .admin-tab').forEach(function(t) {
+      t.classList.remove('active');
+      t.style.color = t.id === 'assets-tab-btn-internal' ? '#64748B' : '';
+    });
     document.querySelectorAll('#page-assets .admin-tab-panel').forEach(function(p) { p.classList.remove('active'); });
     el.classList.add('active');
+    if (tab === 'internal') el.style.color = '#475569';
     document.getElementById('assets-tab-' + tab).classList.add('active');
     if (tab === 'detail') renderAssetsDetail();
+    if (tab === 'internal') renderAssetsInternal();
   }
 
   /* ── 전체 페이지 진입 ── */
@@ -11728,11 +12066,11 @@
     renderAssetsDetail();
   }
 
-  /* ── TAB 1: 전체 현황 ── */
+  /* ── TAB 1: 외부 고객사 자산 현황 ── */
   function renderAssetsOverview() {
-    // 코인별 집계
+    var externalCustomers = _ASSETS_CUSTOMERS.filter(function(c) { return !c.internal_member; });
     var coinTotals = {};
-    _ASSETS_CUSTOMERS.forEach(function(c) {
+    externalCustomers.forEach(function(c) {
       c.wallets.forEach(function(w) {
         if (!coinTotals[w.coin]) coinTotals[w.coin] = 0;
         coinTotals[w.coin] += w.qty;
@@ -11741,7 +12079,6 @@
 
     var grandTotal = 0;
     var rows = '';
-    // 정렬: 평가금액 내림차순
     var coinKeys = Object.keys(coinTotals).sort(function(a, b) {
       return (_ASSETS_COINS[b].price * coinTotals[b]) - (_ASSETS_COINS[a].price * coinTotals[a]);
     });
@@ -11771,14 +12108,15 @@
     document.getElementById('assets-grand-total-sub').textContent = '(' + _fmtKRW_억(grandTotal) + ')';
   }
 
-  /* ── TAB 2: 고객별 상세 ── */
+  /* ── TAB 2: 고객별 상세 (외부 고객사만) ── */
   function renderAssetsDetail() {
     var search   = (document.getElementById('assets-search') || {}).value || '';
     var coinFilt = (document.getElementById('assets-filter-coin') || {}).value || '';
     var sort     = (document.getElementById('assets-sort') || {}).value || 'total_desc';
 
-    // 필터
+    // 외부 고객사만 + 검색/필터
     var list = _ASSETS_CUSTOMERS.filter(function(c) {
+      if (c.internal_member) return false;
       if (search && c.name.indexOf(search) === -1) return false;
       if (coinFilt && !c.wallets.some(function(w) { return w.coin === coinFilt; })) return false;
       return true;
@@ -11857,7 +12195,108 @@
     renderAssetsDetail();
   }
 
-  /* ── CSV 다운로드 모달 ── */
+  /* ── TAB 3: 인피닛블록 회원사(자사) 자산 ── */
+  function renderAssetsInternal() {
+    var coinTotals = {};
+    _ASSETS_INTERNAL.forEach(function(c) {
+      c.wallets.forEach(function(w) {
+        if (!coinTotals[w.coin]) coinTotals[w.coin] = 0;
+        coinTotals[w.coin] += w.qty;
+      });
+    });
+
+    var grandTotal = 0;
+    var overviewRows = '';
+    var coinKeys = Object.keys(coinTotals).sort(function(a, b) {
+      return (_ASSETS_COINS[b].price * coinTotals[b]) - (_ASSETS_COINS[a].price * coinTotals[a]);
+    });
+
+    coinKeys.forEach(function(key) {
+      var c = _ASSETS_COINS[key];
+      var qty = coinTotals[key];
+      var eval_ = c.price * qty;
+      grandTotal += eval_;
+      overviewRows += '<tr>'
+        + '<td><span class="assets-coin-icon ' + c.cls + '">' + c.icon + '</span>' + c.name + '</td>'
+        + '<td><strong>' + c.symbol + '</strong></td>'
+        + '<td><span style="font-size:11px;background:#E2E8F0;padding:2px 6px;border-radius:4px;color:#64748B;">' + c.network + '</span></td>'
+        + '<td class="num" style="font-family:monospace;">' + qty.toFixed(key === 'USDT_ERC20' || key === 'USDT_TRC20' || key === 'XRP' ? 2 : 8) + '</td>'
+        + '<td class="num">' + _fmtKRW(c.price) + '</td>'
+        + '<td class="num" style="font-weight:600;">' + _fmtKRW(Math.round(eval_)) + '</td>'
+        + '</tr>';
+    });
+
+    overviewRows += '<tr class="total-row">'
+      + '<td colspan="5" style="text-align:right;font-size:13px;">합계</td>'
+      + '<td class="num">' + _fmtKRW(Math.round(grandTotal)) + '</td>'
+      + '</tr>';
+
+    document.getElementById('assets-internal-overview-tbody').innerHTML = overviewRows;
+    document.getElementById('assets-internal-total-krw').textContent = _fmtKRW(Math.round(grandTotal));
+    document.getElementById('assets-internal-total-sub').textContent = '(' + _fmtKRW_억(grandTotal) + ')';
+
+    // 지갑별 상세 테이블
+    var detailTbody = document.getElementById('assets-internal-detail-tbody');
+    if (!detailTbody) return;
+    detailTbody.innerHTML = '';
+
+    _ASSETS_INTERNAL.forEach(function(company) {
+      // 지갑명 기준으로 그룹화
+      var walletGroups = {};
+      company.wallets.forEach(function(w) {
+        if (!walletGroups[w.wallet]) walletGroups[w.wallet] = [];
+        walletGroups[w.wallet].push(w);
+      });
+
+      Object.keys(walletGroups).forEach(function(walletName) {
+        var items = walletGroups[walletName];
+        var walletTotal = items.reduce(function(sum, w) {
+          var c = _ASSETS_COINS[w.coin];
+          return sum + (c ? c.price * w.qty : 0);
+        }, 0);
+        var coins = items.map(function(w) {
+          return _ASSETS_COINS[w.coin] ? _ASSETS_COINS[w.coin].symbol : w.coin;
+        }).filter(function(v, i, a) { return a.indexOf(v) === i; });
+
+        var key = company.id + '::' + walletName;
+        var isOpen = !!_assetsInternalExpanded[key];
+
+        var hdrTr = document.createElement('tr');
+        hdrTr.className = 'assets-customer-hdr';
+        hdrTr.onclick = (function(k) { return function() { toggleInternalWallet(k); }; })(key);
+        hdrTr.innerHTML = '<td style="text-align:center;font-size:14px;">' + (isOpen ? '&#9660;' : '&#9654;') + '</td>'
+          + '<td style="color:#475569;">' + walletName + '</td>'
+          + '<td class="num" style="font-weight:700;color:#475569;">' + _fmtKRW(Math.round(walletTotal)) + '<br><span style="font-size:11px;font-weight:400;">(' + _fmtKRW_억(walletTotal) + ')</span></td>'
+          + '<td><span style="font-size:11.5px;color:#64748B;">' + coins.join(' / ') + '</span></td>';
+        detailTbody.appendChild(hdrTr);
+
+        if (isOpen) {
+          items.forEach(function(w) {
+            var c = _ASSETS_COINS[w.coin];
+            if (!c) return;
+            var eval_ = c.price * w.qty;
+            var qtyDecimals = (c.symbol === 'BTC' || c.symbol === 'ETH') ? 8 : 2;
+            var tr = document.createElement('tr');
+            tr.className = 'assets-detail-inner';
+            tr.innerHTML = '<td></td>'
+              + '<td><span class="assets-coin-icon ' + c.cls + '" style="width:22px;height:22px;font-size:11px;margin-right:6px;">' + c.icon + '</span>'
+              + '<strong>' + c.symbol + '</strong>&nbsp;<span style="font-size:11px;color:var(--text-secondary);">' + c.network + '</span>'
+              + '<span style="display:block;font-size:11px;color:var(--text-secondary);font-family:monospace;margin-left:28px;">' + w.qty.toFixed(qtyDecimals) + ' ' + c.symbol + '</span></td>'
+              + '<td class="num" style="font-weight:600;color:#64748B;">' + _fmtKRW(Math.round(eval_)) + '</td>'
+              + '<td></td>';
+            detailTbody.appendChild(tr);
+          });
+        }
+      });
+    });
+  }
+
+  function toggleInternalWallet(key) {
+    _assetsInternalExpanded[key] = !_assetsInternalExpanded[key];
+    renderAssetsInternal();
+  }
+
+  /* ── CSV 다운로드 모달 (월별·금감원 보고용) ── */
   function openAssetsCSVModal() {
     // 연도 옵션 초기화
     var yearSel = document.getElementById('csv-year');
@@ -12055,7 +12494,211 @@
     var url  = URL.createObjectURL(blob);
     var a    = document.createElement('a');
     a.href = url;
-    a.download = 'infiniteblock_customer_assets_' + year + String(month).padStart(2,'0') + '.csv';
+    a.download = 'infiniteblock_customer_assets_monthly_' + year + String(month).padStart(2,'0') + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  /* ── 일자별 CSV 다운로드 모달 ── */
+  function openAssetsDailyCSVModal() {
+    // 날짜 선택 초기화: 최대 = 전일(D-1)
+    var now = new Date();
+    var yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    var maxDate = yesterday.getFullYear() + '-'
+      + String(yesterday.getMonth() + 1).padStart(2, '0') + '-'
+      + String(yesterday.getDate()).padStart(2, '0');
+    var dateEl = document.getElementById('daily-csv-date');
+    dateEl.max = maxDate;
+    dateEl.value = maxDate;
+
+    // OTP 초기화
+    _dailyCsvOtpAttempts = 0;
+    for (var i = 0; i < 6; i++) {
+      var box = document.getElementById('dotp-' + i);
+      if (box) { box.value = ''; box.disabled = false; box.style.borderColor = ''; }
+    }
+    document.getElementById('daily-csv-otp-error').style.display = 'none';
+    document.getElementById('daily-csv-otp-lock').style.display  = 'none';
+    document.getElementById('daily-csv-otp-attempts').textContent = 5;
+    document.getElementById('daily-csv-date-error').style.display = 'none';
+
+    // 사유 초기화
+    document.getElementById('daily-csv-reason-preset').value = '';
+    document.getElementById('daily-csv-reason').value = '';
+    document.getElementById('daily-csv-reason-len').textContent = '0';
+
+    validateDailyCSVForm();
+    openModal('modal-assets-daily-csv');
+    setTimeout(function() {
+      var f = document.getElementById('dotp-0');
+      if (f) f.focus();
+    }, 200);
+  }
+
+  function validateDailyCSVForm() {
+    var dateEl   = document.getElementById('daily-csv-date');
+    var reasonEl = document.getElementById('daily-csv-reason');
+    var lenEl    = document.getElementById('daily-csv-reason-len');
+    var errEl    = document.getElementById('daily-csv-date-error');
+    var previewEl = document.getElementById('daily-csv-preview');
+    var previewTxt = document.getElementById('daily-csv-preview-text');
+    var btn      = document.getElementById('daily-csv-download-btn');
+
+    var reason = reasonEl ? reasonEl.value : '';
+    if (lenEl) lenEl.textContent = reason.length;
+
+    var dateVal = dateEl ? dateEl.value : '';
+    var isValid = true;
+
+    if (!dateVal) {
+      isValid = false;
+      if (errEl) { errEl.style.display = 'none'; }
+      if (previewEl) previewEl.style.display = 'none';
+    } else {
+      var now = new Date();
+      var sel = new Date(dateVal + 'T00:00:00');
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      if (sel >= today) {
+        isValid = false;
+        if (errEl) {
+          errEl.textContent = sel > today
+            ? '미래 일자는 선택할 수 없습니다.'
+            : '당일은 24:00 미도래로 선택할 수 없습니다. 전일까지 선택 가능합니다.';
+          errEl.style.display = 'block';
+        }
+        if (previewEl) previewEl.style.display = 'none';
+      } else {
+        if (errEl) errEl.style.display = 'none';
+        if (previewEl) {
+          previewEl.style.display = 'block';
+          if (previewTxt) previewTxt.textContent = dateVal + ' 24:00 KST (= ' + dateVal.replace(/-/g, '').slice(0, 8) + ' 익일 00:00)';
+        }
+      }
+    }
+
+    var otpFilled = true;
+    for (var i = 0; i < 6; i++) {
+      var b = document.getElementById('dotp-' + i);
+      if (!b || !b.value) { otpFilled = false; break; }
+    }
+
+    if (btn) btn.disabled = !(isValid && reason.trim().length > 0 && otpFilled);
+  }
+
+  function onDailyCSVReasonPreset() {
+    var val = document.getElementById('daily-csv-reason-preset').value;
+    if (val && val !== '기타') {
+      document.getElementById('daily-csv-reason').value = val;
+    } else if (val === '기타') {
+      document.getElementById('daily-csv-reason').value = '';
+    }
+    document.getElementById('daily-csv-reason-len').textContent = document.getElementById('daily-csv-reason').value.length;
+    validateDailyCSVForm();
+  }
+
+  function dailyOtpMove(el, idx) {
+    el.value = el.value.replace(/[^0-9]/g, '');
+    if (el.value && idx < 5) {
+      var next = document.getElementById('dotp-' + (idx + 1));
+      if (next) next.focus();
+    }
+    validateDailyCSVForm();
+  }
+
+  function dailyOtpBack(e, el, idx) {
+    if (e.key === 'Backspace' && !el.value && idx > 0) {
+      var prev = document.getElementById('dotp-' + (idx - 1));
+      if (prev) { prev.value = ''; prev.focus(); }
+    }
+  }
+
+  function submitAssetsDailyCSV() {
+    var code = '';
+    for (var i = 0; i < 6; i++) code += (document.getElementById('dotp-' + i).value || '');
+    if (code.length < 6) {
+      document.getElementById('daily-csv-otp-error').textContent = '6자리 코드를 모두 입력해주세요.';
+      document.getElementById('daily-csv-otp-error').style.display = 'block';
+      return;
+    }
+
+    _dailyCsvOtpAttempts++;
+    var remaining = 5 - _dailyCsvOtpAttempts;
+    document.getElementById('daily-csv-otp-attempts').textContent = Math.max(0, remaining);
+
+    // Demo: 모든 6자리 허용
+    if (true) {
+      var dateVal = document.getElementById('daily-csv-date').value;
+      var reason  = document.getElementById('daily-csv-reason').value;
+
+      closeModal('modal-assets-daily-csv');
+      _generateAssetsDailyCSV(dateVal);
+
+      var nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16);
+      _ACTLOG_DATA.unshift({
+        idx: _ACTLOG_DATA.length,
+        datetime: nowStr,
+        actorName: '홍길동', actorEmail: 'hong@infiniteblock.io', actorMask: '홍○동',
+        role: _ADMIN_ROLE, corp: '-',
+        cat: '자산CSV다운로드',
+        action: '일자별 자산 CSV 다운로드 — 기준일자: ' + dateVal + ' / 사유: ' + reason,
+        result: 'success', ip: '192.168.10.10', ua: 'Chrome / macOS', errCode: null
+      });
+
+      showToast('CSV 파일이 다운로드되었습니다. (기준일자: ' + dateVal + ')');
+      return;
+    }
+
+    // OTP 실패
+    document.getElementById('daily-csv-otp-error').textContent = 'OTP가 올바르지 않습니다. 남은 시도: ' + remaining + '회';
+    document.getElementById('daily-csv-otp-error').style.display = 'block';
+    if (_dailyCsvOtpAttempts >= 5) {
+      for (var j = 0; j < 6; j++) {
+        var box = document.getElementById('dotp-' + j);
+        if (box) { box.disabled = true; box.style.borderColor = '#EF4444'; }
+      }
+      document.getElementById('daily-csv-download-btn').disabled = true;
+      document.getElementById('daily-csv-otp-lock').style.display = 'block';
+      document.getElementById('daily-csv-otp-error').style.display = 'none';
+    }
+  }
+
+  function _generateAssetsDailyCSV(dateVal) {
+    var refTime = '24:00:00';
+
+    var headers = [
+      'reference_date','reference_time','customer_name','business_number',
+      'wallet_name','coin_name','coin_symbol','network',
+      'quantity','unit_price_krw','evaluated_amount_krw','note'
+    ].join(',');
+
+    var rows = [headers];
+    _ASSETS_CUSTOMERS.filter(function(c) { return !c.internal_member; }).forEach(function(customer) {
+      customer.wallets.forEach(function(w) {
+        var c = _ASSETS_COINS[w.coin];
+        if (!c) return;
+        var eval_ = Math.round(c.price * w.qty);
+        rows.push([
+          dateVal, refTime,
+          '"' + customer.name + '"',
+          customer.bizNum,
+          '"' + w.wallet + '"',
+          '"' + c.name + '"',
+          c.symbol, c.network,
+          w.qty.toFixed(8), c.price, eval_,
+          '인피닛블록 회원사 자산 제외'
+        ].join(','));
+      });
+    });
+
+    var csvContent = '﻿' + rows.join('\r\n');
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url;
+    a.download = 'infiniteblock_customer_assets_daily_' + dateVal.replace(/-/g, '') + '.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
