@@ -5857,40 +5857,45 @@
     document.getElementById('txwd-date').textContent = h.date;
     document.getElementById('txwd-requester').textContent = h.requester || '—';
     document.getElementById('txwd-coin').textContent = h.coin + ' — ' + h.network;
-    document.getElementById('txwd-amount').textContent = h.amount.toLocaleString() + ' ' + h.coin;
-    // 5-6 / 12-8 / 6-13: 수수료 예상/확정/미표시 + 네트워크 타입 분기
+    // 5-6 / 12-8 / 6-13: 수수료 가산 모델 + 네트워크 타입 분기
     const txwdMeta         = _getCoinNetMeta(h.coin, h.network);
     const txwdFeeConfirmed = (h.status === 'broadcasting' || h.status === 'done' || h.status === 'completed');
     const txwdIsRejected   = (h.status === 'rejected');
     const txwdFeeRow   = document.getElementById('txwd-fee-row');
     const txwdFeeSep   = document.getElementById('txwd-fee-sep');
     const txwdTotalRow = document.getElementById('txwd-total-row');
+    // 출금 수량 = 수신자 수령 수량 (가산 모델)
+    document.getElementById('txwd-amount').innerHTML = h.amount.toLocaleString() + ' ' + h.coin
+      + (txwdIsRejected ? '' : ' <span style="color:var(--text-secondary);font-weight:400;font-size:11px;">(수신자 수령)</span>');
     if (txwdIsRejected) {
       if (txwdFeeRow)   txwdFeeRow.style.display   = 'none';
       if (txwdFeeSep)   txwdFeeSep.style.display   = 'none';
       if (txwdTotalRow) txwdTotalRow.style.display  = 'none';
     } else {
       if (txwdFeeRow)   txwdFeeRow.style.display   = '';
-      if (txwdFeeSep)   txwdFeeSep.style.display   = '';
-      if (txwdTotalRow) txwdTotalRow.style.display  = '';
       const txwdFeeLabel   = document.getElementById('txwd-fee-label');
       const txwdTotalLabel = document.getElementById('txwd-total-label');
       if (txwdMeta.is_token) {
+        // 토큰: 가스비는 native 코인에서 별도 차감 → 총 차감 행 숨김
+        if (txwdFeeSep)   txwdFeeSep.style.display   = 'none';
+        if (txwdTotalRow) txwdTotalRow.style.display  = 'none';
         const feeAmt    = (h.feeNative != null ? h.feeNative : (h.fee || 0));
         const feeKRW    = (h.feeNativeKRW != null ? h.feeNativeKRW : null);
         const feePrefix = (txwdMeta.network_type === 'trc20') ? '약 ' : '';
         if (txwdFeeLabel)   txwdFeeLabel.innerHTML    = '⛽ ' + txwdMeta.fee_label + (txwdFeeConfirmed ? ' (확정)' : ' (예상)') + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">차감 코인: ' + txwdMeta.native_coin + '</div>';
-        if (txwdTotalLabel) txwdTotalLabel.textContent = '실제 수신';
         document.getElementById('txwd-fee').innerHTML    = feePrefix + feeAmt + ' ' + txwdMeta.native_coin
           + (feeKRW != null ? ' <span style="color:var(--text-secondary);font-weight:400;">(≈ ₩' + feeKRW.toLocaleString() + ')</span>' : '')
-          + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">송신 지갑의 ' + txwdMeta.native_coin + ' 잔액에서 차감</div>';
-        document.getElementById('txwd-actual').innerHTML = h.amount.toLocaleString() + ' ' + h.coin
-          + ' <span style="color:var(--text-secondary);font-weight:400;font-size:11px;">(수신자 100% 수령)</span>';
+          + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">송신 지갑의 ' + txwdMeta.native_coin + ' 잔액에서 별도 차감</div>';
       } else {
-        if (txwdFeeLabel)   txwdFeeLabel.textContent   = txwdFeeConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
-        if (txwdTotalLabel) txwdTotalLabel.textContent  = txwdFeeConfirmed ? '총 출금액' : '총 출금액(예상)';
-        document.getElementById('txwd-fee').textContent    = (h.fee || 0) + ' ' + h.coin;
-        document.getElementById('txwd-actual').textContent = ((h.actualAmount != null ? h.actualAmount : (h.amount - (h.fee||0)))) + ' ' + h.coin;
+        // 네이티브 코인: 가산 모델 (총 차감 = 출금 수량 + 수수료)
+        if (txwdFeeSep)   txwdFeeSep.style.display   = '';
+        if (txwdTotalRow) txwdTotalRow.style.display  = '';
+        const fee   = (h.fee || 0);
+        const total = h.amount + fee;
+        if (txwdFeeLabel)   txwdFeeLabel.textContent   = txwdFeeConfirmed ? '수수료(확정)' : '수수료(예상)';
+        if (txwdTotalLabel) txwdTotalLabel.textContent  = txwdFeeConfirmed ? '총 차감' : '총 차감(예상)';
+        document.getElementById('txwd-fee').textContent    = fee + ' ' + h.coin;
+        document.getElementById('txwd-actual').textContent = total.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + h.coin;
       }
     }
     document.getElementById('txwd-krw').textContent = '≈ ₩' + (h.amountKRW || 0).toLocaleString();
@@ -6937,43 +6942,46 @@
     document.getElementById('wfd-date').textContent = w.date;
     document.getElementById('wfd-wallet').textContent = w.walletName;
     document.getElementById('wfd-coin').textContent = w.coin + ' / ' + w.network;
-    document.getElementById('wfd-amount').textContent = w.amount.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin;
-    // 5-6 / 6-13: 수수료 예상/확정/미표시 + 네트워크 타입에 따른 가스비 코인 분기
+    // 5-6 / 6-13: 수수료 가산 모델 + 네트워크 타입에 따른 가스비 코인 분기
     const wfdMeta         = _getCoinNetMeta(w.coin, w.network);
     const wfdFeeConfirmed = (w.status === 'broadcasting' || w.status === 'completed');
     const wfdIsRejected   = (w.status === 'rejected');
     const wfdFeeRow  = document.getElementById('wfd-fee-row');
     const wfdFeeSep  = document.getElementById('wfd-fee-sep');
     const wfdTotalRow= document.getElementById('wfd-total-row');
+    // 출금 수량 = 수신자 수령 수량 (가산 모델)
+    document.getElementById('wfd-amount').innerHTML = w.amount.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin
+      + (wfdIsRejected ? '' : ' <span style="color:var(--text-secondary);font-weight:400;font-size:11px;">(수신자 수령)</span>');
     if (wfdIsRejected) {
       if (wfdFeeRow)  wfdFeeRow.style.display  = 'none';
       if (wfdFeeSep)  wfdFeeSep.style.display  = 'none';
       if (wfdTotalRow) wfdTotalRow.style.display= 'none';
     } else {
       if (wfdFeeRow)  wfdFeeRow.style.display  = '';
-      if (wfdFeeSep)  wfdFeeSep.style.display  = '';
-      if (wfdTotalRow) wfdTotalRow.style.display= '';
       const wfdFeeLabel   = document.getElementById('wfd-fee-label');
       const wfdTotalLabel = document.getElementById('wfd-total-label');
       if (wfdMeta.is_token) {
-        // 토큰: 가스비는 native 코인에서 별도 차감, 수신자는 입력 수량 100% 수령
+        // 토큰: 가스비는 native 코인에서 별도 차감 (총합 표시 불가 → 총 차감 행 숨김)
+        if (wfdFeeSep)  wfdFeeSep.style.display  = 'none';
+        if (wfdTotalRow) wfdTotalRow.style.display= 'none';
         const feeAmt    = (w.feeNative != null ? w.feeNative : (w.fee || 0));
         const feeKRW    = (w.feeNativeKRW != null ? w.feeNativeKRW : null);
         const feePrefix = (wfdMeta.network_type === 'trc20') ? '약 ' : '';
         if (wfdFeeLabel)   wfdFeeLabel.innerHTML    = '⛽ ' + wfdMeta.fee_label + (wfdFeeConfirmed ? ' (확정)' : ' (예상)') + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">차감 코인: ' + wfdMeta.native_coin + '</div>';
-        if (wfdTotalLabel) wfdTotalLabel.textContent = '실제 수신';
         document.getElementById('wfd-fee').innerHTML  = feePrefix + feeAmt + ' ' + wfdMeta.native_coin
           + (feeKRW != null ? ' <span style="color:var(--text-secondary);font-weight:400;">(≈ ₩' + feeKRW.toLocaleString() + ')</span>' : '')
-          + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">송신 지갑의 ' + wfdMeta.native_coin + ' 잔액에서 차감</div>';
-        document.getElementById('wfd-actual').innerHTML = w.amount.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin
-          + ' <span style="color:var(--text-secondary);font-weight:400;font-size:11px;">(수신자 100% 수령)</span>';
+          + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">송신 지갑의 ' + wfdMeta.native_coin + ' 잔액에서 별도 차감</div>';
       } else {
-        // 네이티브 코인: 출금 수량에서 수수료 차감
-        if (wfdFeeLabel)   wfdFeeLabel.textContent   = wfdFeeConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
-        if (wfdTotalLabel) wfdTotalLabel.textContent  = wfdFeeConfirmed ? '총 출금액' : '총 출금액(예상)';
-        document.getElementById('wfd-fee').textContent = (w.fee||0) + ' ' + w.coin
+        // 네이티브 코인: 가산 모델 (총 차감 = 출금 수량 + 수수료)
+        if (wfdFeeSep)  wfdFeeSep.style.display  = '';
+        if (wfdTotalRow) wfdTotalRow.style.display= '';
+        const fee   = (w.fee || 0);
+        const total = w.amount + fee;
+        if (wfdFeeLabel)   wfdFeeLabel.textContent   = wfdFeeConfirmed ? '수수료(확정)' : '수수료(예상)';
+        if (wfdTotalLabel) wfdTotalLabel.textContent  = wfdFeeConfirmed ? '총 차감' : '총 차감(예상)';
+        document.getElementById('wfd-fee').textContent = fee + ' ' + w.coin
           + (w.feeKRW != null ? ' (≈ ₩' + w.feeKRW.toLocaleString() + ')' : '');
-        document.getElementById('wfd-actual').textContent = ((w.actualAmount != null ? w.actualAmount : (w.amount - (w.fee||0)))) + ' ' + w.coin;
+        document.getElementById('wfd-actual').textContent = total.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin;
       }
     }
     document.getElementById('wfd-krw').textContent = '약 ₩' + (w.amountKRW||0).toLocaleString();
