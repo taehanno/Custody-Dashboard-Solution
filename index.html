@@ -1314,6 +1314,8 @@
       <div class="tx-info-row" id="wfd-total-row"><span class="info-label" id="wfd-total-label" style="font-weight:600;">총 출금액</span><span id="wfd-actual" style="font-weight:700;"></span></div>
       <div class="tx-info-row" style="border-bottom:none;"><span class="info-label">원화 환산</span><span id="wfd-krw" style="color:var(--text-secondary);"></span></div>
     </div>
+    <!-- 토큰 가스비 안내 (ERC20/TRC20 등) -->
+    <div id="wfd-token-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; margin-bottom:14px;"></div>
     <!-- Address -->
     <div class="tx-section">
       <div class="tx-info-row"><span class="info-label">수신 주소</span>
@@ -1445,6 +1447,8 @@
         <span id="txwd-krw" style="color:var(--text-secondary);"></span>
       </div>
     </div>
+    <!-- 토큰 가스비 안내 (ERC20/TRC20 등) -->
+    <div id="txwd-token-note" style="display:none; padding:10px 12px; border-radius:6px; font-size:12px; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; margin-bottom:4px;"></div>
     <!-- Address + TXID -->
     <div class="tx-section">
       <div class="tx-section-title">수신 정보</div>
@@ -5479,7 +5483,7 @@
   const _HISTORY_DATA = [
     { id:'WD-001', type:'withdrawal', coin:'USDT', network:'Ethereum (ERC-20)',
       walletId:'wallet1', walletName:'운영 지갑 A',
-      amount:5000, amountKRW:6900000, fee:3.5, actualAmount:4996.5,
+      amount:5000, amountKRW:6900000, feeNative:0.0015, feeNativeKRW:5400, actualAmount:5000,
       status:'pending_sig', date:'2026-04-08 15:22:10',
       toAddr:'0x4d4bC4a1...C3E1', addrType:'외부 지갑', txid:null, memo:'운영비 지출',
       requester:'김철수',
@@ -5500,7 +5504,7 @@
       signers:[{name:'김철수',done:true,at:'2026-04-06 14:12'},{name:'이영희',done:true,at:'2026-04-06 14:15'},{name:'박민준',done:true,at:'2026-04-06 14:18'}] },
     { id:'WD-004', type:'withdrawal', coin:'USDT', network:'Ethereum (ERC-20)',
       walletId:'wallet1', walletName:'운영 지갑 A',
-      amount:200, amountKRW:276000, fee:2.1, actualAmount:197.9,
+      amount:200, amountKRW:276000, feeNative:0.00148, feeNativeKRW:5328, actualAmount:200,
       status:'completed', date:'2026-04-04 09:30:00',
       toAddr:'0x3f4e5a6b...A1B2', addrType:'Whitelist 주소', txid:'0x3f4e5a6b...a1b2', memo:'파트너 정산',
       requester:'김철수',
@@ -5853,8 +5857,9 @@
     document.getElementById('txwd-date').textContent = h.date;
     document.getElementById('txwd-requester').textContent = h.requester || '—';
     document.getElementById('txwd-coin').textContent = h.coin + ' — ' + h.network;
-    document.getElementById('txwd-amount').textContent = (h.actualAmount||h.amount).toLocaleString() + ' ' + h.coin;
-    // 5-6 / 12-8: 수수료 예상/확정/미표시
+    document.getElementById('txwd-amount').textContent = h.amount.toLocaleString() + ' ' + h.coin;
+    // 5-6 / 12-8 / 6-13: 수수료 예상/확정/미표시 + 네트워크 타입 분기
+    const txwdMeta         = _getCoinNetMeta(h.coin, h.network);
     const txwdFeeConfirmed = (h.status === 'broadcasting' || h.status === 'done' || h.status === 'completed');
     const txwdIsRejected   = (h.status === 'rejected');
     const txwdFeeRow   = document.getElementById('txwd-fee-row');
@@ -5870,12 +5875,36 @@
       if (txwdTotalRow) txwdTotalRow.style.display  = '';
       const txwdFeeLabel   = document.getElementById('txwd-fee-label');
       const txwdTotalLabel = document.getElementById('txwd-total-label');
-      if (txwdFeeLabel)   txwdFeeLabel.textContent   = txwdFeeConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
-      if (txwdTotalLabel) txwdTotalLabel.textContent  = txwdFeeConfirmed ? '총 출금액' : '총 출금액(예상)';
-      document.getElementById('txwd-fee').textContent    = (h.fee || 0) + ' ' + h.coin;
-      document.getElementById('txwd-actual').textContent = h.amount + ' ' + h.coin;
+      if (txwdMeta.is_token) {
+        const feeAmt    = (h.feeNative != null ? h.feeNative : (h.fee || 0));
+        const feeKRW    = (h.feeNativeKRW != null ? h.feeNativeKRW : null);
+        const feePrefix = (txwdMeta.network_type === 'trc20') ? '약 ' : '';
+        if (txwdFeeLabel)   txwdFeeLabel.innerHTML    = '⛽ ' + txwdMeta.fee_label + (txwdFeeConfirmed ? ' (확정)' : ' (예상)') + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">차감 코인: ' + txwdMeta.native_coin + '</div>';
+        if (txwdTotalLabel) txwdTotalLabel.textContent = '실제 수신';
+        document.getElementById('txwd-fee').innerHTML    = feePrefix + feeAmt + ' ' + txwdMeta.native_coin
+          + (feeKRW != null ? ' <span style="color:var(--text-secondary);font-weight:400;">(≈ ₩' + feeKRW.toLocaleString() + ')</span>' : '')
+          + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">송신 지갑의 ' + txwdMeta.native_coin + ' 잔액에서 차감</div>';
+        document.getElementById('txwd-actual').innerHTML = h.amount.toLocaleString() + ' ' + h.coin
+          + ' <span style="color:var(--text-secondary);font-weight:400;font-size:11px;">(수신자 100% 수령)</span>';
+      } else {
+        if (txwdFeeLabel)   txwdFeeLabel.textContent   = txwdFeeConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
+        if (txwdTotalLabel) txwdTotalLabel.textContent  = txwdFeeConfirmed ? '총 출금액' : '총 출금액(예상)';
+        document.getElementById('txwd-fee').textContent    = (h.fee || 0) + ' ' + h.coin;
+        document.getElementById('txwd-actual').textContent = ((h.actualAmount != null ? h.actualAmount : (h.amount - (h.fee||0)))) + ' ' + h.coin;
+      }
     }
     document.getElementById('txwd-krw').textContent = '≈ ₩' + (h.amountKRW || 0).toLocaleString();
+    // 토큰 가스비 안내
+    const txwdTokenNote = document.getElementById('txwd-token-note');
+    if (txwdTokenNote) {
+      if (txwdMeta.is_token && !txwdIsRejected) {
+        const stdName = (txwdMeta.network_type || '').toUpperCase();
+        txwdTokenNote.style.display = 'block';
+        txwdTokenNote.innerHTML = 'ⓘ ' + stdName + ' 토큰 출금 시 가스비는 <b>' + txwdMeta.native_coin + '</b>로 별도 차감됩니다. 수신자는 입력하신 ' + h.coin + ' 수량을 100% 수령합니다.';
+      } else {
+        txwdTokenNote.style.display = 'none';
+      }
+    }
     // To address with copy
     const toEl = document.getElementById('txwd-toaddr');
     toEl.innerHTML = (h.toAddr || '—') +
@@ -6642,7 +6671,7 @@
     // WD-W1: pending_sig — 김철수 아직 미서명 (primary demo case)
     { id:'WD-W1', walletId:'wallet1', walletName:'운영 지갑 A',
       coin:'USDT', network:'Ethereum (ERC-20)', amount:5000, amountKRW:6900000,
-      fee:3.5, actualAmount:4996.5, status:'pending_sig', date:'2026-04-08 15:22',
+      feeNative:0.0015, feeNativeKRW:5400, actualAmount:5000, status:'pending_sig', date:'2026-04-08 15:22',
       toAddr:'0x4d4bC4a1...C3E1', addrType:'외부 지갑', txid:null, memo:'운영비 지출',
       requester:'이영희', sigPolicy:{n:2,m:3},
       signers:[{name:'이영희',done:true,at:'2026-04-08 15:24'},{name:'김철수',done:false,at:null},{name:'박민준',done:false,at:null}] },
@@ -6670,7 +6699,7 @@
     // WD-W5: completed
     { id:'WD-W5', walletId:'wallet1', walletName:'운영 지갑 A',
       coin:'USDT', network:'Ethereum (ERC-20)', amount:200, amountKRW:276000,
-      fee:2.1, actualAmount:197.9, status:'completed', date:'2026-04-04 09:30',
+      feeNative:0.00148, feeNativeKRW:5328, actualAmount:200, status:'completed', date:'2026-04-04 09:30',
       toAddr:'0x3f4e5a6b...A1B2', addrType:'Whitelist 주소', txid:'0x3f4e5a6b...a1b2', memo:'파트너 정산',
       requester:'김철수', sigPolicy:{n:2,m:3},
       signers:[{name:'김철수',done:true,at:'2026-04-04 09:33'},{name:'이영희',done:true,at:'2026-04-04 09:36'},{name:'박민준',done:true,at:'2026-04-04 09:40'}],
@@ -6908,8 +6937,9 @@
     document.getElementById('wfd-date').textContent = w.date;
     document.getElementById('wfd-wallet').textContent = w.walletName;
     document.getElementById('wfd-coin').textContent = w.coin + ' / ' + w.network;
-    document.getElementById('wfd-amount').textContent = (w.actualAmount||w.amount).toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin;
-    // 5-6: 수수료 예상/확정/미표시
+    document.getElementById('wfd-amount').textContent = w.amount.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin;
+    // 5-6 / 6-13: 수수료 예상/확정/미표시 + 네트워크 타입에 따른 가스비 코인 분기
+    const wfdMeta         = _getCoinNetMeta(w.coin, w.network);
     const wfdFeeConfirmed = (w.status === 'broadcasting' || w.status === 'completed');
     const wfdIsRejected   = (w.status === 'rejected');
     const wfdFeeRow  = document.getElementById('wfd-fee-row');
@@ -6925,12 +6955,39 @@
       if (wfdTotalRow) wfdTotalRow.style.display= '';
       const wfdFeeLabel   = document.getElementById('wfd-fee-label');
       const wfdTotalLabel = document.getElementById('wfd-total-label');
-      if (wfdFeeLabel)   wfdFeeLabel.textContent   = wfdFeeConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
-      if (wfdTotalLabel) wfdTotalLabel.textContent  = wfdFeeConfirmed ? '총 출금액' : '총 출금액(예상)';
-      document.getElementById('wfd-fee').textContent = (w.fee||0) + ' ' + w.coin;
-      document.getElementById('wfd-actual').textContent = w.amount + ' ' + w.coin;
+      if (wfdMeta.is_token) {
+        // 토큰: 가스비는 native 코인에서 별도 차감, 수신자는 입력 수량 100% 수령
+        const feeAmt    = (w.feeNative != null ? w.feeNative : (w.fee || 0));
+        const feeKRW    = (w.feeNativeKRW != null ? w.feeNativeKRW : null);
+        const feePrefix = (wfdMeta.network_type === 'trc20') ? '약 ' : '';
+        if (wfdFeeLabel)   wfdFeeLabel.innerHTML    = '⛽ ' + wfdMeta.fee_label + (wfdFeeConfirmed ? ' (확정)' : ' (예상)') + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">차감 코인: ' + wfdMeta.native_coin + '</div>';
+        if (wfdTotalLabel) wfdTotalLabel.textContent = '실제 수신';
+        document.getElementById('wfd-fee').innerHTML  = feePrefix + feeAmt + ' ' + wfdMeta.native_coin
+          + (feeKRW != null ? ' <span style="color:var(--text-secondary);font-weight:400;">(≈ ₩' + feeKRW.toLocaleString() + ')</span>' : '')
+          + '<div style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-top:2px;">송신 지갑의 ' + wfdMeta.native_coin + ' 잔액에서 차감</div>';
+        document.getElementById('wfd-actual').innerHTML = w.amount.toLocaleString(undefined,{maximumFractionDigits:8}) + ' ' + w.coin
+          + ' <span style="color:var(--text-secondary);font-weight:400;font-size:11px;">(수신자 100% 수령)</span>';
+      } else {
+        // 네이티브 코인: 출금 수량에서 수수료 차감
+        if (wfdFeeLabel)   wfdFeeLabel.textContent   = wfdFeeConfirmed ? '네트워크 수수료(확정)' : '네트워크 수수료(예상)';
+        if (wfdTotalLabel) wfdTotalLabel.textContent  = wfdFeeConfirmed ? '총 출금액' : '총 출금액(예상)';
+        document.getElementById('wfd-fee').textContent = (w.fee||0) + ' ' + w.coin
+          + (w.feeKRW != null ? ' (≈ ₩' + w.feeKRW.toLocaleString() + ')' : '');
+        document.getElementById('wfd-actual').textContent = ((w.actualAmount != null ? w.actualAmount : (w.amount - (w.fee||0)))) + ' ' + w.coin;
+      }
     }
     document.getElementById('wfd-krw').textContent = '약 ₩' + (w.amountKRW||0).toLocaleString();
+    // 토큰 가스비 안내
+    const wfdTokenNote = document.getElementById('wfd-token-note');
+    if (wfdTokenNote) {
+      if (wfdMeta.is_token && !wfdIsRejected) {
+        const stdName = (wfdMeta.network_type || '').toUpperCase();
+        wfdTokenNote.style.display = 'block';
+        wfdTokenNote.innerHTML = 'ⓘ ' + stdName + ' 토큰 출금 시 가스비는 <b>' + wfdMeta.native_coin + '</b>로 별도 차감됩니다.<br>수신자는 입력하신 ' + w.coin + ' 수량을 100% 수령합니다.';
+      } else {
+        wfdTokenNote.style.display = 'none';
+      }
+    }
     // Address
     const addrEl = document.getElementById('wfd-toaddr');
     addrEl.innerHTML = (w.toAddr||'—')
@@ -7911,6 +7968,31 @@
     _validateDestTagInput('wd-dest-tag-input', 'wd-dest-tag-hint');
     // Whitelist manual input (XRP whitelist without destTag)
     _validateDestTagInput('wl-dest-tag-manual-input', 'wl-dest-tag-manual-hint');
+  }
+
+  /* ── 코인 네트워크 타입 / 가스비 차감 코인 매핑 (PRD 6-13)
+     - native 코인(BTC/ETH/TRX...): 출금 코인 자체에서 가스비 차감
+     - 토큰(ERC20/TRC20/BEP20/SPL): 해당 네트워크 native 코인에서 가스비 별도 차감 ── */
+  function _getCoinNetMeta(coin, network) {
+    const c = (coin || '').toUpperCase().trim();
+    const n = (network || '').trim();
+    let network_type = 'native';
+    if (/^ERC.?20$/i.test(n) || /ethereum.*erc.?20/i.test(n) || /erc.?20/i.test(n)) network_type = 'erc20';
+    else if (/^TRC.?20$/i.test(n) || /tron.*trc.?20/i.test(n) || /trc.?20/i.test(n)) network_type = 'trc20';
+    else if (/^BEP.?20$/i.test(n) || /bnb.*smart/i.test(n) || /bep.?20/i.test(n)) network_type = 'bep20';
+    else if (/^SPL$/i.test(n) || /solana.*spl/i.test(n) || /\bspl\b/i.test(n)) network_type = 'spl';
+    // 코인 심볼이 native 코인 그 자체면 토큰이 아니다
+    const NATIVES = { BTC:'BTC', ETH:'ETH', TRX:'TRX', BNB:'BNB', SOL:'SOL', XRP:'XRP' };
+    if (NATIVES[c]) network_type = 'native';
+    const NATIVE_BY_TYPE = { erc20:'ETH', trc20:'TRX', bep20:'BNB', spl:'SOL' };
+    const native_coin = network_type === 'native' ? c : (NATIVE_BY_TYPE[network_type] || c);
+    const FEE_LABEL = { erc20:'네트워크 수수료 (가스비)', trc20:'네트워크 수수료 (에너지/대역폭)', bep20:'네트워크 수수료 (가스비)', spl:'네트워크 수수료', native:'네트워크 수수료' };
+    return {
+      network_type,
+      native_coin,
+      is_token: network_type !== 'native',
+      fee_label: FEE_LABEL[network_type] || '네트워크 수수료'
+    };
   }
 
   /* ── 지갑 대시보드 동적 렌더링 (4-1) ── */
